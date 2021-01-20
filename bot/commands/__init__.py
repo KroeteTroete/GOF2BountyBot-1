@@ -1,8 +1,9 @@
-from ..commandsManager import HeirarchicalCommandsDB
+from ..commandsManager import heirarchicalCommandsDB
 from ..cfg import cfg
 import importlib
 
-commandsDB = HeirarchicalCommandsDB.HeirarchicalCommandsDB(len(cfg.userAccessLevels))
+commandsDB = heirarchicalCommandsDB.HeirarchicalCommandsDB(len(cfg.userAccessLevels))
+
 
 def loadCommands():
     global commandsDB
@@ -12,6 +13,7 @@ def loadCommands():
         try:
             importlib.import_module(("" if modName.startswith(".") else ".") + modName, "bot.commands")
         except ImportError:
-            raise ImportError("Unrecognised commands module in cfg.includedCommandModules. Please ensure the file exists, and spelling/capitalization are correct: '" + modName + "'")
-    
+            raise ImportError("Unrecognised commands module in cfg.includedCommandModules. \n" +
+                                "Please ensure the file exists, and spelling/capitalization are correct: '" + modName + "'")
+
     return commandsDB

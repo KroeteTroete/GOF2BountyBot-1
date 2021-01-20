@@ -1,7 +1,8 @@
-from . import TimedTask
+from . import timedTask
 from heapq import heappop, heappush
 import inspect
 from types import FunctionType
+
 
 class TimedTaskHeap:
     """A min-heap of TimedTasks, sorted by task expiration time.
@@ -13,25 +14,27 @@ class TimedTaskHeap:
     :vartype expiryFunction: FunctionType
     :var hasExpiryFunction: Whether or not this heap has an expiry function to call
     :vartype hasExpiryFunction: bool
-    :var expiryFunctionArgs: an object to pass to expiryFunction when calling. There is no type requirement, but a dictionary is recommended as a close representation of KWArgs.
+    :var expiryFunctionArgs: an object to pass to expiryFunction when calling. There is no type requirement,
+                                but a dictionary is recommended as a close representation of KWArgs.
     :var hasExpiryFunctionArgs: Whether or not the expiry function has args to pass
     :vartype hasExpiryFunctionArgs: bool
     :var asyncExpiryFunction: whether or not the expiryFunction is a coroutine and needs to be awaited
     :vartype asyncExpiryFunction: bool
     """
 
-    def __init__(self, expiryFunction : FunctionType = None, expiryFunctionArgs={}):
+    def __init__(self, expiryFunction: FunctionType = None, expiryFunctionArgs = None):
         """
-        :param function expiryFunction: function reference to call upon the expiry of any TimedTask managed by this heap. (Default None)
-        :param expiryFunctionArgs: an object to pass to expiryFunction when calling. There is no type requirement, but a dictionary is recommended as a close representation of KWArgs. (Default {})
+        :param function expiryFunction: function reference to call upon the expiry of any
+                                        TimedTask managed by this heap. (Default None)
+        :param expiryFunctionArgs: an object to pass to expiryFunction when calling. There is no type requirement,
+                                    but a dictionary is recommended as a close representation of KWArgs. (Default {})
         """
-        # self.taskType = taskType
         self.tasksHeap = []
-        
+
         self.expiryFunction = expiryFunction
         self.hasExpiryFunction = expiryFunction is not None
-        self.expiryFunctionArgs = expiryFunctionArgs
-        self.hasExpiryFunctionArgs = expiryFunctionArgs != {}
+        self.hasExpiryFunctionArgs = expiryFunctionArgs is not None
+        self.expiryFunctionArgs = expiryFunctionArgs if self.hasExpiryFunctionArgs else {}
 
         # Track whether or not the expiryFunction is a coroutine and needs to be awaited
         self.asyncExpiryFunction = inspect.iscoroutinefunction(expiryFunction)
@@ -46,7 +49,7 @@ class TimedTaskHeap:
             heappop(self.tasksHeap)
 
 
-    def scheduleTask(self, task : TimedTask.TimedTask):
+    def scheduleTask(self, task: timedTask.TimedTask):
         """Schedule a new task onto this heap.
 
         :param TimedTask task: the task to schedule
@@ -54,7 +57,7 @@ class TimedTaskHeap:
         heappush(self.tasksHeap, task)
 
 
-    def unscheduleTask(self, task : TimedTask.TimedTask):
+    def unscheduleTask(self, task: timedTask.TimedTask):
         """Forcebly remove a task from the heap without 'expiring' it - no expiry functions or auto-rescheduling are called.
         This method overrides task autoRescheduling, forcibly removing the task from the heap entirely.
 
@@ -85,7 +88,7 @@ class TimedTaskHeap:
             else:
                 self.expiryFunction()
 
-    
+
     async def doTaskChecking(self):
         """Function to be called regularly (ideally in a main loop), that handles the expiring of tasks.
         Tasks are checked against their expiry times and manual expiry.

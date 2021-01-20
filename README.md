@@ -1,4 +1,34 @@
-![BASED Banner](https://i.imgur.com/Nqoq3s4.png)
+<p align="center">
+  <img
+    width="800"
+    src="https://i.imgur.com/Nqoq3s4.png"
+    alt="Bot Advanced Schematic - Easy Discord! (BASED)"
+  />
+</p>
+<p align="center">
+  <a href="https://github.com/Trimatix/BASED/actions"
+    ><img
+      src="https://img.shields.io/github/workflow/status/Trimatix/BASED/BASED"
+      alt="GitHub Actions workflow status"
+  /></a>
+</p>
+<p align="center">
+  <a href="https://sonarcloud.io/dashboard?id=Trimatix_BASED"
+    ><img
+      src="https://sonarcloud.io/api/project_badges/measure?project=Trimatix_BASED&metric=bugs"
+      alt="SonarCloud bugs analysis"
+  /></a>
+  <a href="https://sonarcloud.io/dashboard?id=Trimatix_BASED"
+    ><img
+      src="https://sonarcloud.io/api/project_badges/measure?project=Trimatix_BASED&metric=code_smells"
+      alt="SonarCloud code smells analysis"
+  /></a>
+  <a href="https://sonarcloud.io/dashboard?id=Trimatix_BASED"
+    ><img
+      src="https://sonarcloud.io/api/project_badges/measure?project=Trimatix_BASED&metric=alert_status"
+      alt="SonarCloud quality gate status"
+  /></a>
+</p>
 
 BASED is a template project for creating advanced discord bots using python.
 
@@ -37,7 +67,7 @@ BASED v0.3 adds the ability to configure all of the bot's cfg attributes externa
     
 
 # Running Your Bot
-To run your bot, simply run `main.py`.
+To run your bot, simply run `main.py`. To load a config.toml, provide a path to your config in command line args. E.g `python3 main.py myConfig.toml`.
 
 Alternatively, auto restarting and updating of the bot are provided by using one of the two looping bot launching scripts, `run.bat` and `run.sh`.
 
