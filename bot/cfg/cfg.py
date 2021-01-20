@@ -39,10 +39,14 @@ paths = {
     "reactionMenusDB": "saveData" + "/" + "reactionMenus.json",
 
     # path to folder to save log txts to
-    "logsFolder": "saveData" + "/" + "logs"
+    "logsFolder": "saveData" + "/" + "logs",
+
+    # folder to store temporary render files in, e.g intermediary images, renderer config files
+    "rendererTempFolder": "rendering-temp"
 }
 
-# Names of user access levels to be used in help menus. Also determines the number of access levels available, e.g when registering commands
+# Names of user access levels to be used in help menus.
+# Also determines the number of access levels available, e.g when registering commands
 userAccessLevels = ["user", "mod", "admin", "dev"]
 
 # Message to print alongside cmd_help menus
