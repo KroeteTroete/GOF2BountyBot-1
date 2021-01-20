@@ -1,5 +1,6 @@
 .vscode
 logo
 saveData
+items
 **/__pycache__
 **/.DS_STORE
