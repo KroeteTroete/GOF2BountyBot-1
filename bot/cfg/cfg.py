@@ -82,3 +82,9 @@ developers = [188618589102669826]
 # botToken_envVarName contains the name of an environment variable to get your bot token from
 botToken = ""
 botToken_envVarName = ""
+
+
+##### GAME MATHS #####
+
+# Number of decimal places to calculate itemTLSpawnChanceForShopTL values to
+itemSpawnRateResDP = 3
