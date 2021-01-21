@@ -29,7 +29,10 @@ timeouts = {
     "helpMenu": {"minutes": 3},
     "BASED_updateCheckFrequency": {"days": 1},
     # The time to wait inbetween database autosaves.
-    "dataSaveFrequency": {"hours": 1}
+    "dataSaveFrequency": {"hours": 1},
+
+    # Amount of time before a duel request expires
+    "duelRequest": {"days":1}
 }
 
 paths = {
@@ -62,6 +65,7 @@ maxCommandsPerHelpPage = 5
 includedCommandModules = ("usr_misc",
                           "admn_misc",
                           "dev_misc")
+                          
 """includedCommandModules = (  "usr_misc", "usr_homeguilds", "usr_gof2-info", "usr_bounties", "usr_loadout", "usr_economy",
                             "admn_channels", "admn_misc",
                             "dev_misc", "dev_channels", "dev_bounties", "dev_items", "dev_skins")"""
@@ -101,6 +105,9 @@ developers = [188618589102669826]
 
 # Number of decimal places to calculate itemTLSpawnChanceForShopTL values to
 itemSpawnRateResDP = 3
+
+# The amount to vary ship stats (+-) by before executing a duel
+duelVariancePercent = 0.05
 
 
 
