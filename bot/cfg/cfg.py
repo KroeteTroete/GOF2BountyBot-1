@@ -45,6 +45,9 @@ paths = {
     "rendererTempFolder": "rendering-temp"
 }
 
+
+##### COMMANDS #####
+
 # Names of user access levels to be used in help menus.
 # Also determines the number of access levels available, e.g when registering commands
 userAccessLevels = ["user", "mod", "admin", "dev"]
@@ -60,8 +63,19 @@ includedCommandModules = ("usr_misc",
                           "admn_misc",
                           "dev_misc")
 
+# Default prefix for commands
+defaultCommandPrefix = "."
+
+
+
+##### REACTION MENUS #####
+
 # Text to edit into expired menu messages
 expiredMenuMsg = "😴 This role menu has now expired."
+
+
+
+##### SCHEDULING #####
 
 # Can currently only be "fixed"
 timedTaskCheckingType = "fixed"
@@ -71,20 +85,26 @@ timedTaskLatenessThresholdSeconds = 10
 # Whether or not to check for updates to BASED
 BASED_checkForUpdates = True
 
-# Default prefix for commands
-defaultCommandPrefix = "."
+
+
+##### ADMINISTRATION #####
 
 # discord user IDs of developers - will be granted developer command permissions
 developers = [188618589102669826]
 
-# Exactly one of botToken or botToken_envVarName must be given.
-# botToken contains a string of your bot token
-# botToken_envVarName contains the name of an environment variable to get your bot token from
-botToken = ""
-botToken_envVarName = ""
 
 
 ##### GAME MATHS #####
 
 # Number of decimal places to calculate itemTLSpawnChanceForShopTL values to
 itemSpawnRateResDP = 3
+
+
+
+##### MISC #####
+
+# Exactly one of botToken or botToken_envVarName must be given.
+# botToken contains a string of your bot token
+# botToken_envVarName contains the name of an environment variable to get your bot token from
+botToken = ""
+botToken_envVarName = ""
