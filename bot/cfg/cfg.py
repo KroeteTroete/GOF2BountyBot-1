@@ -65,7 +65,19 @@ paths = {
     "logsFolder": "saveData" + "/" + "logs",
 
     # folder to store temporary render files in, e.g intermediary images, renderer config files
-    "rendererTempFolder": "rendering-temp"
+    "rendererTempFolder": "rendering-temp",
+
+    # folders containing game objects to load into the game
+    "bbCriminalMETAFolder": "game objects" + "/" + "criminals",
+    "bbShipSkinMETAFolder": "game objects" + "/" + "ship skins",
+    "bbShipUpgradesMETAFolder": "game objects" + "/" + "ship upgrades",
+    "bbSystemMETAFolder": "game objects" + "/" + "solar systems",
+    "bbCommodityMETAFolder": "game objects" + "/" + "items" + "/" + "commodities",
+    "bbModuleMETAFolder": "game objects" + "/" + "items" + "/" + "modules",
+    "bbSecondaryMETAFolder": "game objects" + "/" + "items" + "/" + "secondaries",
+    "bbShipMETAFolder": "game objects" + "/" + "items" + "/" + "ships",
+    "bbWeaponMETAFolder": "game objects" + "/" + "items" + "/" + "weapons",
+    "bbTurretMETAFolder": "game objects" + "/" + "items" + "/" + "turrets"
 }
 
 
@@ -256,7 +268,7 @@ maxConcurrentRenders = 1
 
 
 
-##### INVENTORY #####
+##### ITEMS #####
 
 # max number of characters accepted by nameShip
 maxShipNickLength = 30
