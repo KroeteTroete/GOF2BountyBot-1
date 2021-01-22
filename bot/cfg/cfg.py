@@ -35,7 +35,10 @@ timeouts = {
     "duelRequest": {"days": 1},
 
     # Amount of time to wait between refreshing stock of all shops
-    "shopRefresh": {"days": 0, "hours": 6, "minutes": 0, "seconds": 0}
+    "shopRefresh": {"days": 0, "hours": 6, "minutes": 0, "seconds": 0},
+
+    # time to put users on cooldown between using !bb check
+    "checkCooldown": {"minutes":3}
 }
 
 paths = {
@@ -145,6 +148,53 @@ shopRefreshTurrets = 2
 # bbTurret is the only item that has a probability not to be spawned.
 # This metric indicates the percentage chance of turrets being stocked on a given refresh
 turretSpawnProbability = 45
+
+
+
+##### BOUNTIES #####
+
+# Maximum number of bounties that may simulatneously be available, per fection
+maxBountiesPerFaction = 5
+
+# The maximum number of bounties a player is allowed to win each day
+maxDailyBountyWins = 10
+
+# can be "fixed" or "random"
+newBountyDelayType = "random-routeScale"
+
+### Fixed delay config
+# only spawn bounties at this time of day.
+newBountyFixedDailyTime = {"hours":18, "minutes":40, "seconds":0}
+
+# time to wait inbetween spawning bounties
+# when using fixed-routeScale generation, use this for bounties of route length 1
+newBountyFixedDelta = {"days":0, "hours":0, "minutes":1, "seconds":0}
+
+### random delay config
+# when using random delay generation, use these min and max points
+# when using random-routeScale generation, use these min and max points for bounties of route length 1
+newBountyDelayRandomRange = {"min": 5 * 60, "max": 7 * 60}
+
+### routeScale config
+newBountyDelayRouteScaleCoefficient = 1
+fallbackRouteScale = 5
+
+
+# The number of credits to award for each bPoint (each system in a criminal route)
+bPointsToCreditsRatio = 1000
+
+# number of bounties ahead of a checked system in a route to report a recent criminal spotting (+1)
+closeBountyThreshold = 4
+
+# Text to send to a BountyBoardChannel when no bounties are currently active
+bbcNoBountiesMsg = "```css\n[ NO ACTIVE BOUNTIES ]\n\nThere are currently no active bounty listings.\n" + \
+                    "Please check back later, or use [ $notify bounties ] to be pinged when new ones become available!\n```"
+
+# The number of times to retry API calls when HTTP exceptions are thrown
+httpErrRetries = 3
+
+# The number of seconds to wait between API call retries upon HTTP exception catching
+httpErrRetryDelaySeconds = 1
 
 
 
