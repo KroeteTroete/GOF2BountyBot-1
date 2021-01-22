@@ -218,6 +218,9 @@ skinRenderShowmeHDResolution = [1920, 1080]
 # Default graphics to use for ship skin application tool items
 defaultShipSkinToolIcon = "https://cdn.discordapp.com/attachments/700683544103747594/723472334362771536/documents.png"
 
+# The maximum number of rendering threads that may be dispatched simultaneously
+maxConcurrentRenders = 1
+
 
 
 ##### LOADOUT #####
