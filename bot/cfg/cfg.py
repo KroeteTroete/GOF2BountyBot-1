@@ -109,7 +109,7 @@ BASED_checkForUpdates = True
 ##### ADMINISTRATION #####
 
 # discord user IDs of developers - will be granted developer command permissions
-developers = [188618589102669826]
+developers = [188618589102669826, 448491245296418817]
 
 
 
