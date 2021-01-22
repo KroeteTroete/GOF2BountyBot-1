@@ -215,6 +215,9 @@ skinRenderShowmeResolution = [352, 240]
 # Resolution of skin renders from admin_cmd_showmeHD calls
 skinRenderShowmeHDResolution = [1920, 1080]
 
+# Default graphics to use for ship skin application tool items
+defaultShipSkinToolIcon = "https://cdn.discordapp.com/attachments/700683544103747594/723472334362771536/documents.png"
+
 
 
 ##### LOADOUT #####
