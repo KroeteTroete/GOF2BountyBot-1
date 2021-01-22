@@ -217,6 +217,16 @@ skinRenderShowmeHDResolution = [1920, 1080]
 
 
 
+##### LOADOUT #####
+
+# max number of characters accepted by nameShip
+maxShipNickLength = 30
+
+# max number of characters accepted by nameShip, when called by a developer
+maxDevShipNickLength = 100
+
+
+
 ##### MISC #####
 
 # Exactly one of botToken or botToken_envVarName must be given.
