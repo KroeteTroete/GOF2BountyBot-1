@@ -43,7 +43,12 @@ timeouts = {
     "shopRefresh": {"days": 0, "hours": 6, "minutes": 0, "seconds": 0},
 
     # time to put users on cooldown between using !bb check
-    "checkCooldown": {"minutes":3}
+    "checkCooldown": {"minutes":3},
+
+    # Default amount of time reaction menus should be active for
+    "roleMenuExpiry": {"days": 1},
+    "duelChallengeMenuExpiry": {"hours": 2},
+    "pollMenuExpiry": {"minutes": 5}
 }
 
 paths = {
@@ -87,6 +92,14 @@ defaultCommandPrefix = "."
 
 # Text to edit into expired menu messages
 expiredMenuMsg = "😴 This role menu has now expired."
+# Length of the bars in poll results bar charts
+pollMenuResultsBarLength = 10
+# Max number of role menus a guild may own
+maxRoleMenusPerGuild = 10
+# Amount of time to allow for response to the cmd_use confirmation menu
+toolUseConfirmTimeoutSeconds = 60
+# Amount of time to allow for response to the cmd_transfer confirmation menu
+homeGuildTransferConfirmTimeoutSeconds = 60
 
 
 
