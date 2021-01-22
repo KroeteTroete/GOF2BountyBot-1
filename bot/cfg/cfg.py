@@ -32,7 +32,10 @@ timeouts = {
     "dataSaveFrequency": {"hours": 1},
 
     # Amount of time before a duel request expires
-    "duelRequest": {"days":1}
+    "duelRequest": {"days": 1},
+
+    # Amount of time to wait between refreshing stock of all shops
+    "shopRefresh": {"days": 0, "hours": 6, "minutes": 0, "seconds": 0}
 }
 
 paths = {
@@ -108,6 +111,12 @@ itemSpawnRateResDP = 3
 
 # The amount to vary ship stats (+-) by before executing a duel
 duelVariancePercent = 0.05
+
+# Max number of entries that can be printed for a duel log
+duelLogMaxLength = 10
+
+# Percentage probability of a user envoking a cloak module in a given timeStep, should they have one equipped
+duelCloakChance = 20
 
 
 
