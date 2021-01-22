@@ -113,6 +113,23 @@ userAccessLevels = ["user", "mod", "admin", "dev"]
 
 
 
+##### USERS #####
+
+userAlertsIDsDefaults = {   "bounties_new": False,
+    
+                            "shop_refresh": False,
+
+                            "duels_challenge_incoming_new": True,
+                            "duels_challenge_incoming_cancel": False,
+                            
+                            "system_updates_major": False,
+                            "system_updates_minor": False,
+                            "system_misc": False}
+
+homeGuildTransferCooldown = {"weeks":1}
+
+
+
 ##### GAME MATHS #####
 
 # Number of decimal places to calculate itemTLSpawnChanceForShopTL values to
