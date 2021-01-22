@@ -193,6 +193,25 @@ bbcNoBountiesMsg = "```css\n[ NO ACTIVE BOUNTIES ]\n\nThere are currently no act
 
 
 
+##### SKINS #####
+
+# Discord server containing the skinRendersChannel
+mediaServer = 699744305274945650
+# Channel to send ship skin renders to and link from
+skinRendersChannel = 770036783026667540
+# Channel to send showme-prompted ship skin renders to and link from
+showmeSkinRendersChannel = 771368555019108352
+# Resolution of skin render icons
+skinRenderIconResolution = [600, 600]
+# Resolution of skin render emojis (currently unused)
+skinRenderEmojiResolution = [400, 400]
+# Resolution of skin renders from cmd_showme_ship calls
+skinRenderShowmeResolution = [352, 240]
+# Resolution of skin renders from admin_cmd_showmeHD calls
+skinRenderShowmeHDResolution = [1920, 1080]
+
+
+
 ##### MISC #####
 
 # Exactly one of botToken or botToken_envVarName must be given.
