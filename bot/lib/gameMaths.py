@@ -114,6 +114,16 @@ def pickRandomItemTL(shopTL : int) -> int:
     return cfg.maxTechLevel
 
 
+def shipSkinValueForTL(averageTL : int) -> int:
+    """Calculate how skins are valued with respect to their average compatible ship techlevel.
+
+    :param int averageTL: The average techLevel of the ships that this skin is compatible with
+    :return: The value to assign to the ship skin
+    :rtype: int
+    """
+    return averageTL * 10000
+
+
 # Calculate spawn chance for each shop TL
 for shopTL in techLevelRange:
     cumulativeShopTLChance[shopTL - 1] = truncItemSpawnResolution(1 - math.exp((shopTL - 10.5) / 5))
