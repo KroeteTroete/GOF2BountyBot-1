@@ -109,6 +109,14 @@ developers = [188618589102669826]
 # Number of decimal places to calculate itemTLSpawnChanceForShopTL values to
 itemSpawnRateResDP = 3
 
+# The range of valid tech levels a shop may spawn at
+minTechLevel = 1
+maxTechLevel = 10
+
+
+
+##### DUELS #####
+
 # The amount to vary ship stats (+-) by before executing a duel
 duelVariancePercent = 0.05
 
@@ -117,6 +125,26 @@ duelLogMaxLength = 10
 
 # Percentage probability of a user envoking a cloak module in a given timeStep, should they have one equipped
 duelCloakChance = 20
+
+
+
+##### SHOPS #####
+
+# The number of ranks to use when randomly picking shop stock
+numShipRanks = 10
+numWeaponRanks = 10
+numModuleRanks = 7
+numTurretRanks = 3
+
+# The default number of items shops should generate every shopRefreshStockPeriod
+shopRefreshShips = 5
+shopRefreshWeapons = 5
+shopRefreshModules = 5
+shopRefreshTurrets = 2
+
+# bbTurret is the only item that has a probability not to be spawned.
+# This metric indicates the percentage chance of turrets being stocked on a given refresh
+turretSpawnProbability = 45
 
 
 
