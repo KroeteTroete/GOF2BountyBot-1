@@ -46,6 +46,7 @@ paths = {
     "usersDB": "saveData" + "/" + "users.json",
     "guildsDB": "saveData" + "/" + "guilds.json",
     "reactionMenusDB": "saveData" + "/" + "reactionMenus.json",
+    "bountiesDB": "saveData" + "/" + "bounties.json",
 
     # path to folder to save log txts to
     "logsFolder": "saveData" + "/" + "logs",
@@ -190,12 +191,6 @@ closeBountyThreshold = 4
 bbcNoBountiesMsg = "```css\n[ NO ACTIVE BOUNTIES ]\n\nThere are currently no active bounty listings.\n" + \
                     "Please check back later, or use [ $notify bounties ] to be pinged when new ones become available!\n```"
 
-# The number of times to retry API calls when HTTP exceptions are thrown
-httpErrRetries = 3
-
-# The number of seconds to wait between API call retries upon HTTP exception catching
-httpErrRetryDelaySeconds = 1
-
 
 
 ##### MISC #####
@@ -205,3 +200,9 @@ httpErrRetryDelaySeconds = 1
 # botToken_envVarName contains the name of an environment variable to get your bot token from
 botToken = ""
 botToken_envVarName = ""
+
+# The number of times to retry API calls when HTTP exceptions are thrown
+httpErrRetries = 3
+
+# The number of seconds to wait between API call retries upon HTTP exception catching
+httpErrRetryDelaySeconds = 1
