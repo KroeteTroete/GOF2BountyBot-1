@@ -63,10 +63,6 @@ paths = {
 
 ##### COMMANDS #####
 
-# Names of user access levels to be used in help menus.
-# Also determines the number of access levels available, e.g when registering commands
-userAccessLevels = ["user", "mod", "admin", "dev"]
-
 # Message to print alongside cmd_help menus
 helpIntro = "Here are my commands!"
 
@@ -110,6 +106,10 @@ BASED_checkForUpdates = True
 
 # discord user IDs of developers - will be granted developer command permissions
 developers = [188618589102669826, 448491245296418817]
+
+# Names of user access levels to be used in help menus.
+# Also determines the number of access levels available, e.g when registering commands
+userAccessLevels = ["user", "mod", "admin", "dev"]
 
 
 
@@ -223,13 +223,44 @@ maxConcurrentRenders = 1
 
 
 
-##### LOADOUT #####
+##### INVENTORY #####
 
 # max number of characters accepted by nameShip
 maxShipNickLength = 30
 
 # max number of characters accepted by nameShip, when called by a developer
 maxDevShipNickLength = 100
+
+# The maximum number of items that will be displayed per page of a user's hangar, when all item types are requested
+maxItemsPerHangarPageAll = 3
+# The maximum number of items that will be displayed per page of a user's hangar, when a single item type is requested
+maxItemsPerHangarPageIndividual = 10
+
+# Names to be used when checking input to !bb hangar and bbUser.numInventoryPages
+validItemNames = ["ship", "weapon", "module", "turret", "all", "tool"]
+
+# the max number of each module type that can be equipped on a ship.
+maxModuleTypeEquips = {     "bbArmourModule": 1,
+                            "bbBoosterModule": 1,
+                            "bbCabinModule": -1,
+                            "bbCloakModule": 1,
+                            "bbCompressorModule": -1,
+                            "bbGammaShieldModule": 1,
+                            "bbMiningDrillModule": 1,
+                            "bbRepairBeamModule": 1,
+                            "bbRepairBotModule": 1,
+                            "bbScannerModule": 1,
+                            "bbShieldModule": 1,
+                            "bbSpectralFilterModule": 1,
+                            "bbThrusterModule": 1,
+                            "bbTractorBeamModule": 1,
+                            "bbTransfusionBeamModule": 1,
+                            "bbWeaponModModule": 1,
+                            "bbJumpDriveModule": 0,
+                            "bbEmergencySystemModule": 1,
+                            "bbSignatureModule": 1,
+                            "bbShieldInjectorModule": 1,
+                            "bbTimeExtenderModule": 1}
 
 
 
