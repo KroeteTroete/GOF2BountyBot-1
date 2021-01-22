@@ -2,6 +2,8 @@ from ..lib.emojis import UninitializedBasedEmoji
 
 # All emojis used by the bot
 defaultEmojis = {
+    # When a message prompts a process that will take a long time (e.g rendering), this will be added to the message reactions
+    # It will be removed when the long process is finished.
     "longProcess": UninitializedBasedEmoji("⏳"),
     # When a user message prompts a DM to be sent, this emoji will be added to the message reactions.
     "dmSent": UninitializedBasedEmoji("📬"),
@@ -22,7 +24,10 @@ defaultEmojis = {
     "menuOptions": [UninitializedBasedEmoji("0️⃣"), UninitializedBasedEmoji("1️⃣"), UninitializedBasedEmoji("2️⃣"),
                     UninitializedBasedEmoji("3️⃣"), UninitializedBasedEmoji("4️⃣"), UninitializedBasedEmoji("5️⃣"),
                     UninitializedBasedEmoji("6️⃣"), UninitializedBasedEmoji("7️⃣"), UninitializedBasedEmoji("8️⃣"),
-                    UninitializedBasedEmoji("9️⃣"), UninitializedBasedEmoji("🔟")]
+                    UninitializedBasedEmoji("9️⃣"), UninitializedBasedEmoji("🔟")],
+
+    # Default emoji to assign to bbShipSkinTool items
+    "shipSkinTool": UninitializedBasedEmoji(777166858516299786)
 }
 
 timeouts = {
