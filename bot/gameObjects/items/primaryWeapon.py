@@ -44,16 +44,6 @@ class PrimaryWeapon(gameItem):
         return "*Dps: " + str(self.dps) + "*"
 
 
-    def getType(self) -> type:
-        """⚠ DEPRACATED
-        Get the type of this object.
-
-        :return: The primaryWeapon class
-        :rtype: type
-        """
-        return PrimaryWeapon
-
-
     def toDict(self, **kwargs) -> dict:
         """Serialize this item into dictionary format, for saving to file.
 
