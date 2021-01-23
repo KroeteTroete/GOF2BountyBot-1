@@ -26,7 +26,6 @@ class Inventory(serializable.Serializable):
         self.numKeys = 0
 
     
-    
     def addItem(self, item : object, quantity : int = 1):
         """Add one or more of an item to the inventory.
         If at least one of item is already in the inventory, that item's InventoryListing count will be incremented.
@@ -71,7 +70,6 @@ class Inventory(serializable.Serializable):
             # update keys counter
             self.numKeys += 1
 
-
     
     def removeItem(self, item : object, quantity : int = 1):
         """Remove one or more of an item from the inventory.
@@ -79,7 +77,8 @@ class Inventory(serializable.Serializable):
         At least quantity of item must already be stored in the inventory. 
 
         :param object item: The item to remove from the inventory
-        :param int quantity: Integer amount of item to remove from the inventory. Must be between 1 and the amount of item currently stored, both inclusive. (Default 1)
+        :param int quantity: Integer amount of item to remove from the inventory. Must be between 1 and the amount of item
+                                currently stored, both inclusive. (Default 1)
         :raise ValueError: When attempting to remove more of an item than is in the inventory
         """
         # Ensure enough of item is stored to remove quantity of it
@@ -98,9 +97,9 @@ class Inventory(serializable.Serializable):
                 self.numKeys -= 1
                 del self.items[item]
         else:
-            raise ValueError("Attempted to remove " + str(quantity) + " " + str(item) + "(s) when " + (str(self.items[item].count) if item in self.items else "0") + " are in inventory")
+            raise ValueError("Attempted to remove " + str(quantity) + " " + str(item) + "(s) when " + \
+                                (str(self.items[item].count) if item in self.items else "0") + " are in inventory")
 
-    
     
     def numPages(self, itemsPerPage : int) -> int:
         """Get the number of pages of items in the inventory, for a given max number of items per page
@@ -112,7 +111,6 @@ class Inventory(serializable.Serializable):
         """
         return int(self.numKeys/itemsPerPage) + (0 if self.numKeys % itemsPerPage == 0 else 1)
 
-    
     
     def getPage(self, pageNum : int, itemsPerPage : int) -> list:
         """Get a list of the bbItemListings on the requested page.
@@ -148,7 +146,6 @@ class Inventory(serializable.Serializable):
         return item in self.keys
 
     
-    
     def numStored(self, item) -> int:
         """Get the amount stored of a given item.
 
@@ -157,7 +154,6 @@ class Inventory(serializable.Serializable):
         :rtype: int
         """
         return self.items[item].count if self.stores(item) else 0
-
 
     
     def isEmpty(self) -> bool:
@@ -168,7 +164,6 @@ class Inventory(serializable.Serializable):
         """
         return self.totalItems == 0
 
-
     
     def clear(self):
         """Remove all items from the inventory.
@@ -178,7 +173,6 @@ class Inventory(serializable.Serializable):
         self.totalItems = 0
         self.numKeys = 0
 
-
     
     def __getitem__(self, key : int) -> inventoryListing.InventoryListing:
         """Override [subscript] operator for reading values.
@@ -187,7 +181,8 @@ class Inventory(serializable.Serializable):
         :param int key: The index of the key to dereference
         :return: The InventoryListing for the item at the requested index
         :rtype: InventoryListing
-        :raise KeyError: When the given index is in range of the inventory, but the key at the requested position in the keys array does not exist in the items dictionary
+        :raise KeyError: When the given index is in range of the inventory, but the key at the requested position
+                            in the keys array does not exist in the items dictionary
         :raise IndexError: When given an index that isn't an int, or the given index is out of range
         :raise ValueError: When the inventory is empty
         """
@@ -195,10 +190,11 @@ class Inventory(serializable.Serializable):
             if key in range(len(self.keys)):
                 if self.keys[key] in self.items:
                     return self.items[self.keys[key]]
-                raise KeyError("Failed get of key number " + str(key) + " - " + str(self.keys[key]) + ". Key does not exist in inventory.")
-            raise IndexError("Key of incorrect type or out of range: "+ str(key) + ". Valid range: 0 - " + str(len(self.keys)-1))
+                raise KeyError("Failed get of key number " + str(key) + " - " + str(self.keys[key]) + \
+                                ". Key does not exist in inventory.")
+            raise IndexError("Key of incorrect type or out of range: "+ str(key) + ". Valid range: 0 - " \
+                                + str(len(self.keys)-1))
         raise ValueError("Attempted to fetch key " + str(key) + ", but keys list is empty")
-
 
     
     def __setitem__(self, key, value):
@@ -210,7 +206,6 @@ class Inventory(serializable.Serializable):
         """
         raise NotImplementedError("Cannot use [subscript] assignment for class inventory. use addItem/removeItem instead.")
         # self.items[self.keys[key]] = value
-
 
     
     def __contains__(self, item) -> bool:
@@ -254,11 +249,13 @@ class TypeRestrictedInventory(Inventory):
     
     def addItem(self, item: object, quantity : int = 1):
         if not isinstance(item, self.itemType):
-            raise TypeError("Given item does not match this inventory's item type restriction. Expected '" + self.itemType.__name__ + "', given '" + type(item).__name__ + "'")
+            raise TypeError("Given item does not match this inventory's item type restriction. Expected '" \
+                            + self.itemType.__name__ + "', given '" + type(item).__name__ + "'")
         super().addItem(item, quantity=quantity)
 
     
     def _addListing(self, newListing: inventoryListing.InventoryListing):
         if not isinstance(newListing.item, self.itemType):
-            raise TypeError("Given item does not match this inventory's item type restriction. Expected '" + self.itemType.__name__ + "', given '" + type(newListing.item).__name__ + "'")
+            raise TypeError("Given item does not match this inventory's item type restriction. Expected '" \
+                            + self.itemType.__name__ + "', given '" + type(newListing.item).__name__ + "'")
         super()._addListing(newListing)
