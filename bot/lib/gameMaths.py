@@ -77,7 +77,7 @@ def makeCumulative(nums : List[Union[int, float]]) -> List[Union[int, float]]:
 
 
 def pickRandomShopTL() -> int:
-    """Pick a random shop techlevel, with probabilities calculated previously in bbConfig.
+    """Pick a random shop techlevel, with probabilities calculated previously in gameMaths.
 
     :return: An integer between 1 and 10 representing a shop tech level
     :rtype: int    
@@ -101,7 +101,7 @@ def tl_u(x : int, t : int) -> float:
 
 
 def pickRandomItemTL(shopTL : int) -> int:
-    """Pick a random item techlevel, with probabilities calculated previously in bbConfig.
+    """Pick a random item techlevel, with probabilities calculated previously in gameMaths.
 
     :param int shopTL: int representing the tech level of the shop owning the item
     :return: An integer between 1 and 10 representing a item tech level
@@ -143,7 +143,7 @@ for shopTL in techLevelRange:
     # Sum probabilities to give cumulative scale
     cumulativeItemTLSpawnChanceForShopTL[shopTL - 1] = makeCumulative(tlSpawnRates)
 
-print("[bbConfig] Item rarities generated:")
+print("[gameMaths] Item rarities generated:")
 for shopTL in range(len(itemTLSpawnChanceForShopTL)):
     print("\t• shop TL" + str(shopTL+1) + ": itemTL",end="")
     for itemTL in range(len((itemTLSpawnChanceForShopTL[shopTL]))):
