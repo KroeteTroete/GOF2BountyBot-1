@@ -9,6 +9,7 @@ CWD = os.getcwd()
 
 def loadGameItemsFromDir(itemDir, itemFolderExt):
     itemDB = {}
+    rawFolderExt = itemFolderExt.lstrip(".")
     itemFolderExt = itemFolderExt.lower()
     for subdir, dirs, _ in os.walk(itemDir):
         for dirname in dirs:
@@ -18,7 +19,7 @@ def loadGameItemsFromDir(itemDir, itemFolderExt):
                 with open(dirpath + os.sep + "META.json", "r") as f:
                     currentItemData = json.loads(f.read())
                     itemDB[currentItemData["name"]] = currentItemData
-    print("[bbData] " + str(len(itemDB)) + " " + itemFolderExt + "s loaded.")
+    print("[bbData] " + str(len(itemDB)) + " " + rawFolderExt + "s loaded.")
     return itemDB
 
 
@@ -38,7 +39,7 @@ def loadbbShipsFromDir(shipsDir):
 
                     if "compatibleSkins" not in currentItemData:
                         currentItemData["compatibleSkins"] = []
-    print("[bbData] " + str(len(itemDB)) + " .bbShips loaded.")
+    print("[bbData] " + str(len(itemDB)) + " bbShips loaded.")
     return itemDB
 
 

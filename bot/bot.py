@@ -1,6 +1,6 @@
 # Set up bot config
 
-from .cfg import cfg, versionInfo
+from .cfg import cfg, versionInfo, bbData
 
 
 # Discord Imports
