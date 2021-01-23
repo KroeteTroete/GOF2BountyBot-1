@@ -30,7 +30,7 @@ defaultEmojis = {
     "shipSkinTool": UninitializedBasedEmoji(777166858516299786),
     
     # Default emoji to assign to bbCrates containing bbShipSkinTools
-    "skinCrate": UninitializedBasedEmoji(777166858516299786) #723709178736017419
+    "skinCrate": UninitializedBasedEmoji(723709178736017419)
 }
 
 timeouts = {
