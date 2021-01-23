@@ -5,7 +5,8 @@ class InventoryListing(serializable.Serializable):
     """A listing representing an object and a quantity of that object stored.
     To ensure serializability, inventorylistings can only store serializable objects.
 
-    serializable deserializing is not defined in the general case, so InventoryListing does not have a general case fromDict function.
+    serializable deserializing is not defined in the general case, so InventoryListing does
+    not have a general case fromDict function.
 
     :var item: The item this inventory listing represents
     :var count: The quantity of item stored
@@ -18,7 +19,8 @@ class InventoryListing(serializable.Serializable):
         :param int quantity: The amount of item to store (Default 0)
         """
         if not isinstance(item, serializable.Serializable):
-            raise TypeError("InventoryListing can only store serializables to ensure serializability. Given: " + type(item).__name__)
+            raise TypeError("InventoryListing can only store serializables to ensure serializability. Given: " \
+                            + type(item).__name__)
         self.item = item
         self.count = count
 
@@ -38,7 +40,8 @@ class InventoryListing(serializable.Serializable):
         :raise ValueError: When attempting to decrease the listing by more than what is currently stored
         """
         if self.count < numDecrease:
-            raise ValueError("INVLIS_DECRCOUNT_NEG: Attempted to decreaseCount into a negative total: " + str(self.count) + " - " + str(numDecrease))
+            raise ValueError("INVLIS_DECRCOUNT_NEG: Attempted to decreaseCount into a negative total: " \
+                                + str(self.count) + " - " + str(numDecrease))
         self.count -= numDecrease
 
 
@@ -53,7 +56,8 @@ class InventoryListing(serializable.Serializable):
     def storesItem(self, otherItem) -> bool:
         """Decide whether this inventory listing stores the given object
         
-        :return: True if otherItem is the same object as the one stored in the listing, down to memory location. False otherwise
+        :return: True if otherItem is the same object as the one stored in the listing, down to memory location.
+                    False otherwise
         :rtype: bool
         """
         return self.item is otherItem
@@ -83,4 +87,5 @@ class InventoryListing(serializable.Serializable):
     
     @classmethod
     def fromDict(cls, listingDict : dict, **kwargs):
-        raise NotImplementedError("Cannot fromDict on InventoryListing in the general case. Instead instance InventoryListing with your fromDict-ed item object.")
+        raise NotImplementedError("Cannot fromDict on InventoryListing in the general case. " \
+                                    + "Instead instance InventoryListing with your fromDict-ed item object.")
