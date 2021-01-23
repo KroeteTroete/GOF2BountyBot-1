@@ -1,10 +1,10 @@
 from __future__ import annotations
-from .gameItem import gameItem
+from ..gameItem import GameItem
 from ... import lib
 from typing import List
 
 
-class Weapon(gameItem):
+class Weapon(GameItem):
     """An abstract class representing weapons that can be equipped onto a bbShip for use in duels.
 
     :var dps: The weapon's damage per second to a target ship.

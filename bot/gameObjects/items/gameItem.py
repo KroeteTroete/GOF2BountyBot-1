@@ -11,7 +11,7 @@ subClassNames = {}
 nameSubClasses = {}
 
 
-class gameItem(aliasable.Aliasable):
+class GameItem(aliasable.Aliasable):
     """A game item, with a value, a manufacturer, a wiki page, an icon, an emoji, and a tech level.
 
     :var wiki: A web page to represent as the item's wikipedia article in its info page
@@ -61,7 +61,7 @@ class gameItem(aliasable.Aliasable):
         :param bool builtIn: Whether this is a BountyBot standard item (loaded in from bbData)
                                 or a custom spawned item (Default False)
         """
-        super(gameItem, self).__init__(name, aliases)
+        super(GameItem, self).__init__(name, aliases)
         self.wiki = wiki
         self.hasWiki = wiki != ""
 
@@ -146,7 +146,7 @@ class gameItem(aliasable.Aliasable):
 
 
 def spawnableItem(cls):
-    if not issubclass(cls, gameItem):
+    if not issubclass(cls, GameItem):
         raise TypeError("Invalid use of spawnableItem decorator: " + cls.__name__ + " is not a gameItem subtype")
     if cls not in nameSubClasses:
         nameSubClasses[cls] = cls.__name__
@@ -155,7 +155,7 @@ def spawnableItem(cls):
     return cls
 
 
-def spawnItem(data : dict) -> gameItem:
+def spawnItem(data : dict) -> GameItem:
     if "type" not in data or data["type"] == "":
         raise NameError("Not given a type")
     elif data["type"] not in subClassNames:
@@ -165,8 +165,8 @@ def spawnItem(data : dict) -> gameItem:
 
 
 def isSpawnableItemClass(cls):
-    return issubclass(cls, gameItem) and cls in nameSubClasses
+    return issubclass(cls, GameItem) and cls in nameSubClasses
 
 
 def isSpawnableItemInstance(o):
-    return isinstance(o, gameItem) and type(o) in nameSubClasses
+    return isinstance(o, GameItem) and type(o) in nameSubClasses
