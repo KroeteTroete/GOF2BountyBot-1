@@ -25,6 +25,6 @@ class PrimaryWeapon(Weapon):
                                     wiki=weaponDict["wiki"] if "wiki" in weaponDict else "",
                                     manufacturer=weaponDict["manufacturer"] if "manufacturer" in weaponDict else "",
                                     icon=weaponDict["icon"] if "icon" in weaponDict else bbData.rocketIcon,
-                                    emoji=lib.emojis.BasedEmojiFromStr(weaponDict["emoji"]) if "emoji" in weaponDict else \
+                                    emoji=lib.emojis.BasedEmoji.fromStr(weaponDict["emoji"]) if "emoji" in weaponDict else \
                                             lib.emojis.BasedEmoji.EMPTY,
                                     techLevel=weaponDict["techLevel"] if "techLevel" in weaponDict else -1, builtIn=False)
