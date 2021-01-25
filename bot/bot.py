@@ -1,6 +1,6 @@
 # Set up bot config
 
-from .cfg import cfg, versionInfo
+from .cfg import cfg, versionInfo, bbData
 
 
 # Discord Imports
@@ -22,6 +22,7 @@ import aiohttp
 # BASED Imports
 
 from . import lib, botState, logging
+from .lib import gameMaths
 from .databases import guildDB, reactionMenuDB, userDB
 from .scheduling.timedTask import TimedTask
 from .scheduling.timedTaskHeap import TimedTaskHeap
