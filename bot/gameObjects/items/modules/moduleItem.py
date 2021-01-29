@@ -139,6 +139,9 @@ class ModuleItem(GameItem):
                     If the module is builtIn, this is only its name.
         :rtype: dict
         """
+        if "saveType" not in kwargs:
+            kwargs["saveType"] = True
+
         itemDict = super(ModuleItem, self).toDict(**kwargs)
         
         if not self.builtIn:
