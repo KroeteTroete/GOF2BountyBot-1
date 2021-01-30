@@ -42,8 +42,8 @@ class TimeExtenderModule(moduleItem.ModuleItem):
 
 
     def statsStringShort(self):
-        return "*Effect: " + moduleItem.formatMultiplier(self.effect) + \
-                ", Duration: " + moduleItem.formatAdditive(self.duration) + "s*"
+        return "*Effect: " + moduleItem.lib.stringTyping.formatMultiplier(self.effect) + \
+                ", Duration: " + moduleItem.lib.stringTyping.formatAdditive(self.duration) + "s*"
 
     
     def toDict(self, **kwargs) -> dict:
@@ -79,7 +79,7 @@ class TimeExtenderModule(moduleItem.ModuleItem):
                                 wiki=moduleDict["wiki"] if "wiki" in moduleDict else "",
                                 manufacturer=moduleDict["manufacturer"] if "manufacturer" in moduleDict else "",
                                 icon=moduleDict["icon"] if "icon" in moduleDict else bbData.rocketIcon,
-                                emoji=lib.emojis.BasedEmojiFromStr(moduleDict["emoji"]) if "emoji" in moduleDict else \
+                                emoji=lib.emojis.BasedEmoji.fromStr(moduleDict["emoji"]) if "emoji" in moduleDict else \
                                         lib.emojis.BasedEmoji.EMPTY,
                                 techLevel=moduleDict["techLevel"] if "techLevel" in moduleDict else -1,
                                 builtIn=moduleDict["builtIn"] if "builtIn" in moduleDict else False)

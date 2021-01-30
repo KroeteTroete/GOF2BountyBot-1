@@ -2,8 +2,8 @@ from __future__ import annotations
 from . import toolItem
 from .... import lib
 from ....cfg import cfg, bbData
-from ... import bbShipSkin
-from ..bbShip import bbShip
+from ... import shipSkin
+from ..shipItem import Ship
 from discord import Message
 from .... import botState
 from ..gameItem import spawnableItem
@@ -17,10 +17,10 @@ class ShipSkinTool(toolItem.ToolItem):
     The manufacturer is set to the skin designer.
     This tool is single use. If a calling user is given, the tool is removed from that user's inventory after use.
     """
-    def __init__(self, shipSkin : bbShipSkin, value : int = 0, wiki : str = "", icon : str = cfg.defaultShipSkinToolIcon,
+    def __init__(self, skin : shipSkin, value : int = 0, wiki : str = "", icon : str = cfg.defaultShipSkinToolIcon,
             emoji : lib.emojis.BasedEmoji = None, techLevel : int = -1, builtIn : bool = False):
         """
-        :param bbShipSkin shipSkin: The skin that this tool applies.
+        :param shipSkin shipSkin: The skin that this tool applies.
         :param int value: The number of credits that this item can be bought/sold for at a shop. (Default 0)
         :param str wiki: A web page that is displayed as the wiki page for this item. If no wiki is given and shipSkin
                             has one, that will be used instead. (Default "")
@@ -33,12 +33,12 @@ class ShipSkinTool(toolItem.ToolItem):
         """
         if emoji is None:
             emoji = cfg.emojis.shipSkinTool
-        super().__init__(lib.stringTyping.shipSkinNameToToolName(shipSkin.name), [shipSkin.name, "Skin: " + shipSkin.name,
-                            "Ship Skin " + shipSkin.name + "Skin " + shipSkin.name], value=value,
-                            wiki=wiki if wiki else shipSkin.wiki if shipSkin.hasWiki else "",
-                            manufacturer=shipSkin.designer, icon=icon, emoji=emoji,
-                            techLevel=techLevel if techLevel > -1 else shipSkin.averageTL, builtIn=builtIn)
-        self.shipSkin = shipSkin
+        super().__init__(lib.stringTyping.shipSkinNameToToolName(skin.name), [skin.name, "Skin: " + skin.name,
+                            "Ship Skin " + skin.name + "Skin " + skin.name], value=value,
+                            wiki=wiki if wiki else skin.wiki if skin.hasWiki else "",
+                            manufacturer=skin.designer, icon=icon, emoji=emoji,
+                            techLevel=techLevel if techLevel > -1 else skin.averageTL, builtIn=builtIn)
+        self.skin = skin
 
     
     async def use(self, *args, **kwargs):
@@ -47,7 +47,7 @@ class ShipSkinTool(toolItem.ToolItem):
         """
         if "ship" not in kwargs:
             raise NameError("Required kwarg not given: ship")
-        if not isinstance(kwargs["ship"], bbShip):
+        if not isinstance(kwargs["ship"], Ship):
             raise TypeError("Required kwarg is of the wrong type. Expected bbShip, received "
                             + type(kwargs["ship"]).__name__)
         if "callingBBUser" not in kwargs:
@@ -65,10 +65,10 @@ class ShipSkinTool(toolItem.ToolItem):
         
         if ship.isSkinned:
             return ValueError("Attempted to apply a skin to an already-skinned ship")
-        if ship.name not in self.shipSkin.compatibleShips:
+        if ship.name not in self.skin.compatibleShips:
             return TypeError("The given skin is not compatible with this ship")
         
-        ship.applySkin(self.shipSkin)
+        ship.applySkin(self.skin)
         if self in callingBBUser.inactiveTools:
             callingBBUser.inactiveTools.removeItem(self)
 
@@ -83,7 +83,7 @@ class ShipSkinTool(toolItem.ToolItem):
         """
         if "ship" not in kwargs:
             raise NameError("Required kwarg not given: ship")
-        if not isinstance(kwargs["ship"], bbShip):
+        if not isinstance(kwargs["ship"], Ship):
             raise TypeError("Required kwarg is of the wrong type. Expected bbShip, received "
                             + type(kwargs["ship"]).__name__)
         if "callingBBUser" not in kwargs:
@@ -106,12 +106,12 @@ class ShipSkinTool(toolItem.ToolItem):
         
         if ship.isSkinned:
             return ":x: This ship already has a skin applied! Please equip a different ship."
-        if ship.name not in self.shipSkin.compatibleShips:
+        if ship.name not in self.skin.compatibleShips:
             return ":x: Your ship is not compatible with this skin! Please equip a different ship, or use `" \
                     + cfg.commandPrefix + "info skin " + self.name + "` to see what ships are compatible with this skin."
         
         callingBBUser = kwargs["callingBBUser"]
-        confirmMsg = await message.channel.send("Are you sure you want to apply the " + self.shipSkin.name \
+        confirmMsg = await message.channel.send("Are you sure you want to apply the " + self.skin.name \
                                                 + " skin to your " + ship.getNameAndNick() + "?") 
         confirmation = await InlineConfirmationMenu(confirmMsg, message.author,
                                                     cfg.toolUseConfirmTimeoutSeconds).doMenu()
@@ -119,7 +119,7 @@ class ShipSkinTool(toolItem.ToolItem):
         if cfg.emojis.reject in confirmation:
             return "🛑 Skin application cancelled."
         elif cfg.emojis.accept in confirmation:
-            ship.applySkin(self.shipSkin)
+            ship.applySkin(self.skin)
             if self in callingBBUser.inactiveTools:
                 callingBBUser.inactiveTools.removeItem(self)
             
@@ -144,8 +144,8 @@ class ShipSkinTool(toolItem.ToolItem):
         :param bool saveType: When true, include the string name of the object type in the output.
         """
         data = super().toDict(**kwargs)
-        data["name"] = self.shipSkin.name
-        data["skin"] = self.shipSkin.toDict(**kwargs)
+        data["name"] = self.skin.name
+        data["skin"] = self.skin.toDict(**kwargs)
         return data
         # raise RuntimeError("Attempted to save a non-builtIn shipSkinTool")
             
@@ -159,8 +159,8 @@ class ShipSkinTool(toolItem.ToolItem):
         :return: A new shipSkinTool object as described in toolDict
         :rtype: shipSkinTool
         """
-        shipSkin = bbData.builtInShipSkins[toolDict["name"]] if toolDict["builtIn"] else \
-                    bbShipSkin.bbShipSkin.fromDict(toolDict["skin"])
+        skin = bbData.builtInShipSkins[toolDict["name"]] if toolDict["builtIn"] else \
+                    shipSkin.ShipSkin.fromDict(toolDict["skin"])
         if toolDict["builtIn"]:
-            return bbData.builtInToolObjs[lib.stringTyping.shipSkinNameToToolName(shipSkin.name)]
-        return ShipSkinTool(shipSkin, value=cfg.shipSkinValueForTL(shipSkin.averageTL), builtIn=False)
+            return bbData.builtInToolObjs[lib.stringTyping.shipSkinNameToToolName(skin.name)]
+        return ShipSkinTool(skin, value=lib.gameMaths.shipSkinValueForTL(skin.averageTL), builtIn=False)

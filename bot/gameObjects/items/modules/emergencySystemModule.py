@@ -38,7 +38,7 @@ class EmergencySystemModule(moduleItem.ModuleItem):
 
     
     def statsStringShort(self):
-        return "*Duration: " + moduleItem.formatAdditive(self.duration) + "s*"
+        return "*Duration: " + moduleItem.lib.stringTyping.lib.stringTyping.formatAdditive(self.duration) + "s*"
 
     
     def toDict(self, **kwargs) -> dict:

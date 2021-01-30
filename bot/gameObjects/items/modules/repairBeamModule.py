@@ -42,7 +42,7 @@ class RepairBeamModule(moduleItem.ModuleItem):
 
     
     def statsStringShort(self):
-        return "*Effect: " + moduleItem.formatMultiplier(self.effect) + \
+        return "*Effect: " + moduleItem.lib.stringTyping.formatMultiplier(self.effect) + \
                 ", Count: " + moduleItem.formatAdditive(self.count) + "*"
 
     

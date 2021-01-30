@@ -38,7 +38,7 @@ class GammaShieldModule(moduleItem.ModuleItem):
 
     
     def statsStringShort(self):
-        return "*Gamma Shielding: " + moduleItem.formatMultiplier(self.effect) + "*"
+        return "*Gamma Shielding: " + moduleItem.lib.stringTyping.formatMultiplier(self.effect) + "*"
 
     
     def toDict(self, **kwargs) -> dict:

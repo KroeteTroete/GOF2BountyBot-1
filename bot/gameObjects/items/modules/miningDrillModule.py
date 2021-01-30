@@ -42,7 +42,7 @@ class MiningDrillModule(moduleItem.ModuleItem):
 
     
     def statsStringShort(self):
-        return "*Yield: " + moduleItem.formatMultiplier(self.oreYield) + \
+        return "*Yield: " + moduleItem.lib.stringTyping.formatMultiplier(self.oreYield) + \
                 ", Handling: " + moduleItem.formatMultiplier(self.handling) + "*"
 
     

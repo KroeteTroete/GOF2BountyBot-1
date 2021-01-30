@@ -26,10 +26,10 @@ defaultEmojis = {
                     UninitializedBasedEmoji("6️⃣"), UninitializedBasedEmoji("7️⃣"), UninitializedBasedEmoji("8️⃣"),
                     UninitializedBasedEmoji("9️⃣"), UninitializedBasedEmoji("🔟")],
 
-    # Default emoji to assign to bbShipSkinTool items
+    # Default emoji to assign to shipSkinTool items
     "shipSkinTool": UninitializedBasedEmoji(777166858516299786),
     
-    # Default emoji to assign to bbCrates containing bbShipSkinTools
+    # Default emoji to assign to bbCrates containing shipSkinTools
     "skinCrate": UninitializedBasedEmoji(723709178736017419)
 }
 
@@ -69,7 +69,7 @@ paths = {
 
     # folders containing game objects to load into the game
     "bbCriminalMETAFolder": "game objects" + "/" + "criminals",
-    "bbShipSkinMETAFolder": "game objects" + "/" + "ship skins",
+    "shipSkinMETAFolder": "game objects" + "/" + "ship skins",
     "bbShipUpgradesMETAFolder": "game objects" + "/" + "ship upgrades",
     "bbSystemMETAFolder": "game objects" + "/" + "solar systems",
     "bbCommodityMETAFolder": "game objects" + "/" + "items" + "/" + "commodities",

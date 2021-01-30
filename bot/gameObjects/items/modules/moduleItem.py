@@ -1,30 +1,7 @@
 from ..gameItem import GameItem
 from ....cfg import bbData
 from .... import lib
-from typing import List, Union
-
-
-def formatAdditive(stat : Union[float, int]) -> str:
-    """Format a module effect attribute into a string, including a sign symbol.
-
-    :param stat: The statistic to format into a string
-    :type stat: Union[float, int]
-    :return: A sign symbol, followed by stat
-    """
-    return ("+" if stat > 0 else "-") + str(stat)
-
-
-def formatMultiplier(stat : float) -> str:
-    """Format a module effect attribute into a string, including a sign symbol and percentage symbol.
-
-    :param stat: The statistic to format into a string
-    :type stat: float
-    :return: A sign symbol, followed by stat, followed by a percentage sign.
-    """
-    sign = "+" if stat >= 1 else "-"
-    if stat > 1:
-        return sign + str(round((stat - 1) * 100)) + "%"
-    return sign + str(round(stat * 100)) + "%"
+from typing import List
 
 
 class ModuleItem(GameItem):
@@ -118,9 +95,9 @@ class ModuleItem(GameItem):
                             "Cargo": self.cargoMultiplier, "Handling": self.handlingMultiplier}
 
         statsStr = "*"
-        additiveStrs = (statName + ": " + formatAdditive(additiveStats[statName])
+        additiveStrs = (statName + ": " + lib.stringTyping.formatAdditive(additiveStats[statName])
                             for statName in additiveStats if additiveStats[statName] != 0)
-        multiplierStrs = (statName + ": " + formatAdditive(multiplierStats[statName])
+        multiplierStrs = (statName + ": " + lib.stringTyping.formatMultiplier(multiplierStats[statName])
                             for statName in additiveStats if multiplierStats[statName] != 1)
         statsStr = ", ".join(tuple(additiveStrs) + tuple(multiplierStrs))
 
