@@ -63,7 +63,7 @@ async def dev_cmd_save(message: discord.Message, args: str, isDM: bool):
     try:
         botState.client.saveAllDBs()
     except Exception as e:
-        print("SAVING ERROR", e.__class__.__name__)
+        print("SAVING ERROR", type(e).__name__)
         print(traceback.format_exc())
         await message.channel.send("failed!")
         return

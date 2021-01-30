@@ -23,7 +23,7 @@ class BasedGuild(serializable.Serializable):
         """
 
         if not isinstance(dcGuild, Guild):
-            raise lib.exceptions.NoneDCGuildObj("Given dcGuild of type '" + dcGuild.__class__.__name__ + \
+            raise lib.exceptions.NoneDCGuildObj("Given dcGuild of type '" + type(dcGuild).__name__ + \
                                                 "', expecting discord.Guild")
 
         self.id = id

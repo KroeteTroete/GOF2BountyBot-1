@@ -457,7 +457,7 @@ class ReactionMenu(serializable.Serializable):
             optionsDict[reaction.sendable] = self.options[reaction].toDict(**kwargs)
 
         data = {"channel": self.msg.channel.id, "msg": self.msg.id, "options": optionsDict,
-                "type": self.__class__.__name__, "guild": self.msg.channel.guild.id}
+                "type": type(self).__name__, "guild": self.msg.channel.guild.id}
 
         if self.titleTxt != "":
             data["titleTxt"] = self.titleTxt

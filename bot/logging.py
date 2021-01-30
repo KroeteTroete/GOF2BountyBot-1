@@ -109,12 +109,12 @@ class Logger:
                             logsSaved += "[+]"
                         except IOError as e:
                             print(nowStr + "-[LOG::SAVE]>F_NEW_IOERR: ERROR CREATING LOG FILE: " +
-                                  currentFName + ":" + e.__class__.__name__ + "\n" + traceback.format_exc())
+                                  currentFName + ":" + type(e).__name__ + "\n" + traceback.format_exc())
                     try:
                         files[category] = open(currentFName, 'ab')
                     except IOError as e:
                         print(nowStr + "-[LOG::SAVE]>F_OPN_IOERR: ERROR OPENING LOG FILE: " +
-                              currentFName + ":" + e.__class__.__name__ + "\n" + traceback.format_exc())
+                              currentFName + ":" + type(e).__name__ + "\n" + traceback.format_exc())
                         files[category] = None
 
         while not self.isEmpty():
@@ -125,7 +125,7 @@ class Logger:
                     files[category].write(log.encode())
                 except IOError as e:
                     print(nowStr + "-[LOG::SAVE]>F_WRT_IOERR: ERROR WRITING TO LOG FILE: " +
-                          files[category].name + ":" + e.__class__.__name__ + "\n" + traceback.format_exc())
+                          files[category].name + ":" + type(e).__name__ + "\n" + traceback.format_exc())
                 except UnicodeEncodeError as e:
                     print(e.start)
 
