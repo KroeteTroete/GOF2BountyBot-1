@@ -74,7 +74,8 @@ class ShipSkin(serializable.Serializable):
             for i in range(self.textureRegions):
                 textureFiles[i+1] = self.path + os.sep + str(i+2) + ".jpg"
             await shipRenderer.renderShip(self.name, shipData["path"], shipData["model"], textureFiles, [],
-                                            cfg.skinRenderIconResolution[0], cfg.skinRenderIconResolution[1])
+                                            cfg.skinRenderIconResolution[0], cfg.skinRenderIconResolution[1],
+                                            cfg.skinRenderIconSamples)
             # await shipRenderer.renderShip(self.name + "_emoji", shipData["path"], shipData["model"], [texPath],
             #                               cfg.skinRenderEmojiResolution[0], cfg.skinRenderEmojiResolution[1])
             # os.remove(emojiTexPath)
