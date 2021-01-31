@@ -28,7 +28,7 @@ class GuildShop(serializable.Serializable):
     :vartype maxWeapons: int
     :var maxTurrets: The maximum number of turrets generated on every stock refresh.
     :vartype maxTurrets: int
-    :var currentTechLevel: The current tech level of the shop, influencing the tech levels of the stock generated upon refresh.
+    :var currentTechLevel: The current tech level of the shop, influencing the tech levels of the stock generated upon refresh
     :vartype currentTechLevel: int
     :var shipsStock: A inventory containing the shop's stock of ships
     :vartype shipsStock: inventory
@@ -49,15 +49,17 @@ class GuildShop(serializable.Serializable):
             currentTechLevel : int = cfg.minTechLevel, noRefresh : bool = False):
         """
         :param int maxShips: The maximum number of ships generated on every stock refresh. (Default cfg.shopRefreshShips)
-        :param int maxModules: The maximum number of modules generated on every stock refresh. (Default cfg.shopRefreshModules)
-        :param int maxWeapons: The maximum number of weapons generated on every stock refresh. (Default cfg.shopRefreshWeapons)
-        :param int maxTurrets: The maximum number of turrets generated on every stock refresh. (Default cfg.shopRefreshTurrets)
-        :param int currentTechLevel: The current tech level of the shop, influencing the tech levels of the stock generated upon refresh. (Default empty inventory)
+        :param int maxModules: The maximum number of modules generated on every stock refresh (Default cfg.shopRefreshModules)
+        :param int maxWeapons: The maximum number of weapons generated on every stock refresh (Default cfg.shopRefreshWeapons)
+        :param int maxTurrets: The maximum number of turrets generated on every stock refresh (Default cfg.shopRefreshTurrets)
+        :param int currentTechLevel: The current tech level of the shop, influencing the tech levels of the stock generated
+                                        upon refresh. (Default empty inventory)
         :param inventory shipsStock: The shop's current stock of ships (Default empty inventory)
         :param inventory weaponsStock: The shop's current stock of weapons (Default empty inventory)
         :param inventory modulesStock: The shop's current stock of modules (Default empty inventory)
         :param inventory turretsStock: The shop's current stock of turrets (Default cfg.minTechLevel)
-        :param bool noRefresh: By default, if all shop stocks are empty, the shop will refresh. Give True here to disable this functionality and allow empty shops. (Default False)
+        :param bool noRefresh: By default, if all shop stocks are empty, the shop will refresh. Give True here to disable this
+                                functionality and allow empty shops. (Default False)
         """
         
         self.maxShips = maxShips
@@ -66,13 +68,15 @@ class GuildShop(serializable.Serializable):
         self.maxTurrets = maxTurrets
         self.currentTechLevel = currentTechLevel
 
-        # TODO: Somewhere, stocks are getting passed in and shared amongst all shops. Fix this. Temporary inventory clear here to make sure each shop gets its own inventory objects.
+        # TODO: Somewhere, stocks are getting passed in and shared amongst all shops. Fix this. Temporary inventory clear here
+        #       to make sure each shop gets its own inventory objects.
         self.shipsStock = inventory.Inventory()
         self.weaponsStock = inventory.Inventory()
         self.modulesStock = inventory.Inventory()
         self.turretsStock = inventory.Inventory()
 
-        if (not noRefresh) and shipsStock.isEmpty() and weaponsStock.isEmpty() and modulesStock.isEmpty() and turretsStock.isEmpty():
+        if (not noRefresh) and shipsStock.isEmpty() and weaponsStock.isEmpty() and \
+                modulesStock.isEmpty() and turretsStock.isEmpty():
             self.refreshStock()
         else:
             for itemListing in shipsStock.items.values():
@@ -86,10 +90,12 @@ class GuildShop(serializable.Serializable):
 
 
     def refreshStock(self, level : int = -1):
-        """Refresh the stock of the shop by picking random items according to the given tech level. All previous stock is deleted.
+        """Refresh the stock of the shop by picking random items according to the given tech level.
+        All previous stock is deleted.
         If level = -1 is given, a new shop tech level is generated at random.
 
-        :param int level: The new tech level of the shop. Give -1 to pick a level at random according to gameMaths.pickRandomShopTL()
+        :param int level: The new tech level of the shop. Give -1 to pick a level at random according to
+                            gameMaths.pickRandomShopTL()
         :raise ValueError: When given a tech level that is out of range
         """
         self.shipsStock.clear()
@@ -101,13 +107,14 @@ class GuildShop(serializable.Serializable):
             self.currentTechLevel = gameMaths.pickRandomShopTL()
         else:
             if level not in range(cfg.minTechLevel, cfg.maxTechLevel + 1):
-                raise ValueError("Attempted to refresh a shop at tech level " + str(level) + ". must be within the range " + str(cfg.minTechLevel) + " to " + str(cfg.maxTechLevel))
+                raise ValueError("Attempted to refresh a shop at tech level " + str(level) + ". must be within the range " \
+                                    + str(cfg.minTechLevel) + " to " + str(cfg.maxTechLevel))
             self.currentTechLevel = level
             
         for i in range(self.maxShips):
-            itemTL = gameMaths.pickRandomItemTL(self.currentTechLevel)
-            if len(bbData.shipKeysByTL[itemTL - 1]) != 0:
-                self.shipsStock.addItem(shipItem.Ship.fromDict(bbData.builtInShipData[random.choice(bbData.shipKeysByTL[itemTL - 1])]))
+            tlShipKeys = bbData.shipKeysByTL[gameMaths.pickRandomItemTL(self.currentTechLevel) - 1]
+            if len(tlShipKeys) != 0:
+                self.shipsStock.addItem(shipItem.Ship.fromDict(bbData.builtInShipData[random.choice(tlShipKeys)]))
 
         for i in range(self.maxModules):
             itemTL = gameMaths.pickRandomItemTL(self.currentTechLevel)
@@ -220,7 +227,8 @@ class GuildShop(serializable.Serializable):
             user.credits -= requestedShip.getValue()
             user.inactiveShips.addItem(requestedShip)
         else:
-            raise RuntimeError("user " + str(user.id) + " attempted to buy ship " + requestedShip.name + " but can't afford it: " + str(user.credits) + " < " + str(requestedShip.getValue()))
+            raise RuntimeError("user " + str(user.id) + " attempted to buy ship " + requestedShip.name \
+                                + " but can't afford it: " + str(user.credits) + " < " + str(requestedShip.getValue()))
 
 
     def userSellShipObj(self, user : basedUser.BasedUser, ship : shipItem.Ship):
@@ -281,7 +289,8 @@ class GuildShop(serializable.Serializable):
             user.credits -= requestedWeapon.getValue()
             user.inactiveShips.addItem(requestedWeapon)
         else:
-            raise RuntimeError("user " + str(user.id) + " attempted to buy weapon " + requestedWeapon.name + " but can't afford it: " + str(user.credits) + " < " + str(requestedWeapon.getValue()))
+            raise RuntimeError("user " + str(user.id) + " attempted to buy weapon " + requestedWeapon.name \
+                                + " but can't afford it: " + str(user.credits) + " < " + str(requestedWeapon.getValue()))
 
 
     def userSellWeaponObj(self, user : basedUser.BasedUser, weapon : primaryWeapon.PrimaryWeapon):
@@ -342,7 +351,8 @@ class GuildShop(serializable.Serializable):
             user.credits -= requestedModule.getValue()
             user.inactiveShips.addItem(requestedModule)
         else:
-            raise RuntimeError("user " + str(user.id) + " attempted to buy module " + requestedModule.name + " but can't afford it: " + str(user.credits) + " < " + str(requestedModule.getValue()))
+            raise RuntimeError("user " + str(user.id) + " attempted to buy module " + requestedModule.name \
+                                + " but can't afford it: " + str(user.credits) + " < " + str(requestedModule.getValue()))
 
 
     def userSellModuleObj(self, user : basedUser.BasedUser, module : moduleItem.ModuleItem):
@@ -403,7 +413,8 @@ class GuildShop(serializable.Serializable):
             user.credits -= requestedTurret.getValue()
             user.inactiveShips.addItem(requestedTurret)
         else:
-            raise RuntimeError("user " + str(user.id) + " attempted to buy turret " + requestedTurret.name + " but can't afford it: " + str(user.credits) + " < " + str(requestedTurret.getValue()))
+            raise RuntimeError("user " + str(user.id) + " attempted to buy turret " + requestedTurret.name \
+                                + " but can't afford it: " + str(user.credits) + " < " + str(requestedTurret.getValue()))
 
 
     def userSellTurretObj(self, user : basedUser.BasedUser, turret : turretWeapon.TurretWeapon):
@@ -441,31 +452,36 @@ class GuildShop(serializable.Serializable):
             if ship in self.shipsStock.items:
                 shipsStockDict.append(self.shipsStock.items[ship].toDict(**kwargs))
             else:
-                logger.log("bbShp", "toDict", "Failed to save invalid ship key '" + str(ship) + "' - not found in items dict", category="shop", eventType="UNKWN_KEY")
+                logger.log("bbShp", "toDict", "Failed to save invalid ship key '" + str(ship) \
+                                                + "' - not found in items dict", category="shop", eventType="UNKWN_KEY")
 
         weaponsStockDict = []
         for weapon in self.weaponsStock.keys:
             if weapon in self.weaponsStock.items:
                 weaponsStockDict.append(self.weaponsStock.items[weapon].toDict(**kwargs))
             else:
-                logger.log("bbShp", "toDict", "Failed to save invalid weapon key '" + str(weapon) + "' - not found in items dict", category="shop", eventType="UNKWN_KEY")
+                logger.log("bbShp", "toDict", "Failed to save invalid weapon key '" + str(weapon) \
+                                                + "' - not found in items dict", category="shop", eventType="UNKWN_KEY")
 
         modulesStockDict = []
         for module in self.modulesStock.keys:
             if module in self.modulesStock.items:
                 modulesStockDict.append(self.modulesStock.items[module].toDict(**kwargs))
             else:
-                logger.log("bbShp", "toDict", "Failed to save invalid module key '" + str(module) + "' - not found in items dict", category="shop", eventType="UNKWN_KEY")
+                logger.log("bbShp", "toDict", "Failed to save invalid module key '" + str(module) \
+                                                + "' - not found in items dict", category="shop", eventType="UNKWN_KEY")
 
         turretsStockDict = []
         for turret in self.turretsStock.keys:
             if turret in self.turretsStock.items:
                 turretsStockDict.append(self.turretsStock.items[turret].toDict(**kwargs))
             else:
-                logger.log("bbShp", "toDict", "Failed to save invalid turret key '" + str(turret) + "' - not found in items dict", category="shop", eventType="UNKWN_KEY")
+                logger.log("bbShp", "toDict", "Failed to save invalid turret key '" + str(turret) \
+                                                + "' - not found in items dict", category="shop", eventType="UNKWN_KEY")
 
-        return {"maxShips":self.maxShips, "maxWeapons":self.maxWeapons, "maxModules":self.maxModules, "currentTechLevel":self.currentTechLevel,
-                    "shipsStock":shipsStockDict, "weaponsStock":weaponsStockDict, "modulesStock":modulesStockDict, "turretsStock":turretsStockDict}
+        return {"maxShips": self.maxShips, "maxWeapons": self.maxWeapons, "maxModules": self.maxModules,
+                    "currentTechLevel": self.currentTechLevel, "shipsStock": shipsStockDict, "weaponsStock": weaponsStockDict,
+                    "modulesStock": modulesStockDict, "turretsStock": turretsStockDict}
 
 
     @classmethod
@@ -482,7 +498,8 @@ class GuildShop(serializable.Serializable):
 
         weaponsStock = inventory.Inventory()
         for weaponListingDict in shopDict["weaponsStock"]:
-            weaponsStock.addItem(primaryWeapon.PrimaryWeapon.fromDict(weaponListingDict["item"]), quantity=weaponListingDict["count"])
+            weaponsStock.addItem(primaryWeapon.PrimaryWeapon.fromDict(weaponListingDict["item"]),
+                                                                        quantity=weaponListingDict["count"])
 
         modulesStock = inventory.Inventory()
         for moduleListingDict in shopDict["modulesStock"]:
@@ -490,7 +507,10 @@ class GuildShop(serializable.Serializable):
 
         turretsStock = inventory.Inventory()
         for turretListingDict in shopDict["turretsStock"]:
-            turretsStock.addItem(turretWeapon.TurretWeapon.fromDict(turretListingDict["item"]), quantity=turretListingDict["count"])
+            turretsStock.addItem(turretWeapon.TurretWeapon.fromDict(turretListingDict["item"]),
+                                                                    quantity=turretListingDict["count"])
 
-        return GuildShop(shopDict["maxShips"], shopDict["maxWeapons"], shopDict["maxModules"], currentTechLevel=shopDict["currentTechLevel"] if "currentTechLevel" in shopDict else 1,
-                        shipsStock=shipsStock, weaponsStock=weaponsStock, modulesStock=modulesStock, turretsStock=turretsStock)
+        return GuildShop(shopDict["maxShips"], shopDict["maxWeapons"], shopDict["maxModules"],
+                        currentTechLevel=shopDict["currentTechLevel"] if "currentTechLevel" in shopDict else 1,
+                        shipsStock=shipsStock, weaponsStock=weaponsStock,
+                        modulesStock=modulesStock, turretsStock=turretsStock)
