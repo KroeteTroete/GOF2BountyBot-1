@@ -9,6 +9,7 @@ import os
 from math import radians
 from pathlib import Path
 from typing import List
+import os
 
 
 
@@ -17,18 +18,32 @@ from typing import List
 # Determine the location of this script file. Used  for configuring script working paths below.
 script_path = os.path.dirname(os.path.realpath(__file__))
 
-# The camera's view distance. 5000 Should be plenty, but for larger models you may need to raise it. Tested with the Vossk Battlecruiser model.
+# The camera's view distance. 5000 Should be plenty, but for larger models you may need to raise it.
+# Tested with the Vossk Battlecruiser model.
 CAM_CLIP = 5000
-# Working directory for the script. This is used for temporarily saving intermediate textures e.g between mask applications (TODO: Save the completed texture to a cache directory [the bbShipSkin dir])
+# Working directory for the script. This is used for temporarily saving intermediate textures
+# e.g between mask applications (TODO: Save the completed texture to a cache directory [the bbShipSkin dir])
 RENDER_TEMP_DIR = script_path + os.sep + "temp"
 # Path to the script's render variables file.
 # Line 1:   Path to the model to render
-# Line 2:   If rendering a single texture, the path to that texture. If rendering a base texture on top of another image, the path to the base texture.
+# Line 2:   If rendering a single texture, the path to that texture.
+#           If rendering a base texture on top of another image, the path to the base texture.
 # Line 3:   The path to the under-layer image if using one; the image to place underneith the base texture
-# Line 4:   The path to the secondary texture region image if using one; This will be composited with respect to the secondary_mask.jpg found in the same directory as the model. This mask MUST exist in order for a passed secondary texture region image to be used.
-# Line 4:   The path to the tertiary texture region image if using one; This will be composited with respect to the tertiary_mask.jpg found in the same directory as the model. This mask MUST exist in order for a passed tertiary texture region image to be used.
+# Line 4:   The path to the secondary texture region image if using one;
+#           This will be composited with respect to the secondary_mask.jpg found in the same directory as the model.
+#           This mask MUST exist in order for a passed secondary texture region image to be used.
+# Line 4:   The path to the tertiary texture region image if using one;
+#           This will be composited with respect to the tertiary_mask.jpg found in the same directory as the model.
+#           This mask MUST exist in order for a passed tertiary texture region image to be used.
 RENDER_ARGS_PATH = script_path + os.sep + "render_vars"
 
+
+if not os.path.isdir(RENDER_TEMP_DIR):
+    os.makedirs(RENDER_TEMP_DIR)
+
+argsDir = os.path.dirname(RENDER_TEMP_DIR) if RENDER_TEMP_DIR else ""
+if not os.path.isdir(argsDir):
+    os.makedirs(argsDir)
 
 
 ##### UTIL OBJECTS #####
@@ -50,7 +65,8 @@ class RenderArgs:
     :vartype material: str
     """
 
-    def __init__(self, res_x : int, res_y : int, output_file_path : str, model_path : str, texture_path : str, numSamples: int):
+    def __init__(self, res_x : int, res_y : int, output_file_path : str, model_path : str, texture_path : str,
+            numSamples: int):
         """
         :param int res_x: The width in pixels of the render resolution.
         :param int res_y: The height in pixels of the render resolution.
@@ -127,7 +143,8 @@ bpy.context.scene.cycles.samples = args.numSamples
 # Set the renderer (eevee renders some strange perspective stuff...?)
 ctx.scene.render.engine = 'CYCLES'
 # Set the render output file
-# ctx.scene.render.filepath = RENDER_OUTPUT_DIR + ("" if RENDER_OUTPUT_DIR.endswith(os.sep) else os.sep) + args.model_filename_noext
+# ctx.scene.render.filepath = RENDER_OUTPUT_DIR + ("" if RENDER_OUTPUT_DIR.endswith(os.sep) else os.sep) + \
+#   args.model_filename_noext
 ctx.scene.render.filepath = args.output_file_path
 
 # Move the camera so that the model fills the frame

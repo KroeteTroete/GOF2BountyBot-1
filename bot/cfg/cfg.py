@@ -64,9 +64,6 @@ paths = {
     # path to folder to save log txts to
     "logsFolder": "saveData" + "/" + "logs",
 
-    # folder to store temporary render files in, e.g intermediary images, renderer config files
-    "rendererTempFolder": "rendering-temp",
-
     # folders containing game objects to load into the game
     "bbCriminalMETAFolder": "game objects" + "/" + "criminals",
     "shipSkinMETAFolder": "game objects" + "/" + "ship skins",
