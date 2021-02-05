@@ -5,7 +5,7 @@ from ..baseClasses import serializable
 
 from typing import Union, List, TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..gameObjects.battles import DuelRequest
+    from ..gameObjects.battles import duelRequest
 
 from ..gameObjects.items import shipItem, moduleItemFactory
 from ..gameObjects.items.weapons import primaryWeapon, turretWeapon
