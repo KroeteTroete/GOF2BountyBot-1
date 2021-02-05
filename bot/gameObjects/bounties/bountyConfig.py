@@ -118,11 +118,11 @@ class BountyConfig:
         self.ship = ship
         
     
-    def generate(self, bountyDB : bountyDB.BountyDB, noCriminal : bool = True, forceKeepChecked : bool = False,
+    def generate(self, owningDB : bountyDB.BountyDB, noCriminal : bool = True, forceKeepChecked : bool = False,
                     forceNoDBCheck : bool = False):
         """Validate all given config data, and randomly generate missing data.
 
-        :param bountyDB bountyDB: Database containing all currently active bounties. When forceNoDBCheck is True,
+        :param BountyDB owningDB: Database containing all currently active bounties. When forceNoDBCheck is True,
                                     this is ignored.
         :param bool noCriminal: If this is True, randomly generate a criminal object. (Default True)
         :param bool forceKeepChecked: If this is False, a blank checked dictionary will be used.
@@ -142,30 +142,30 @@ class BountyConfig:
             else:
                 if self.faction == "":
                     self.faction = random.choice(bbData.bountyFactions)
-                    while doDBCheck and not bountyDB.factionCanMakeBounty(self.faction):
+                    while doDBCheck and not owningDB.factionCanMakeBounty(self.faction):
                         self.faction = random.choice(bbData.bountyFactions)
 
                 else:
                     if self.faction not in bbData.bountyFactions:
                         raise ValueError("BOUCONF_CONS_INVFAC: Invalid faction requested '" + self.faction + "'")
-                    if doDBCheck and not bountyDB.factionCanMakeBounty(self.faction):
+                    if doDBCheck and not owningDB.factionCanMakeBounty(self.faction):
                         raise IndexError("BOUCONF_CONS_FACDBFULL: Attempted to generate new bounty config when " \
                                             + "no slots are available for faction: '" + self.faction + "'")
 
                 if self.name == "":
                     self.builtIn = True
                     self.name = random.choice(bbData.bountyNames[self.faction])
-                    while doDBCheck and bountyDB.bountyNameExists(self.name):
+                    while doDBCheck and owningDB.bountyNameExists(self.name):
                         self.name = random.choice(bbData.bountyNames[self.faction])
                 else:
-                    if doDBCheck and bountyDB.bountyNameExists(self.name):
+                    if doDBCheck and owningDB.bountyNameExists(self.name):
                         raise KeyError("BountyConfig: attempted to create config for pre-existing bounty: " + self.name)
                     
                     if self.icon == "":
                         self.icon = bbData.rocketIcon
         
         else:
-            if doDBCheck and not bountyDB.factionCanMakeBounty(self.faction):
+            if doDBCheck and not owningDB.factionCanMakeBounty(self.faction):
                 raise IndexError("BOUCONF_CONS_FACDBFULL: Attempted to generate new bounty config when " \
                                     + "no slots are available for faction: '" + self.faction + "'")
         

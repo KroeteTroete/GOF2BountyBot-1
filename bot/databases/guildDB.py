@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from ..users import basedGuild
+from . import bountyDB
 from typing import List
 from .. import botState
 from ..baseClasses import serializable
 from .. import lib
+from ..cfg import bbData
 
 
 class GuildDB(serializable.Serializable):
@@ -101,7 +103,7 @@ class GuildDB(serializable.Serializable):
         if self.idExists(id):
             raise KeyError("Attempted to add a guild that already exists: " + id)
         # Create and return a BasedGuild for the requested ID
-        self.guilds[id] = basedGuild.BasedGuild(id, botState.client.get_guild(id))
+        self.guilds[id] = basedGuild.BasedGuild(id, bountyDB.BountyDB(bbData.bountyFactions), botState.client.get_guild(id))
         return self.guilds[id]
 
 

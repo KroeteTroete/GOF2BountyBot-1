@@ -32,21 +32,21 @@ class Bounty(serializable.Serializable):
     :vartype answer: str
     """
 
-    def __init__(self, criminalObj : criminal = None, config : bountyConfig = None, bountyDB : bountyDB.BountyDB = None,
-                    dbReload : bool = False):
+    def __init__(self, criminalObj : criminal = None, config : bountyConfig.BountyConfig = None,
+                    owningDB : bountyDB.BountyDB = None, dbReload : bool = False):
         """
         :param criminalObj: The criminal to be wanted. Give None to randomly generate a criminal. (Default None)
         :type criminalObj: criminal or None
         :param config: a bountyconfig describing all aspects of this bounty. Give None to randomly generate one (Default None)
         :type config: bountyConfig or None
-        :param bountyDB: The database of currenly active bounties. This is required unless dbReload is True. (Default None)
-        :type bountyDB: bountyDB or None
+        :param owningDB: The database of currenly active bounties. This is required unless dbReload is True. (Default None)
+        :type owningDB: BountyDB or None
         :param bool dbReload: Give True if this bounty is being created during bot bootup, False otherwise.
                                 This currently toggles whether the passed bounty is checked for existence or not.
                                 (Default False)
-        :raise ValueError: When dbReload is False but bountyDB is not given
+        :raise ValueError: When dbReload is False but owningDB is not given
         """
-        if not dbReload and bountyDB is None:
+        if not dbReload and owningDB is None:
             raise ValueError("Bounty constructor: No bounty database given")
         makeFresh = criminalObj is None
 
@@ -56,7 +56,7 @@ class Bounty(serializable.Serializable):
                                                                                                 name=criminalObj.name)
 
         if not config.generated:
-            config.generate(bountyDB, noCriminal=makeFresh, forceKeepChecked=dbReload, forceNoDBCheck=dbReload)
+            config.generate(owningDB, noCriminal=makeFresh, forceKeepChecked=dbReload, forceNoDBCheck=dbReload)
 
         if makeFresh:
             if config.builtIn:

@@ -48,7 +48,7 @@ factions = ["terran", "vossk", "midorian", "nivelian", "neutral"]
 # all factions useable in bounties
 bountyFactions = ["terran", "vossk", "midorian", "nivelian"]
 
-# levels of security in bbSystems (bbSystem security is stored as an index in this list)
+# levels of security in SolarSystems (SolarSystem security is stored as an index in this list)
 securityLevels = ["secure", "average", "risky", "dangerous"]
 
 # map image URLS for cmd_map
@@ -93,10 +93,10 @@ builtInWeaponData = loadGameItemsFromDir(cfg.paths.bbWeaponMETAFolder, ".bbWeapo
 # which are stored in builtInUpgradeObjs in a similar dict format.
 builtInUpgradeData = loadGameItemsFromDir(cfg.paths.bbShipUpgradesMETAFolder, ".bbShipUpgrade")
 
-# data for builtIn criminals to be used in bbCriminal.fromDict
+# data for builtIn criminals to be used in Criminal.fromDict
 # criminals marked as not builtIn to allow for dictionary init.
 # The criminal object is then marked as builtIn during bot.on_ready
-builtInCriminalData = loadGameItemsFromDir(cfg.paths.bbCriminalMETAFolder, ".bbCriminal")
+builtInCriminalData = loadGameItemsFromDir(cfg.paths.CriminalMETAFolder, ".Criminal")
 
 # names of criminals in builtIn bounties
 bountyNames = {}
@@ -111,8 +111,8 @@ for criminalName in builtInCriminalData:
     if len(criminalName) > longestBountyNameLength:
         longestBountyNameLength = len(criminalName)
 
-# data for builtIn systems to be used in bbSystem.fromDict
-builtInSystemData = loadGameItemsFromDir(cfg.paths.bbSystemMETAFolder, ".bbSystem")
+# data for builtIn systems to be used in SolarSystem.fromDict
+builtInSystemData = loadGameItemsFromDir(cfg.paths.SolarSystemMETAFolder, ".SolarSystem")
 
 # data for builtIn Turrets to be used in bbTurret.fromDict
 builtInTurretData = loadGameItemsFromDir(cfg.paths.bbTurretMETAFolder, ".bbTurret")

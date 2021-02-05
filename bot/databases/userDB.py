@@ -89,7 +89,7 @@ class UserDB(serializable.Serializable):
         if self.idExists(userID):
             raise KeyError("Attempted to add a user that is already in this UserDB")
         # Create and return a new user
-        newUser = BasedUser(userID)
+        newUser = BasedUser.fromDict(BasedUser.defaultUserDict, id=id)
         self.users[userID] = newUser
         return newUser
 

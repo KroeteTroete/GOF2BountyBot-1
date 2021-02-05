@@ -27,16 +27,16 @@ class Crate(toolItem.ToolItem):
     async def use(self, *args, **kwargs):
         """This item's behaviour function. Intended to be very generic at this level of implementation.
         """
-        if "callingBBUser" not in kwargs:
-            raise NameError("Required kwarg not given: callingBBUser")
-        if kwargs["callingBBUser"] is not None and type(kwargs["callingBBUser"]).__name__ != "bbUser":
-            raise TypeError("Required kwarg is of the wrong type. Expected bbUser or None, received " + \
-                            type(kwargs["callingBBUser"]).__name__)
+        if "callingBUser" not in kwargs:
+            raise NameError("Required kwarg not given: callingBUser")
+        if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedGuild":
+            raise TypeError("Required kwarg is of the wrong type. Expected BasedGuild or None, received " + \
+                            type(kwargs["callingBUser"]).__name__)
         
-        callingBBUser = kwargs["callingBBUser"]
+        callingBUser = kwargs["callingBUser"]
         newItem = random.choice(self.itemPool)
-        callingBBUser.getInventoryForItem(newItem).addItem(newItem)
-        callingBBUser.inactiveTools.removeItem(self)
+        callingBUser.getInventoryForItem(newItem).addItem(newItem)
+        callingBUser.inactiveTools.removeItem(self)
 
 
     async def userFriendlyUse(self, message : Message, *args, **kwargs) -> str:
@@ -47,13 +47,13 @@ class Crate(toolItem.ToolItem):
         :return: A user-friendly messge summarising the result of the tool use.
         :rtype: str
         """
-        if "callingBBUser" not in kwargs:
-            raise NameError("Required kwarg not given: callingBBUser")
-        if kwargs["callingBBUser"] is not None and type(kwargs["callingBBUser"]).__name__ != "bbUser":
-            raise TypeError("Required kwarg is of the wrong type. Expected bbUser or None, received " + \
-                            type(kwargs["callingBBUser"]).__name__)
+        if "callingBUser" not in kwargs:
+            raise NameError("Required kwarg not given: callingBUser")
+        if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedGuild":
+            raise TypeError("Required kwarg is of the wrong type. Expected BasedGuild or None, received " + \
+                            type(kwargs["callingBUser"]).__name__)
         
-        callingBBUser = kwargs["callingBBUser"]
+        callingBUser = kwargs["callingBUser"]
         confirmMsg = await message.channel.send("Are you sure you want to open this crate?") 
         confirmation = await InlineConfirmationMenu(confirmMsg, message.author,
                                                     cfg.toolUseConfirmTimeoutSeconds).doMenu()
@@ -62,8 +62,8 @@ class Crate(toolItem.ToolItem):
             return "🛑 Crate open cancelled."
         elif cfg.emojis.accept in confirmation:
             newItem = random.choice(self.itemPool)
-            callingBBUser.getInventoryForItem(newItem).addItem(newItem)
-            callingBBUser.inactiveTools.removeItem(self)
+            callingBUser.getInventoryForItem(newItem).addItem(newItem)
+            callingBUser.inactiveTools.removeItem(self)
             
             return "🎉 Success! You got a " + newItem.name + "!"
 

@@ -65,10 +65,10 @@ paths = {
     "logsFolder": "saveData" + "/" + "logs",
 
     # folders containing game objects to load into the game
-    "bbCriminalMETAFolder": "game objects" + "/" + "criminals",
+    "CriminalMETAFolder": "game objects" + "/" + "criminals",
     "shipSkinMETAFolder": "game objects" + "/" + "ship skins",
     "bbShipUpgradesMETAFolder": "game objects" + "/" + "ship upgrades",
-    "bbSystemMETAFolder": "game objects" + "/" + "solar systems",
+    "SolarSystemMETAFolder": "game objects" + "/" + "solar systems",
     "bbCommodityMETAFolder": "game objects" + "/" + "items" + "/" + "commodities",
     "bbModuleMETAFolder": "game objects" + "/" + "items" + "/" + "modules",
     "bbSecondaryMETAFolder": "game objects" + "/" + "items" + "/" + "secondaries",
@@ -283,7 +283,7 @@ maxItemsPerHangarPageAll = 3
 # The maximum number of items that will be displayed per page of a user's hangar, when a single item type is requested
 maxItemsPerHangarPageIndividual = 10
 
-# Names to be used when checking input to !bb hangar and bbUser.numInventoryPages
+# Names to be used when checking input to !bb hangar and BasedGuild.numInventoryPages
 validItemNames = ["ship", "weapon", "module", "turret", "all", "tool"]
 
 # the max number of each module type that can be equipped on a ship.

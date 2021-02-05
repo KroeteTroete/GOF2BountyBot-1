@@ -10,6 +10,8 @@ usersDB = None
 guildsDB = None
 reactionMenusDB = None
 
+newBountiesTTDB = None
+
 logger = None
 
 dbSaveTT = None
@@ -21,3 +23,10 @@ reactionMenusTTDB = None
 shutdown = ShutDownState.restart
 
 updatesCheckTT = None
+
+# Scheduling overrides
+newBountyFixedDeltaChanged = False
+
+
+# Names of ships currently being rendered
+currentRenders = []

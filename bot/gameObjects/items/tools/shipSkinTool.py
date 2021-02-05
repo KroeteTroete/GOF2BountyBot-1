@@ -43,23 +43,23 @@ class ShipSkinTool(toolItem.ToolItem):
     
     async def use(self, *args, **kwargs):
         """Apply the skin to the given ship.
-        After use, the tool will be removed from callingBBUser's inventory. To disable this, pass callingBBUser as None.
+        After use, the tool will be removed from callingBUser's inventory. To disable this, pass callingBUser as None.
         """
         if "ship" not in kwargs:
             raise NameError("Required kwarg not given: ship")
         if not isinstance(kwargs["ship"], Ship):
             raise TypeError("Required kwarg is of the wrong type. Expected bbShip, received "
                             + type(kwargs["ship"]).__name__)
-        if "callingBBUser" not in kwargs:
-            raise NameError("Required kwarg not given: callingBBUser")
-        if kwargs["callingBBUser"] is not None and type(kwargs["callingBBUser"]).__name__ != "bbUser":
-            raise TypeError("Required kwarg is of the wrong type. Expected bbUser or None, received "
-                            + type(kwargs["callingBBUser"]).__name__)
+        if "callingBUser" not in kwargs:
+            raise NameError("Required kwarg not given: callingBUser")
+        if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedGuild":
+            raise TypeError("Required kwarg is of the wrong type. Expected BasedGuild or None, received "
+                            + type(kwargs["callingBUser"]).__name__)
         
-        ship, callingBBUser = kwargs["ship"], kwargs["callingBBUser"]
+        ship, callingBUser = kwargs["ship"], kwargs["callingBUser"]
 
-        if not callingBBUser.ownsShip(ship):
-            raise RuntimeError("User '" + str(callingBBUser.id) \
+        if not callingBUser.ownsShip(ship):
+            raise RuntimeError("User '" + str(callingBUser.id) \
                                 + "' attempted to skin a ship that does not belong to them: " \
                                 + ship.getNameAndNick())
         
@@ -69,13 +69,13 @@ class ShipSkinTool(toolItem.ToolItem):
             return TypeError("The given skin is not compatible with this ship")
         
         ship.applySkin(self.skin)
-        if self in callingBBUser.inactiveTools:
-            callingBBUser.inactiveTools.removeItem(self)
+        if self in callingBUser.inactiveTools:
+            callingBUser.inactiveTools.removeItem(self)
 
 
     async def userFriendlyUse(self, message : Message, *args, **kwargs) -> str:
         """Apply the skin to the given ship.
-        After use, the tool will be removed from callingBBUser's inventory. To disable this, pass callingBBUser as None.
+        After use, the tool will be removed from callingBUser's inventory. To disable this, pass callingBUser as None.
 
         :param Message message: The discord message that triggered this tool use
         :return: A user-friendly messge summarising the result of the tool use.
@@ -86,21 +86,21 @@ class ShipSkinTool(toolItem.ToolItem):
         if not isinstance(kwargs["ship"], Ship):
             raise TypeError("Required kwarg is of the wrong type. Expected bbShip, received "
                             + type(kwargs["ship"]).__name__)
-        if "callingBBUser" not in kwargs:
-            raise NameError("Required kwarg not given: callingBBUser")
+        if "callingBUser" not in kwargs:
+            raise NameError("Required kwarg not given: callingBUser")
         
         # converted to soft type check due to circular import
-        """if (not isinstance(kwargs["callingBBUser"], bbUser)) and kwargs["callingBBUser"] is not None:
-            raise TypeError("Required kwarg is of the wrong type. Expected bbUser or None, received " \
-                            + type(kwargs["callingBBUser"]).__name__)"""
-        if (type(kwargs["callingBBUser"]).__name__ != "bbUser") and kwargs["callingBBUser"] is not None:
-            raise TypeError("Required kwarg is of the wrong type. Expected bbUser or None, received " \
-                            + type(kwargs["callingBBUser"]).__name__)
+        """if (not isinstance(kwargs["callingBUser"], BasedGuild)) and kwargs["callingBUser"] is not None:
+            raise TypeError("Required kwarg is of the wrong type. Expected BasedGuild or None, received " \
+                            + type(kwargs["callingBUser"]).__name__)"""
+        if (type(kwargs["callingBUser"]).__name__ != "BasedGuild") and kwargs["callingBUser"] is not None:
+            raise TypeError("Required kwarg is of the wrong type. Expected BasedGuild or None, received " \
+                            + type(kwargs["callingBUser"]).__name__)
         
-        ship, callingBBUser = kwargs["ship"], kwargs["callingBBUser"]
+        ship, callingBUser = kwargs["ship"], kwargs["callingBUser"]
 
-        if not callingBBUser.ownsShip(ship):
-            raise RuntimeError("User '" + str(callingBBUser.id) \
+        if not callingBUser.ownsShip(ship):
+            raise RuntimeError("User '" + str(callingBUser.id) \
                                 + "' attempted to skin a ship that does not belong to them: " \
                                 + ship.getNameAndNick())
         
@@ -110,7 +110,7 @@ class ShipSkinTool(toolItem.ToolItem):
             return ":x: Your ship is not compatible with this skin! Please equip a different ship, or use `" \
                     + cfg.commandPrefix + "info skin " + self.name + "` to see what ships are compatible with this skin."
         
-        callingBBUser = kwargs["callingBBUser"]
+        callingBUser = kwargs["callingBUser"]
         confirmMsg = await message.channel.send("Are you sure you want to apply the " + self.skin.name \
                                                 + " skin to your " + ship.getNameAndNick() + "?") 
         confirmation = await InlineConfirmationMenu(confirmMsg, message.author,
@@ -120,8 +120,8 @@ class ShipSkinTool(toolItem.ToolItem):
             return "🛑 Skin application cancelled."
         elif cfg.emojis.accept in confirmation:
             ship.applySkin(self.skin)
-            if self in callingBBUser.inactiveTools:
-                callingBBUser.inactiveTools.removeItem(self)
+            if self in callingBUser.inactiveTools:
+                callingBUser.inactiveTools.removeItem(self)
             
             return "🎨 Success! Your skin has been applied."
 
