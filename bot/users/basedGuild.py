@@ -268,7 +268,6 @@ class BasedGuild(serializable.Serializable):
             return self.alertRoles[alertID] != -1
         raise KeyError("Unknown GuildRoleUserAlert ID: " + alertID)
 
-
     
     async def addBountyBoardChannel(self, channel : channel.TextChannel, client : Client, factions : List[str]):
         """Set this guild's bounty board channel.
