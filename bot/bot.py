@@ -168,6 +168,7 @@ class BasedClient(ClientBaseClass):
         self.storeNone = not(storeUsers or storeGuilds or storeMenus)
         self.launchTime = datetime.utcnow()
         self.killer = GracefulKiller()
+        self.skinStorageChannel = None
 
     def saveAllDBs(self):
         """Save all of the bot's savedata to file.
@@ -321,6 +322,7 @@ async def on_ready():
 
     TODO: Implement dynamic timedtask checking period
     """
+    botState.client.skinStorageChannel = botState.client.get_guild(cfg.mediaServer).get_channel(cfg.skinRendersChannel)
     botState.httpClient = aiohttp.ClientSession()
 
     ##### EMOJI INITIALIZATION #####
