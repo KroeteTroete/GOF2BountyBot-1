@@ -5,7 +5,7 @@ from discord import Message
 from ....cfg import cfg
 from .. import gameItem
 from ....botState import logger
-from ....reactionMenus.ConfirmationReactionMenu import InlineConfirmationMenu
+from ....reactionMenus.confirmationReactionMenu import InlineConfirmationMenu
 
 
 @gameItem.spawnableItem
