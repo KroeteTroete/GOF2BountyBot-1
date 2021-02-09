@@ -236,7 +236,7 @@ class ReactionPollMenu(reactionMenu.ReactionMenu):
             botState.reactionMenusTTDB.scheduleTask(timedTask.TimedTask(expiryTime=expiryTime,
                                                     expiryFunction=printAndExpirePollResults, expiryFunctionArgs=msg.id))
 
-        if "owningBBUser" in rmDict and botState.usersDB.userIDExists(rmDict["owningBBUser"]):
+        if "owningBBUser" in rmDict and botState.usersDB.idExists(rmDict["owningBBUser"]):
             owner = botState.usersDB.getUser(rmDict["owningBBUser"])
         else:
             owner = None

@@ -251,7 +251,7 @@ async def cmd_bounties(message : discord.Message, args : str, isDM : bool):
                 if len(bounty.route) != 1:
                     outmessage += "s"
             maxBountiesMsg = ""
-            if botState.usersDB.userIDExists(message.author.id):
+            if botState.usersDB.idExists(message.author.id):
                 requestedBBUser = botState.usersDB.getUser(message.author.id)
                 # Restrict the number of bounties a player may win in a single day
                 if requestedBBUser.dailyBountyWinsReset < datetime.utcnow():
@@ -545,4 +545,3 @@ botCommands.register("use", cmd_use, 0, allowDM=False, helpSection="bounties", s
                         longHelp="Use the tool in your hangar with the given number. Tool numbers can be seen next your " \
                                     + "items in `hangar tool`. For example, if tool number `1` is a ship skin, `use 1` will" \
                                     + " apply the skin to your active ship.")
-                                    

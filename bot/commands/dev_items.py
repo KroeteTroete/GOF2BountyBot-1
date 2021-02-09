@@ -334,7 +334,7 @@ async def dev_cmd_debug_hangar(message : discord.Message, args : str, isDM : boo
         await message.channel.send(":x: Unrecognised user!")
         return
 
-    if not botState.usersDB.userIDExists(requestedUser.id):
+    if not botState.usersDB.idExists(requestedUser.id):
         await message.channel.send("User has not played yet!")
         return
 
