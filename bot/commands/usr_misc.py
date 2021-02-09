@@ -375,7 +375,7 @@ async def cmd_notify(message : discord.Message, args : str, isDM : bool):
     alertsToToggle = userAlerts.getAlertIDFromHeirarchicalAliases(argsSplit)
 
     if alertsToToggle[0] == "ERR":
-        await message.channel.send(alertsToToggle[1])
+        await message.channel.send(alertsToToggle[1].replace("$COMMANDPREFIX$", requestedBBGuild.commandPrefix))
         return
 
     for alertID in alertsToToggle:

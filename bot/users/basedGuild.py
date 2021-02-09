@@ -427,7 +427,7 @@ class BasedGuild(serializable.Serializable):
         bountyEmbed.add_field(name="Reward:", value=str(
             newBounty.reward) + " Credits")
         bountyEmbed.add_field(name="Possible Systems:", value=len(newBounty.route))
-        bountyEmbed.add_field(name="See the culprit's route with:", value="`" + cfg.commandPrefix +
+        bountyEmbed.add_field(name="See the culprit's route with:", value="`" + self.commandPrefix +
                             "route " + lib.discordUtil.criminalNameOrDiscrim(newBounty.criminal) + "`", inline=False)
         # Create the announcement text
         msg = "A new bounty is now available from **" + \

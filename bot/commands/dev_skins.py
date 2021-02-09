@@ -18,7 +18,11 @@ async def dev_cmd_addSkin(message : discord.Message, args : str, isDM : bool):
     """
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a ship! Example: `" + cfg.commandPrefix + "ship Groza Mk II`")
+        if isDM:
+            prefix = cfg.defaultCommandPrefix
+        else:
+            prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
+        await message.channel.send(":x: Please provide a ship! Example: `" + prefix + "ship Groza Mk II`")
         return
 
     if "+" in args:
@@ -77,7 +81,11 @@ async def dev_cmd_delSkin(message : discord.Message, args : str, isDM : bool):
     """
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a ship! Example: `" + cfg.commandPrefix + "ship Groza Mk II`")
+        if isDM:
+            prefix = cfg.defaultCommandPrefix
+        else:
+            prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
+        await message.channel.send(":x: Please provide a ship! Example: `" + prefix + "ship Groza Mk II`")
         return
 
     if "+" in args:
@@ -134,7 +142,11 @@ async def dev_cmd_makeSkin(message : discord.Message, args : str, isDM : bool):
     """
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a ship! Example: `" + cfg.commandPrefix + "ship Groza Mk II`")
+        if isDM:
+            prefix = cfg.defaultCommandPrefix
+        else:
+            prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
+        await message.channel.send(":x: Please provide a ship! Example: `" + prefix + "ship Groza Mk II`")
         return
 
     if "+" in args:

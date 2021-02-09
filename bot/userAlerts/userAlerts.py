@@ -376,4 +376,4 @@ def getAlertIDFromHeirarchicalAliases(alertName : Union[str, List[str]]) -> List
     # elif alertName[0] in cfg.validItemNames and alertName[0] != "all":
     #     return ["ERR", "Item notifications have not been implemented yet! \:("]
     else:
-        return ["ERR", ":x: Unknown notification type! Please refer to `" + cfg.commandPrefix + "help notify`"]
+        return ["ERR", ":x: Unknown notification type! Please refer to `$COMMANDPREFIX$help notify`"]

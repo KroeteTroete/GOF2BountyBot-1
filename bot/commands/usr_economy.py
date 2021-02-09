@@ -301,7 +301,7 @@ async def cmd_shop_buy(message : discord.Message, args : str, isDM : bool):
     argsSplit = args.split(" ")
     if len(argsSplit) < 2:
         await message.channel.send(":x: Not enough arguments! Please provide both an item type (ship/weapon/module/turret) " \
-                                    + "and an item number from `" + cfg.commandPrefix + "shop`")
+                                    + "and an item number from `" + requestedBGuild.commandPrefix + "shop`")
         return
     if len(argsSplit) > 4:
         await message.channel.send(":x: Too many arguments! Please only give an item type (ship/weapon/module/turret), an " \
@@ -457,7 +457,7 @@ async def cmd_shop_sell(message : discord.Message, args : str, isDM : bool):
     argsSplit = args.split(" ")
     if len(argsSplit) < 2:
         await message.channel.send(":x: Not enough arguments! Please provide both an item type (ship/weapon/module/turret) " \
-                                    + "and an item number from `" + cfg.commandPrefix + "hangar`")
+                                    + "and an item number from `" + requestedBGuild.commandPrefix + "hangar`")
         return
     if len(argsSplit) > 3:
         await message.channel.send(":x: Too many arguments! Please only give an item type (ship/weapon/module/turret), an " \

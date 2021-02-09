@@ -173,12 +173,12 @@ async def admin_cmd_set_notify_role(message : discord.Message, args : str, isDM 
         await message.channel.send(":x: Invalid role! Please give either a role mention or ID!")
         return
 
+    requestedBBGuild = botState.guildsDB.getGuild(message.guild.id)
     alertsToSet = userAlerts.getAlertIDFromHeirarchicalAliases(argsSplit)
     if alertsToSet[0] == "ERR":
-        await message.channel.send(alertsToSet[1])
+        await message.channel.send(alertsToSet[1].replace("$COMMANDPREFIX$", requestedBBGuild.commandPrefix))
         return
-
-    requestedBBGuild = botState.guildsDB.getGuild(message.guild.id)
+    
     if lib.stringTyping.isRoleMention(argsSplit[-1]):
         requestedRole = message.guild.get_role(int(argsSplit[-1][3:-1]))
     else:
@@ -214,12 +214,11 @@ async def admin_cmd_remove_notify_role(message : discord.Message, args : str, is
         await message.channel.send(":x: Please provide both a notification type!")
         return
 
+    requestedBBGuild = botState.guildsDB.getGuild(message.guild.id)
     alertsToSet = userAlerts.getAlertIDFromHeirarchicalAliases(args)
     if alertsToSet[0] == "ERR":
-        await message.channel.send(alertsToSet[1])
+        await message.channel.send(alertsToSet[1].replace("$COMMANDPREFIX$", requestedBBGuild.commandPrefix))
         return
-
-    requestedBBGuild = botState.guildsDB.getGuild(message.guild.id)
 
     for alertID in alertsToSet:
         alertType = userAlerts.userAlertsIDsTypes[alertID]
