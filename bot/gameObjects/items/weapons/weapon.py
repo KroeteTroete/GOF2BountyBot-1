@@ -1,6 +1,6 @@
 from __future__ import annotations
 from ..gameItem import GameItem
-from ... import lib
+from .... import lib
 from typing import List
 
 

@@ -1,6 +1,6 @@
 from ..gameItem import spawnableItem
 from ....cfg import bbData
-from ... import lib
+from .... import lib
 from .weapon import Weapon
 
 

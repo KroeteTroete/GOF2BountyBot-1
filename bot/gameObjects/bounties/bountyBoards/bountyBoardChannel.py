@@ -4,7 +4,7 @@ from discord import Embed, HTTPException, Forbidden, NotFound, Client, Message
 from ....cfg import bbData, cfg
 from .... import lib
 from .. import criminal
-from ....botstate import logger
+from ....botState import logger
 import asyncio
 from .. import bounty
 from typing import Dict, Union, List
@@ -111,30 +111,30 @@ class bountyBoardChannel(serializable.Serializable):
         self.channel = client.get_channel(self.channelIDToBeLoaded)
 
         for id in self.messagesToBeLoaded:
-            criminal = criminal.Criminal.fromDict(self.messagesToBeLoaded[id])
+            crim = criminal.Criminal.fromDict(self.messagesToBeLoaded[id])
 
             try:
                 msg = await self.channel.fetch_message(id)
-                self.bountyMessages[criminal.faction][criminal] = msg
+                self.bountyMessages[crim.faction][crim] = msg
             except HTTPException:
                 succeeded = False
                 for tryNum in range(cfg.httpErrRetries):
                     try:
                         msg = await self.channel.fetch_message(id)
-                        self.bountyMessages[criminal.faction][criminal] = msg
+                        self.bountyMessages[crim.faction][crim] = msg
                         succeeded = True
                     except HTTPException:
                         await asyncio.sleep(cfg.httpErrRetryDelaySeconds)
                         continue
                     break
                 if not succeeded:
-                    logger.log("BBC", "init", "HTTPException thrown when fetching listing for criminal: " + criminal.name,
+                    logger.log("BBC", "init", "HTTPException thrown when fetching listing for criminal: " + crim.name,
                                 category='bountyBoards', eventType="LISTING_LOAD-HTTPERR")
             except Forbidden:
-                logger.log("BBC", "init", "Forbidden exception thrown when fetching listing for criminal: " + criminal.name,
+                logger.log("BBC", "init", "Forbidden exception thrown when fetching listing for criminal: " + crim.name,
                             category='bountyBoards', eventType="LISTING_LOAD-FORBIDDENERR")
             except NotFound:
-                logger.log("BBC", "init", "Listing message for criminal no longer exists: " + criminal.name,
+                logger.log("BBC", "init", "Listing message for criminal no longer exists: " + crim.name,
                             category='bountyBoards', eventType="LISTING_LOAD-NOT_FOUND")
 
         if self.noBountiesMsgToBeLoaded == -1:

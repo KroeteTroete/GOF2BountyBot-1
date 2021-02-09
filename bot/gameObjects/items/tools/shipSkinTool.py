@@ -7,7 +7,7 @@ from ..shipItem import Ship
 from discord import Message
 from .... import botState
 from ..gameItem import spawnableItem
-from ....reactionMenus.ConfirmationReactionMenu import InlineConfirmationMenu
+from ....reactionMenus.confirmationReactionMenu import InlineConfirmationMenu
 
 
 @spawnableItem
