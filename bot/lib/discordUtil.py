@@ -11,6 +11,7 @@ from discord import Embed, Colour, HTTPException, Forbidden, RawReactionActionEv
 from discord import DMChannel, GroupChannel, TextChannel
 import random
 from ..cfg import cfg
+from ..userAlerts import userAlerts
 
 
 def findBUserDCGuild(user : basedUser.BasedUser) -> Union[Guild, None]:
@@ -186,7 +187,7 @@ def getMemberByRefOverDB(uRef : str, dcGuild : Guild = None) -> User:
 
 
 def typeAlertedUserMentionOrName(alertType : userAlerts.UABase, dcUser : Union[User, Member] = None,
-        BasedGuild : basedUser.BasedUser = None, BasedGuild : basedGuild.BasedGuild = None, dcGuild : Guild = None) -> str:
+        basedUser : basedUser.BasedUser = None, basedGuild : basedGuild.BasedGuild = None, dcGuild : Guild = None) -> str:
     """If the given user has subscribed to the given alert type, return the user's mention.
     Otherwise, return their display name and discriminator. At least one of dcUser or BasedGuild must be provided.
     BasedGuild and dcGuild are both optional. If neither are provided then the joined guilds will be searched for the given user.
@@ -195,7 +196,7 @@ def typeAlertedUserMentionOrName(alertType : userAlerts.UABase, dcUser : Union[U
 
     :param userAlerts.UABase alertType: The type of alert to check the state of
     :param discord.User dcUser: The user to check the alert state of. One of dcUser or BasedGuild is required. (Default None)
-    :param BasedGuild BasedGuild: The user to check the alert state of. One of dcUser or BasedGuild is required. (Default None)
+    :param BasedUser basedUser: The user to check the alert state of. One of dcUser or BasedGuild is required. (Default None)
     :param BasedGuild BasedGuild: The guild in which to check the alert state. Optional, but improves efficiency. (Default None)
     :param dcGuild dcGuild: The guild in which to check the alert state. Optional, but improves efficiency. (Default None)
     :return: If the given user is alerted for the given type in the selected guild, the user's mention.
@@ -205,30 +206,30 @@ def typeAlertedUserMentionOrName(alertType : userAlerts.UABase, dcUser : Union[U
     :raise KeyError: When given neither BasedGuild nor dcGuild,
                         and the user could not be located in any of the bot's joined guilds.
     """
-    if dcUser is None and BasedGuild is None:
+    if dcUser is None and basedGuild is None:
         raise ValueError("At least one of dcUser or BasedGuild must be given.")
 
-    if BasedGuild is None and dcGuild is None:
+    if basedGuild is None and dcGuild is None:
         dcGuild = findBUserDCGuild(dcUser)
         if dcGuild is None:
             raise KeyError("user does not share an guilds with the bot")
-    if BasedGuild is None:
-        BasedGuild = botState.guildsDB.getGuild(dcGuild.id)
+    if basedGuild is None:
+        basedGuild = botState.guildsDB.getGuild(dcGuild.id)
     elif dcGuild is None:
-        dcGuild = botState.client.get_guild(BasedGuild.id)
-    if BasedGuild is None:
-        BasedGuild = botState.usersDB.getOrAddID(dcUser.id)
+        dcGuild = botState.client.get_guild(basedGuild.id)
+    if basedUser is None:
+        basedGuild = botState.usersDB.getOrAddID(dcUser.id)
 
     guildMember = dcGuild.get_member(dcUser.id)
     if guildMember is None:
         return dcUser.name + "#" + str(dcUser.discriminator)
-    if BasedGuild.isAlertedForType(alertType, dcGuild, BasedGuild, dcUser):
+    if basedUser.isAlertedForType(alertType, dcGuild, basedGuild, dcUser):
         return guildMember.mention
     return guildMember.display_name + "#" + str(guildMember.discriminator)
 
 
-def IDAlertedUserMentionOrName(alertID : str, dcUser : Union[Member, User] = None, BasedGuild : basedUser.BasedUser = None,
-        BasedGuild : basedGuild.BasedGuild = None, dcGuild : Guild = None) -> str:
+def IDAlertedUserMentionOrName(alertID : str, dcUser : Union[Member, User] = None, basedUser : basedUser.BasedUser = None,
+        basedGuild : basedGuild.BasedGuild = None, dcGuild : Guild = None) -> str:
     """If the given user has subscribed to the alert type of the given ID, return the user's mention
     Otherwise, return their display name and discriminator. At least one of dcUser or BasedGuild must be provided.
     BasedGuild and dcGuild are both optional. If neither are provided then the joined guilds will be searched for the given user.
@@ -238,15 +239,15 @@ def IDAlertedUserMentionOrName(alertID : str, dcUser : Union[Member, User] = Non
     :param userAlerts.UABase alertType: The ID, according to userAlerts.userAlertsIDsTypes,
                                         of type of alert to check the state of
     :param discord.User dcUser: The user to check the alert state of. One of dcUser or BasedGuild is required. (Default None)
-    :param BasedGuild BasedGuild: The user to check the alert state of. One of dcUser or BasedGuild is required. (Default None)
-    :param BasedGuild BasedGuild: The guild in which to check the alert state. Optional, but improves efficiency. (Default None)
+    :param BasedUser basedUser: The user to check the alert state of. One of dcUser or BasedGuild is required. (Default None)
+    :param basedGuild BasedGuild: The guild in which to check the alert state. Optional, but improves efficiency. (Default None)
     :param dcGuild dcGuild: The guild in which to check the alert state. Optional, but improves efficiency. (Default None)
     :return: If the given user is alerted for the given type in the selected guild, the user's mention.
                 The user's display name otherwise.
     :rtype: str
     """
-    return typeAlertedUserMentionOrName(userAlerts.userAlertsIDsTypes[alertID], dcUser=dcUser, BasedGuild=BasedGuild,
-                                        BasedGuild=BasedGuild, dcGuild=dcGuild)
+    return typeAlertedUserMentionOrName(userAlerts.userAlertsIDsTypes[alertID], dcUser=dcUser, basedUser=basedUser,
+                                        BasedGuild=basedGuild, dcGuild=dcGuild)
 
 
 async def startLongProcess(message: Message):

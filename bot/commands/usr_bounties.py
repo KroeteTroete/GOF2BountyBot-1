@@ -423,15 +423,15 @@ async def cmd_duel(message : discord.Message, args : str, isDM : bool):
                 if targetUserBBGuild.hasPlayChannel():
                     targetUserNameOrTag = lib.discordUtil.IDAlertedUserMentionOrName("duels_challenge_incoming_new",
                                                                                         dcGuild=targetUserDCGuild,
-                                                                                        bbGuild=targetUserBBGuild,
+                                                                                        basedGuild=targetUserBBGuild,
                                                                                         dcUser=requestedUser,
-                                                                                        bbUser=targetBBUser)
+                                                                                        basedUser=targetBBUser)
                     await queueChallengeMsg(targetUserBBGuild.getPlayChannel(), str(message.author), targetUserNameOrTag)
             await queueChallengeMsg(message.channel, message.author.mention, str(requestedUser))
         else:
             targetUserNameOrTag = lib.discordUtil.IDAlertedUserMentionOrName("duels_challenge_incoming_new",
                                                                                 dcGuild=message.guild, dcUser=requestedUser,
-                                                                                bbUser=targetBBUser)
+                                                                                basedUser=targetBBUser)
             await queueChallengeMsg(message.channel, message.author.mention, targetUserNameOrTag)
 
         for msg in sentMsgs:
@@ -471,7 +471,7 @@ async def cmd_duel(message : discord.Message, args : str, isDM : bool):
                 await message.channel.send(":white_check_mark: You have cancelled your duel challenge for **" \
                                             + str(requestedUser) + "**.")
 
-        # IDAlertedUserMentionOrName(alertType, dcUser=None, bbUser=None, bbGuild=None, dcGuild=None)
+        # IDAlertedUserMentionOrName(alertType, dcUser=None, basedUser=None, basedGuild=None, dcGuild=None)
         for menu in sourceBBUser.duelRequests[targetBBUser].menus:
             await menu.delete()
         await sourceBBUser.duelRequests[targetBBUser].duelTimeoutTask.forceExpire(callExpiryFunc=False)
