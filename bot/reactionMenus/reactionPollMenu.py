@@ -36,12 +36,12 @@ async def printAndExpirePollResults(msgID : int):
 
     for reaction in menuMsg.reactions:
         if type(reaction.emoji) in [Emoji, PartialEmoji]:
-            currentEmoji = lib.emojis.dumbEmoji(id=reaction.emoji.id)
+            currentEmoji = lib.emojis.BasedEmoji(id=reaction.emoji.id)
         else:
-            currentEmoji = lib.emojis.dumbEmoji(unicode=reaction.emoji)
+            currentEmoji = lib.emojis.BasedEmoji(unicode=reaction.emoji)
 
         if currentEmoji is None:
-            botState.logger.log("ReactPollMenu", "prtAndExpirePollResults", "Failed to fetch dumbEmoji for reaction: " \
+            botState.logger.log("ReactPollMenu", "prtAndExpirePollResults", "Failed to fetch BasedEmoji for reaction: " \
                                 + str(reaction), category="reactionMenus", eventType="INV_REACT")
             pollEmbed = menuMsg.embeds[0]
             pollEmbed.set_footer(text="This poll has ended.")
@@ -114,7 +114,7 @@ class ReactionPollMenu(reactionMenu.ReactionMenu):
     On menu expiry, the menu's TimedTask should call printAndExpirePollResults. This edits to menu embed to provide a summary
     and bar chart of the votes submitted to the poll. The poll options have no functionality, all vote counting takes place
     after menu expiry.
-    TODO: change pollOptions from dict[dumbEmoji, ReactionMenuOption] to dict[dumbEmoji, str] which is used
+    TODO: change pollOptions from dict[BasedEmoji, ReactionMenuOption] to dict[BasedEmoji, str] which is used
             to spawn DummyReactionMenuOptions
 
     :var multipleChoice: Whether to accept votes for multiple options from the same user, or to restrict users to one option
@@ -132,7 +132,7 @@ class ReactionPollMenu(reactionMenu.ReactionMenu):
         :param discord.Message msg: the message where this menu is embedded
         :param options: A dictionary storing all of the poll options. Poll option behaviour functions are not called.
                         TODO: Add reactionAdded/Removed overloads that just return and dont check anything
-        :type options: dict[lib.emojis.dumbEmoji, ReactionMenuOption]
+        :type options: dict[lib.emojis.BasedEmoji, ReactionMenuOption]
         :param TimedTask timeout: The TimedTask responsible for expiring this menu
         :param discord.Member pollStarter: The user who started the poll, for printing in the menu embed. Optional.
                                             (Default None)
@@ -227,7 +227,7 @@ class ReactionPollMenu(reactionMenu.ReactionMenu):
 
         options = {}
         for emojiName in rmDict["options"]:
-            emoji = lib.emojis.dumbEmoji.fromStr(emojiName)
+            emoji = lib.emojis.BasedEmoji.fromStr(emojiName)
             options[emoji] = reactionMenu.DummyReactionMenuOption(rmDict["options"][emojiName], emoji)
 
         timeoutTT = None

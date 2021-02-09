@@ -301,7 +301,7 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
             continue
         argPos += 1
         try:
-            roleStr, dumbReact = arg.strip(" ").split(" ")[1], lib.emojis.dumbEmoji.fromStr(arg.strip(" ").split(" ")[0])
+            roleStr, dumbReact = arg.strip(" ").split(" ")[1], lib.emojis.BasedEmoji.fromStr(arg.strip(" ").split(" ")[0])
         except (ValueError, IndexError):
             for kwArg in ["target=", "days=", "hours=", "seconds=", "minutes=", "multiplechoice="]:
                 if arg.lower().startswith(kwArg):
