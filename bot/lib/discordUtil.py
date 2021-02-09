@@ -15,10 +15,10 @@ from ..userAlerts import userAlerts
 
 
 def findBUserDCGuild(user : basedUser.BasedUser) -> Union[Guild, None]:
-    """Attempt to find a discord.guild containing the given BasedGuild.
+    """Attempt to find a discord.guild containing the given BasedUser.
     If a guild is found, it will be returned as a discord.guild. If no guild can be found, None will be returned.
 
-    :param BasedGuild user: The user to attempt to locate
+    :param BasedUser user: The user to attempt to locate
     :return: A discord.Guild where user is a member, if one can be found. None if no such guild can be found.
     :rtype: discord.guild or None
     """
@@ -189,25 +189,25 @@ def getMemberByRefOverDB(uRef : str, dcGuild : Guild = None) -> User:
 def typeAlertedUserMentionOrName(alertType : userAlerts.UABase, dcUser : Union[User, Member] = None,
         basedUser : basedUser.BasedUser = None, basedGuild : basedGuild.BasedGuild = None, dcGuild : Guild = None) -> str:
     """If the given user has subscribed to the given alert type, return the user's mention.
-    Otherwise, return their display name and discriminator. At least one of dcUser or BasedGuild must be provided.
+    Otherwise, return their display name and discriminator. At least one of dcUser or basedUser must be provided.
     BasedGuild and dcGuild are both optional. If neither are provided then the joined guilds will be searched for the given user.
     This means that giving at least one of BasedGuild or dcGuild will drastically improve efficiency.
-    TODO: rename BasedGuild and BasedGuild so it doesnt match the class name
+    TODO: rename basedGuild and basedUser so it doesnt match the class name
 
     :param userAlerts.UABase alertType: The type of alert to check the state of
-    :param discord.User dcUser: The user to check the alert state of. One of dcUser or BasedGuild is required. (Default None)
-    :param BasedUser basedUser: The user to check the alert state of. One of dcUser or BasedGuild is required. (Default None)
+    :param discord.User dcUser: The user to check the alert state of. One of dcUser or basedUser is required. (Default None)
+    :param BasedUser basedUser: The user to check the alert state of. One of dcUser or basedUser is required. (Default None)
     :param BasedGuild BasedGuild: The guild in which to check the alert state. Optional, but improves efficiency. (Default None)
     :param dcGuild dcGuild: The guild in which to check the alert state. Optional, but improves efficiency. (Default None)
     :return: If the given user is alerted for the given type in the selected guild, the user's mention.
                 The user's display name and discriminator otherwise.
     :rtype: str
-    :raise ValueError: When given neither dcUser nor BasedGuild
+    :raise ValueError: When given neither dcUser nor basedUser
     :raise KeyError: When given neither BasedGuild nor dcGuild,
                         and the user could not be located in any of the bot's joined guilds.
     """
     if dcUser is None and basedGuild is None:
-        raise ValueError("At least one of dcUser or BasedGuild must be given.")
+        raise ValueError("At least one of dcUser or basedUser must be given.")
 
     if basedGuild is None and dcGuild is None:
         dcGuild = findBUserDCGuild(dcUser)
@@ -231,16 +231,16 @@ def typeAlertedUserMentionOrName(alertType : userAlerts.UABase, dcUser : Union[U
 def IDAlertedUserMentionOrName(alertID : str, dcUser : Union[Member, User] = None, basedUser : basedUser.BasedUser = None,
         basedGuild : basedGuild.BasedGuild = None, dcGuild : Guild = None) -> str:
     """If the given user has subscribed to the alert type of the given ID, return the user's mention
-    Otherwise, return their display name and discriminator. At least one of dcUser or BasedGuild must be provided.
+    Otherwise, return their display name and discriminator. At least one of dcUser or basedUser must be provided.
     BasedGuild and dcGuild are both optional. If neither are provided then the joined guilds will be searched for the given user.
     This means that giving at least one of BasedGuild or dcGuild will drastically improve efficiency.
-    TODO: rename BasedGuild and BasedGuild so it doesnt match the class name
+    TODO: rename basedUser and basedGuild so it doesnt match the class name
 
     :param userAlerts.UABase alertType: The ID, according to userAlerts.userAlertsIDsTypes,
                                         of type of alert to check the state of
-    :param discord.User dcUser: The user to check the alert state of. One of dcUser or BasedGuild is required. (Default None)
-    :param BasedUser basedUser: The user to check the alert state of. One of dcUser or BasedGuild is required. (Default None)
-    :param basedGuild BasedGuild: The guild in which to check the alert state. Optional, but improves efficiency. (Default None)
+    :param discord.User dcUser: The user to check the alert state of. One of dcUser or basedUser is required. (Default None)
+    :param BasedUser basedUser: The user to check the alert state of. One of dcUser or basedUser is required. (Default None)
+    :param basedGuild basedUser: The guild in which to check the alert state. Optional, but improves efficiency. (Default None)
     :param dcGuild dcGuild: The guild in which to check the alert state. Optional, but improves efficiency. (Default None)
     :return: If the given user is alerted for the given type in the selected guild, the user's mention.
                 The user's display name otherwise.

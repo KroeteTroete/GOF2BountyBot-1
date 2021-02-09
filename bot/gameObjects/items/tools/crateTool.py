@@ -29,8 +29,8 @@ class Crate(toolItem.ToolItem):
         """
         if "callingBUser" not in kwargs:
             raise NameError("Required kwarg not given: callingBUser")
-        if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedGuild":
-            raise TypeError("Required kwarg is of the wrong type. Expected BasedGuild or None, received " + \
+        if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedUser":
+            raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received " + \
                             type(kwargs["callingBUser"]).__name__)
         
         callingBUser = kwargs["callingBUser"]
@@ -49,8 +49,8 @@ class Crate(toolItem.ToolItem):
         """
         if "callingBUser" not in kwargs:
             raise NameError("Required kwarg not given: callingBUser")
-        if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedGuild":
-            raise TypeError("Required kwarg is of the wrong type. Expected BasedGuild or None, received " + \
+        if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedUser":
+            raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received " + \
                             type(kwargs["callingBUser"]).__name__)
         
         callingBUser = kwargs["callingBUser"]

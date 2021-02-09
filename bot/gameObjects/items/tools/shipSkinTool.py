@@ -52,8 +52,8 @@ class ShipSkinTool(toolItem.ToolItem):
                             + type(kwargs["ship"]).__name__)
         if "callingBUser" not in kwargs:
             raise NameError("Required kwarg not given: callingBUser")
-        if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedGuild":
-            raise TypeError("Required kwarg is of the wrong type. Expected BasedGuild or None, received "
+        if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedUser":
+            raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received "
                             + type(kwargs["callingBUser"]).__name__)
         
         ship, callingBUser = kwargs["ship"], kwargs["callingBUser"]
@@ -90,11 +90,11 @@ class ShipSkinTool(toolItem.ToolItem):
             raise NameError("Required kwarg not given: callingBUser")
         
         # converted to soft type check due to circular import
-        """if (not isinstance(kwargs["callingBUser"], BasedGuild)) and kwargs["callingBUser"] is not None:
-            raise TypeError("Required kwarg is of the wrong type. Expected BasedGuild or None, received " \
+        """if (not isinstance(kwargs["callingBUser"], BasedUser)) and kwargs["callingBUser"] is not None:
+            raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received " \
                             + type(kwargs["callingBUser"]).__name__)"""
-        if (type(kwargs["callingBUser"]).__name__ != "BasedGuild") and kwargs["callingBUser"] is not None:
-            raise TypeError("Required kwarg is of the wrong type. Expected BasedGuild or None, received " \
+        if (type(kwargs["callingBUser"]).__name__ != "BasedUser") and kwargs["callingBUser"] is not None:
+            raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received " \
                             + type(kwargs["callingBUser"]).__name__)
         
         ship, callingBUser = kwargs["ship"], kwargs["callingBUser"]

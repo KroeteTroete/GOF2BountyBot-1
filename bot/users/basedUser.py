@@ -553,7 +553,7 @@ class BasedUser(serializable.Serializable):
         return targetBasedUser in self.duelRequests
 
 
-    def addDuelChallenge(self, duelReq : DuelRequest.DuelRequest):
+    def addDuelChallenge(self, duelReq : duelRequest.DuelRequest):
         """Store a new duel request from this user to another.
         The duel request must still be active (TODO: Add validation), the source user must be this user,
         the target user must not be this user, and this user must not already have a duel challenge for the target user.
@@ -572,7 +572,7 @@ class BasedUser(serializable.Serializable):
         self.duelRequests[duelReq.targetBasedUser] = duelReq
 
 
-    def removeDuelChallengeObj(self, duelReq : DuelRequest.DuelRequest):
+    def removeDuelChallengeObj(self, duelReq : duelRequest.DuelRequest):
         """Remove the given duel request object from this user's storage.
 
         :param DuelRequest duelReq: The DuelRequest to remove
