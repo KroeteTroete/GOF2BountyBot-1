@@ -1,10 +1,10 @@
 import discord
 
-from . import commandsDB as bbCommands
+from . import commandsDB as botCommands
 from .. import botState
 
 
-bbCommands.addHelpSection(2, "channels")
+botCommands.addHelpSection(2, "channels")
 
 
 async def dev_cmd_has_announce(message : discord.Message, args : str, isDM : bool):
@@ -17,7 +17,7 @@ async def dev_cmd_has_announce(message : discord.Message, args : str, isDM : boo
     guild = botState.guildsDB.getGuild(message.guild.id)
     await message.channel.send(":x: Unknown guild!" if guild is None else guild.hasAnnounceChannel())
 
-bbCommands.register("has-announce", dev_cmd_has_announce, 2, allowDM=False, helpSection="channels", useDoc=True)
+botCommands.register("has-announce", dev_cmd_has_announce, 2, allowDM=False, helpSection="channels", useDoc=True)
 
 
 async def dev_cmd_get_announce(message : discord.Message, args : str, isDM : bool):
@@ -29,7 +29,7 @@ async def dev_cmd_get_announce(message : discord.Message, args : str, isDM : boo
     """
     await message.channel.send("<#" + str(botState.guildsDB.getGuild(message.guild.id).getAnnounceChannel().id) + ">")
 
-bbCommands.register("get-announce", dev_cmd_get_announce, 2, allowDM=False, helpSection="channels", useDoc=True)
+botCommands.register("get-announce", dev_cmd_get_announce, 2, allowDM=False, helpSection="channels", useDoc=True)
 
 
 async def dev_cmd_has_play(message : discord.Message, args : str, isDM : bool):
@@ -42,7 +42,7 @@ async def dev_cmd_has_play(message : discord.Message, args : str, isDM : bool):
     guild = botState.guildsDB.getGuild(message.guild.id)
     await message.channel.send(":x: Unknown guild!" if guild is None else guild.hasPlayChannel())
 
-bbCommands.register("has-play", dev_cmd_has_play, 2, allowDM=False, helpSection="channels", useDoc=True)
+botCommands.register("has-play", dev_cmd_has_play, 2, allowDM=False, helpSection="channels", useDoc=True)
 
 
 async def dev_cmd_get_play(message : discord.Message, args : str, isDM : bool):
@@ -54,4 +54,4 @@ async def dev_cmd_get_play(message : discord.Message, args : str, isDM : bool):
     """
     await message.channel.send("<#" + str(botState.guildsDB.getGuild(message.guild.id).getPlayChannel().id) + ">")
 
-bbCommands.register("get-play", dev_cmd_get_play, 2, allowDM=False, helpSection="channels", useDoc=True)
+botCommands.register("get-play", dev_cmd_get_play, 2, allowDM=False, helpSection="channels", useDoc=True)

@@ -1,13 +1,13 @@
 import discord
 import json
 
-from . import commandsDB as bbCommands
+from . import commandsDB as botCommands
 from .. import lib, botState
 from ..cfg import cfg, bbData
 from ..gameObjects.items import gameItem
 
 
-bbCommands.addHelpSection(2, "items")
+botCommands.addHelpSection(2, "items")
 
 
 async def dev_cmd_give(message : discord.Message, args : str, isDM : bool):
@@ -56,7 +56,7 @@ async def dev_cmd_give(message : discord.Message, args : str, isDM : bool):
                                 + lib.discordUtil.userOrMemberName(botState.client.get_user(requestedUser.id),
                                                                                             message.guild) + "**!")
 
-bbCommands.register("give", dev_cmd_give, 2, forceKeepArgsCasing=True, allowDM=True, helpSection="items", useDoc=True)
+botCommands.register("give", dev_cmd_give, 2, forceKeepArgsCasing=True, allowDM=True, helpSection="items", useDoc=True)
 
 
 async def dev_cmd_del_item(message : discord.Message, args : str, isDM : bool):
@@ -168,7 +168,7 @@ async def dev_cmd_del_item(message : discord.Message, args : str, isDM : bool):
                                 + "'s inventory: " + itemName, embed=itemEmbed)
     userItemInactives.removeItem(requestedItem)
 
-bbCommands.register("del-item", dev_cmd_del_item, 2, allowDM=True, helpSection="items", useDoc=True)
+botCommands.register("del-item", dev_cmd_del_item, 2, allowDM=True, helpSection="items", useDoc=True)
 
 
 async def dev_cmd_del_item_key(message : discord.Message, args : str, isDM : bool):
@@ -289,7 +289,7 @@ async def dev_cmd_del_item_key(message : discord.Message, args : str, isDM : boo
                                     + lib.discordUtil.userOrMemberName(requestedUser, message.guild) \
                                     + "'s inventory: " + itemName, embed=itemEmbed)
 
-bbCommands.register("del-item-key", dev_cmd_del_item_key, 2, allowDM=True, helpSection="items", useDoc=True)
+botCommands.register("del-item-key", dev_cmd_del_item_key, 2, allowDM=True, helpSection="items", useDoc=True)
 
 
 async def dev_cmd_refreshshop(message : discord.Message, args : str, isDM : bool):
@@ -315,7 +315,7 @@ async def dev_cmd_refreshshop(message : discord.Message, args : str, isDM : bool
         await guild.getPlayChannel().send(":arrows_counterclockwise: The shop stock has been refreshed!\n**        **" \
                                             + "Now at tech level: **" + str(guild.shop.currentTechLevel) + "**")
 
-bbCommands.register("refreshshop", dev_cmd_refreshshop, 2, allowDM=False, helpSection="items", useDoc=True)
+botCommands.register("refreshshop", dev_cmd_refreshshop, 2, allowDM=False, helpSection="items", useDoc=True)
 
 
 async def dev_cmd_debug_hangar(message : discord.Message, args : str, isDM : bool):
@@ -417,4 +417,4 @@ async def dev_cmd_debug_hangar(message : discord.Message, args : str, isDM : boo
         await message.channel.send(embed=hangarEmbed)
 
 
-bbCommands.register("debug-hangar", dev_cmd_debug_hangar, 2, allowDM=True, helpSection="items", useDoc=True)
+botCommands.register("debug-hangar", dev_cmd_debug_hangar, 2, allowDM=True, helpSection="items", useDoc=True)

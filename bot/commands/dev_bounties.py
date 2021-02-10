@@ -1,13 +1,13 @@
 import discord
 from datetime import datetime
 
-from . import commandsDB as bbCommands
+from . import commandsDB as botCommands
 from .. import botState, lib
 from ..cfg import cfg, bbData
 from ..gameObjects.bounties import bounty, bountyConfig
 
 
-bbCommands.addHelpSection(2, "bounties")
+botCommands.addHelpSection(2, "bounties")
 
 async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : bool):
     """developer command clearing all active bounties. If a guild ID is given, clear bounties in that guild.
@@ -52,7 +52,7 @@ async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : b
     await message.channel.send(":ballot_box_with_check: Active bounties cleared" + ((" for '" + callingBBGuild.dcGuild.name \
                                 + "'.") if callingBBGuild.dcGuild is not None else "."))
 
-bbCommands.register("clear-bounties", dev_cmd_clear_bounties, 2, allowDM=True, helpSection="bounties", useDoc=True)
+botCommands.register("clear-bounties", dev_cmd_clear_bounties, 2, allowDM=True, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_get_cooldown(message : discord.Message, args : str, isDM : bool):
@@ -70,7 +70,7 @@ async def dev_cmd_get_cooldown(message : discord.Message, args : str, isDM : boo
     await message.channel.send(datetime.utcfromtimestamp(callingUser.bountyCooldownEnd).strftime("%Hh%Mm%Ss"))
     await message.channel.send(datetime.utcnow().strftime("%Hh%Mm%Ss"))
 
-bbCommands.register("get-cool", dev_cmd_get_cooldown, 2, allowDM=True, helpSection="bounties", useDoc=True)
+botCommands.register("get-cool", dev_cmd_get_cooldown, 2, allowDM=True, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_reset_cooldown(message : discord.Message, args : str, isDM : bool):
@@ -91,7 +91,7 @@ async def dev_cmd_reset_cooldown(message : discord.Message, args : str, isDM : b
                         ).bountyCooldownEnd = datetime.utcnow().timestamp()
     await message.channel.send("Done!")
 
-bbCommands.register("reset-cool", dev_cmd_reset_cooldown, 2, allowDM=True, helpSection="bounties", useDoc=True)
+botCommands.register("reset-cool", dev_cmd_reset_cooldown, 2, allowDM=True, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_reset_daily_wins(message : discord.Message, args : str, isDM : bool):
@@ -113,7 +113,7 @@ async def dev_cmd_reset_daily_wins(message : discord.Message, args : str, isDM :
 
     await message.channel.send("Done!")
 
-bbCommands.register("reset-daily-wins", dev_cmd_reset_daily_wins, 2, allowDM=True, helpSection="bounties", useDoc=True)
+botCommands.register("reset-daily-wins", dev_cmd_reset_daily_wins, 2, allowDM=True, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_setcheckcooldown(message : discord.Message, args : str, isDM : bool):
@@ -136,7 +136,7 @@ async def dev_cmd_setcheckcooldown(message : discord.Message, args : str, isDM :
     cfg.timeouts.checkCooldown["minutes"] = int(args)
     await message.channel.send("Done! *you still need to update the file though* " + message.author.mention)
 
-bbCommands.register("setcheckcooldown", dev_cmd_setcheckcooldown, 2, allowDM=True, helpSection="bounties", useDoc=True)
+botCommands.register("setcheckcooldown", dev_cmd_setcheckcooldown, 2, allowDM=True, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_setbountyperiodm(message : discord.Message, args : str, isDM : bool):
@@ -161,7 +161,7 @@ async def dev_cmd_setbountyperiodm(message : discord.Message, args : str, isDM :
     botState.newBountyFixedDeltaChanged = True
     await message.channel.send("Done! *you still need to update the file though* " + message.author.mention)
 
-bbCommands.register("setbountyperiodm", dev_cmd_setbountyperiodm, 2, allowDM=True, helpSection="bounties", useDoc=True)
+botCommands.register("setbountyperiodm", dev_cmd_setbountyperiodm, 2, allowDM=True, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_setbountyperiodh(message : discord.Message, args : str, isDM : bool):
@@ -186,7 +186,7 @@ async def dev_cmd_setbountyperiodh(message : discord.Message, args : str, isDM :
     cfg.newBountyFixedDelta["hours"] = int(args)
     await message.channel.send("Done! *you still need to update the file though* " + message.author.mention)
 
-bbCommands.register("setbountyperiodh", dev_cmd_setbountyperiodh, 2, allowDM=True, helpSection="bounties", useDoc=True)
+botCommands.register("setbountyperiodh", dev_cmd_setbountyperiodh, 2, allowDM=True, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_resetnewbountycool(message : discord.Message, args : str, isDM : bool):
@@ -223,7 +223,7 @@ async def dev_cmd_resetnewbountycool(message : discord.Message, args : str, isDM
     await callingBBGuild.newBountyTT.forceExpire()
     await message.channel.send(":ballot_box_with_check: New bounty cooldown reset for '" + callingBBGuild.dcGuild.name + "'")
 
-bbCommands.register("resetnewbountycool", dev_cmd_resetnewbountycool, 2, allowDM=True, helpSection="bounties", useDoc=True)
+botCommands.register("resetnewbountycool", dev_cmd_resetnewbountycool, 2, allowDM=True, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_canmakebounty(message : discord.Message, args : str, isDM : bool):
@@ -264,7 +264,7 @@ async def dev_cmd_canmakebounty(message : discord.Message, args : str, isDM : bo
     else:
         await message.channel.send(callingBBGuild.bountiesDB.factionCanMakeBounty(newFaction.lower()))
 
-bbCommands.register("canmakebounty", dev_cmd_canmakebounty, 2, allowDM=False, helpSection="bounties", useDoc=True)
+botCommands.register("canmakebounty", dev_cmd_canmakebounty, 2, allowDM=False, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool):
@@ -410,7 +410,7 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
     callingBBGuild.bountiesDB.addBounty(newBounty)
     await callingBBGuild.announceNewBounty(newBounty)
 
-bbCommands.register("make-bounty", dev_cmd_make_bounty, 2, forceKeepArgsCasing=True, allowDM=True, helpSection="bounties",
+botCommands.register("make-bounty", dev_cmd_make_bounty, 2, forceKeepArgsCasing=True, allowDM=True, helpSection="bounties",
                     useDoc=True)
 
 
@@ -565,6 +565,6 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
     callingBBGuild.bountiesDB.addBounty(newBounty)
     await callingBBGuild.announceNewBounty(newBounty)
 
-bbCommands.register("make-player-bounty", dev_cmd_make_player_bounty, 2, forceKeepArgsCasing=True, allowDM=True,
+botCommands.register("make-player-bounty", dev_cmd_make_player_bounty, 2, forceKeepArgsCasing=True, allowDM=True,
                         helpSection="bounties", useDoc=True)
                         

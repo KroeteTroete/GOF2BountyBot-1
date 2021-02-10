@@ -51,7 +51,7 @@ async def cmd_home(message : discord.Message, args : str, isDM : bool):
     :param str args: ignored
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
-    if botState.usersDB.userIDExists(message.author.id):
+    if botState.usersDB.idExists(message.author.id):
         requestedBBUser = botState.usersDB.getUser(message.author.id)
         if message.guild is not None and message.guild.id == requestedBBUser.homeGuildID:
             await message.channel.send("🌍 This is your home server.")
