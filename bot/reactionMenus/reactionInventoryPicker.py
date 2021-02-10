@@ -169,35 +169,3 @@ class ReactionInventoryPicker(reactionMenu.CancellableReactionMenu):
         :raise NotImplementedError: Always.
         """
         raise NotImplementedError("Attempted to call fromDict on an unsaveable reaction menu type")
-        # options = {}
-        # for option in rmDict["options"]:
-
-
-        data = {"channel": self.msg.channel.id, "msg": self.msg.id, "options": optionsDict}
-            
-        if self.titleTxt != "":
-            data["titleTxt"] = self.titleTxt
-
-        if self.desc != "":
-            data["desc"] = self.desc
-
-        if self.col != Colour.blue():
-            data["col"] = self.col
-
-        if self.footerTxt != "":
-            data["footerTxt"] = self.footerTxt
-
-        if self.img != "":
-            data["img"] = self.img
-
-        if self.thumb != "":
-            data["thumb"] = self.thumb
-
-        if self.icon != "":
-            data["icon"] = self.icon
-
-        if self.authorName != "":
-            data["authorName"] = self.authorName
-
-        if self.timeout != None:
-            data["timeout"] = self.timeout.timestamp
