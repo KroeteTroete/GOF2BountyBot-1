@@ -3,7 +3,7 @@ import discord
 from . import commandsDB as botCommands
 from .. import botState, lib
 from ..cfg import cfg
-from ..logging import botState
+from .. import botState
 
 
 botCommands.addHelpSection(0, "economy")
