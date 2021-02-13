@@ -23,9 +23,6 @@ techLevelRange = range(cfg.minTechLevel, cfg.maxTechLevel + 1)
 # The probability of a shop spawning with a given tech level. Tech level = index + 1
 cumulativeShopTLChance = [0] * numTechLevels
 
-# Price ranges by which ships should be ranked into tech levels. 0th index = tech level 1
-shipMaxPriceTechLevels = [50000, 100000, 200000, 500000, 1000000, 2000000, 5000000, 7000000, 7500000, 999999999]
-
 # CUMULATIVE probabilities of items of a given tech level spawning in a shop of a given tech level
 # Outer dimension is shop tech level
 # Inner dimension is item tech level
@@ -72,7 +69,7 @@ def makeCumulative(nums : List[Union[int, float]]) -> List[Union[int, float]]:
     :rtype: List[Union[int, float]
     """
     if len(nums) > 1:
-        return [truncItemSpawnResolution(nums[i] + nums[i-1]) for i in range(1, len(nums))]
+        return [nums[0]] + [truncItemSpawnResolution(nums[i] + nums[i-1]) for i in range(1, len(nums))]
     return nums
 
 
