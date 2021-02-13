@@ -9,7 +9,7 @@ from ....reactionMenus.confirmationReactionMenu import InlineConfirmationMenu
 
 
 @gameItem.spawnableItem
-class Crate(toolItem.ToolItem):
+class CrateTool(toolItem.ToolItem):
     def __init__(self, itemPool, name : str = "", value : int = 0, wiki : str = "",
             manufacturer : str = "", icon : str = "", emoji : lib.emojis.BasedEmoji = lib.emojis.BasedEmoji.EMPTY,
             techLevel : int = -1, builtIn : bool = False):
@@ -58,9 +58,9 @@ class Crate(toolItem.ToolItem):
         confirmation = await InlineConfirmationMenu(confirmMsg, message.author,
                                                     cfg.toolUseConfirmTimeoutSeconds).doMenu()
 
-        if cfg.emojis.reject in confirmation:
+        if cfg.defaultEmojis.reject in confirmation:
             return "🛑 Crate open cancelled."
-        elif cfg.emojis.accept in confirmation:
+        elif cfg.defaultEmojis.accept in confirmation:
             newItem = random.choice(self.itemPool)
             callingBUser.getInventoryForItem(newItem).addItem(newItem)
             callingBUser.inactiveTools.removeItem(self)
@@ -120,7 +120,7 @@ class Crate(toolItem.ToolItem):
         else:
             logger.log("crateTool", "fromDict", "fromDict-ing a crateTool with no itemPool.")
         
-        return Crate(itemPool, name=crateDict["name"] if "name" in crateDict else "",
+        return CrateTool(itemPool, name=crateDict["name"] if "name" in crateDict else "",
             value=crateDict["value"] if "value" in crateDict else 0,
             wiki=crateDict["wiki"] if "wiki" in crateDict else "",
             manufacturer=crateDict["manufacturer"] if "manufacturer" in crateDict else "",
