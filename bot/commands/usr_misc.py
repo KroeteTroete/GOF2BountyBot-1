@@ -143,7 +143,7 @@ async def cmd_how_to_play(message : discord.Message, args : str, isDM : bool):
         return
 
     if sendDM:
-        await message.add_reaction(cfg.emojis.dmSent.sendable)
+        await message.add_reaction(cfg.defaultEmojis.dmSent.sendable)
 
 botCommands.register("how-to-play", cmd_how_to_play, 0, aliases=["guide"], allowDM=True, signatureStr="**how-to-play**",
                         shortHelp="Get a short introduction on how to play bounties!")

@@ -25,14 +25,14 @@ class ShipSkinTool(toolItem.ToolItem):
         :param str wiki: A web page that is displayed as the wiki page for this item. If no wiki is given and shipSkin
                             has one, that will be used instead. (Default "")
         :param str icon: A URL pointing to an image to use for this item's icon (Default cfg.defaultShipSkinToolIcon)
-        :param lib.emojis.BasedEmoji emoji: The emoji to use for this item's small icon (Default cfg.emojis.shipSkinTool)
+        :param lib.emojis.BasedEmoji emoji: The emoji to use for this item's small icon (Default cfg.defaultEmojis.shipSkinTool)
         :param int techLevel: A rating from 1 to 10 of this item's technical advancement. Used as a measure for its
                                 effectiveness compared to other items of the same type (Default shipSkin.averageTL)
         :param bool builtIn: Whether this is a BountyBot standard item (loaded in from bbData) or a custom spawned
                                 item (Default False)
         """
         if emoji is None:
-            emoji = cfg.emojis.shipSkinTool
+            emoji = cfg.defaultEmojis.shipSkinTool
         super().__init__(lib.stringTyping.shipSkinNameToToolName(skin.name), [skin.name, "Skin: " + skin.name,
                             "Ship Skin " + skin.name + "Skin " + skin.name], value=value,
                             wiki=wiki if wiki else skin.wiki if skin.hasWiki else "",
@@ -122,9 +122,9 @@ class ShipSkinTool(toolItem.ToolItem):
         confirmation = await InlineConfirmationMenu(confirmMsg, message.author,
                                                     cfg.toolUseConfirmTimeoutSeconds).doMenu()
         
-        if cfg.emojis.reject in confirmation:
+        if cfg.defaultEmojis.reject in confirmation:
             return "🛑 Skin application cancelled."
-        elif cfg.emojis.accept in confirmation:
+        elif cfg.defaultEmojis.accept in confirmation:
             ship.applySkin(self.skin)
             if self in callingBUser.inactiveTools:
                 callingBUser.inactiveTools.removeItem(self)

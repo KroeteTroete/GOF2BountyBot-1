@@ -8,7 +8,7 @@ from .. import lib
 from ..scheduling import timedTask
 
 # The maximum number of gameItems displayable per menu page
-maxItemsPerPage = len(cfg.emojis.menuOptions)
+maxItemsPerPage = len(cfg.defaultEmojis.menuOptions)
 
 
 class ReactionInventoryPickerOption(reactionMenu.ReactionMenuOption):
@@ -28,7 +28,7 @@ class ReactionInventoryPickerOption(reactionMenu.ReactionMenuOption):
                                             (Default item.emoji)
         :param str name: The name of this option as shown in the menu (Default item.name)
         :raise ValueError: When an emoji isn't provided and the given gameItem does not have an emoji
-                            (TODO: default to cfg.emojis.menuOptions)
+                            (TODO: default to cfg.defaultEmojis.menuOptions)
         """
 
         self.item = item
@@ -110,7 +110,7 @@ class ReactionInventoryPicker(reactionMenu.CancellableReactionMenu):
         itemOptions = {}
         itemPage = inventory.getPage(self.page, self.itemsPerPage)
         for itemNum in range(len(itemPage)):
-            optionEmoji = cfg.emojis.menuOptions[itemNum]
+            optionEmoji = cfg.defaultEmojis.menuOptions[itemNum]
             item = itemPage[itemNum].item
             itemOptions[optionEmoji] = ReactionInventoryPickerOption(item, self, emoji=optionEmoji)
 

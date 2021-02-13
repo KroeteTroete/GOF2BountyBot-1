@@ -49,9 +49,9 @@ class ReactionDuelChallengeMenu(reactionMenu.ReactionMenu):
 
         self.duelChallenge = duelChallenge
 
-        options = { cfg.emojis.accept: reactionMenu.NonSaveableReactionMenuOption("Accept", cfg.emojis.accept, \
+        options = { cfg.defaultEmojis.accept: reactionMenu.NonSaveableReactionMenuOption("Accept", cfg.defaultEmojis.accept, \
                                                                                     addFunc=self.acceptChallenge),
-                    cfg.emojis.reject: reactionMenu.NonSaveableReactionMenuOption("Reject", cfg.emojis.reject, \
+                    cfg.defaultEmojis.reject: reactionMenu.NonSaveableReactionMenuOption("Reject", cfg.defaultEmojis.reject, \
                                                                                     addFunc=self.rejectChallenge)   }
 
         super(ReactionDuelChallengeMenu, self).__init__(msg, options=options, titleTxt=titleTxt, desc=desc, col=col, \

@@ -259,7 +259,7 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
                                     + "! Please enable DMs from users who are not friends.")
         return
     if sendDM:
-        await message.add_reaction(cfg.emojis.dmSent.sendable)
+        await message.add_reaction(cfg.defaultEmojis.dmSent.sendable)
 
 botCommands.register("shop", cmd_shop, 0, aliases=["store"], allowDM=False, helpSection="economy",
                         signatureStr="**shop** *[item-type]*",

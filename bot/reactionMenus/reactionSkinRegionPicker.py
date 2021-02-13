@@ -31,7 +31,7 @@ class ReactionSkinRegionPicker(reactionMenu.SingleUserReactionMenu):
         """
 
         if not possibleRegions:
-            if numRegions > len(cfg.emojis.emojis.numbers) - 2:
+            if numRegions > len(cfg.defaultEmojis.emojis.numbers) - 2:
                 raise IndexError("Attempted to create a ReactionSkinRegionPicker choosing from more regions than can can be" \
                                     + " represented by cfg.ReactionSkinRegionPicker")
             if numRegions < 1:
@@ -49,18 +49,18 @@ class ReactionSkinRegionPicker(reactionMenu.SingleUserReactionMenu):
             titleTxt = "Custom Skin Renderer"
 
 
-        regionOptions = {cfg.emojis.spiral: reactionMenu.DummyReactionMenuOption("Select all", cfg.emojis.spiral)}
+        regionOptions = {cfg.defaultEmojis.spiral: reactionMenu.DummyReactionMenuOption("Select all", cfg.defaultEmojis.spiral)}
         for regionNumber in (possibleRegions if possibleRegions else range(1, numRegions + 1)):
-            regionOptions[cfg.emojis.emojis.numbers[regionNumber]] = \
-                reactionMenu.DummyReactionMenuOption("Layer " + str(regionNumber), cfg.emojis.emojis.numbers[regionNumber])
+            regionOptions[cfg.defaultEmojis.emojis.numbers[regionNumber]] = \
+                reactionMenu.DummyReactionMenuOption("Layer " + str(regionNumber), cfg.defaultEmojis.emojis.numbers[regionNumber])
         
-        regionOptions[cfg.emojis.submit] = reactionMenu.DummyReactionMenuOption("Submit", cfg.emojis.submit)
-        regionOptions[cfg.emojis.cancel] = reactionMenu.DummyReactionMenuOption("Cancel render", cfg.emojis.cancel)
+        regionOptions[cfg.defaultEmojis.submit] = reactionMenu.DummyReactionMenuOption("Submit", cfg.defaultEmojis.submit)
+        regionOptions[cfg.defaultEmojis.cancel] = reactionMenu.DummyReactionMenuOption("Cancel render", cfg.defaultEmojis.cancel)
 
         super(ReactionSkinRegionPicker, self).__init__(msg, owningUser, timeoutSeconds,
-                                                        returnTriggers=[    cfg.emojis.spiral,
-                                                                            cfg.emojis.submit, 
-                                                                            cfg.emojis.cancel],
+                                                        returnTriggers=[    cfg.defaultEmojis.spiral,
+                                                                            cfg.defaultEmojis.submit, 
+                                                                            cfg.defaultEmojis.cancel],
                                                         options=regionOptions, titleTxt=titleTxt, desc=desc, col=col,
                                                         footerTxt=footerTxt, img=img, thumb=thumb, icon=icon,
                                                         authorName=authorName)

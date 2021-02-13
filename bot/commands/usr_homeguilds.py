@@ -32,9 +32,9 @@ async def cmd_transfer(message : discord.Message, args : str, isDM : bool):
                                                     desc="This command's cooldown is " \
                                                         + lib.timeUtil.td_format_noYM(cooldownTime) + ".").doMenu()
 
-        if cfg.emojis.reject in confirmation:
+        if cfg.defaultEmojis.reject in confirmation:
             await message.channel.send("🛑 Home guild transfer cancelled.")
-        elif cfg.emojis.accept in confirmation:
+        elif cfg.defaultEmojis.accept in confirmation:
             await requestedBBUser.transferGuild(message.guild)
             await message.channel.send(":airplane_arriving: You transferred your home server to " + message.guild.name + "!")
 

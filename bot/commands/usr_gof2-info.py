@@ -742,9 +742,9 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
                                                             numRegions=shipData["textureRegions"])
                 pickedLayers = []	
                 menuOutput = await layersPickerMenu.doMenu()	
-                if cfg.emojis.spiral in menuOutput:	
+                if cfg.defaultEmojis.spiral in menuOutput:	
                     pickedLayers = layerIndices	
-                elif cfg.emojis.cancel in menuOutput:	
+                elif cfg.defaultEmojis.cancel in menuOutput:	
                     await message.channel.send("🛑 Skin render cancelled.")	
                     for skinPath in skinPaths.values():	
                         os.remove(skinPath)	
@@ -753,7 +753,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
                 else:	
                     for react in menuOutput:	
                         try:	
-                            pickedLayers.append(cfg.emojis.numbers.index(react))	
+                            pickedLayers.append(cfg.defaultEmojis.numbers.index(react))	
                         except ValueError:	
                             pass	
                 	
@@ -764,9 +764,9 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
                                                                         possibleRegions=remainingIndices,
                                                                         desc="Would you like to disable any regions?")	
                     menuOutput = await disabledLayersPickerMenu.doMenu()	
-                    if cfg.emojis.spiral in menuOutput:	
+                    if cfg.defaultEmojis.spiral in menuOutput:	
                         disabledLayers = remainingIndices	
-                    elif cfg.emojis.cancel in menuOutput:	
+                    elif cfg.defaultEmojis.cancel in menuOutput:	
                         await message.channel.send("🛑 Skin render cancelled.")	
                         for skinPath in skinPaths.values():	
                             os.remove(skinPath)	
@@ -775,7 +775,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
                     else:	
                         for react in menuOutput:	
                             try:	
-                                disabledLayers.append(cfg.emojis.numbers.index(react))	
+                                disabledLayers.append(cfg.defaultEmojis.numbers.index(react))	
                             except ValueError:	
                                 pass	
                 	
