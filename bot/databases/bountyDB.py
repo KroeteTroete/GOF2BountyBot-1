@@ -29,6 +29,7 @@ class BountyDB(serializable.Serializable):
         # Dictionary of faction name : list of bounties
         # TODO: add criminal.__hash__, and change bountyDB.bounties into dict of faction:{criminal:bounty}
         self.bounties = {}
+        self.escapedBounties = {}
 
         # Useable faction names for this bountyDB
         self.factions = factions
@@ -254,6 +255,21 @@ class BountyDB(serializable.Serializable):
         self.bounties[bounty.faction].append(bounty)
         self.latestBounty = bounty
 
+
+    def addEscapedBounty(self, bounty : bounty.Bounty):
+        """Add a given bounty object to the escaped bounties database.
+        Bounties cannot be added if the object or name already exists in the database.
+
+        :param bounty.Bounty bounty: the bounty object to add to the database
+        :raise ValueError: if the requested bounty's name already exists in the database
+        """
+        # ensure the given bounty does not already exist
+        if self.bountyNameExists(bounty.criminal.name) or bounty.criminal.name in self.escapedBounties[bounty.faction]:
+            raise ValueError("Attempted to add a bounty whose name already exists: " + bounty.name)
+
+        # Add the bounty to the database
+        self.escapedBounties[bounty.faction].append(bounty)
+
     
     def removeBountyName(self, name : str, faction : str = None):
         """Find the bounty associated with the given criminal name or alias, and remove it from the database.
@@ -337,11 +353,19 @@ class BountyDB(serializable.Serializable):
         """
         dbReload = kwargs["dbReload"] if "dbReload" in kwargs else False
 
+        escapedBountiesData = bountyDBDict["escaped"] if "escaped" in bountyDBDict else {}
+        activeBountiesData = bountyDBDict["active"] if "active" in bountyDBDict else {}
+
         # Instanciate a new bountyDB
-        newDB = BountyDB(bountyDBDict.keys())
+        newDB = BountyDB(activeBountiesData.keys())
         # Iterate over all factions in the DB
-        for fac in bountyDBDict.keys():
+        for fac in activeBountiesData.keys():
             # Convert each serialised bounty into a bounty object
-            for bountyDict in bountyDBDict[fac]:
+            for bountyDict in activeBountiesData[fac]:
                 newDB.addBounty(bounty.Bounty.fromDict(bountyDict, dbReload=dbReload))
+        # Iterate over all factions in the DB
+        for fac in escapedBountiesData.keys():
+            # Convert each serialised bounty into a bounty object
+            for bountyDict in escapedBountiesData[fac]:
+                newDB.addEscapedBounty(bounty.Bounty.fromDict(bountyDict, dbReload=dbReload))
         return newDB
