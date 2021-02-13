@@ -510,7 +510,6 @@ class GuildShop(serializable.Serializable):
             turretsStock.addItem(turretWeapon.TurretWeapon.fromDict(turretListingDict["item"]),
                                                                     quantity=turretListingDict["count"])
 
-        return GuildShop(shopDict["maxShips"], shopDict["maxWeapons"], shopDict["maxModules"],
-                        currentTechLevel=shopDict["currentTechLevel"] if "currentTechLevel" in shopDict else 1,
+        return GuildShop(currentTechLevel=shopDict["currentTechLevel"] if "currentTechLevel" in shopDict else 1,
                         shipsStock=shipsStock, weaponsStock=weaponsStock,
                         modulesStock=modulesStock, turretsStock=turretsStock)
