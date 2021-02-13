@@ -215,7 +215,7 @@ class BasedClient(ClientBaseClass):
 
 ####### GLOBAL VARIABLES #######
 
-botState.logger = logging.Logger()
+botState.logger = logging.Logger(categories=cfg.loggingCategories)
 
 # interface into the discord servers
 botState.client = BasedClient(storeUsers=True,

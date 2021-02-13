@@ -325,3 +325,7 @@ httpErrRetries = 3
 
 # The number of seconds to wait between API call retries upon HTTP exception catching
 httpErrRetryDelaySeconds = 1
+
+# The categories to sort and save logs into
+loggingCategories = [   "usersDB", "guildsDB", "bountiesDB", "shop", "escapedBounties", "bountyConfig", "duels", "hangar",
+                        "bountyBoards", "newBounties", "reactionMenus", "userAlerts"]

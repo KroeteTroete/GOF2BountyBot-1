@@ -2,7 +2,7 @@ from .cfg import cfg
 from os import path
 from datetime import datetime
 import traceback
-from typing import Tuple
+from typing import Tuple, List
 
 
 LOG_TIME_FORMAT = "(%d/%m/%H:%M)"
@@ -16,16 +16,24 @@ class Logger:
 
     :var logs: A dictionary associating category names with dictionaries, associating datetime.datetimes with event strings
     :vartype logs: dict[str, dict[datetime.datetime, str]]
+    :var categories: The names of logging categories to sort and save logs into. This should be equal to logs.keys()
+    :vartype categories: List[str]
     """
 
-    def __init__(self):
+    def __init__(self, categories: List[str] = ["misc"]):
+        """
+        :param List[str] categories: The names of logging categories to sort and save logs into (Default ["misc"])
+        """
+        self.categories = categories
+        if "misc" not in categories:
+            self.categories.append("misc")
         self.clearLogs()
 
 
     def clearLogs(self):
         """Clears all logs from the database.
         """
-        self.logs = {"usersDB": {}, "guildsDB": {}, "reactionMenus": {}, "misc": {}}
+        self.logs = {cat: {} for cat in self.categories}
 
 
     def isEmpty(self) -> bool:
