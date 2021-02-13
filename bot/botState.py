@@ -11,6 +11,8 @@ guildsDB = None
 reactionMenusDB = None
 
 newBountiesTTDB = None
+duelRequestTTDB = None
+shopRefreshTT = None
 
 logger = None
 
