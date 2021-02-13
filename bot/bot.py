@@ -1,6 +1,6 @@
 # Set up bot config
 
-from .cfg import cfg, versionInfo, bbData
+from .cfg import cfg, versionInfo, bbData, gameConfigurator
 
 
 # Discord Imports
@@ -22,7 +22,6 @@ import aiohttp
 # BASED Imports
 
 from . import lib, botState, logging
-from .lib import gameMaths
 from .databases import guildDB, reactionMenuDB, userDB
 from .scheduling.timedTask import TimedTask
 from .scheduling.timedTaskHeap import TimedTaskHeap
@@ -94,6 +93,15 @@ def setHelpEmbedThumbnails():
         for helpSection in levelSection.values():
             for embed in helpSection:
                 embed.set_thumbnail(url=botState.client.user.avatar_url_as(size=64))
+
+
+async def initializeBountyBoardChannels():
+    for guild in botState.guildsDB.getGuilds():
+        if guild.hasBountyBoardChannel:
+            if botState.client.get_channel(guild.bountyBoardChannel.channelIDToBeLoaded) is None:
+                guild.removeBountyBoardChannel()
+            else:
+                await guild.bountyBoardChannel.init(botState.client, bbData.bountyFactions)
 
 
 def inferUserPermissions(message: discord.Message) -> int:
@@ -213,6 +221,7 @@ class BasedClient(ClientBaseClass):
         await botState.httpClient.close()
 
 
+
 ####### GLOBAL VARIABLES #######
 
 botState.logger = logging.Logger(categories=cfg.loggingCategories)
@@ -225,6 +234,7 @@ botState.client = BasedClient(storeUsers=True,
 # commands DB
 from . import commands
 botCommands = commands.loadCommands()
+
 
 
 ####### DATABASE FUNCTIONS #####
@@ -263,6 +273,38 @@ async def loadReactionMenusDB(filePath: str) -> reactionMenuDB.ReactionMenuDB:
     return reactionMenuDB.ReactionMenuDB()
 
 
+
+####### UTIL FUNCTIONS #######
+
+async def announceNewShopStock(guildID : int = -1):
+    """Announce the refreshing of shop stocks to one or all joined guilds.
+    Messages will be sent to the playChannels of all guilds in the botState.guildsDB, if they have one
+
+    :param int guildID: The guild to announce to. If guildID is -1, the shop refresh will be announced to all joined guilds.
+                        (Default -1)
+    """
+    if guildID == -1:
+        # loop over all guilds
+        for guild in botState.guildsDB.guilds.values():
+            # ensure guild has a valid playChannel
+            if not guild.shopDisabled:
+                await guild.announceNewShopStock()
+    else:
+        guild = botState.guildsDB.getGuild(guildID)
+        # ensure guild has a valid playChannel
+        if not guild.shopDisabled:
+            await guild.announceNewShopStock()
+
+
+async def refreshAndAnnounceAllShopStocks():
+    """Generate new tech levels and inventories for the shops of all joined guilds,
+    and announce the stock refresh to those guilds.
+    """
+    botState.guildsDB.refreshAllShopStocks()
+    await announceNewShopStock()
+
+
+
 ####### SYSTEM COMMANDS #######
 
 async def err_nodm(message: discord.Message, args: str, isDM: bool):
@@ -275,13 +317,50 @@ async def err_nodm(message: discord.Message, args: str, isDM: bool):
     await message.channel.send("This command can only be used from inside of a server.")
 
 
+async def err_tempDisabled(message : discord.Message, args : str, isDM : bool):
+    """Send an error message when a bounties command is requested - all bounty and shop related behaviour is
+    currently disabled.
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: ignored
+    :param bool isDM: ignored
+    """
+    await message.channel.send(":x: All bounty/shop behaviour is currently disabled while I work on new features \:)")
+
+
+async def err_tempPerfDisabled(message : discord.Message, args : str, isDM : bool):
+    """Send an error message when a command is requested that is disabled for perfornance reasons.
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: ignored
+    :param bool isDM: ignored
+    """
+    await message.channel.send(":x: This command has been temporarily disabled as it requires too much processing power. " \
+                                + "It may return in the future once hosting hardware has been upgraded! \:)")
+
+
+async def dummy_command(message : discord.Message, args : str, isDM : bool):
+    """Dummy command doing nothing at all.
+    Useful when waiting for commands with client.wait_for from a non-blocking process.
+
+    :param discord.Message message: ignored
+    :param str args: ignored
+    :param bool isDM: ignored
+    """
+    pass
+
+botCommands.register("cancel", dummy_command, 0, allowDM=True, noHelp=True)
+
+
+
 ####### MAIN FUNCTIONS #######
 
 
 @botState.client.event
 async def on_guild_join(guild: discord.Guild):
     """Create a database entry for new guilds when one is joined.
-    TODO: Once deprecation databases are implemented, if guilds now store important information consider searching for them in deprecated
+    TODO: Once deprecation databases are implemented, if guilds now store important information consider searching for
+    them in deprecated
 
     :param discord.Guild guild: the guild just joined.
     """
@@ -293,13 +372,14 @@ async def on_guild_join(guild: discord.Guild):
 
         botState.logger.log("Main", "guild_join", "I joined a new guild! " + guild.name + "#" + str(guild.id) +
                                 ("\n -- The guild was added to botState.guildsDB" if not guildExists else ""),
-                                category="guildsDB", eventType="NW_GLD")
+                                category="guildsDB", eventType="JOIN_GUILD")
 
 
 @botState.client.event
 async def on_guild_remove(guild: discord.Guild):
     """Remove the database entry for any guilds the bot leaves.
-    TODO: Once deprecation databases are implemented, if guilds now store important information consider moving them to deprecated.
+    TODO: Once deprecation databases are implemented, if guilds now store important information consider moving
+    them to deprecated.
 
     :param discord.Guild guild: the guild just left.
     """
@@ -311,7 +391,7 @@ async def on_guild_remove(guild: discord.Guild):
 
         botState.logger.log("Main", "guild_remove", "I left a guild! " + guild.name + "#" + str(guild.id) +
                                 ("\n -- The guild was removed from botState.guildsDB" if guildExists else ""),
-                                category="guildsDB", eventType="NW_GLD")
+                                category="guildsDB", eventType="LEAVE_GUILD")
 
 
 @botState.client.event
@@ -322,8 +402,17 @@ async def on_ready():
 
     TODO: Implement dynamic timedtask checking period
     """
+    ##### VALIDATION #####
+
+    if cfg.timedTaskCheckingType not in ["fixed", "dynamic"]:
+        raise ValueError("cfg: Invalid timedTaskCheckingType '" + cfg.timedTaskCheckingType + "'")
+
+
+    ##### CLIENT INITIALIZATION #####
+
     botState.client.skinStorageChannel = botState.client.get_guild(cfg.mediaServer).get_channel(cfg.skinRendersChannel)
     botState.httpClient = aiohttp.ClientSession()
+
 
     ##### EMOJI INITIALIZATION #####
 
@@ -335,13 +424,30 @@ async def on_ready():
         if isinstance(varValue, lib.emojis.UninitializedBasedEmoji):
             raise RuntimeError("Uninitialized emoji still remains in cfg after emoji initialization: '" + varName + "'")
 
+
+    ##### GAME OBJECTS LOADING #####
+
+    gameConfigurator.loadAllGameObjectData()
+    gameConfigurator.loadAllGameObjects()
+
+
+    ##### DATABASE INITIALIZATION #####
+    
     # Load save data. If the specified files do not exist, an empty database will be created instead.
     botState.usersDB = loadUsersDB(cfg.paths.usersDB)
     botState.guildsDB = loadGuildsDB(cfg.paths.guildsDB)
     botState.reactionMenusDB = await loadReactionMenusDB(cfg.paths.reactionMenusDB)
 
-    # Set help embed thumbnails
-    setHelpEmbedThumbnails()
+
+    ##### SCHEDULING #####
+
+    botState.newBountiesTTDB = TimedTaskHeap()
+    botState.duelRequestTTDB = TimedTaskHeap()
+
+    shopRefreshDelta = lib.timeUtil.timeDeltaFromDict(cfg.timeouts.shopRefresh)
+    botState.shopRefreshTT = TimedTask(expiryDelta=shopRefreshDelta,
+                                        autoReschedule=True,
+                                        expiryFunction=refreshAndAnnounceAllShopStocks)
 
     # Schedule reaction menu expiry
     botState.reactionMenusTTDB = TimedTaskHeap()
@@ -352,6 +458,14 @@ async def on_ready():
     botState.updatesCheckTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.timeouts.BASED_updateCheckFrequency),
                                         autoReschedule=True, expiryFunction=checkForUpdates)
 
+
+    ##### CLEANUP #####
+
+    await initializeBountyBoardChannels()
+
+    # Set help embed thumbnails
+    setHelpEmbedThumbnails()
+
     # Check for upates to BASED
     print("BASED " + versionInfo.BASED_VERSION + " loaded.\nClient logged in as {0.user}".format(botState.client))
     await checkForUpdates()
@@ -361,15 +475,19 @@ async def on_ready():
     # bot is now logged in
     botState.client.loggedIn = True
 
+
     # Main loop: execute regular tasks while the bot is logged in
     while botState.client.loggedIn:
         if cfg.timedTaskCheckingType == "fixed":
             await asyncio.sleep(cfg.timedTaskLatenessThresholdSeconds)
         # elif cfg.timedTaskCheckingType == "dynamic":
 
-        await botState.dbSaveTT.doExpiryCheck()
-        await botState.reactionMenusTTDB.doTaskChecking()
         await botState.updatesCheckTT.doExpiryCheck()
+        await botState.shopRefreshTT.doExpiryCheck()
+        await botState.newBountiesTTDB.doTaskChecking()
+        await botState.dbSaveTT.doExpiryCheck()
+        await botState.duelRequestTTDB.doTaskChecking()
+        await botState.reactionMenusTTDB.doTaskChecking()
 
         # termination signal received from OS. Trigger graceful shutdown with database saving
         if botState.client.killer.kill_now:
@@ -389,6 +507,18 @@ async def on_message(message: discord.Message):
     # ignore messages sent by bots
     if message.author.bot:
         return
+
+    # React to messages containing or mentioning bountybot
+    try:
+        if "bountybot" in message.content or botState.client.user in message.mentions:
+            await message.add_reaction("👀")
+        if "<:tex:723331420919169036>" in message.content:
+            await message.add_reaction("<:tex:723331420919169036>")
+    except discord.Forbidden:
+        pass
+    except discord.HTTPException:
+        pass
+
     # Check whether the command was requested in DMs
     try:
         isDM = message.channel.guild is None
@@ -426,7 +556,7 @@ async def on_message(message: discord.Message):
         # If the command threw an exception
         except Exception as e:
             # print a user friendly error
-            await message.channel.send("An unexpected error occured when calling this command. The error has been logged." +
+            await message.channel.send(":woozy_face: Uh oh, something went wrong! The error has been logged." +
                                         "\nThis command probably won't work until we've looked into it.")
             # log the exception as misc
             botState.logger.log("Main", "on_message", "An unexpected error occured when calling command '" +
@@ -436,7 +566,9 @@ async def on_message(message: discord.Message):
 
         # Command not found, send an error message.
         if not commandFound:
-            await message.channel.send(":question: Unknown command. Type `" + commandPrefix + "help` for a list of commands.")
+            userTitle = cfg.accessLevelTitles[accessLevel]
+            await message.channel.send(""":question: Can't do that, """ + userTitle + """. Type `""" \
+                                        + commandPrefix + """help` for a list of commands! **o7**""")
 
 
 @botState.client.event
