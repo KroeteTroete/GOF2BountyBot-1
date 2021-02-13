@@ -15,11 +15,11 @@ def fromDict(toolDict : dict) -> toolItem.ToolItem:
     :raise NameError: When toolDict does not contain a 'type' attribute.
     """
 
-    itemConstructors = {"ship": shipItem.Ship.fromDict,
-                        "primaryWeapon": primaryWeapon.PrimaryWeapon.fromDict,
-                        "moduleItem": moduleItemFactory.fromDict,
-                        "turretWeapon": turretWeapon.TurretWeapon.fromDict,
-                        "toolItem": fromDict}
+    itemConstructors = {"Ship": shipItem.Ship.fromDict,
+                        "PrimaryWeapon": primaryWeapon.PrimaryWeapon.fromDict,
+                        "ModuleItem": moduleItemFactory.fromDict,
+                        "TurretWeapon": turretWeapon.TurretWeapon.fromDict,
+                        "ToolItem": fromDict}
 
     def crateFromDict(crateDict):
         if "itemPool" not in crateDict:
@@ -31,7 +31,7 @@ def fromDict(toolDict : dict) -> toolItem.ToolItem:
             else:
                 itemPool.append(itemConstructors[itemDict["type"]](itemDict))
         
-        return crateTool.Crate(itemPool, name=crateDict["name"] if "name" in crateDict else "",
+        return crateTool.CrateTool(itemPool, name=crateDict["name"] if "name" in crateDict else "",
             value=crateDict["value"] if "value" in crateDict else 0,
             wiki=crateDict["wiki"] if "wiki" in crateDict else "",
             manufacturer=crateDict["manufacturer"] if "manufacturer" in crateDict else "",
@@ -40,8 +40,8 @@ def fromDict(toolDict : dict) -> toolItem.ToolItem:
             techLevel=crateDict["techLevel"] if "techLevel" in crateDict else -1,
             builtIn=crateDict["builtIn"] if "builtIn" in crateDict else False)
 
-    toolTypeConstructors = {"shipSkinTool": shipSkinTool.ShipSkinTool.fromDict,
-                        "crateTool": crateFromDict}
+    toolTypeConstructors = {"ShipSkinTool": shipSkinTool.ShipSkinTool.fromDict,
+                        "CrateTool": crateFromDict}
     
     if "type" not in toolDict:
         raise NameError("Required dictionary attribute missing: 'type'")
