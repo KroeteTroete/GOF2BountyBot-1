@@ -1,47 +1,4 @@
 from discord import Colour
-# Used for importing items
-import os
-import json
-from . import cfg
-
-CWD = os.getcwd()
-
-
-def loadGameItemsFromDir(itemDir, itemFolderExt):
-    itemDB = {}
-    rawFolderExt = itemFolderExt.lstrip(".")
-    itemFolderExt = itemFolderExt.lower()
-    for subdir, dirs, _ in os.walk(itemDir):
-        for dirname in dirs:
-            dirpath = subdir + os.sep + dirname
-
-            if dirname.lower().endswith(itemFolderExt):
-                with open(dirpath + os.sep + "META.json", "r") as f:
-                    currentItemData = json.loads(f.read())
-                    itemDB[currentItemData["name"]] = currentItemData
-    print("[bbData] " + str(len(itemDB)) + " " + rawFolderExt + "s loaded.")
-    return itemDB
-
-
-def loadbbShipsFromDir(shipsDir):
-    itemDB = {}
-    for subdir, dirs, _ in os.walk(shipsDir):
-        for dirname in dirs:
-            dirpath = subdir + os.sep + dirname
-
-            if dirname.lower().endswith(".bbship"):
-                with open(dirpath + os.sep + "META.json", "r") as f:
-                    currentItemData = json.loads(f.read())
-                    currentItemData["path"] = CWD + os.sep + dirpath
-                    if "skinnable" not in currentItemData or "model" not in currentItemData:
-                        currentItemData["skinnable"] = False
-                    itemDB[currentItemData["name"]] = currentItemData
-
-                    if "compatibleSkins" not in currentItemData:
-                        currentItemData["compatibleSkins"] = []
-    print("[bbData] " + str(len(itemDB)) + " bbShips loaded.")
-    return itemDB
-
 
 # all factions recognised by BB
 factions = ["terran", "vossk", "midorian", "nivelian", "neutral"]
@@ -79,51 +36,41 @@ factionColours = {  "terran":Colour.gold(),
 # which are stored in builtInShipObjs in a similar dict format.
 # Ships to not have tech levels in GOF2, so tech levels will be automaticaly generated
 # for the sake of the bot during bot.on_ready.
-builtInShipData = loadbbShipsFromDir(cfg.paths.bbShipMETAFolder)
+builtInShipData = {}
 
 # Data representing all module items in the game. These are used to create bbModule objects,
 # which are stored in builtInModuleObjs in a similar dict format.
-builtInModuleData = loadGameItemsFromDir(cfg.paths.bbModuleMETAFolder, ".bbModule")
+builtInModuleData = {}
 
 # Data representing all primary weapon items in the game. These are used to create bbWeapon objects,
 # which are stored in builtInWeaponObjs in a similar dict format.
-builtInWeaponData = loadGameItemsFromDir(cfg.paths.bbWeaponMETAFolder, ".bbWeapon")
+builtInWeaponData = {}
 
 # Data representing all ship upgrades in the game. These are used to create bbShipUpgrade objects,
 # which are stored in builtInUpgradeObjs in a similar dict format.
-builtInUpgradeData = loadGameItemsFromDir(cfg.paths.bbShipUpgradesMETAFolder, ".bbShipUpgrade")
+builtInUpgradeData = {}
 
 # data for builtIn criminals to be used in Criminal.fromDict
 # criminals marked as not builtIn to allow for dictionary init.
 # The criminal object is then marked as builtIn during bot.on_ready
-builtInCriminalData = loadGameItemsFromDir(cfg.paths.CriminalMETAFolder, ".Criminal")
-
-# names of criminals in builtIn bounties
-bountyNames = {}
-# the length of the longest criminal name, to be used in padding during cmd_bounties
-longestBountyNameLength = 0
-
-# Fetch bounty names and longest bounty name
-for criminalName in builtInCriminalData:
-    if builtInCriminalData[criminalName]["faction"] not in bountyNames:
-        bountyNames[builtInCriminalData[criminalName]["faction"]] = []
-    bountyNames[builtInCriminalData[criminalName]["faction"]].append(criminalName)
-    if len(criminalName) > longestBountyNameLength:
-        longestBountyNameLength = len(criminalName)
+builtInCriminalData = {}
 
 # data for builtIn systems to be used in SolarSystem.fromDict
-builtInSystemData = loadGameItemsFromDir(cfg.paths.SolarSystemMETAFolder, ".SolarSystem")
+builtInSystemData = {}
 
 # data for builtIn Turrets to be used in bbTurret.fromDict
-builtInTurretData = loadGameItemsFromDir(cfg.paths.bbTurretMETAFolder, ".bbTurret")
+builtInTurretData = {}
 
 # data for builtIn commodities to be used in bbCommodity.fromDict (unimplemented)
-builtInCommodityData = loadGameItemsFromDir(cfg.paths.bbCommodityMETAFolder, ".bbCommodity")
+builtInCommodityData = {}
 
 builtInToolData = {}
 
 # data for builtIn secondaries to be used in bbSecondary.fromDict (unimplemented)
-builtInSecondariesData = loadGameItemsFromDir(cfg.paths.bbModuleMETAFolder, ".bbModule")
+builtInSecondariesData = {}
+
+# data for builtIn ShipSkins to be used in ShipSkin.fromDict
+builtInShipSkinsData = {}
 
 
 # Objects representing all ship skins in the game.
@@ -146,3 +93,17 @@ shipKeysByTL = []
 moduleObjsByTL = []
 weaponObjsByTL = []
 turretObjsByTL = []
+
+
+# names of criminals in builtIn bounties
+bountyNames = {}
+# the length of the longest criminal name, to be used in padding during cmd_bounties
+longestBountyNameLength = 0
+
+# Fetch bounty names and longest bounty name
+for criminalName in builtInCriminalData:
+    if builtInCriminalData[criminalName]["faction"] not in bountyNames:
+        bountyNames[builtInCriminalData[criminalName]["faction"]] = []
+    bountyNames[builtInCriminalData[criminalName]["faction"]].append(criminalName)
+    if len(criminalName) > longestBountyNameLength:
+        longestBountyNameLength = len(criminalName)

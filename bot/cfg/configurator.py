@@ -1,8 +1,9 @@
 from . import cfg
 import toml
 import os
-from ..lib.emojis import UninitializedBasedEmoji
 from typing import Dict, Any
+
+from ..lib.emojis import UninitializedBasedEmoji
 
 # List of cfg attribute names that are not config variables
 ignoredVarNames = ("__name__", "__doc__", "__package__", "__loader__", "__spec__",
@@ -61,6 +62,8 @@ def init():
 
     Normalizes path config variables, creates any referenced directories that do not exist,
     and loads cfg.paths, cfg.defaultEmojis and cfg.timeouts into ConfigProxys.
+
+    This function will also load in all game object metadata and instances with gameConfigurator
     """
     # Normalize all paths and create missing directories
     for varname in cfg.paths:

@@ -60,7 +60,6 @@ paths = {
     "usersDB": "saveData" + "/" + "users.json",
     "guildsDB": "saveData" + "/" + "guilds.json",
     "reactionMenusDB": "saveData" + "/" + "reactionMenus.json",
-    "bountiesDB": "saveData" + "/" + "bounties.json",
 
     # path to folder to save log txts to
     "logsFolder": "saveData" + "/" + "logs",
@@ -75,7 +74,8 @@ paths = {
     "bbSecondaryMETAFolder": "game objects" + "/" + "items" + "/" + "secondaries",
     "bbShipMETAFolder": "game objects" + "/" + "items" + "/" + "ships",
     "bbWeaponMETAFolder": "game objects" + "/" + "items" + "/" + "weapons",
-    "bbTurretMETAFolder": "game objects" + "/" + "items" + "/" + "turrets"
+    "bbTurretMETAFolder": "game objects" + "/" + "items" + "/" + "turrets",
+    "bbToolMETAFolder": "game objects" + "/" + "items" + "/" + "tools"
 }
 
 
@@ -165,6 +165,9 @@ itemSpawnRateResDP = 3
 # The range of valid tech levels a shop may spawn at
 minTechLevel = 1
 maxTechLevel = 10
+
+# Price ranges by which ships should be ranked into tech levels. 0th index = tech level 1
+shipMaxPriceTechLevels = [50000, 100000, 200000, 500000, 1000000, 2000000, 5000000, 7000000, 7500000, 999999999]
 
 
 
@@ -329,3 +332,6 @@ httpErrRetryDelaySeconds = 1
 # The categories to sort and save logs into
 loggingCategories = [   "usersDB", "guildsDB", "bountiesDB", "shop", "escapedBounties", "bountyConfig", "duels", "hangar",
                         "bountyBoards", "newBounties", "reactionMenus", "userAlerts"]
+
+# The maximum recursion depth of directory-walking when loading gameObjects from their JSON representation
+gameObjectCfgMaxRecursion = 6
