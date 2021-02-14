@@ -235,7 +235,7 @@ async def fightDuel(sourceUser : User, targetUser : User, duelReq : DuelRequest,
             creditsMsg += ".\n**" + botState.client.get_user(winningBasedUser.id).name + "** now has **" \
                 + str(winningBasedUser.credits) + " credits**.\n**" + botState.client.get_user(losingBasedUser.id).name \
                 + "** now has **" + str(losingBasedUser.credits) + " credits**."
-                
+
         statsEmbed = makeDuelStatsEmbed(duelResults, sourceUser, targetUser)
 
         if acceptMsg.guild.get_member(winningBasedUser.id) is None:

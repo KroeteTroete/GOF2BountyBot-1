@@ -406,7 +406,7 @@ async def cmd_duel(message : discord.Message, args : str, isDM : bool):
                                 + "** UTC."
 
         sentMsgs = []
-        
+
         async def queueChallengeMsg(channel, challengerStr, targetStr):
             sentMsgs.append(await channel.send(":crossed_swords: **" + challengerStr + "** challenged " + targetStr \
                                                 + " to duel for **" + str(stakes) + " Credits!**\nType `" \

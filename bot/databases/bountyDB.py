@@ -228,7 +228,7 @@ class BountyDB(serializable.Serializable):
     # def getBountyObjIndex(self, bounty):
     #     return self.bounties[bounty.faction].index(bounty)
 
-    
+
     # def getBountyNameIndex(self, name, faction=None):
     #     return self.getBountyObjIndex(self.getBounty(name, faction=faction))
     """
