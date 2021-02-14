@@ -146,18 +146,18 @@ class BountyDB(serializable.Serializable):
         # If the criminal's faction is known
         if faction is not None:
             # Search the given faction's bounties
-            for bounty in self.bounties[faction]:
+            for currentBounty in self.bounties[faction]:
                 # Return the named criminal's bounty if the name is found
-                if bounty.criminal.isCalled(name):
-                    return bounty
+                if currentBounty.criminal.isCalled(name):
+                    return currentBounty
 
         # If the criminal's faction is not known, search all factions
         else:
             for fac in self.getFactions():
                 # Return the named criminal's bounty if the name is found
-                for bounty in self.bounties[fac]:
-                    if bounty.criminal.isCalled(name):
-                        return bounty
+                for currentBounty in self.bounties[fac]:
+                    if currentBounty.criminal.isCalled(name):
+                        return currentBounty
 
         # The criminal was not recognised, raise an error
         raise KeyError("Bounty not found: " + name)
@@ -335,8 +335,8 @@ class BountyDB(serializable.Serializable):
         for fac in self.getFactions():
             data[fac] = []
             # Serialise all of the current faction's bounties into dictionary
-            for bounty in self.getFactionBounties(fac):
-                data[fac].append(bounty.toDict(**kwargs))
+            for currentBounty in self.getFactionBounties(fac):
+                data[fac].append(currentBounty.toDict(**kwargs))
         return data
 
 

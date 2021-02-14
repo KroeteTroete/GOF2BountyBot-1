@@ -355,8 +355,8 @@ class bountyBoardChannel(serializable.Serializable):
         """Clear all bounty listings on the board.
         """
         for fac in self.bountyMessages:
-            for bounty in self.bountyMessages[fac]:
-                await self.removeBounty(bounty)
+            for currentBounty in self.bountyMessages[fac]:
+                await self.removeBounty(currentBounty)
 
 
     def toDict(self, **kwargs) -> dict:
