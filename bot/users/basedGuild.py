@@ -470,7 +470,7 @@ class BasedGuild(serializable.Serializable):
             raise ValueError("Attempted to spawn a bounty into a guild where bounties are disabled")
         # ensure a new bounty can be created
         if self.bountiesDB.canMakeBounty():
-            newBounty = bounty.Bounty(bountyDB=self.bountiesDB)
+            newBounty = bounty.Bounty(owningDB=self.bountiesDB)
             # activate and announce the bounty
             self.bountiesDB.addBounty(newBounty)
             await self.announceNewBounty(newBounty)

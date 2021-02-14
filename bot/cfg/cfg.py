@@ -138,6 +138,9 @@ developers = [188618589102669826, 448491245296418817]
 # Also determines the number of access levels available, e.g when registering commands
 userAccessLevels = ["user", "mod", "admin", "dev"]
 
+# titles to give each type of user when reporting error messages etc
+accessLevelTitles = ["pilot", "captain", "commander", "officer"]
+
 
 
 ##### USERS #####
