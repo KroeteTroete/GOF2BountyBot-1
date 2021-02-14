@@ -1,8 +1,9 @@
 from __future__ import annotations
+from typing import List
+from discord import Guild
 
 from ..users import basedGuild
 from . import bountyDB
-from typing import List
 from .. import botState
 from ..baseClasses import serializable
 from .. import lib
@@ -78,7 +79,7 @@ class GuildDB(serializable.Serializable):
         return self.idExists(guild.id)
 
 
-    def addGuild(self, guild: basedGuild.BasedGuild):
+    def addBasedGuild(self, guild: basedGuild.BasedGuild):
         """Add a given BasedGuild object to the database.
 
         :param BasedGuild guild: the BasedGuild object to store
@@ -90,21 +91,20 @@ class GuildDB(serializable.Serializable):
         self.guilds[guild.id] = guild
 
 
-    def addID(self, id: int) -> basedGuild.BasedGuild:
-        """Add a BasedGuild object with the requested ID to the database
+    def addDcGuild(self, dcGuild: Guild) -> basedGuild.BasedGuild:
+        """Add a BasedGuild object to the database for the provided discord guild
 
-        :param int id: integer discord ID to create and store a BasedGuild for
-        :raise KeyError: If a BasedGuild is already stored for the requested ID
-
+        :param Guild dcGuild: discord Guild to create and store a BasedGuild for
+        :raise KeyError: If a BasedGuild is already stored for the requested guild
         :return: the new BasedGuild object
         :rtype: BasedGuild
         """
-        # Ensure the requested ID does not yet exist in the database
-        if self.idExists(id):
+        # Ensure the requested guild does not yet exist in the database
+        if self.idExists(dcGuild.id):
             raise KeyError("Attempted to add a guild that already exists: " + id)
         # Create and return a BasedGuild for the requested ID
-        self.guilds[id] = basedGuild.BasedGuild(id, bountyDB.BountyDB(bbData.bountyFactions), botState.client.get_guild(id))
-        return self.guilds[id]
+        self.guilds[dcGuild.id] = basedGuild.BasedGuild(dcGuild.id, dcGuild, bountyDB.BountyDB(bbData.bountyFactions))
+        return self.guilds[dcGuild.id]
 
 
     def removeID(self, id: int):
@@ -164,7 +164,7 @@ class GuildDB(serializable.Serializable):
             # Instance new BasedGuilds for each ID, with the provided data
             # JSON stores properties as strings, so ids must be converted to int first.
             try:
-                newDB.addGuild(basedGuild.BasedGuild.fromDict(guildDBDict[id], id=int(id)))
+                newDB.addBasedGuild(basedGuild.BasedGuild.fromDict(guildDBDict[id], id=int(id)))
             # Ignore guilds that don't have a corresponding dcGuild
             except lib.exceptions.NoneDCGuildObj:
                 botState.logger.log("GuildDB", "fromDict",

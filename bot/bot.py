@@ -371,7 +371,7 @@ async def on_guild_join(guild: discord.Guild):
         guildExists = True
         if not botState.guildsDB.idExists(guild.id):
             guildExists = False
-            botState.guildsDB.addID(guild.id)
+            botState.guildsDB.addDcGuild(guild)
 
         botState.logger.log("Main", "guild_join",
                                 "I joined a new guild! " + guild.name + "#" + str(guild.id) \
@@ -442,6 +442,11 @@ async def on_ready():
     botState.usersDB = loadUsersDB(cfg.paths.usersDB)
     botState.guildsDB = loadGuildsDB(cfg.paths.guildsDB)
     botState.reactionMenusDB = await loadReactionMenusDB(cfg.paths.reactionMenusDB)
+
+    # Create BasedGuild instances for any guilds that the bot joined whilst it was offline
+    for guild in botState.client.guilds:
+        if not botState.guildsDB.idExists(guild.id):
+            botState.guildsDB.addDcGuild(guild)
 
 
     ##### SCHEDULING #####
