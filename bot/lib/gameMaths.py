@@ -55,7 +55,7 @@ def normalizeArray(nums: List[Union[int, float]]) -> List[Union[int, float]]:
     :rtype: List[Union[int, float]
     """
     numSum = sum(nums)
-    return [truncItemSpawnResolution(i/numSum) for i in nums]
+    return [truncItemSpawnResolution(i / numSum) for i in nums]
 
 
 def makeCumulative(nums : List[Union[int, float]]) -> List[Union[int, float]]:
@@ -69,7 +69,7 @@ def makeCumulative(nums : List[Union[int, float]]) -> List[Union[int, float]]:
     :rtype: List[Union[int, float]
     """
     if len(nums) > 1:
-        return [nums[0]] + [truncItemSpawnResolution(nums[i] + nums[i-1]) for i in range(1, len(nums))]
+        return [nums[0]] + [truncItemSpawnResolution(nums[i] + nums[i - 1]) for i in range(1, len(nums))]
     return nums
 
 
@@ -142,10 +142,10 @@ for shopTL in techLevelRange:
 
 print("[gameMaths] Item rarities generated:")
 for shopTL in range(len(itemTLSpawnChanceForShopTL)):
-    print("\t• shop TL" + str(shopTL+1) + ": itemTL", end="")
+    print("\t• shop TL" + str(shopTL + 1) + ": itemTL", end="")
     for itemTL in range(len((itemTLSpawnChanceForShopTL[shopTL]))):
         if itemTLSpawnChanceForShopTL[shopTL][itemTL] != 0:
             print(" " + str(itemTL + 1) + "=" \
-                        + str(truncItemSpawnResolution(itemTLSpawnChanceForShopTL[shopTL][itemTL]*100)),
+                        + str(truncItemSpawnResolution(itemTLSpawnChanceForShopTL[shopTL][itemTL] * 100)),
                     end="% ")
     print()

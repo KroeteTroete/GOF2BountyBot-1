@@ -77,7 +77,7 @@ def compositeTextures(outTexPath : str, shipPath : str, textures : Dict[int, str
     maxLayerNum = max(max(textures), max(disabledLayers)) if disabledLayers else max(textures)
 
     # For each layer number
-    for maskNum in range(1, maxLayerNum+1):
+    for maskNum in range(1, maxLayerNum + 1):
         if maskNum in textures:
             # If skinning this region, load the texture with the corresponding index
             newTex = ensureImageMode(Image.open(textures[maskNum]))

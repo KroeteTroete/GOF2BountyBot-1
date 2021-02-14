@@ -31,7 +31,7 @@ def depthLimitedWalk(top: str, maxDepth: int):
     yield top, dirs, nondirs
     if maxDepth > 1:
         for name in dirs:
-            for x in depthLimitedWalk(os.path.join(top, name), maxDepth-1):
+            for x in depthLimitedWalk(os.path.join(top, name), maxDepth - 1):
                 yield x
 
 

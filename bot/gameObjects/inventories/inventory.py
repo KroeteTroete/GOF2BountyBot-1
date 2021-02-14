@@ -109,7 +109,7 @@ class Inventory(serializable.Serializable):
         :return: The number of pages required to list all items in the inventory
         :rtype: int
         """
-        return int(self.numKeys/itemsPerPage) + (0 if self.numKeys % itemsPerPage == 0 else 1)
+        return int(self.numKeys / itemsPerPage) + (0 if self.numKeys % itemsPerPage == 0 else 1)
 
 
     def getPage(self, pageNum : int, itemsPerPage : int) -> list:
@@ -193,7 +193,7 @@ class Inventory(serializable.Serializable):
                 raise KeyError("Failed get of key number " + str(key) + " - " + str(self.keys[key]) \
                                 + ". Key does not exist in inventory.")
             raise IndexError("Key of incorrect type or out of range: " + str(key) + ". Valid range: 0 - " \
-                                + str(len(self.keys)-1))
+                                + str(len(self.keys) - 1))
         raise ValueError("Attempted to fetch key " + str(key) + ", but keys list is empty")
 
 

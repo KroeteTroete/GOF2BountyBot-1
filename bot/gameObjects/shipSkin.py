@@ -72,7 +72,7 @@ class ShipSkin(serializable.Serializable):
             # if not os.path.isfile(renderPath):
             textureFiles = {0: self.path + os.sep + "1.jpg"}
             for i in range(self.textureRegions):
-                textureFiles[i+1] = self.path + os.sep + str(i+2) + ".jpg"
+                textureFiles[i  +1] = self.path + os.sep + str(i + 2) + ".jpg"
             await shipRenderer.renderShip(self.name, shipData["path"], shipData["model"], textureFiles, [],
                                             cfg.skinRenderIconResolution[0], cfg.skinRenderIconResolution[1],
                                             cfg.skinRenderIconSamples)

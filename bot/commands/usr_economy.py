@@ -97,8 +97,8 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
             except KeyError:
                 try:
                     botState.logger.log("Main", "cmd_shop", "Requested ship '" \
-                                                            + requestedShop.shipsStock.keys[shipNum-1].name \
-                                                            + "' (index " + str(shipNum-1) \
+                                                            + requestedShop.shipsStock.keys[shipNum - 1].name \
+                                                            + "' (index " + str(shipNum - 1) \
                                                             + "), which was not found in the shop stock",
                                             category="shop", eventType="UNKWN_KEY")
                 except IndexError:
@@ -107,17 +107,17 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
                     keysStr = ""
                     for item in requestedShop.shipsStock.items:
                         keysStr += str(item) + ", "
-                    botState.logger.log("Main", "cmd_shop", "Unexpected type in shipsstock KEYS, index " + str(shipNum-1) \
+                    botState.logger.log("Main", "cmd_shop", "Unexpected type in shipsstock KEYS, index " + str(shipNum - 1) \
                                                             + ". Expected shipItem, got " \
-                                                            + type(requestedShop.shipsStock.keys[shipNum-1]).__name__ \
+                                                            + type(requestedShop.shipsStock.keys[shipNum - 1]).__name__ \
                                                             + ".\nInventory keys: " + keysStr[:-2],
                                         category="shop", eventType="INVTY_KEY_TYPE")
                     shopEmbed.add_field(name=str(shipNum) + ". **⚠ #INVALID-ITEM# '" \
-                                            + requestedShop.shipsStock.keys[shipNum-1] + "'",
+                                            + requestedShop.shipsStock.keys[shipNum - 1] + "'",
                                         value="Do not attempt to buy. Could cause issues.", inline=True)
                     continue
                 shopEmbed.add_field(name=str(shipNum) + ". **⚠ #INVALID-ITEM# '" \
-                                        + requestedShop.shipsStock.keys[shipNum-1].name + "'",
+                                        + requestedShop.shipsStock.keys[shipNum - 1].name + "'",
                                     value="Do not attempt to buy. Could cause issues.", inline=True)
                 continue
 
@@ -138,27 +138,29 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
                 currentItem = requestedShop.weaponsStock[weaponNum - 1].item
             except KeyError:
                 try:
-                    botState.logger.log("Main", "cmd_shop", "Requested weapon '" \
-                                                            + requestedShop.weaponsStock.keys[weaponNum-1].name \
-                                                            + "' (index " + str(weaponNum-1) + "), which was not found in " \
-                                                            + "the shop stock", category="shop", eventType="UNKWN_KEY")
+                    botState.logger.log("Main", "cmd_shop",
+                                        "Requested weapon '" \
+                                            + requestedShop.weaponsStock.keys[weaponNum - 1].name + "' (index " \
+                                            + str(weaponNum - 1) + "), which was not found in " + "the shop stock",
+                                        category="shop", eventType="UNKWN_KEY")
                 except IndexError:
                     break
                 except AttributeError as e:
                     keysStr = ""
                     for item in requestedShop.weaponsStock.items:
                         keysStr += str(item) + ", "
-                    botState.logger.log("Main", "cmd_shop", "Unexpected type in weaponsstock KEYS, index " \
-                                                            + str(weaponNum-1) + ". Expected primaryWeapon, got " \
-                                                            + type(requestedShop.weaponsStock.keys[weaponNum-1]).__name__ \
-                                                            + ".\nInventory keys: " + keysStr[:-2], category="shop",
+                    botState.logger.log("Main", "cmd_shop",
+                                        "Unexpected type in weaponsstock KEYS, index " \
+                                            + str(weaponNum - 1) + ". Expected primaryWeapon, got " \
+                                            + type(requestedShop.weaponsStock.keys[weaponNum - 1]).__name__ \
+                                            + ".\nInventory keys: " + keysStr[:-2], category="shop",
                                         eventType="INVTY_KEY_TYPE")
                     shopEmbed.add_field(name=str(weaponNum) + ". **⚠ #INVALID-ITEM# '" \
-                                            + requestedShop.weaponsStock.keys[weaponNum-1] + "'",
+                                            + requestedShop.weaponsStock.keys[weaponNum - 1] + "'",
                                         value="Do not attempt to buy. Could cause issues.", inline=True)
                     continue
                 shopEmbed.add_field(name=str(weaponNum) + ". **⚠ #INVALID-ITEM# '" \
-                                        + requestedShop.weaponsStock.keys[weaponNum-1].name + "'",
+                                        + requestedShop.weaponsStock.keys[weaponNum - 1].name + "'",
                                     value="Do not attempt to buy. Could cause issues.", inline=True)
                 continue
 
@@ -180,8 +182,8 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
             except KeyError:
                 try:
                     botState.logger.log("Main", "cmd_shop", "Requested module '" \
-                                                            + requestedShop.modulesStock.keys[moduleNum-1].name \
-                                                            + "' (index " + str(moduleNum-1) \
+                                                            + requestedShop.modulesStock.keys[moduleNum - 1].name \
+                                                            + "' (index " + str(moduleNum - 1) \
                                                             + "), which was not found in the shop stock", category="shop",
                                         eventType="UNKWN_KEY")
                 except IndexError:
@@ -191,16 +193,16 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
                     for item in requestedShop.modulesStock.items:
                         keysStr += str(item) + ", "
                     botState.logger.log("Main", "cmd_shop", "Unexpected type in modulesstock KEYS, index " \
-                                                            + str(moduleNum-1) + ". Expected moduleItem, got " \
-                                                            + type(requestedShop.modulesStock.keys[moduleNum-1]).__name__ \
+                                                            + str(moduleNum - 1) + ". Expected moduleItem, got " \
+                                                            + type(requestedShop.modulesStock.keys[moduleNum - 1]).__name__ \
                                                             + ".\nInventory keys: " + keysStr[:-2], category="shop",
                                         eventType="INVTY_KEY_TYPE")
                     shopEmbed.add_field(name=str(moduleNum) + ". **⚠ #INVALID-ITEM# '" \
-                                            + requestedShop.modulesStock.keys[moduleNum-1] + "'",
+                                            + requestedShop.modulesStock.keys[moduleNum - 1] + "'",
                                         value="Do not attempt to buy. Could cause issues.", inline=True)
                     continue
                 shopEmbed.add_field(name=str(moduleNum) + ". **⚠ #INVALID-ITEM# '" \
-                                        + requestedShop.modulesStock.keys[moduleNum-1].name + "'",
+                                        + requestedShop.modulesStock.keys[moduleNum - 1].name + "'",
                                     value="Do not attempt to buy. Could cause issues.", inline=True)
                 continue
 
@@ -221,8 +223,8 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
             except KeyError:
                 try:
                     botState.logger.log("Main", "cmd_shop", "Requested turret '" \
-                                                            + requestedShop.turretsStock.keys[turretNum-1].name \
-                                                            + "' (index " + str(turretNum-1) \
+                                                            + requestedShop.turretsStock.keys[turretNum - 1].name \
+                                                            + "' (index " + str(turretNum - 1) \
                                                             + "), which was not found in the shop stock", category="shop",
                                         eventType="UNKWN_KEY")
                 except IndexError:
@@ -232,16 +234,16 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
                     for item in requestedShop.turretsStock.items:
                         keysStr += str(item) + ", "
                     botState.logger.log("Main", "cmd_shop", "Unexpected type in turretsstock KEYS, index " \
-                                                            + str(turretNum-1) + ". Expected turretWeapon, got " \
-                                                            + type(requestedShop.turretsStock.keys[turretNum-1]).__name__ \
+                                                            + str(turretNum - 1) + ". Expected turretWeapon, got " \
+                                                            + type(requestedShop.turretsStock.keys[turretNum - 1]).__name__ \
                                                             + ".\nInventory keys: " + keysStr[:-2], category="shop",
                                         eventType="INVTY_KEY_TYPE")
                     shopEmbed.add_field(name=str(turretNum) + ". **⚠ #INVALID-ITEM# '" \
-                                            + requestedShop.turretsStock.keys[turretNum-1] + "'",
+                                            + requestedShop.turretsStock.keys[turretNum - 1] + "'",
                                         value="Do not attempt to buy. Could cause issues.", inline=True)
                     continue
                 shopEmbed.add_field(name=str(turretNum) + ". **⚠ #INVALID-ITEM# '" \
-                                        + requestedShop.turretsStock.keys[turretNum-1].name + "'",
+                                        + requestedShop.turretsStock.keys[turretNum - 1].name + "'",
                                     value="Do not attempt to buy. Could cause issues.", inline=True)
                 continue
 

@@ -352,7 +352,7 @@ async def dev_cmd_debug_hangar(message : discord.Message, args : str, isDM : boo
         await message.channel.send(itemType.upper() + " KEYS: " + str(itemInv.keys) + "\n" + itemType.upper() \
                                     + " LISTINGS: " + str(list(itemInv.items.keys())))
 
-    for page in range(1, maxPage+1):
+    for page in range(1, maxPage + 1):
 
         hangarEmbed = lib.discordUtil.makeEmbed(titleTxt="Hangar", desc=requestedUser.mention,
                                                 col=bbData.factionColours["neutral"],

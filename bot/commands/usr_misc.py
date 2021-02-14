@@ -466,7 +466,7 @@ async def cmd_poll(message : discord.Message, args : str, isDM : bool):
         argPos += 1
         try:
             argNoSpaces = arg.strip(" ")
-            optionName = argNoSpaces[arg.strip(" ").index(" ")+1:]
+            optionName = argNoSpaces[arg.strip(" ").index(" ") + 1:]
             dumbReact = lib.emojis.BasedEmoji.fromStr(argNoSpaces.split(" ")[0])
         except (ValueError, IndexError):
             for kwArg in ["target=", "days=", "hours=", "seconds=", "minutes=", "multiplechoice="]:

@@ -307,7 +307,7 @@ class BasedUser(serializable.Serializable):
         else:
             raise NotImplementedError("Valid but unsupported item name: " + item)
 
-        return int(itemsNum/maxPerPage) + (0 if itemsNum % maxPerPage == 0 else 1)
+        return int(itemsNum / maxPerPage) + (0 if itemsNum % maxPerPage == 0 else 1)
 
 
     def lastItemNumberOnPage(self, item : str, pageNum : int, maxPerPage : int) -> int:
