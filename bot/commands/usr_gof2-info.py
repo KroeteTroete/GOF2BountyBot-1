@@ -1021,24 +1021,24 @@ async def cmd_showme_commodity(message : discord.Message, args : str, isDM : boo
     # verify a item was given	
     if args == "":	
         await message.channel.send(":x: Please provide a commodity! Example: `" + prefix + "commodity Groza Mk II`")
-        return	
-    # look up the commodity object	
-    itemName = args.title()	
-    itemObj = None	
-    for crim in bbData.builtInCommodityObjs.keys():	
-        if bbData.builtInCommodityObjs[crim].isCalled(itemName):	
-            itemObj = bbData.builtInCommodityObjs[crim]	
-    # report unrecognised commodity names	
-    if itemObj is None:	
-        if len(itemName) < 20:	
-            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")	
-        else:	
-            await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")	
-    else:	
-        if not itemObj.hasIcon:	
-            await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")	
-        else:	
-            itemEmbed = makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name)	
+        return
+    # look up the commodity object
+    itemName = args.title()
+    itemObj = None
+    for crim in bbData.builtInCommodityObjs.keys():
+        if bbData.builtInCommodityObjs[crim].isCalled(itemName):
+            itemObj = bbData.builtInCommodityObjs[crim]
+    # report unrecognised commodity names
+    if itemObj is None:
+        if len(itemName) < 20:
+            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")
+        else:
+            await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
+    else:
+        if not itemObj.hasIcon:
+            await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")
+        else:
+            itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name)
             await message.channel.send(embed=itemEmbed)	
 
 # botCommands.register("showme-commodity", cmd_showme_commodity)	
