@@ -520,7 +520,7 @@ async def cmd_use(message : discord.Message, args : str, isDM : bool):
     :param str args: a single integer indicating the index of the tool to use
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
-    callingBBUser = botState.usersDB.getOrAddID(message.author.id)
+    callingBUser = botState.usersDB.getOrAddID(message.author.id)
     callingGuild = botState.guildsDB.getGuild(message.guild.id)
 
     if not lib.stringTyping.isInt(args):
@@ -530,15 +530,14 @@ async def cmd_use(message : discord.Message, args : str, isDM : bool):
         toolNum = int(args)
         if toolNum < 1:
             await message.channel.send(":x: Tool number must be at least 1!")
-        elif callingBBUser.inactiveTools.isEmpty():
+        elif callingBUser.inactiveTools.isEmpty():
             await message.channel.send(":x: You don't have any tools to use!")
-        elif toolNum > callingBBUser.inactiveTools.numKeys:
-            await message.channel.send(":x: Tool number too big - you only have " + str(callingBBUser.inactiveTools.numKeys) \
-                                        + " tool" + ("" if callingBBUser.inactiveTools.numKeys == 1 else "s") + "!")
+        elif toolNum > callingBUser.inactiveTools.numKeys:
+            await message.channel.send(":x: Tool number too big - you only have " + str(callingBUser.inactiveTools.numKeys) \
+                                        + " tool" + ("" if callingBUser.inactiveTools.numKeys == 1 else "s") + "!")
         else:
-            result = await callingBBUser.inactiveTools[toolNum - 1].item.userFriendlyUse(message,
-                                                                                            ship=callingBBUser.activeShip,
-                                                                                            callingBBUser=callingBBUser)
+            result = await callingBUser.inactiveTools[toolNum - 1].item.userFriendlyUse(message, ship=callingBUser.activeShip,
+                                                                                        callingBUser=callingBUser)
             await message.channel.send(result)
 
 
