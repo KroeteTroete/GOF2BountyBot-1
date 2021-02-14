@@ -260,14 +260,14 @@ def loadAllGameObjects():
     bbData.builtInSecondariesObjs
     """
     for dataDB, objsDB, deserializer in (
-                (bbData.builtInCriminalData, bbData.builtInCriminalObjs, criminal.Criminal.fromDict),
+                (bbData.builtInCriminalData,bbData.builtInCriminalObjs, criminal.Criminal.fromDict),
                 (bbData.builtInSystemData,  bbData.builtInSystemObjs,   solarSystem.SolarSystem.fromDict),
                 (bbData.builtInWeaponData,  bbData.builtInWeaponObjs,   primaryWeapon.PrimaryWeapon.fromDict),
                 (bbData.builtInUpgradeData, bbData.builtInUpgradeObjs,  shipUpgrade.ShipUpgrade.fromDict),
                 (bbData.builtInTurretData,  bbData.builtInTurretObjs,   turretWeapon.TurretWeapon.fromDict),
                 (bbData.builtInModuleData,  bbData.builtInModuleObjs,   moduleItemFactory.fromDict),
                 (bbData.builtInToolData,    bbData.builtInToolObjs,     toolItemFactory.fromDict),
-                (bbData.builtInShipSkinsData, bbData.builtInShipSkins,   shipSkin.ShipSkin.fromDict)):
+                (bbData.builtInShipSkinsData,bbData.builtInShipSkins,   shipSkin.ShipSkin.fromDict)):
         _loadGameObjects(dataDB, objsDB, deserializer)
 
     # generate shipSkinTool objects for each shipSkin
