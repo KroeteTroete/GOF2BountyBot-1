@@ -581,7 +581,7 @@ class BasedUser(serializable.Serializable):
         :param DuelRequest duelReq: The DuelRequest to remove
         :raise ValueError: When given a duel request that this user object is unaware of
         """
-        if not duelReq.targetBasedUser in self.duelRequests or self.duelRequests[duelReq.targetBasedUser] is not duelReq:
+        if (duelReq.targetBasedUser not in self.duelRequests) or (self.duelRequests[duelReq.targetBasedUser] is not duelReq):
             raise ValueError("Duel request not found: " + str(duelReq.sourceBasedUser.id) + " -> " \
                                 + str(duelReq.sourceBasedUser.id))
         del self.duelRequests[duelReq.targetBasedUser]
