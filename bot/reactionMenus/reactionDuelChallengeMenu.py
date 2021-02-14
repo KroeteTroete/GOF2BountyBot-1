@@ -52,7 +52,7 @@ class ReactionDuelChallengeMenu(reactionMenu.ReactionMenu):
         options = { cfg.defaultEmojis.accept: reactionMenu.NonSaveableReactionMenuOption("Accept", cfg.defaultEmojis.accept, \
                                                                                     addFunc=self.acceptChallenge),
                     cfg.defaultEmojis.reject: reactionMenu.NonSaveableReactionMenuOption("Reject", cfg.defaultEmojis.reject, \
-                                                                                    addFunc=self.rejectChallenge)   }
+                                                                                    addFunc=self.rejectChallenge)}
 
         super(ReactionDuelChallengeMenu, self).__init__(msg, options=options, titleTxt=titleTxt, desc=desc, col=col, \
                                                         footerTxt=footerTxt, img=img, thumb=thumb, icon=icon, \
