@@ -15,7 +15,7 @@ from discord import channel, Client, Forbidden, Guild, Member, Message, HTTPExce
 from typing import List, Dict, Union
 from ..cfg import cfg, bbData
 from .. import botState, lib
-from ..scheduling import timedTask
+from ..scheduling.timedTask import TimedTask, DynamicRescheduleTask
 from ..gameObjects.bounties import bounty
 from datetime import timedelta
 from ..baseClasses import serializable
@@ -133,8 +133,8 @@ class BasedGuild(serializable.Serializable):
             self.hasBountyBoardChannel = bountyBoardChannel is not None
 
             if cfg.newBountyDelayType == "fixed":
-                self.newBountyTT = timedTask.TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.newBountyFixedDelta),
-                                                        autoReschedule=True, expiryFunction=self.spawnAndAnnounceRandomBounty)
+                self.newBountyTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.newBountyFixedDelta),
+                                                autoReschedule=True, expiryFunction=self.spawnAndAnnounceRandomBounty)
             else:
                 try:
                     delayGenerator = bountyDelayGenerators[cfg.newBountyDelayType]
@@ -142,10 +142,10 @@ class BasedGuild(serializable.Serializable):
                 except KeyError:
                     raise ValueError("cfg: Unrecognised newBountyDelayType '" + cfg.newBountyDelayType + "'")
                 else:
-                    self.newBountyTT = timedTask.DynamicRescheduleTask(delayGenerator,
-                                                                        delayTimeGeneratorArgs=generatorArgs,
-                                                                        autoReschedule=True,
-                                                                        expiryFunction=self.spawnAndAnnounceRandomBounty)
+                    self.newBountyTT = DynamicRescheduleTask(delayGenerator,
+                                                            delayTimeGeneratorArgs=generatorArgs,
+                                                            autoReschedule=True,
+                                                            expiryFunction=self.spawnAndAnnounceRandomBounty)
 
             botState.newBountiesTTDB.scheduleTask(self.newBountyTT)
 
@@ -555,15 +555,15 @@ class BasedGuild(serializable.Serializable):
                                     "random-routeScale": cfg.newBountyDelayRandomRange}
 
         if cfg.newBountyDelayType == "fixed":
-            self.newBountyTT = timedTask.TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.newBountyFixedDelta),
-                                                    autoReschedule=True, expiryFunction=self.spawnAndAnnounceRandomBounty)
+            self.newBountyTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.newBountyFixedDelta),
+                                            autoReschedule=True, expiryFunction=self.spawnAndAnnounceRandomBounty)
         else:
             try:
-                self.newBountyTT = timedTask.DynamicRescheduleTask(bountyDelayGenerators[cfg.newBountyDelayType],
-                                                                    delayTimeGeneratorArgs=\
-                                                                        bountyDelayGeneratorArgs[cfg.newBountyDelayType],
-                                                                    autoReschedule=True,
-                                                                    expiryFunction=self.spawnAndAnnounceRandomBounty)
+                generatorArgs = bountyDelayGeneratorArgs[cfg.newBountyDelayType]
+                self.newBountyTT = DynamicRescheduleTask(bountyDelayGenerators[cfg.newBountyDelayType],
+                                                            delayTimeGeneratorArgs=generatorArgs,
+                                                            autoReschedule=True,
+                                                            expiryFunction=self.spawnAndAnnounceRandomBounty)
             except KeyError:
                 raise ValueError("cfg: Unrecognised newBountyDelayType '" + cfg.newBountyDelayType + "'")
 

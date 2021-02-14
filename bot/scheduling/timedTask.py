@@ -4,6 +4,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 import inspect
 from types import FunctionType
+from typing import Any
 
 
 class TimedTask:
@@ -36,8 +37,8 @@ class TimedTask:
     :vartype asyncExpiryFunction: bool
     """
 
-    def __init__(self, issueTime: datetime = None, expiryTime: datetime = None, expiryDelta: timedelta = None,
-                 expiryFunction: FunctionType = None, expiryFunctionArgs = None, autoReschedule: bool = False):
+    def __init__(self, issueTime : datetime = None, expiryTime : datetime = None, expiryDelta : timedelta = None,
+                 expiryFunction : FunctionType = None, expiryFunctionArgs : Any = None, autoReschedule : bool = False):
         """
         :param datetime.datetime issueTime: The datetime when this task was created. (Default now)
         :param datetime.datetime expiryTime: The datetime when this task should expire. (Default None)
@@ -243,9 +244,9 @@ class DynamicRescheduleTask(TimedTask):
                                 You probably want this to be True, otherwise you may as well use a TimedTask. Default: False
     """
 
-    def __init__(self, delayTimeGenerator, delayTimeGeneratorArgs = None, issueTime : datetime = None,
+    def __init__(self, delayTimeGenerator : FunctionType, delayTimeGeneratorArgs : Any = None, issueTime : datetime = None,
                         expiryTime : datetime = None, expiryFunction : FunctionType = None,
-                        expiryFunctionArgs = None, autoReschedule : bool = False):
+                        expiryFunctionArgs : Any = None, autoReschedule : bool = False):
         # Initialise TimedTask-inherited attributes
         super(DynamicRescheduleTask, self).__init__(expiryDelta=delayTimeGenerator(delayTimeGeneratorArgs),
                                                     issueTime=issueTime, expiryTime=expiryTime, expiryFunction=expiryFunction,
