@@ -34,7 +34,7 @@ class ShipSkinTool(toolItem.ToolItem):
         """
         if emoji is None:
             emoji = cfg.defaultEmojis.shipSkinTool
-        super().__init__(lib.stringTyping.shipSkinNameToToolName(skin.name), [skin.name, "Skin: " + skin.name,
+        super().__init__(lib.stringTyping.shipSkinNameToToolName(skin.name.title()), [skin.name, "Skin: " + skin.name,
                             "Ship Skin " + skin.name + "Skin " + skin.name], value=value,
                             wiki=wiki if wiki else skin.wiki if skin.hasWiki else "",
                             manufacturer=skin.designer, icon=icon, emoji=emoji,
