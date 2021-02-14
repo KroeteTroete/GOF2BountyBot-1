@@ -129,8 +129,10 @@ class GracefulKiller:
     def __init__(self):
         """Register signal handlers"""
         self.kill_now = False
-        signal.signal(signal.SIGINT, self.exit_gracefully) # keyboard interrupt
-        signal.signal(signal.SIGTERM, self.exit_gracefully) # graceful exit request
+        # keyboard interrupt
+        signal.signal(signal.SIGINT, self.exit_gracefully)
+        # graceful exit request
+        signal.signal(signal.SIGTERM, self.exit_gracefully)
 
     def exit_gracefully(self, signum, frame):
         """Termination signal received, mark kill indicator"""

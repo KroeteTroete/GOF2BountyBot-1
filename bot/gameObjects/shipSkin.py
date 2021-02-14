@@ -76,6 +76,8 @@ class ShipSkin(serializable.Serializable):
             await shipRenderer.renderShip(self.name, shipData["path"], shipData["model"], textureFiles, [],
                                             cfg.skinRenderIconResolution[0], cfg.skinRenderIconResolution[1],
                                             cfg.skinRenderIconSamples)
+
+            # == Scrapped code for creating custom emojis for each ship reskin ==
             # await shipRenderer.renderShip(self.name + "_emoji", shipData["path"], shipData["model"], [texPath],
             #                               cfg.skinRenderEmojiResolution[0], cfg.skinRenderEmojiResolution[1])
             # os.remove(emojiTexPath)
@@ -87,7 +89,8 @@ class ShipSkin(serializable.Serializable):
 
             with open(renderPath, "rb") as f:
                 renderMsg = await rendersChannel.send(ship + " +" + self.name, file=File(f))
-                self.shipRenders[ship] = [renderMsg.attachments[0].url, renderMsg.id]#, str(newEmoji)]
+                # If saving emoji renders of skins, also save the emoji in here: str(newEmoji)
+                self.shipRenders[ship] = [renderMsg.attachments[0].url, renderMsg.id]
             os.remove(renderPath)
             os.remove(texPath)
 
