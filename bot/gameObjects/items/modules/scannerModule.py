@@ -50,9 +50,9 @@ class ScannerModule(moduleItem.ModuleItem):
 
 
     def statsStringShort(self):
-        return "*Time To Lock: " + str(self.timeToLock) + \
-                "s, Show Class A Asteroids: " + ("Yes" if self.showClassAAsteroids else "No") + \
-                ", Show Cargo: " + ("Yes" if self.showCargo else "No") + "*"
+        return "*Time To Lock: " + str(self.timeToLock) \
+                + "s, Show Class A Asteroids: " + ("Yes" if self.showClassAAsteroids else "No") \
+                + ", Show Cargo: " + ("Yes" if self.showCargo else "No") + "*"
 
 
     def toDict(self, **kwargs) -> dict:

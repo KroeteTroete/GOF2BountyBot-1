@@ -379,8 +379,8 @@ async def dev_cmd_debug_hangar(message : discord.Message, args : str, isDM : boo
                 else:
                     currentItemName = currentItem.name
                 try:
-                    hangarEmbed.add_field(name=str(itemNum) + \
-                                            (currentItem.emoji.sendable + " " if currentItem.hasEmoji else "") + ". " \
+                    hangarEmbed.add_field(name=str(itemNum) \
+                                            + (currentItem.emoji.sendable + " " if currentItem.hasEmoji else "") + ". " \
                                             + ("" if itemStored else "⚠ KEY NOT FOUND IN ITEMS DICT ") \
                                             + ((" `(" + str(currentItemCount) + ")` ") if currentItemCount > 1 else "") \
                                             + currentItemName + "\n`" + repr(currentItem) + "`",

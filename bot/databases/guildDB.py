@@ -167,7 +167,7 @@ class GuildDB(serializable.Serializable):
                 newDB.addGuild(basedGuild.BasedGuild.fromDict(guildDBDict[id], id=int(id)))
             # Ignore guilds that don't have a corresponding dcGuild
             except lib.exceptions.NoneDCGuildObj:
-                botState.logger.log("GuildDB", "fromDict", "no corresponding discord guild found for ID " + id +
-                                                            ", guild removed from database",
+                botState.logger.log("GuildDB", "fromDict",
+                                    "no corresponding discord guild found for ID " + id + ", guild removed from database",
                                     category="guildsDB", eventType="NULL_GLD")
         return newDB

@@ -392,15 +392,15 @@ async def cmd_shop_buy(message : discord.Message, args : str, isDM : bool):
 
         outStr = ":moneybag: Congratulations on your new **" + requestedItem.name + "**!"
         if sellOldShip:
-            outStr += "\nYou received **" + \
-                str(oldShipValue) + " credits** for your old **" + \
-                str(activeShip.name) + "**."
+            outStr += "\nYou received **" \
+                        + str(oldShipValue) + " credits** for your old **" \
+                        + str(activeShip.name) + "**."
         else:
             outStr += " Your old **" + activeShip.name + "** can be found in the hangar."
         if transferItems:
             outStr += "\nItems thay could not fit in your new ship can be found in the hangar."
-        outStr += "\n\nYour balance is now: **" + \
-            str(requestedBUser.credits) + " credits**."
+        outStr += "\n\nYour balance is now: **" \
+                    + str(requestedBUser.credits) + " credits**."
 
         await message.channel.send(outStr)
 

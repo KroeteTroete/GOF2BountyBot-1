@@ -44,8 +44,8 @@ def heuristic(start : solarSystem.SolarSystem, end : solarSystem.SolarSystem) ->
     :param solarSystem end: The system to find distance to
     :return: The straight-line distance from start to end
     """
-    return math.sqrt((end.coordinates[1] - start.coordinates[1]) ** 2 +
-                    (end.coordinates[0] - start.coordinates[0]) ** 2)
+    return math.sqrt((end.coordinates[1] - start.coordinates[1]) ** 2 \
+                    + (end.coordinates[0] - start.coordinates[0]) ** 2)
 
 
 def bbAStar(start : solarSystem.SolarSystem, end : solarSystem.SolarSystem,

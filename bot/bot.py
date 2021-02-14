@@ -33,12 +33,12 @@ async def checkForUpdates():
     try:
         BASED_versionCheck = await versionInfo.checkForUpdates(botState.httpClient)
     except versionInfo.UpdatesCheckFailed:
-        print("⚠ BASED updates check failed. Either the GitHub API is down, " +
-                "or your BASED updates checker version is depracated: " + versionInfo.BASED_REPO_URL)
+        print("⚠ BASED updates check failed. Either the GitHub API is down, " \
+                + "or your BASED updates checker version is depracated: " + versionInfo.BASED_REPO_URL)
     else:
         if BASED_versionCheck.updatesChecked and not BASED_versionCheck.upToDate:
-            print("⚠ New BASED update " + BASED_versionCheck.latestVersion + " now available! See " +
-                  versionInfo.BASED_REPO_URL + " for instructions on how to update your BASED fork.")
+            print("⚠ New BASED update " + BASED_versionCheck.latestVersion + " now available! See " \
+                    + versionInfo.BASED_REPO_URL + " for instructions on how to update your BASED fork.")
 
 
 async def initializeEmojis():
@@ -69,8 +69,8 @@ async def initializeEmojis():
                 continue
 
         # raise an error on unexpected types
-        raise ValueError("Invalid config variable in cfg.defaultEmojis: " +
-                            "Emoji config variables must be either UninitializedBasedEmoji or List[UninitializedBasedEmoji]")
+        raise ValueError("Invalid config variable in cfg.defaultEmojis: Emoji config variables must be either " \
+                            + "UninitializedBasedEmoji or List[UninitializedBasedEmoji]")
 
     # Initialize emoji vars
     for varname in emojiVars:
@@ -370,8 +370,9 @@ async def on_guild_join(guild: discord.Guild):
             guildExists = False
             botState.guildsDB.addID(guild.id)
 
-        botState.logger.log("Main", "guild_join", "I joined a new guild! " + guild.name + "#" + str(guild.id) +
-                                ("\n -- The guild was added to botState.guildsDB" if not guildExists else ""),
+        botState.logger.log("Main", "guild_join",
+                                "I joined a new guild! " + guild.name + "#" + str(guild.id) \
+                                    + ("\n -- The guild was added to botState.guildsDB" if not guildExists else ""),
                                 category="guildsDB", eventType="JOIN_GUILD")
 
 
@@ -389,8 +390,9 @@ async def on_guild_remove(guild: discord.Guild):
             guildExists = True
             botState.guildsDB.removeID(guild.id)
 
-        botState.logger.log("Main", "guild_remove", "I left a guild! " + guild.name + "#" + str(guild.id) +
-                                ("\n -- The guild was removed from botState.guildsDB" if guildExists else ""),
+        botState.logger.log("Main", "guild_remove",
+                                "I left a guild! " + guild.name + "#" + str(guild.id) \
+                                    + ("\n -- The guild was removed from botState.guildsDB" if guildExists else ""),
                                 category="guildsDB", eventType="LEAVE_GUILD")
 
 
@@ -556,11 +558,11 @@ async def on_message(message: discord.Message):
         # If the command threw an exception
         except Exception as e:
             # print a user friendly error
-            await message.channel.send(":woozy_face: Uh oh, something went wrong! The error has been logged." +
-                                        "\nThis command probably won't work until we've looked into it.")
+            await message.channel.send(":woozy_face: Uh oh, something went wrong! The error has been logged.\n" \
+                                        + "This command probably won't work until we've looked into it.")
             # log the exception as misc
-            botState.logger.log("Main", "on_message", "An unexpected error occured when calling command '" +
-                                command + "' with args '" + args + "': " + type(e).__name__, trace=traceback.format_exc())
+            botState.logger.log("Main", "on_message", "An unexpected error occured when calling command '" \
+                                + command + "' with args '" + args + "': " + type(e).__name__, trace=traceback.format_exc())
             print(traceback.format_exc())
             commandFound = True
 

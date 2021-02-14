@@ -75,8 +75,8 @@ class SolarSystem(aliasable.Aliasable):
         :return: The pythagorean-distance from this system to other
         :rtype: float
         """
-        return math.sqrt((other.coordinates[1] - self.coordinates[1]) ** 2 +
-                    (other.coordinates[0] - self.coordinates[0]) ** 2)
+        return math.sqrt((other.coordinates[1] - self.coordinates[1]) ** 2 \
+                            + (other.coordinates[0] - self.coordinates[0]) ** 2)
 
 
     def hasJumpGate(self) -> bool:

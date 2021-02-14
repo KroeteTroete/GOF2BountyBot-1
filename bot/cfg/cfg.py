@@ -240,8 +240,8 @@ bPointsToCreditsRatio = 1000
 closeBountyThreshold = 4
 
 # Text to send to a BountyBoardChannel when no bounties are currently active
-bbcNoBountiesMsg = "```css\n[ NO ACTIVE BOUNTIES ]\n\nThere are currently no active bounty listings.\n" + \
-                    "Please check back later, or use [ $notify bounties ] to be pinged when new ones become available!\n```"
+bbcNoBountiesMsg = "```css\n[ NO ACTIVE BOUNTIES ]\n\nThere are currently no active bounty listings.\n" \
+                    + "Please check back later, or use [ $notify bounties ] to be pinged when new ones become available!\n```"
 
 
 

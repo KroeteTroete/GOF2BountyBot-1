@@ -174,8 +174,8 @@ class UserDB(serializable.Serializable):
             try:
                 data[str(userID)] = self.users[userID].toDict(**kwargs)
             except Exception as e:
-                botState.logger.log("UserDB", "toDict", "Error serialising BasedUser: " +
-                                    type(e).__name__, trace=traceback.format_exc(), eventType="USERERR")
+                botState.logger.log("UserDB", "toDict", "Error serialising BasedUser: " + type(e).__name__, 
+                                    trace=traceback.format_exc(), eventType="USERERR")
         return data
 
 

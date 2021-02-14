@@ -43,8 +43,8 @@ class SpectralFilterModule(moduleItem.ModuleItem):
 
 
     def statsStringShort(self):
-        return "*Show Info? " + ("Yes" if self.showInfo else "No") + \
-                ", Show On Radar? " + ("Yes" if self.showOnRadar else "No") + "*"
+        return "*Show Info? " + ("Yes" if self.showInfo else "No") \
+                + ", Show On Radar? " + ("Yes" if self.showOnRadar else "No") + "*"
 
 
     def toDict(self, **kwargs) -> dict:

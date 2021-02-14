@@ -81,8 +81,8 @@ class BasedGuild(serializable.Serializable):
         """
 
         if not isinstance(dcGuild, Guild):
-            raise lib.exceptions.NoneDCGuildObj("Given dcGuild of type '" + type(dcGuild).__name__ + \
-                                                "', expecting discord.Guild")
+            raise lib.exceptions.NoneDCGuildObj("Given dcGuild of type '" + type(dcGuild).__name__ \
+                                                + "', expecting discord.Guild")
 
         self.id = id
         self.dcGuild = dcGuild
@@ -360,8 +360,8 @@ class BasedGuild(serializable.Serializable):
                 await self.removeBountyBoardChannelMessage(bounty)
             else:
                 if not self.bountyBoardChannel.hasMessageForBounty(bounty):
-                    await self.makeBountyBoardChannelMessage(bounty, "A new bounty is now available from **" + \
-                                                                        bounty.faction.title() + "** central command:")
+                    await self.makeBountyBoardChannelMessage(bounty, "A new bounty is now available from **" \
+                                                                    + bounty.faction.title() + "** central command:")
                 else:
                     await self.bountyBoardChannel.updateBountyMessage(bounty)
 
@@ -378,10 +378,10 @@ class BasedGuild(serializable.Serializable):
                     len(self.bountiesDB.latestBounty.route)
         delay = lib.timeUtil.timeDeltaFromDict(baseDelayDict) * timeScale * cfg.newBountyDelayRouteScaleCoefficient
         botState.logger.log("Main", "routeScaleBntyDelayFixed",
-                            "New bounty delay generated, " + \
-                            ("no latest criminal." if self.bountiesDB.latestBounty is None else \
-                            ("latest criminal: '" + self.bountiesDB.latestBounty.criminal.name + "'. Route Length " \
-                            + str(len(self.bountiesDB.latestBounty.route)))) + "\nDelay picked: " + str(delay),
+                            "New bounty delay generated, " \
+                                + ("no latest criminal." if self.bountiesDB.latestBounty is None else \
+                                + ("latest criminal: '" + self.bountiesDB.latestBounty.criminal.name + "'. Route Length " \
+                                + str(len(self.bountiesDB.latestBounty.route)))) + "\nDelay picked: " + str(delay),
                             category="newBounties",
                             eventType="NONE_BTY" if self.bountiesDB.latestBounty is None else "DELAY_GEN", noPrint=True)
         return delay
@@ -404,12 +404,13 @@ class BasedGuild(serializable.Serializable):
                                                         * cfg.newBountyDelayRouteScaleCoefficient})
         botState.logger.log("Main", "routeScaleBntyDelayRand",
                             "New bounty delay generated, " \
-                            + ("no latest criminal." if self.bountiesDB.latestBounty is None else \
-                            ("latest criminal: '" + self.bountiesDB.latestBounty.criminal.name + "'. Route Length " \
-                            + str(len(self.bountiesDB.latestBounty.route)))) + "\nRange: " \
-                            + str((baseDelayDict["min"] * timeScale * cfg.newBountyDelayRouteScaleCoefficient)/60) \
-                            + "m - " + str((baseDelayDict["max"] * timeScale * cfg.newBountyDelayRouteScaleCoefficient)/60) \
-                            + "m\nDelay picked: " + str(delay), category="newBounties",
+                                + ("no latest criminal." if self.bountiesDB.latestBounty is None else \
+                                    ("latest criminal: '" + self.bountiesDB.latestBounty.criminal.name \
+                                + "'. Route Length " + str(len(self.bountiesDB.latestBounty.route)))) + "\nRange: " \
+                                + str((baseDelayDict["min"] * timeScale * cfg.newBountyDelayRouteScaleCoefficient)/60) \
+                                + "m - " \
+                                + str((baseDelayDict["max"] * timeScale * cfg.newBountyDelayRouteScaleCoefficient)/60) \
+                                + "m\nDelay picked: " + str(delay), category="newBounties",
                             eventType="NONE_BTY" if self.bountiesDB.latestBounty is None else "DELAY_GEN", noPrint=True)
         return delay
 
@@ -424,21 +425,19 @@ class BasedGuild(serializable.Serializable):
                                                 desc="⛓ __New Bounty Available__",
                                                 col=bbData.factionColours[newBounty.faction],
                                                 thumb=newBounty.criminal.icon, footerTxt=newBounty.faction.title())
-        bountyEmbed.add_field(name="Reward:", value=str(
-            newBounty.reward) + " Credits")
+        bountyEmbed.add_field(name="Reward:", value=str(newBounty.reward) + " Credits")
         bountyEmbed.add_field(name="Possible Systems:", value=len(newBounty.route))
-        bountyEmbed.add_field(name="See the culprit's route with:", value="`" + self.commandPrefix +
-                            "route " + lib.discordUtil.criminalNameOrDiscrim(newBounty.criminal) + "`", inline=False)
+        bountyEmbed.add_field(name="See the culprit's route with:",
+                                value="`" + self.commandPrefix + "route " \
+                                        + lib.discordUtil.criminalNameOrDiscrim(newBounty.criminal) + "`",
+                                inline=False)
         # Create the announcement text
-        msg = "A new bounty is now available from **" + \
-            newBounty.faction.title() + "** central command:"
+        msg = "A new bounty is now available from **" + newBounty.faction.title() + "** central command:"
 
         if self.hasBountyBoardChannel:
             try:
                 if self.hasUserAlertRoleID("bounties_new"):
-                    msg = "<@&" + \
-                        str(self.getUserAlertRoleID(
-                            "bounties_new")) + "> " + msg
+                    msg = "<@&" + str(self.getUserAlertRoleID("bounties_new")) + "> " + msg
                 # announce to the given channel
                 bountyListing = await self.bountyBoardChannel.channel.send(msg, embed=bountyEmbed)
                 await self.bountyBoardChannel.addBounty(newBounty, bountyListing)

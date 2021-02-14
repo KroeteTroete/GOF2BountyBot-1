@@ -82,8 +82,8 @@ class ShipSkin(serializable.Serializable):
 
             # with open(emojiRenderPath, "rb") as f:
             #     newEmoji = await rendersChannel.guild.create_custom_emoji(name=ship + "_+" + self.name, image=f.read(),
-            #                                                               reason="New skin '" + self.name + \
-            #                                                                       "' registered for ship '" + ship + "'")
+            #                                                               reason="New skin '" + self.name \
+            #                                                                       + "' registered for ship '" + ship + "'")
 
             with open(renderPath, "rb") as f:
                 renderMsg = await rendersChannel.send(ship + " +" + self.name, file=File(f))

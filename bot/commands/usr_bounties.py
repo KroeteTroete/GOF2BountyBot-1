@@ -127,8 +127,9 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                 if requestedSystem in bounty.route:
                     if 0 < bounty.route.index(bounty.answer) - bounty.route.index(requestedSystem) < cfg.closeBountyThreshold:
                         # Print any close bounty names
-                        sightedCriminalsStr += "**       **• Local security forces spotted **" + \
-                                                lib.discordUtil.criminalNameOrDiscrim(bounty.criminal) + "** here recently.\n"
+                        sightedCriminalsStr += "**       **• Local security forces spotted **" \
+                                                + lib.discordUtil.criminalNameOrDiscrim(bounty.criminal) \
+                                                + "** here recently.\n"
         sightedCriminalsStr = sightedCriminalsStr[:-1]
 
         # If a bounty was won, print a congratulatory message
@@ -233,8 +234,8 @@ async def cmd_bounties(message : discord.Message, args : str, isDM : bool):
                                         + "** remaining bounty wins today!")
         else:
             # Collect and print summaries of the requested faction's active bounties
-            outmessage = "__**Active " + requestedFaction.title() + \
-                " Bounties**__\nTimes given in UTC.```css"
+            outmessage = "__**Active " + requestedFaction.title() \
+                            + " Bounties**__\nTimes given in UTC.```css"
             for bounty in callingGuild.bountiesDB.getFactionBounties(requestedFaction):
                 endTimeStr = datetime.utcfromtimestamp(bounty.endTime).strftime("%B %d %H %M %S").split(" ")
                 nameSpacing = bbData.longestBountyNameLength + 1 - len(lib.discordUtil.criminalNameOrDiscrim(bounty.criminal))
@@ -246,8 +247,8 @@ async def cmd_bounties(message : discord.Message, args : str, isDM : bool):
                     outmessage += ":" + endTimeStr[4]
                 else:
                     outmessage += "   "
-                outmessage += " - " + \
-                    str(len(bounty.route)) + " possible system"
+                outmessage += " - " \
+                                + str(len(bounty.route)) + " possible system"
                 if len(bounty.route) != 1:
                     outmessage += "s"
             maxBountiesMsg = ""

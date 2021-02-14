@@ -30,8 +30,8 @@ class CrateTool(toolItem.ToolItem):
         if "callingBUser" not in kwargs:
             raise NameError("Required kwarg not given: callingBUser")
         if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedUser":
-            raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received " + \
-                            type(kwargs["callingBUser"]).__name__)
+            raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received " \
+                            + type(kwargs["callingBUser"]).__name__)
 
         callingBUser = kwargs["callingBUser"]
         newItem = random.choice(self.itemPool)
@@ -50,8 +50,8 @@ class CrateTool(toolItem.ToolItem):
         if "callingBUser" not in kwargs:
             raise NameError("Required kwarg not given: callingBUser")
         if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedUser":
-            raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received " + \
-                            type(kwargs["callingBUser"]).__name__)
+            raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received " \
+                            + type(kwargs["callingBUser"]).__name__)
 
         callingBUser = kwargs["callingBUser"]
         confirmMsg = await message.channel.send("Are you sure you want to open this crate?")

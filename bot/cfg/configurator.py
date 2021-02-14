@@ -35,8 +35,8 @@ for varname, varvalue in cfg.defaultEmojis.items():
             continue
 
     # Ensure emoji variables only contain emojis
-    raise ValueError("Invalid config variable in cfg.defaultEmojis: " +
-                        "Emoji config variables must be either UninitializedBasedEmoji or List[UninitializedBasedEmoji]")
+    raise ValueError("Invalid config variable in cfg.defaultEmojis: Emoji config variables must be either " \
+                        + "UninitializedBasedEmoji or List[UninitializedBasedEmoji]")
 
 
 class ConfigProxy:
@@ -176,12 +176,12 @@ def loadCfg(cfgFile: str):
                 try:
                     # Attempt casts for incorrect types - useful for things like ints instead of floats.
                     config[varname] = type(default)(config[varname])
-                    print("[WARNING] Casting config variable " + varname + " from " + type(config[varname]).__name__ +
-                                                                            " to " + type(default).__name__)
+                    print("[WARNING] Casting config variable " + varname + " from " + type(config[varname]).__name__ \
+                            + " to " + type(default).__name__)
                 except Exception:
                     # Where a variable is of the wrong type and cannot be casted, raise an exception.
-                    raise TypeError("Unexpected type for config variable " + varname + ": Expected " +
-                                    type(default).__name__ + ", received " + type(config[varname]).__name__)
+                    raise TypeError("Unexpected type for config variable " + varname + ": Expected " \
+                                    + type(default).__name__ + ", received " + type(config[varname]).__name__)
 
             # Not an emoji and correct type, so set variable.
             else:

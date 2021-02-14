@@ -730,23 +730,23 @@ class Ship(GameItem):
                                 if self.getArmour(shipUpgradesOnly=True) > self.armour else "") + "*\n"
         # stats += "Cargo hold: " + str(self.cargo) + ", "
         # stats += "Handling: " + str(self.handling) + ", "
-        stats += "• *Primaries: " + str(len(self.weapons)) + "/" + str(self.getMaxPrimaries(shipUpgradesOnly=True)) + \
-                                ("(+)" if self.getMaxPrimaries(shipUpgradesOnly=True) > self.maxPrimaries else "") + "*\n"
+        stats += "• *Primaries: " + str(len(self.weapons)) + "/" + str(self.getMaxPrimaries(shipUpgradesOnly=True)) \
+                    + ("(+)" if self.getMaxPrimaries(shipUpgradesOnly=True) > self.maxPrimaries else "") + "*\n"
         if len(self.weapons) > 0:
             stats += "*["
             for weapon in self.weapons:
                 stats += weapon.name + ", "
             stats = stats[:-2] + "]*\n"
         # stats += "Max secondaries: " + str(self.maxSecondaries) + ", "
-        stats += "• *Turrets: " + str(len(self.turrets)) + "/" + str(self.getMaxTurrets(shipUpgradesOnly=True)) + \
-                                    ("(+)" if self.getMaxTurrets(shipUpgradesOnly=True) > self.maxTurrets else "") + "*\n"
+        stats += "• *Turrets: " + str(len(self.turrets)) + "/" + str(self.getMaxTurrets(shipUpgradesOnly=True)) \
+                        + ("(+)" if self.getMaxTurrets(shipUpgradesOnly=True) > self.maxTurrets else "") + "*\n"
         if len(self.turrets) > 0:
             stats += "*["
             for turret in self.turrets:
                 stats += turret.name + ", "
             stats = stats[:-2] + "]*\n"
-        stats += "• *Modules: " + str(len(self.modules)) + "/" + str(self.getMaxModules(shipUpgradesOnly=True)) + \
-                                    ("(+)" if self.getMaxModules(shipUpgradesOnly=True) > self.maxModules else "") + "*\n"
+        stats += "• *Modules: " + str(len(self.modules)) + "/" + str(self.getMaxModules(shipUpgradesOnly=True)) \
+                        + ("(+)" if self.getMaxModules(shipUpgradesOnly=True) > self.maxModules else "") + "*\n"
         if len(self.modules) > 0:
             stats += "*["
             for module in self.modules:

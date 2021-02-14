@@ -27,11 +27,11 @@ async def admin_cmd_admin_help(message: discord.Message, args: str, isDM: bool):
     await util_help.util_autohelp(message, args, isDM, 2)
 
 botCommands.register("admin-help", admin_cmd_admin_help, 2, signatureStr="**admin-help** *[page number, section or command]*",
-                     shortHelp="Display information about admin-only commands.\nGive a specific command for detailed " +
-                                "info about it, or give a page number or give a section name for brief info.",
-                     longHelp="Display information about admin-only commands.\nGive a specific command for detailed " +
-                                "info about it, or give a page number or give a section name for brief info about " +
-                                "a set of commands. These are the currently valid section names:\n- Miscellaneous")
+                     shortHelp="Display information about admin-only commands.\nGive a specific command for detailed " \
+                                + "info about it, or give a page number or give a section name for brief info.",
+                     longHelp="Display information about admin-only commands.\nGive a specific command for detailed " \
+                                + "info about it, or give a page number or give a section name for brief info about " \
+                                + "a set of commands. These are the currently valid section names:\n- Miscellaneous")
 
 
 async def admin_cmd_set_prefix(message: discord.Message, args: str, isDM: bool):
@@ -44,8 +44,8 @@ async def admin_cmd_set_prefix(message: discord.Message, args: str, isDM: bool):
     callingBGuild = botState.guildsDB.getGuild(message.guild.id)
 
     if not args:
-        await message.channel.send("Please provide the command prefix you would like to set. E.g: `" +
-                                    callingBGuild.commandPrefix + "set-prefix $`")
+        await message.channel.send("Please provide the command prefix you would like to set. E.g: `" \
+                                    + callingBGuild.commandPrefix + "set-prefix $`")
     else:
         callingBGuild.commandPrefix = args
         await message.channel.send("Command prefix set.")

@@ -143,8 +143,8 @@ bpy.context.scene.cycles.samples = args.numSamples
 # Set the renderer (eevee renders some strange perspective stuff...?)
 ctx.scene.render.engine = 'CYCLES'
 # Set the render output file
-# ctx.scene.render.filepath = RENDER_OUTPUT_DIR + ("" if RENDER_OUTPUT_DIR.endswith(os.sep) else os.sep) + \
-#   args.model_filename_noext
+# ctx.scene.render.filepath = RENDER_OUTPUT_DIR + ("" if RENDER_OUTPUT_DIR.endswith(os.sep) else os.sep) \
+#                             + args.model_filename_noext
 ctx.scene.render.filepath = args.output_file_path
 
 # Move the camera so that the model fills the frame

@@ -116,13 +116,13 @@ class Logger:
                             f.close()
                             logsSaved += "[+]"
                         except IOError as e:
-                            print(nowStr + "-[LOG::SAVE]>F_NEW_IOERR: ERROR CREATING LOG FILE: " +
-                                  currentFName + ":" + type(e).__name__ + "\n" + traceback.format_exc())
+                            print(nowStr + "-[LOG::SAVE]>F_NEW_IOERR: ERROR CREATING LOG FILE: " \
+                                    + currentFName + ":" + type(e).__name__ + "\n" + traceback.format_exc())
                     try:
                         files[category] = open(currentFName, 'ab')
                     except IOError as e:
-                        print(nowStr + "-[LOG::SAVE]>F_OPN_IOERR: ERROR OPENING LOG FILE: " +
-                              currentFName + ":" + type(e).__name__ + "\n" + traceback.format_exc())
+                        print(nowStr + "-[LOG::SAVE]>F_OPN_IOERR: ERROR OPENING LOG FILE: " \
+                                + currentFName + ":" + type(e).__name__ + "\n" + traceback.format_exc())
                         files[category] = None
 
         while not self.isEmpty():
@@ -132,8 +132,8 @@ class Logger:
                     # log strings first encoded to bytes (utf-8) to allow for unicode chars
                     files[category].write(log.encode())
                 except IOError as e:
-                    print(nowStr + "-[LOG::SAVE]>F_WRT_IOERR: ERROR WRITING TO LOG FILE: " +
-                          files[category].name + ":" + type(e).__name__ + "\n" + traceback.format_exc())
+                    print(nowStr + "-[LOG::SAVE]>F_WRT_IOERR: ERROR WRITING TO LOG FILE: " \
+                            + files[category].name + ":" + type(e).__name__ + "\n" + traceback.format_exc())
                 except UnicodeEncodeError as e:
                     print(e.start)
 
@@ -163,19 +163,20 @@ class Logger:
                             and helps little with debugging or similar. (Default False)
         """
         if category not in self.logs:
-            self.log("misc", "Log", "log", "ATTEMPTED TO LOG TO AN UNKNOWN CATEGORY '" +
-                     str(category) + "' -> Redirected to misc.", eventType="UNKWN_CTGR")
+            self.log("misc", "Log", "log",
+                        "ATTEMPTED TO LOG TO AN UNKNOWN CATEGORY '" \
+                            + str(category) + "' -> Redirected to misc.", eventType="UNKWN_CTGR")
 
         now = datetime.utcnow()
         if noPrintEvent:
-            eventStr = now.strftime(LOG_TIME_FORMAT) + "-[" + str(classStr).upper() + \
-                "::" + str(funcStr).upper() + "]>" + str(eventType)
+            eventStr = now.strftime(LOG_TIME_FORMAT) + "-[" + str(classStr).upper() \
+                        + "::" + str(funcStr).upper() + "]>" + str(eventType)
             if not noPrint:
                 print(eventStr)
             self.logs[category][now] = eventStr + ": " + str(event) + ("\n" + trace if trace != "" else "") + "\n\n"
         else:
-            eventStr = now.strftime(LOG_TIME_FORMAT) + "-[" + str(classStr).upper() + \
-                "::" + str(funcStr).upper() + "]>" + str(eventType) + ": " + str(event)
+            eventStr = now.strftime(LOG_TIME_FORMAT) + "-[" + str(classStr).upper() \
+                        + "::" + str(funcStr).upper() + "]>" + str(eventType) + ": " + str(event)
             if not noPrint:
                 print(eventStr)
             self.logs[category][now] = eventStr + ("\n" + trace if trace != "" else "") + "\n\n"

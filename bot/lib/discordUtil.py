@@ -378,8 +378,7 @@ def messageArgsFromStr(msgStr: str) -> Dict[str, Union[str, Embed]]:
             try:
                 startStr = argName + "='"
                 startIndex = msgStr.index(startStr) + len(startStr)
-                endIndex = startIndex + \
-                    msgStr[msgStr.index(startStr) + len(startStr):].index("'")
+                endIndex = startIndex + msgStr[msgStr.index(startStr) + len(startStr):].index("'")
                 embedKwargs[argName] = msgStr[startIndex:endIndex]
                 msgStr = msgStr[endIndex + 2:]
             except ValueError:

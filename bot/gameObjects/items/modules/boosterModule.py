@@ -41,8 +41,8 @@ class BoosterModule(moduleItem.ModuleItem):
 
 
     def statsStringShort(self):
-        return "*Effect: " + moduleItem.lib.stringTyping.formatMultiplier(self.effect) + \
-                ", Duration: " + moduleItem.lib.stringTyping.formatAdditive(self.duration) + "s*"
+        return "*Effect: " + moduleItem.lib.stringTyping.formatMultiplier(self.effect) \
+                + ", Duration: " + moduleItem.lib.stringTyping.formatAdditive(self.duration) + "s*"
 
 
     def toDict(self, **kwargs) -> dict:

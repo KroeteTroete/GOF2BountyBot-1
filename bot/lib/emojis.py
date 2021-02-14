@@ -90,8 +90,9 @@ class BasedEmoji(serializable.Serializable):
         self.sendable = self.unicode if self.isUnicode else str(botState.client.get_emoji(self.id))
         if self.sendable == "None":
             if logUnknownEmojis:
-                botState.logger.log("BasedEmoji", "init", "Unrecognised custom emoji ID in BasedEmoji constructor: " +
-                                    str(self.id), trace=traceback.format_exc())
+                botState.logger.log("BasedEmoji", "init",
+                                    "Unrecognised custom emoji ID in BasedEmoji constructor: " + str(self.id),
+                                    trace=traceback.format_exc())
             if raiseUnkownEmojis or rejectInvalid:
                 raise exceptions.UnrecognisedCustomEmoji(
                     "Unrecognised custom emoji ID in BasedEmoji constructor: " + str(self.id), self.id)
@@ -272,8 +273,8 @@ class BasedEmoji(serializable.Serializable):
             return BasedEmoji.fromDict(e.value, rejectInvalid=rejectInvalid)
         # Unrecognised uninitialized value
         else:
-            raise ValueError("Unrecognised UninitializedBasedEmoji value type. Expecting int, str or dict, given '" +
-                                type(e.value).__name__ + "'")
+            raise ValueError("Unrecognised UninitializedBasedEmoji value type. Expecting int, str or dict, given '" \
+                                + type(e.value).__name__ + "'")
 
 
 # 'static' object representing an empty/lack of emoji

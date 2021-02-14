@@ -97,8 +97,8 @@ class Inventory(serializable.Serializable):
                 self.numKeys -= 1
                 del self.items[item]
         else:
-            raise ValueError("Attempted to remove " + str(quantity) + " " + str(item) + "(s) when " + \
-                                (str(self.items[item].count) if item in self.items else "0") + " are in inventory")
+            raise ValueError("Attempted to remove " + str(quantity) + " " + str(item) + "(s) when " \
+                                + (str(self.items[item].count) if item in self.items else "0") + " are in inventory")
 
 
     def numPages(self, itemsPerPage : int) -> int:
@@ -190,8 +190,8 @@ class Inventory(serializable.Serializable):
             if key in range(len(self.keys)):
                 if self.keys[key] in self.items:
                     return self.items[self.keys[key]]
-                raise KeyError("Failed get of key number " + str(key) + " - " + str(self.keys[key]) + \
-                                ". Key does not exist in inventory.")
+                raise KeyError("Failed get of key number " + str(key) + " - " + str(self.keys[key]) \
+                                + ". Key does not exist in inventory.")
             raise IndexError("Key of incorrect type or out of range: "+ str(key) + ". Valid range: 0 - " \
                                 + str(len(self.keys)-1))
         raise ValueError("Attempted to fetch key " + str(key) + ", but keys list is empty")
