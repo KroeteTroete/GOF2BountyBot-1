@@ -553,7 +553,7 @@ async def cmd_info_skin(message : discord.Message, args : str, isDM : bool):
     else:	
         requestedSkin = bbData.builtInShipSkins[skin]	
         # build the stats embed	
-        statsEmbed = lib.discordUtil.makeEmbed(col=lib.discordUtil.randomColour(), desc="__Ship Skin File__",
+        statsEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), desc="__Ship Skin File__",
                                                 titleTxt=requestedSkin.name.title(), thumb=cfg.defaultShipSkinToolIcon,
                                                 footerTxt=("Preview this skin with the " + "`" + prefix \
                                                                 + "showme` command.") \
@@ -646,7 +646,7 @@ async def cmd_showme_criminal(message : discord.Message, args : str, isDM : bool
         else:	
             await message.channel.send(":x: **" + criminalName[0:15] + "**... is not in my database! :detective:")	
     else:	
-        itemEmbed = lib.discordUtil.makeEmbed(col=lib.discordUtil.randomColour(), img=criminalObj.icon,
+        itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=criminalObj.icon,
                                                 titleTxt=criminalObj.name, footerTxt="Wanted criminal")	
         await message.channel.send(embed=itemEmbed)	
 
@@ -844,7 +844,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
                                     else str(message.guild.id)) + "c" + str(message.channel.id) + "m" + str(message.id)
                     storageChannel = botState.client.get_channel(cfg.showmeSkinRendersChannel)
                     imageEmbedMsg = await storageChannel.send(msgText, file=discord.File(f))	
-                    renderEmbed = lib.discordUtil.makeEmbed(col=lib.discordUtil.randomColour(),
+                    renderEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(),
                                                             img=imageEmbedMsg.attachments[0].url,
                                                             authorName="Skin Render Complete!",
                                                             icon=robotIcon,
@@ -877,7 +877,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
                 await message.channel.send(":x: That skin is not compatible with the **" + itemObj.name + "**!")	
             	
             else:	
-                itemEmbed = lib.discordUtil.makeEmbed(col=lib.discordUtil.randomColour(),
+                itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(),
                                                         img=bbData.builtInShipSkins[skin].shipRenders[itemObj.name][0],
                                                         titleTxt=itemObj.name,
                                                         footerTxt="Custom skin: " + skin.capitalize())	
@@ -886,7 +886,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
         if not itemObj.hasIcon:	
             await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")	
         else:	
-            itemEmbed = lib.discordUtil.makeEmbed(col=lib.discordUtil.randomColour(), img=itemObj.icon, titleTxt=itemObj.name,
+            itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name,
                                                     footerTxt=itemObj.manufacturer.capitalize() + " ship")	
             await message.channel.send(embed=itemEmbed)	
 
@@ -924,7 +924,7 @@ async def cmd_showme_weapon(message : discord.Message, args : str, isDM : bool):
         if not itemObj.hasIcon:
             await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")
         else:
-            itemEmbed = lib.discordUtil.makeEmbed(col=lib.discordUtil.randomColour(), img=itemObj.icon, titleTxt=itemObj.name,
+            itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name,
                                                     footerTxt="Level " + str(itemObj.techLevel) + " weapon")	
             await message.channel.send(embed=itemEmbed)	
 
@@ -962,7 +962,7 @@ async def cmd_showme_module(message : discord.Message, args : str, isDM : bool):
         if not itemObj.hasIcon:	
             await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")	
         else:	
-            itemEmbed = lib.discordUtil.makeEmbed(col=lib.discordUtil.randomColour(), img=itemObj.icon, titleTxt=itemObj.name,
+            itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name,
                                                     footerTxt="Level " + str(itemObj.techLevel) + " module")	
             await message.channel.send(embed=itemEmbed)	
 
@@ -999,7 +999,7 @@ async def cmd_showme_turret(message : discord.Message, args : str, isDM : bool):
         if not itemObj.hasIcon:	
             await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")	
         else:	
-            itemEmbed = lib.discordUtil.makeEmbed(col=lib.discordUtil.randomColour(), img=itemObj.icon, titleTxt=itemObj.name,
+            itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name,
                                                     footerTxt="Level " + str(itemObj.techLevel) + " turret")	
             await message.channel.send(embed=itemEmbed)	
 
@@ -1038,7 +1038,7 @@ async def cmd_showme_commodity(message : discord.Message, args : str, isDM : boo
         if not itemObj.hasIcon:	
             await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")	
         else:	
-            itemEmbed = makeEmbed(col=randomColour(), img=itemObj.icon, titleTxt=itemObj.name)	
+            itemEmbed = makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name)	
             await message.channel.send(embed=itemEmbed)	
 
 # botCommands.register("showme-commodity", cmd_showme_commodity)	

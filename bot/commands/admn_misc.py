@@ -614,7 +614,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
                                                                 [discord.ChannelType.private, discord.ChannelType.group] \
                                                                 else str(message.guild.id)) + "c" + str(message.channel.id) \
                                                                 + "m" + str(message.id), file=discord.File(f))
-            renderEmbed = lib.discordUtil.makeEmbed(col=lib.discordUtil.randomColour(), img=imageEmbedMsg.attachments[0].url,
+            renderEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=imageEmbedMsg.attachments[0].url,
                                                     authorName="Skin Render Complete!",
                                                     icon=robotIcon, footerTxt="Custom skinned " + itemObj.name.capitalize())
             await message.channel.send(message.author.mention, embed=renderEmbed)
