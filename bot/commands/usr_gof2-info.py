@@ -530,11 +530,11 @@ async def cmd_info_commodity(message : discord.Message, args : str, isDM : bool)
 
 
 async def cmd_info_skin(message : discord.Message, args : str, isDM : bool):
-    """return statistics about a specified inbuilt skin	
+    """return statistics about a specified inbuilt skin
 
-    :param discord.Message message: the discord message calling the command	
-    :param str args: string containing a skin name	
-    :param bool isDM: Whether or not the command is being called from a DM channel	
+    :param discord.Message message: the discord message calling the command
+    :param str args: string containing a skin name
+    :param bool isDM: Whether or not the command is being called from a DM channel
     """
     if isDM:
         prefix = cfg.defaultCommandPrefix
@@ -619,11 +619,11 @@ botCommands.register("info", cmd_info, 0, allowDM=True, helpSection="gof2 info",
 
 
 async def cmd_showme_criminal(message : discord.Message, args : str, isDM : bool):
-    """Return the URL of the image bountybot uses to represent the specified inbuilt criminal	
+    """Return the URL of the image bountybot uses to represent the specified inbuilt criminal
 
-    :param discord.Message message: the discord message calling the command	
-    :param str args: string containing a criminal name	
-    :param bool isDM: Whether or not the command is being called from a DM channel	
+    :param discord.Message message: the discord message calling the command
+    :param str args: string containing a criminal name
+    :param bool isDM: Whether or not the command is being called from a DM channel
     """
     if isDM:
         prefix = cfg.defaultCommandPrefix
@@ -654,11 +654,11 @@ async def cmd_showme_criminal(message : discord.Message, args : str, isDM : bool
 
 
 async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
-    """Return the URL of the image bountybot uses to represent the specified inbuilt ship	
+    """Return the URL of the image bountybot uses to represent the specified inbuilt ship
 
-    :param discord.Message message: the discord message calling the command	
-    :param str args: string containing a ship name and optionally a skin, prefaced with a + character.	
-    :param bool isDM: Whether or not the command is being called from a DM channel	
+    :param discord.Message message: the discord message calling the command
+    :param str args: string containing a ship name and optionally a skin, prefaced with a + character.
+    :param bool isDM: Whether or not the command is being called from a DM channel
     """
     if isDM:
         prefix = cfg.defaultCommandPrefix
@@ -932,11 +932,11 @@ async def cmd_showme_weapon(message : discord.Message, args : str, isDM : bool):
 
 
 async def cmd_showme_module(message : discord.Message, args : str, isDM : bool):
-    """Return the URL of the image bountybot uses to represent the specified inbuilt module	
+    """Return the URL of the image bountybot uses to represent the specified inbuilt module
 
-    :param discord.Message message: the discord message calling the command	
-    :param str args: string containing a module name	
-    :param bool isDM: Whether or not the command is being called from a DM channel	
+    :param discord.Message message: the discord message calling the command
+    :param str args: string containing a module name
+    :param bool isDM: Whether or not the command is being called from a DM channel
     """
     if isDM:
         prefix = cfg.defaultCommandPrefix
@@ -970,10 +970,10 @@ async def cmd_showme_module(message : discord.Message, args : str, isDM : bool):
 
 
 async def cmd_showme_turret(message : discord.Message, args : str, isDM : bool):
-    """Return the URL of the image bountybot uses to represent the specified inbuilt turret	
-    :param discord.Message message: the discord message calling the command	
-    :param str args: string containing a turret name	
-    :param bool isDM: Whether or not the command is being called from a DM channel	
+    """Return the URL of the image bountybot uses to represent the specified inbuilt turret
+    :param discord.Message message: the discord message calling the command
+    :param str args: string containing a turret name
+    :param bool isDM: Whether or not the command is being called from a DM channel
     """
     if isDM:
         prefix = cfg.defaultCommandPrefix
@@ -1007,10 +1007,10 @@ async def cmd_showme_turret(message : discord.Message, args : str, isDM : bool):
 
 
 async def cmd_showme_commodity(message : discord.Message, args : str, isDM : bool):
-    """Return the URL of the image bountybot uses to represent the specified inbuilt commodity	
-    :param discord.Message message: the discord message calling the command	
-    :param str args: string containing a commodity name	
-    :param bool isDM: Whether or not the command is being called from a DM channel	
+    """Return the URL of the image bountybot uses to represent the specified inbuilt commodity
+    :param discord.Message message: the discord message calling the command
+    :param str args: string containing a commodity name
+    :param bool isDM: Whether or not the command is being called from a DM channel
     """
     await message.channel.send("Commodity items have not been implemented yet!")
     return
@@ -1045,13 +1045,13 @@ async def cmd_showme_commodity(message : discord.Message, args : str, isDM : boo
 
 
 async def cmd_showme(message : discord.Message, args : str, isDM : bool):
-    """Return the URL of the image bountybot uses to represent the named game object, of a specified type.	
-    The named used to reference the object may be an alias.	
+    """Return the URL of the image bountybot uses to represent the named game object, of a specified type.
+    The named used to reference the object may be an alias.
 
-    :param discord.Message message: the discord message calling the command	
+    :param discord.Message message: the discord message calling the command
     :param str args: string containing an object type, followed by a space, followed by the object name.
-                        For example, 'criminal toma prakupy'	
-    :param bool isDM: Whether or not the command is being called from a DM channel	
+                        For example, 'criminal toma prakupy'
+    :param bool isDM: Whether or not the command is being called from a DM channel
     """
     if args == "":
         await message.channel.send(":x: Please give an object type to look up! " \

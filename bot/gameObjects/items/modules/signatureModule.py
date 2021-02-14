@@ -7,7 +7,7 @@ from ..gameItem import spawnableItem
 
 @spawnableItem
 class SignatureModule(moduleItem.ModuleItem):
-    """A module allowing a the owner to disguise themselves as a member of th faction that manufactured this signature. 
+    """A module allowing a the owner to disguise themselves as a member of th faction that manufactured this signature.
     """
 
     def __init__(self, name : str, aliases : List[str], manufacturer : str, value : int = 0,

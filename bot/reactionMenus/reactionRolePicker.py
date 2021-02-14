@@ -64,7 +64,7 @@ class ReactionRolePickerOption(reactionMenu.ReactionMenuOption):
     the reaction is removed.
 
     :var role: The role to toggle on reactions
-    :vartype role: discord.Role 
+    :vartype role: discord.Role
     """
 
     def __init__(self, emoji : lib.emojis.BasedEmoji, role : Role, menu : reactionMenu.ReactionMenu):
@@ -104,7 +104,7 @@ class ReactionRolePicker(reactionMenu.ReactionMenu):
         """
         :param discord.Message msg: the message where this menu is embedded
         :param reactionRoles: A dictionary where keys are emojis and values are the roles to grant/remove when adding/removing
-                                the emoji 
+                                the emoji
         :type reactionRoles: dict[lib.emojis.BasedEmoji, discord.Role]
         :param discord.Guild dcGuild: The guild where this menu is contained TODO: Remove and replace with extracting msg.guild
         :param str titleTxt: The content of the embed title (Default "**Role Menu**")

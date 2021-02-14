@@ -72,7 +72,7 @@ class bountyBoardChannel(serializable.Serializable):
                             message ID of the listing message.
     :vartype bountyMessages: dict[str, dict[criminal, int]]
     :var noBountiesMessage: Either a reference to a discord.message indicating that the BBC is empty,
-                            or None if no empty board message exists 
+                            or None if no empty board message exists
     :vartype noBountiesMessage: discord.message or None
     :var channel: The channel where this BBC's listings are to be posted
     :vartype channel: discord.TextChannel
@@ -194,7 +194,7 @@ class bountyBoardChannel(serializable.Serializable):
 
 
     def hasMessageForBounty(self, bounty : bounty.Bounty) -> bool:
-        """Decide whether this BBC stores a listing for the given bounty 
+        """Decide whether this BBC stores a listing for the given bounty
 
         :param Bounty bounty: The bounty to check for listing existence
         :return: True if this BBC stores a listing for bounty, False otherwise

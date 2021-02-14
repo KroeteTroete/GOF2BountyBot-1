@@ -80,7 +80,7 @@ class TimedTask:
         The other object must be a TimedTask. Compares only the expiryTimes of the two tasks.
 
         :param TimedTask other: other TimedTask to compare against.
-        :return: True if this TimedTask's expiryTime is < other's expiryTime, False otherwise. 
+        :return: True if this TimedTask's expiryTime is < other's expiryTime, False otherwise.
         :rtype: bool
         """
         if not isinstance(other, TimedTask):
@@ -93,7 +93,7 @@ class TimedTask:
         The other object must be a TimedTask. Compares only the expiryTimes of the two tasks.
 
         :param TimedTask other: other TimedTask to compare against.
-        :return: True if this TimedTask's expiryTime is > other's expiryTime, False otherwise. 
+        :return: True if this TimedTask's expiryTime is > other's expiryTime, False otherwise.
         :rtype: bool
         """
         if not isinstance(other, TimedTask):
@@ -106,7 +106,7 @@ class TimedTask:
         The other object must be a TimedTask. Compares only the expiryTimes of the two tasks.
 
         :param TimedTask other: other TimedTask to compare against.
-        :return: True if this TimedTask's expiryTime is <= other's expiryTime, False otherwise. 
+        :return: True if this TimedTask's expiryTime is <= other's expiryTime, False otherwise.
         :rtype: bool
         """
         if not isinstance(other, TimedTask):
@@ -119,7 +119,7 @@ class TimedTask:
         The other object must be a TimedTask. Compares only the expiryTimes of the two tasks.
 
         :param TimedTask other: other TimedTask to compare against.
-        :return: True if this TimedTask's expiryTime is >= other's expiryTime, False otherwise. 
+        :return: True if this TimedTask's expiryTime is >= other's expiryTime, False otherwise.
         :rtype: bool
         """
         if not isinstance(other, TimedTask):

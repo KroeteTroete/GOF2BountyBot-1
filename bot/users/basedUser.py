@@ -603,7 +603,7 @@ class BasedUser(serializable.Serializable):
         :param discord.Guild dcGuild: The discord guild in which to set the alert state
                                         (currently only relevent for role-based alerts)
         :param bbGuild bbGuild: The bbGuild in which to set the alert state (currently only relevent for role-based alerts,
-                                as the role must be looked up) 
+                                as the role must be looked up)
         :param discord.Member dcMember: This user's member object in dcGuild (TODO: Just grab dcMember from dcGuild in here)
         :param bool newState: The new desired of the alert
         """
@@ -620,7 +620,7 @@ class BasedUser(serializable.Serializable):
         :param discord.Guild dcGuild: The discord guild in which to set the alert state
                                         (currently only relevent for role-based alerts)
         :param bbGuild bbGuild: The bbGuild in which to set the alert state (currently only relevent for role-based alerts,
-                                as the role must be looked up) 
+                                as the role must be looked up)
         :param discord.Member dcMember: This user's member object in dcGuild (TODO: Just grab dcMember from dcGuild in here)
         :param bool newState: The new desired of the alert
         """
@@ -635,7 +635,7 @@ class BasedUser(serializable.Serializable):
         :param discord.Guild dcGuild: The discord guild in which to toggle the alert state
                                         (currently only relevent for role-based alerts)
         :param bbGuild bbGuild: The bbGuild in which to toggle the alert state (currently only relevent for role-based
-                                alerts, as the role must be looked up) 
+                                alerts, as the role must be looked up)
         :param discord.Member dcMember: This user's member object in dcGuild (TODO: Just grab dcMember from dcGuild in here)
         """
         return await self.userAlerts[alertType].toggle(dcGuild, bbGuild, dcMember)
@@ -649,7 +649,7 @@ class BasedUser(serializable.Serializable):
         :param discord.Guild dcGuild: The discord guild in which to toggle the alert state (currently only relevent for
                                         role-based alerts)
         :param bbGuild bbGuild: The bbGuild in which to toggle the alert state (currently only relevent for role-based alerts,
-                                as the role must be looked up) 
+                                as the role must be looked up)
         :param discord.Member dcMember: This user's member object in dcGuild (TODO: Just grab dcMember from dcGuild in here)
         """
         return await self.toggleAlertType(userAlerts.userAlertsIDsTypes[alertID], dcGuild, bbGuild, dcMember)
@@ -662,7 +662,7 @@ class BasedUser(serializable.Serializable):
         :param discord.Guild dcGuild: The discord guild in which to get the alert state (currently only relevent for
                                         role-based alerts)
         :param bbGuild bbGuild: The bbGuild in which to get the alert state (currently only relevent for role-based alerts,
-                                as the role must be looked up) 
+                                as the role must be looked up)
         :param discord.Member dcMember: This user's member object in dcGuild (TODO: Just grab dcMember from dcGuild in here)
         """
         return self.userAlerts[alertType].getState(dcGuild, bbGuild, dcMember)
@@ -676,7 +676,7 @@ class BasedUser(serializable.Serializable):
         :param discord.Guild dcGuild: The discord guild in which to get the alert state (currently only relevent
                                         for role-based alerts)
         :param bbGuild bbGuild: The bbGuild in which to get the alert state (currently only relevent for role-based alerts,
-                                as the role must be looked up) 
+                                as the role must be looked up)
         :param discord.Member dcMember: This user's member object in dcGuild (TODO: Just grab dcMember from dcGuild in here)
         """
         return self.isAlertedForType(userAlerts.userAlertsIDsTypes[alertID], dcGuild, bbGuild, dcMember)
@@ -754,7 +754,7 @@ class BasedUser(serializable.Serializable):
         :param dict userDict: A dictionary containing all information necessary to construct
                                 the BasedUser object, other than their ID.
         :return: A BasedUser object as described in userDict
-        :rtype: BasedUser 
+        :rtype: BasedUser
         """
         if "id" not in kwargs:
             raise NameError("Required kwarg not given: id")

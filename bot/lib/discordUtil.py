@@ -346,7 +346,7 @@ def messageArgsFromStr(msgStr: str) -> Dict[str, Union[str, Embed]]:
             footerIcon for the URL to the image to display to the left of footerTxt
             thumb for the URL to the image to display in the top right of the embed
             img for the URL to the image to display in the main embed content
-            authorName for smaller text to display in place of the title 
+            authorName for smaller text to display in place of the title
             icon for the URL to the image to display to the left of authorName
 
         To give fields for the embed, give field names and values separated by a new line.

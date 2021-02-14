@@ -187,7 +187,7 @@ class ReactionPollMenu(reactionMenu.ReactionMenu):
         votes, and its expiry time.
 
         :return: A discord.Embed representing the menu and its options
-        :rtype: discord.Embed 
+        :rtype: discord.Embed
         """
         baseEmbed = super(ReactionPollMenu, self).getMenuEmbed()
         if self.multipleChoice:

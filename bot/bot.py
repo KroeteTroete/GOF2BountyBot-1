@@ -146,7 +146,7 @@ class BasedClient(ClientBaseClass):
 
     A command_prefix is assigned to this bot, but no commands are registered to it, so this is effectively meaningless.
     I chose to assign a zero-width character, as this is unlikely to ever be chosen as the bot's actual command prefix,
-    minimising erroneous commands.Bot command recognition. 
+    minimising erroneous commands.Bot command recognition.
 
     :var bot_loggedIn: Tracks whether or not the bot is currently logged in
     :vartype bot_loggedIn: bool

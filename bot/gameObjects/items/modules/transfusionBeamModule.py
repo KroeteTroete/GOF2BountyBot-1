@@ -12,7 +12,7 @@ class TransfusionBeamModule(moduleItem.ModuleItem):
     :var HPps: The amount of health points per second to steal
     :vartype HPps: int
     :var count: The number of ships from which health may be stolen simultaneously
-    :vartype count: int 
+    :vartype count: int
     """
 
     def __init__(self, name : str, aliases : List[str], HPps : float = 0, count : int = 0,

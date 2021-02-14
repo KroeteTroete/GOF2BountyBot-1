@@ -390,7 +390,7 @@ class ReactionMenu(serializable.Serializable):
         This will usually contain a short description of the menu, its options, and its expiry time.
 
         :return: A discord.Embed representing the menu and its options
-        :rtype: discord.Embed 
+        :rtype: discord.Embed
         """
         menuEmbed = Embed(title=self.titleTxt, description=self.desc, colour=self.col)
         if self.footerTxt != "":
@@ -503,7 +503,7 @@ class ReactionMenu(serializable.Serializable):
 class CancellableReactionMenu(ReactionMenu):
     """A simple ReactionMenu extension that adds an extra 'cancel' option to your given options dictionary.
     The 'cancel' option will call the menu's delete method. No extra restrictions beyond targetMember/targetRole are placed
-    on members who may cancel the menu. 
+    on members who may cancel the menu.
 
     If CancellableReactionMenu is extended into a saveable menu class, the cancel option will not be included in the menu's
     dictionary-serialized representation. This is fine, since the constructor in your saveable subclass

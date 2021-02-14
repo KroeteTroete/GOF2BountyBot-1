@@ -75,7 +75,7 @@ class Inventory(serializable.Serializable):
     def removeItem(self, item : object, quantity : int = 1):
         """Remove one or more of an item from the inventory.
         If the amount of item stored in the inventory is now zero, the InventoryListing is removed from the inventory.
-        At least quantity of item must already be stored in the inventory. 
+        At least quantity of item must already be stored in the inventory.
 
         :param object item: The item to remove from the inventory
         :param int quantity: Integer amount of item to remove from the inventory. Must be between 1 and the amount of item

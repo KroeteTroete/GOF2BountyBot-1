@@ -70,7 +70,7 @@ async def getNewestTagOnRemote(httpClient: aiohttp.ClientSession, url: str) -> s
     :param aiohttp.ClientSession httpClient: The ClientSession to request git info with
     :param str url: URL to the git remote to check
     :return: String name of the the latest tag on the remote at URL, if the remote at URL has any tags. Empty string otherwise
-    :rtype: str 
+    :rtype: str
     """
     async with httpClient.get(url) as resp:
         try:

@@ -46,7 +46,7 @@ class HeirarchicalCommandsDB:
         :param FunctionType function: reference to the function that should be called
         :param int accessLevel: The level of access required to call this command
         :param List[str] aliases: List of alternative commands which may be used to call this one. The same accessLevel will
-                                    be required for all aliases. (Default []) 
+                                    be required for all aliases. (Default [])
         :param bool forceKeepArgsCasing: Whether to pass arguments to the function with their original casing. If False,
                                             arguments will be transformed to lower case before passing. (Default False)
         :param bool forceKeepCommandCasing: Whether the command must be called with exactly the correct casing (Default False)

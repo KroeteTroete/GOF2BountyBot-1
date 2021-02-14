@@ -77,7 +77,7 @@ def pickRandomShopTL() -> int:
     """Pick a random shop techlevel, with probabilities calculated previously in gameMaths.
 
     :return: An integer between 1 and 10 representing a shop tech level
-    :rtype: int    
+    :rtype: int
     """
     tlChance = random.randint(1, itemSpawnRateResDigits) / itemSpawnRateResDigits
     for shopTL in range(numTechLevels):

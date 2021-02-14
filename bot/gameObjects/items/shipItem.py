@@ -96,7 +96,7 @@ class Ship(GameItem):
                                 ship (Default False)
         :param float shopSpawnRate: A pre-calculated float indicating the highest spawn rate of this ship
                                     (i.e its spawn probability for a shop of the same techLevel) (Default 0)
-        :param str skin: The name of the skin applied to the ship 
+        :param str skin: The name of the skin applied to the ship
         """
         super(Ship, self).__init__(name, aliases, value=value, wiki=wiki, manufacturer=manufacturer, icon=icon, emoji=emoji,
                                         techLevel=techLevel, builtIn=builtIn)
@@ -235,7 +235,7 @@ class Ship(GameItem):
     def unequipWeaponObj(self, weapon : primaryWeapon):
         """Unequip the given weapon object reference from the ship
 
-        :param primaryWeapon weapon: The weapon object to unequip 
+        :param primaryWeapon weapon: The weapon object to unequip
         """
         self.weapons.remove(weapon)
 
@@ -312,7 +312,7 @@ class Ship(GameItem):
 
         :param int index: The index of the module to fetch
         :return: The module reference equipped at the given index
-        :rtype: moduleItem 
+        :rtype: moduleItem
         """
         return self.modules[index]
 
@@ -331,7 +331,7 @@ class Ship(GameItem):
     def unequipTurretObj(self, turret : turretWeapon):
         """Unequip the given turret object reference from the ship
 
-        :param turretWeapon turret: The turret object to unequip 
+        :param turretWeapon turret: The turret object to unequip
         """
         self.turrets.remove(turret)
 
