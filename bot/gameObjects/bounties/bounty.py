@@ -163,9 +163,14 @@ class Bounty(serializable.Serializable):
                                 This currently toggles whether the passed bounty is checked for existence or not.
                                 (Default False)
         """
+        if "owningDB" in kwargs:
+            owningDB = kwargs["owningDB"]
+        else:
+            owningDB = None
         dbReload = kwargs["dbReload"] if "dbReload" in kwargs else False
         newCfg = bountyConfig.BountyConfig(faction=bounty["faction"], route=bounty["route"],
                                             answer=bounty["answer"], checked=bounty["checked"], reward=bounty["reward"],
                                             issueTime=bounty["issueTime"], endTime=bounty["endTime"])
         return Bounty(dbReload=dbReload, config=newCfg,
-                        criminalObj=criminal.Criminal.fromDict(bounty["criminal"]))
+                        criminalObj=criminal.Criminal.fromDict(bounty["criminal"]),
+                        owningDB=owningDB)

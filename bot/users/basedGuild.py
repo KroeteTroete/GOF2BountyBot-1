@@ -69,7 +69,7 @@ class BasedGuild(serializable.Serializable):
         :raise TypeError: When given an incompatible argument type
         """
 
-        if not isinstance(dcGuild, Guild):
+        if dcGuild is None:
             raise lib.exceptions.NoneDCGuildObj("Given dcGuild of type '" + type(dcGuild).__name__ \
                                                 + "', expecting discord.Guild")
 
@@ -83,10 +83,6 @@ class BasedGuild(serializable.Serializable):
             id = int(id)
         elif type(id) != int:
             raise TypeError("id must be int, given " + str(type(id)))
-
-        if not isinstance(dcGuild, Guild):
-            raise lib.exceptions.NoneDCGuildObj("Given dcGuild of type '" + type(dcGuild).__name__ \
-                                                + "', expecting discord.Guild")
 
         self.announceChannel = announceChannel
         self.playChannel = playChannel
@@ -661,49 +657,57 @@ class BasedGuild(serializable.Serializable):
         """Factory function constructing a new BasedGuild object from the information
         in the provided guildDict - the opposite of BasedGuild.toDict
 
-        :param int id: The discord ID of the guild
+        :param int guildID: The discord ID of the guild
         :param dict guildDict: A dictionary containing all information required to build the BasedGuild object
         :param bool dbReload: Whether or not this guild is being created during the initial database loading phase of
                                 bountybot. This is used to toggle name checking in bounty contruction.
         :return: A BasedGuild according to the information in guildDict
         :rtype: BasedGuild
         """
-        if "id" not in kwargs:
-            raise NameError("Required kwarg missing: id")
-        guildID = kwargs["id"]
+        if "guildID" not in kwargs:
+            raise NameError("Required kwarg missing: guildID")
+        guildID = kwargs["guildID"]
 
         dbReload = kwargs["dbReload"] if "dbReload" in kwargs else False
 
         dcGuild = botState.client.get_guild(guildID)
-        if not isinstance(dcGuild, Guild):
+        if dcGuild is None:
             raise lib.exceptions.NoneDCGuildObj("Could not get guild object for id " + str(guildID))
-
-        announceChannel = None
-        playChannel = None
 
         if "announceChannel" in guildDict and guildDict["announceChannel"] != -1:
             announceChannel = dcGuild.get_channel(guildDict["announceChannel"])
+        else:
+            announceChannel = None
         if "playChannel" in guildDict and guildDict["playChannel"] != -1:
             playChannel = dcGuild.get_channel(guildDict["playChannel"])
+        else:
+            playChannel = None
 
 
         if "bountiesDisabled" in guildDict and guildDict["bountiesDisabled"]:
             bountiesDB = None
+            bbc = None
         else:
             if "bountiesDB" in guildDict:
                 bountiesDB = bountyDB.BountyDB.fromDict(guildDict["bountiesDB"], dbReload=dbReload)
             else:
                 bountiesDB = bountyDB.BountyDB(bbData.bountyFactions)
-
-        if "bountyBoardChannel" in guildDict and guildDict["bountyBoardChannel"] != -1:
-            bbc = bountyBoardChannel.bountyBoardChannel.fromDict(guildDict["bountyBoardChannel"])
+            
+            if "bountyBoardChannel" in guildDict and guildDict["bountyBoardChannel"] != -1:
+                bbc = bountyBoardChannel.bountyBoardChannel.fromDict(guildDict["bountyBoardChannel"])
+        
+        if "shopDisabled" in guildDict and guildDict["shopDisabled"]:
+            shop = None
         else:
-            bbc = None
+            if "shop" in guildDict:
+                shop = guildShop.GuildShop.fromDict(guildDict["shop"])
+            else:
+                shop = guildShop.GuildShop()
+        
 
-        return BasedGuild(id, bountiesDB, dcGuild, announceChannel=announceChannel, playChannel=playChannel,
-                            shop=guildShop.GuildShop.fromDict(guildDict["shop"]) if "shop" in guildDict else \
-                                    guildShop.GuildShop(),
-                            bountyBoardChannel=bbc,
+        return BasedGuild(guildID, dcGuild, bountiesDB, announceChannel=announceChannel, playChannel=playChannel,
+                            shop=shop, bountyBoardChannel=bbc,
+                            shopDisabled=guildDict["shopDisabled"] if "shopDisabled" in guildDict else False,
                             alertRoles=guildDict["alertRoles"] if "alertRoles" in guildDict else {},
                             ownedRoleMenus=guildDict["ownedRoleMenus"] if "ownedRoleMenus" in guildDict else 0,
                             bountiesDisabled=guildDict["bountiesDisabled"] if "bountiesDisabled" in guildDict else False,

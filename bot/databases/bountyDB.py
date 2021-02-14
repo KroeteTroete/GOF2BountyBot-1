@@ -330,13 +330,19 @@ class BountyDB(serializable.Serializable):
         :return: A dictionary containing all data needed to recreate this bountyDB.
         :rtype: dict
         """
-        data = {}
+        data = {"active": {}, "escaped": {}}
         # Serialise all factions into name : list of serialised bounty
-        for fac in self.getFactions():
-            data[fac] = []
+        for fac in self.bounties:
+            data["active"][fac] = []
             # Serialise all of the current faction's bounties into dictionary
             for currentBounty in self.getFactionBounties(fac):
-                data[fac].append(currentBounty.toDict(**kwargs))
+                data["active"][fac].append(currentBounty.toDict(**kwargs))
+        # Serialise all factions into name : list of serialised escaped bounty
+        for fac in self.escapedBounties:
+            data["escaped"][fac] = []
+            # Serialise all of the current faction's bounties into dictionary
+            for currentBounty in self.escapedBounties[fac]:
+                data["escaped"][fac].append(currentBounty.toDict(**kwargs))
         return data
 
 
@@ -362,10 +368,10 @@ class BountyDB(serializable.Serializable):
         for fac in activeBountiesData.keys():
             # Convert each serialised bounty into a bounty object
             for bountyDict in activeBountiesData[fac]:
-                newDB.addBounty(bounty.Bounty.fromDict(bountyDict, dbReload=dbReload))
+                newDB.addBounty(bounty.Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB))
         # Iterate over all factions in the DB
         for fac in escapedBountiesData.keys():
             # Convert each serialised bounty into a bounty object
             for bountyDict in escapedBountiesData[fac]:
-                newDB.addEscapedBounty(bounty.Bounty.fromDict(bountyDict, dbReload=dbReload))
+                newDB.addEscapedBounty(bounty.Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB))
         return newDB
