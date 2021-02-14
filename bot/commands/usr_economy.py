@@ -102,7 +102,7 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
                                             category="shop", eventType="UNKWN_KEY")
                 except IndexError:
                     break
-                except AttributeError as e:
+                except AttributeError:
                     keysStr = ""
                     for item in requestedShop.shipsStock.items:
                         keysStr += str(item) + ", "
@@ -144,7 +144,7 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
                                         category="shop", eventType="UNKWN_KEY")
                 except IndexError:
                     break
-                except AttributeError as e:
+                except AttributeError:
                     keysStr = ""
                     for item in requestedShop.weaponsStock.items:
                         keysStr += str(item) + ", "
@@ -187,7 +187,7 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
                                         eventType="UNKWN_KEY")
                 except IndexError:
                     break
-                except AttributeError as e:
+                except AttributeError:
                     keysStr = ""
                     for item in requestedShop.modulesStock.items:
                         keysStr += str(item) + ", "
@@ -228,7 +228,7 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
                                         eventType="UNKWN_KEY")
                 except IndexError:
                     break
-                except AttributeError as e:
+                except AttributeError:
                     keysStr = ""
                     for item in requestedShop.turretsStock.items:
                         keysStr += str(item) + ", "

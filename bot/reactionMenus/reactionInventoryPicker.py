@@ -155,7 +155,6 @@ class ReactionInventoryPicker(reactionMenu.CancellableReactionMenu):
         :raise NotImplementedError: Always.
         """
         raise NotImplementedError("Attempted to call toDict on an unsaveable reaction menu type")
-        baseDict = super(ReactionInventoryPicker, self).toDict(**kwargs)
 
 
     @classmethod

@@ -99,15 +99,9 @@ async def dev_cmd_broadcast(message : discord.Message, args : str, isDM : bool):
     if args == "":
         await message.channel.send("provide a message!")
     else:
-        useAnnounceChannel = False
-        msg = args
-        if args.split(" ")[0].lower() == "announce-channel":
-            useAnnounceChannel = True
-            msg = args[17:]
-
         sendArgs = lib.discordUtil.messageArgsFromStr(args)
 
-        if useAnnounceChannel:
+        if args.split(" ")[0].lower() == "announce-channel":
             for guild in botState.guildsDB.guilds.values():
                 if guild.hasAnnounceChannel():
                     await guild.getAnnounceChannel().send(sendArgs)

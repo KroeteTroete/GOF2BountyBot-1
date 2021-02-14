@@ -383,17 +383,6 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
 
                 timeoutDict[timeName] = int(kwArgs[timeName])
 
-
-    multipleChoice = True
-
-    if "multiplechoice" in kwArgs:
-        if kwArgs["multiplechoice"].lower() in ["off", "no", "false", "single", "one"]:
-            multipleChoice = False
-        elif kwArgs["multiplechoice"].lower() not in ["on", "yes", "true", "multiple", "many"]:
-            await message.channel.send("Invalid `multiplechoice` argument '" + kwArgs["multiplechoice"] \
-                                        + "'! Please use either `multiplechoice=yes` or `multiplechoice=no`")
-            return
-
     timeoutExists = False
     for timeName in timeoutDict:
         if timeoutDict[timeName] != -1:

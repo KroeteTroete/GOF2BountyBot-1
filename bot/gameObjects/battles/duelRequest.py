@@ -235,22 +235,7 @@ async def fightDuel(sourceUser : User, targetUser : User, duelReq : DuelRequest,
             creditsMsg += ".\n**" + botState.client.get_user(winningBasedUser.id).name + "** now has **" \
                 + str(winningBasedUser.credits) + " credits**.\n**" + botState.client.get_user(losingBasedUser.id).name \
                 + "** now has **" + str(losingBasedUser.credits) + " credits**."
-
-        statsMsg = "**" + sourceUser.name + "** had " \
-                    + (str(duelResults["ship1"]["DPS"]["varied"]) \
-                        if duelResults["ship1"]["DPS"]["varied"] != -1 else "inf.") \
-                    + " DPS and " + (str(duelResults["ship1"]["health"]["varied"]) \
-                        if duelResults["ship1"]["health"]["varied"] != -1 else "inf.") \
-                    + " health." + "**" + targetUser.name + "** had " + (str(duelResults["ship2"]["DPS"]["varied"]) \
-                        if duelResults["ship2"]["DPS"]["varied"] != -1 else "inf.") \
-                    + " DPS and " + (str(duelResults["ship2"]["health"]["varied"]) \
-                        if duelResults["ship2"]["health"]["varied"] != -1 else "inf.") \
-                    + " health." + "**" + sourceUser.name + "** had " \
-                    + (str(duelResults["ship1"]["TTK"]) if duelResults["ship1"]["TTK"] != -1 else "inf.") \
-                    + "s time to kill." + "**" + targetUser.name + "** had " \
-                    + (str(duelResults["ship2"]["TTK"]) if duelResults["ship2"]["TTK"] != -1 else "inf.") \
-                    + "s time to kill."
-
+                
         statsEmbed = makeDuelStatsEmbed(duelResults, sourceUser, targetUser)
 
         if acceptMsg.guild.get_member(winningBasedUser.id) is None:
