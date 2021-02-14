@@ -673,9 +673,6 @@ class BasedGuild(serializable.Serializable):
         guildID = kwargs["id"]
 
         dbReload = kwargs["dbReload"] if "dbReload" in kwargs else False
-        if "id" not in kwargs:
-            raise NameError("Required kwarg missing: id")
-        id = kwargs["id"]
 
         dcGuild = botState.client.get_guild(guildID)
         if not isinstance(dcGuild, Guild):
