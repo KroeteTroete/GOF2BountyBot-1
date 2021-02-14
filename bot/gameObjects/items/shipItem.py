@@ -478,7 +478,7 @@ class Ship(GameItem):
         return int(total * multiplier)
 
 
-    def getmaxSecondaries(self, shipUpgradesOnly : bool = False) -> int:
+    def getMaxSecondaries(self, shipUpgradesOnly : bool = False) -> int:
         """Get the total maxSecondaries provided by the equipped items and upgrades.
         If shipUpgradesOnly is given as True, then only applied shipUpgrades will be included in the calculation.
         This is used to give a 'base' measurement, as ship upgrades cannot be removed and are considered part of the
@@ -770,8 +770,8 @@ class Ship(GameItem):
                                 if self.getCargo(shipUpgradesOnly=True) > self.cargo else "") + ", "
         stats += "Handling: " + str(self.getHandling(shipUpgradesOnly=True)) + ("(+)" \
                                 if self.getHandling(shipUpgradesOnly=True) > self.handling else "") + ", "
-        stats += "Max secondaries: " + str(self.getmaxSecondaries(shipUpgradesOnly=True)) + ("(+)" \
-                                if self.getmaxSecondaries(shipUpgradesOnly=True) > self.maxSecondaries else "") + "*"
+        stats += "Max secondaries: " + str(self.getMaxSecondaries(shipUpgradesOnly=True)) + ("(+)" \
+                                if self.getMaxSecondaries(shipUpgradesOnly=True) > self.maxSecondaries else "") + "*"
         return stats
 
 

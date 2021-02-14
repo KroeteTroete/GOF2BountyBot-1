@@ -268,7 +268,7 @@ async def cmd_info_ship(message : discord.Message, args : str, isDM : bool):
             for weapon in itemObj.weapons:
                 weaponStr += weapon.name + ", "
             statsEmbed.add_field(name="Equipped Primaries:", value=weaponStr[:-2] + "]*")
-        statsEmbed.add_field(name="Max Secondaries:", value=str(itemObj.getNumSecondaries()))
+        statsEmbed.add_field(name="Max Secondaries:", value=str(itemObj.getMaxSecondaries()))
         # if len(itemObj.secondaries) > 0:
         #     secondariesStr = "*["
         #     for secondary in itemObj.secondaries:
