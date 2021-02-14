@@ -1,5 +1,4 @@
 import json
-import os
 
 
 def readJSON(dbFile: str) -> dict:

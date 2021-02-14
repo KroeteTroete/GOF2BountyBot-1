@@ -2,7 +2,7 @@ import discord
 
 from . import commandsDB as botCommands
 from .. import botState
-from ..cfg import cfg, bbData
+from ..cfg import bbData
 
 botCommands.addHelpSection(1, "channels")
 

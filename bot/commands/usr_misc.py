@@ -9,7 +9,7 @@ from . import util_help
 from .. import lib, botState
 from ..cfg import cfg, bbData, versionInfo
 from ..users import basedUser
-from ..reactionMenus import reactionMenu, reactionPollMenu, pagedReactionMenu
+from ..reactionMenus import reactionMenu, reactionPollMenu
 from ..scheduling import timedTask
 from ..userAlerts import userAlerts
 

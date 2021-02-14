@@ -1,9 +1,8 @@
 from __future__ import annotations
 from . import reactionMenu
 from ..cfg import cfg
-from .. import botState, lib
+from .. import botState
 from discord import Colour, Message, Embed, Member, Role
-from datetime import datetime
 from ..scheduling import timedTask
 from..gameObjects.battles import duelRequest
 

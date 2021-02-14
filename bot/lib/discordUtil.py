@@ -7,9 +7,8 @@ if TYPE_CHECKING:
 
 from . import stringTyping, emojis, exceptions
 from .. import botState
-from discord import Embed, Colour, HTTPException, Forbidden, RawReactionActionEvent, Reaction, User
+from discord import Embed, Colour, HTTPException, Forbidden, RawReactionActionEvent, User
 from discord import DMChannel, GroupChannel, TextChannel
-import random
 from ..cfg import cfg
 from ..userAlerts import userAlerts
 

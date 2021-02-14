@@ -1,9 +1,8 @@
 from __future__ import annotations
 from discord.member import Member
 from . import reactionMenu
-from ..cfg import cfg
 from .. import botState, lib
-from discord import Colour, NotFound, HTTPException, Forbidden, Guild, Role, Message, User
+from discord import Colour, Guild, Role, Message, User
 from datetime import datetime
 from ..scheduling import timedTask
 from typing import List, Union, Dict

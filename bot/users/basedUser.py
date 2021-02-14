@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from ..baseClasses import serializable
 
-from typing import Union, List, TYPE_CHECKING
+from typing import Union, TYPE_CHECKING
 if TYPE_CHECKING:
     from ..gameObjects.battles import duelRequest
 
@@ -14,7 +14,7 @@ from ..gameObjects.items.modules import moduleItem
 from ..cfg import cfg
 from ..gameObjects.inventories import inventory
 from ..userAlerts import userAlerts
-from datetime import date, datetime
+from datetime import datetime
 from discord import Guild, Member
 from ..users import basedGuild
 from .. import lib, botState

@@ -1,5 +1,4 @@
 import discord
-import asyncio
 from datetime import datetime
 
 from . import commandsDB as botCommands

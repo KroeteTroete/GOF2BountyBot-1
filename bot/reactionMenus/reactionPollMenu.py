@@ -5,7 +5,7 @@ from .. import botState, lib
 from discord import Colour, Emoji, PartialEmoji, Message, Embed, User, Member, Role
 from datetime import datetime
 from ..scheduling import timedTask
-from typing import Dict, Union, TYPE_CHECKING
+from typing import Union
 from ..users import basedUser
 
 

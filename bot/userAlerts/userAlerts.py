@@ -5,7 +5,6 @@ if TYPE_CHECKING:
 
 from discord import utils, Guild, Member
 from abc import ABC, abstractmethod
-from ..cfg import cfg
 
 
 class UABase(ABC):

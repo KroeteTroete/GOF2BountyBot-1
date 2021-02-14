@@ -6,7 +6,7 @@ from types import FunctionType
 from . import cfg, bbData
 from ..gameObjects import shipUpgrade, shipSkin
 from ..gameObjects.bounties import criminal, solarSystem
-from ..gameObjects.items import moduleItemFactory, shipItem
+from ..gameObjects.items import moduleItemFactory
 from ..gameObjects.items.weapons import primaryWeapon, turretWeapon
 from ..gameObjects.items.tools import shipSkinTool, toolItemFactory
 from .. import lib

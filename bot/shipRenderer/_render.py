@@ -8,7 +8,6 @@ import bpy
 import os
 from math import radians
 from pathlib import Path
-from typing import List
 import os
 
 
