@@ -98,7 +98,7 @@ includedCommandModules = (  "usr_misc", "usr_homeguilds", "usr_gof2-info", "usr_
                             "dev_misc", "dev_channels", "dev_bounties", "dev_items", "dev_skins")
 
 # Default prefix for commands
-defaultCommandPrefix = "."
+defaultCommandPrefix = "$"
 
 
 
