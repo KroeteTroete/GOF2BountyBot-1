@@ -45,10 +45,12 @@ def makeBountyEmbed(bounty : bounty.Bounty) -> Embed:
     #                 value="`" + cfg.commandPrefix + "loadout criminal " + bounty.criminal.name + "`")
     return embed
 
-noBountiesEmbed = Embed(description='> Please check back later, or use the `$notify bounties` ' \
-                        + 'command to be notified when they spawn!', colour=discord.Colour.dark_orange())
-noBountiesEmbed.set_author(name='No Bounties Available',
-            icon_url='https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/stopwatch_23f1.png')
+
+stopwatchIcon = 'https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/stopwatch_23f1.png'
+noBountiesEmbed = Embed(description='> Please check back later, or use the `notify bounties` ' \
+                            + 'command to be notified when they spawn!',
+                        colour=discord.Colour.dark_orange())
+noBountiesEmbed.set_author(name='No Bounties Available', icon_url=stopwatchIcon)
 
 
 class bountyBoardChannel(serializable.Serializable):
