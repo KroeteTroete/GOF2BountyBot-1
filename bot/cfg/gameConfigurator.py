@@ -268,8 +268,7 @@ def loadAllGameObjects():
                 (bbData.builtInTurretData,  bbData.builtInTurretObjs,   turretWeapon.TurretWeapon.fromDict),
                 (bbData.builtInModuleData,  bbData.builtInModuleObjs,   moduleItemFactory.fromDict),
                 (bbData.builtInToolData,    bbData.builtInToolObjs,     toolItemFactory.fromDict),
-                (bbData.builtInShipSkinsData, bbData.builtInShipSkins,   shipSkin.ShipSkin.fromDict)
-            ):
+                (bbData.builtInShipSkinsData, bbData.builtInShipSkins,   shipSkin.ShipSkin.fromDict)):
         _loadGameObjects(dataDB, objsDB, deserializer)
 
     # generate shipSkinTool objects for each shipSkin
