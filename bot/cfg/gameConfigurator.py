@@ -229,8 +229,7 @@ def loadAllGameObjectData():
                             ("builtInTurretData",     cfg.paths.bbTurretMETAFolder,       ".bbTurret"),
                             ("builtInCommodityData",  cfg.paths.bbCommodityMETAFolder,    ".bbCommodity"),
                             ("builtInToolData",       cfg.paths.bbToolMETAFolder,         ".bbTool"),
-                            ("builtInSecondariesData", cfg.paths.bbModuleMETAFolder,       ".bbModule")
-                        ):
+                            ("builtInSecondariesData", cfg.paths.bbModuleMETAFolder,       ".bbModule")):
         setattr(bbData, db, _loadGameItemsFromDir(dir, ext))
 
 
@@ -283,9 +282,8 @@ def loadAllGameObjects():
     _sortShipKeys()
     _makeShipSpawnRates()
 
-    for db, objsDB in (   ("moduleObjsByTL", bbData.builtInModuleObjs),
-                            ("weaponObjsByTL", bbData.builtInWeaponObjs),
-                            ("turretObjsByTL", bbData.builtInTurretObjs)
-                        ):
+    for db, objsDB in ( ("moduleObjsByTL", bbData.builtInModuleObjs),
+                        ("weaponObjsByTL", bbData.builtInWeaponObjs),
+                        ("turretObjsByTL", bbData.builtInTurretObjs)):
         setattr(bbData, db, _sortGameObjects(objsDB))
         _makeItemSpawnRates(objsDB)

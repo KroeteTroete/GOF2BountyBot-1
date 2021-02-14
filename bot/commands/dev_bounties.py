@@ -87,8 +87,7 @@ async def dev_cmd_reset_cooldown(message : discord.Message, args : str, isDM : b
     # otherwise get the specified user's discord object and reset their cooldown.
     # [!] no validation is done.
     else:
-        botState.usersDB.getUser(int(args.lstrip("<@!").rstrip(">"))
-                        ).bountyCooldownEnd = datetime.utcnow().timestamp()
+        botState.usersDB.getUser(int(args.lstrip("<@!").rstrip(">"))).bountyCooldownEnd = datetime.utcnow().timestamp()
     await message.channel.send("Done!")
 
 botCommands.register("reset-cool", dev_cmd_reset_cooldown, 2, allowDM=True, helpSection="bounties", useDoc=True)
