@@ -483,7 +483,7 @@ class ReactionMenu(serializable.Serializable):
         if self.authorName != "":
             data["authorName"] = self.authorName
 
-        if self.timeout != None:
+        if self.timeout is not None:
             data["timeout"] = self.timeout.expiryTime.timestamp()
 
         if self.targetMember is not None:
