@@ -17,7 +17,7 @@ class CrateTool(toolItem.ToolItem):
         super().__init__(name, [], value=value, wiki=wiki,
             manufacturer=manufacturer, icon=icon, emoji=emoji,
             techLevel=techLevel, builtIn=builtIn)
-        
+
         for item in itemPool:
             if not gameItem.isSpawnableItemInstance(item):
                 raise RuntimeError("Attempted to create a crateTool with something other than a spawnableItem in its itemPool.")
@@ -32,7 +32,7 @@ class CrateTool(toolItem.ToolItem):
         if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedUser":
             raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received " + \
                             type(kwargs["callingBUser"]).__name__)
-        
+
         callingBUser = kwargs["callingBUser"]
         newItem = random.choice(self.itemPool)
         callingBUser.getInventoryForItem(newItem).addItem(newItem)
@@ -52,9 +52,9 @@ class CrateTool(toolItem.ToolItem):
         if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedUser":
             raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received " + \
                             type(kwargs["callingBUser"]).__name__)
-        
+
         callingBUser = kwargs["callingBUser"]
-        confirmMsg = await message.channel.send("Are you sure you want to open this crate?") 
+        confirmMsg = await message.channel.send("Are you sure you want to open this crate?")
         confirmation = await InlineConfirmationMenu(confirmMsg, message.author,
                                                     cfg.toolUseConfirmTimeoutSeconds).doMenu()
 
@@ -64,10 +64,10 @@ class CrateTool(toolItem.ToolItem):
             newItem = random.choice(self.itemPool)
             callingBUser.getInventoryForItem(newItem).addItem(newItem)
             callingBUser.inactiveTools.removeItem(self)
-            
+
             return "🎉 Success! You got a " + newItem.name + "!"
 
-    
+
     def statsStringShort(self) -> str:
         """Summarise all the statistics and functionality of this item as a string.
 
@@ -76,7 +76,7 @@ class CrateTool(toolItem.ToolItem):
         """
         return "*" + str(len(self.itemPool)) + " possible items*"
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this tool into dictionary format.
         This step of implementation adds a 'type' string indicating the name of this tool's subclass.
@@ -119,7 +119,7 @@ class CrateTool(toolItem.ToolItem):
                     itemPool.append(gameItem.spawnItem(itemDict))
         else:
             logger.log("crateTool", "fromDict", "fromDict-ing a crateTool with no itemPool.")
-        
+
         return CrateTool(itemPool, name=crateDict["name"] if "name" in crateDict else "",
             value=crateDict["value"] if "value" in crateDict else 0,
             wiki=crateDict["wiki"] if "wiki" in crateDict else "",

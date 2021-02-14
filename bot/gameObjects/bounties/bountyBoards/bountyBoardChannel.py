@@ -162,7 +162,7 @@ class bountyBoardChannel(serializable.Serializable):
                     logger.log("BBC", "init", "Forbidden exception thrown when sending no bounties message",
                                 category='bountyBoards', eventType="NOBTYMSG_LOAD-FORBIDDENERR")
                     self.noBountiesMessage = None
-            
+
         else:
             try:
                 self.noBountiesMessage = await self.channel.fetch_message(self.noBountiesMsgToBeLoaded)
@@ -222,7 +222,7 @@ class bountyBoardChannel(serializable.Serializable):
                 return False
         return True
 
-    
+
     async def addBounty(self, bounty : bounty.Bounty, message : Message):
         """Treat the given message as a listing for the given bounty, and store it in the database.
         If the BBC was previously empty, remove the empty bounty board message if one exists.
@@ -263,7 +263,7 @@ class bountyBoardChannel(serializable.Serializable):
                 print("addBounty Forbidden")
             except AttributeError:
                 print("addBounty no message")
-    
+
 
     async def removeBounty(self, bounty : bounty.Bounty):
         """Remove the listing message stored for the given bounty from the database.
@@ -312,7 +312,7 @@ class bountyBoardChannel(serializable.Serializable):
         """Update the embed for the listing associated with the given bounty.
         This includes newly checked and near-correct systems along the route.
         If a HTTP error is thrown when updating the listing, wait and retry the edit for the number of times defined in cfg
-        
+
         :param Bounty bounty: The bounty whose listing should be updated
         :raise KeyError: If the database does not store a listing for the given bounty
         """

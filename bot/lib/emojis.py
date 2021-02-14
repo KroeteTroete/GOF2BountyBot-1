@@ -224,7 +224,7 @@ class BasedEmoji(serializable.Serializable):
     @classmethod
     def fromStr(cls, s: str, rejectInvalid: bool = False) -> BasedEmoji:
         """Construct a BasedEmoji object from a string containing either a unicode emoji or a discord custom emoji.
-        
+
         s may also be a BasedEmoji (returns s), a dictionary-serialized BasedEmoji (returns BasedEmoji.fromDict(s)), or
         only an ID of a discord custom emoji (may be either str or int)
 

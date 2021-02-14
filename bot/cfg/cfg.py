@@ -28,7 +28,7 @@ defaultEmojis = {
 
     # Default emoji to assign to shipSkinTool items
     "shipSkinTool": UninitializedBasedEmoji(777166858516299786),
-    
+
     # Default emoji to assign to bbCrates containing shipSkinTools
     # "skinCrate": UninitializedBasedEmoji(723709178736017419)
     "skinCrate": UninitializedBasedEmoji("🥞")
@@ -92,7 +92,7 @@ maxCommandsPerHelpPage = 5
 # includedCommandModules = ("usr_misc",
 #                           "admn_misc",
 #                           "dev_misc")
-                          
+
 includedCommandModules = (  "usr_misc", "usr_homeguilds", "usr_gof2-info", "usr_bounties", "usr_loadout", "usr_economy",
                             "admn_channels", "admn_misc",
                             "dev_misc", "dev_channels", "dev_bounties", "dev_items", "dev_skins")
@@ -143,12 +143,12 @@ userAccessLevels = ["user", "mod", "admin", "dev"]
 ##### USERS #####
 
 userAlertsIDsDefaults = {   "bounties_new": False,
-    
+
                             "shop_refresh": False,
 
                             "duels_challenge_incoming_new": True,
                             "duels_challenge_incoming_cancel": False,
-                            
+
                             "system_updates_major": False,
                             "system_updates_minor": False,
                             "system_misc": False}

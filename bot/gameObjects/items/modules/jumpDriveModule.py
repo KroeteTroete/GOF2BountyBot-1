@@ -30,7 +30,7 @@ class JumpDriveModule(moduleItem.ModuleItem):
         super(JumpDriveModule, self).__init__(name, aliases, value=value, wiki=wiki, manufacturer=manufacturer, icon=icon,
                                                 emoji=emoji, techLevel=techLevel, builtIn=builtIn)
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this module into dictionary format, to be saved to file.
         No extra attributes implemented by this class, so just eses the base moduleItem toDict method.
@@ -53,7 +53,7 @@ class JumpDriveModule(moduleItem.ModuleItem):
         """
         if "builtIn" in moduleDict and moduleDict["builtIn"]:
             return bbData.builtInModuleObjs[moduleDict["name"]]
-            
+
         return JumpDriveModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
                                 value=moduleDict["value"] if "value" in moduleDict else 0,
                                 wiki=moduleDict["wiki"] if "wiki" in moduleDict else "",

@@ -9,11 +9,11 @@ from .weapon import Weapon
 class TurretWeapon(Weapon):
     """A turret that can be equipped onto a bbShip for use in duels.
     """
-    
+
     @classmethod
     def fromDict(cls, turretDict : dict, **kwargs) -> TurretWeapon:
         """Factory function constructing a new turretWeapon object from a dictionary serialised representation - the opposite of turretWeapon.toDict.
-        
+
         :param dict turretDict: A dictionary containing all information needed to construct the desired turretWeapon
         :return: A new turretWeapon object as described in turretDict
         :rtype: turretWeapon

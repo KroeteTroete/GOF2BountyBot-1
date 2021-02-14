@@ -41,12 +41,12 @@ class SpectralFilterModule(moduleItem.ModuleItem):
         self.showOnRadar = showOnRadar
         self.showInfo = showInfo
 
-    
+
     def statsStringShort(self):
         return "*Show Info? " + ("Yes" if self.showInfo else "No") + \
                 ", Show On Radar? " + ("Yes" if self.showOnRadar else "No") + "*"
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this module into dictionary format, to be saved to file. Uses the base moduleItem
         toDict method as a starting point, and adds extra attributes implemented by this specific module.
@@ -72,10 +72,10 @@ class SpectralFilterModule(moduleItem.ModuleItem):
         """
         if "builtIn" in moduleDict and moduleDict["builtIn"]:
             return bbData.builtInModuleObjs[moduleDict["name"]]
-            
+
         return SpectralFilterModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
                                 showInfo=moduleDict["showInfo"] if "showInfo" in moduleDict else False,
-                                showOnRadar=moduleDict["showOnRadar"] if "showOnRadar" in moduleDict else False, 
+                                showOnRadar=moduleDict["showOnRadar"] if "showOnRadar" in moduleDict else False,
                                 value=moduleDict["value"] if "value" in moduleDict else 0,
                                 wiki=moduleDict["wiki"] if "wiki" in moduleDict else "",
                                 manufacturer=moduleDict["manufacturer"] if "manufacturer" in moduleDict else "",

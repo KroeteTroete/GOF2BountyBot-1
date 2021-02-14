@@ -116,8 +116,8 @@ class BountyConfig:
         self.wiki = wiki
 
         self.ship = ship
-        
-    
+
+
     def generate(self, owningDB : bountyDB.BountyDB, noCriminal : bool = True, forceKeepChecked : bool = False,
                     forceNoDBCheck : bool = False):
         """Validate all given config data, and randomly generate missing data.
@@ -160,15 +160,15 @@ class BountyConfig:
                 else:
                     if doDBCheck and owningDB.bountyNameExists(self.name):
                         raise KeyError("BountyConfig: attempted to create config for pre-existing bounty: " + self.name)
-                    
+
                     if self.icon == "":
                         self.icon = bbData.rocketIcon
-        
+
         else:
             if doDBCheck and not owningDB.factionCanMakeBounty(self.faction):
                 raise IndexError("BOUCONF_CONS_FACDBFULL: Attempted to generate new bounty config when " \
                                     + "no slots are available for faction: '" + self.faction + "'")
-        
+
         if self.route == []:
             if self.start == "":
                 self.start = random.choice(list(bbData.builtInSystemObjs.keys()))
@@ -192,7 +192,7 @@ class BountyConfig:
             self.answer = random.choice(self.route)
         elif self.answer not in bbData.builtInSystemObjs:
             raise KeyError("Bounty constructor: Invalid answer requested '" + self.answer + "'")
-        
+
         if self.reward == -1:
             self.reward = int(len(self.route) * cfg.bPointsToCreditsRatio)
         elif self.reward < 0:
@@ -209,4 +209,3 @@ class BountyConfig:
                 self.checked[station] = -1
 
         self.generated = True
-        

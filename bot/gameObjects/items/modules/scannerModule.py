@@ -54,7 +54,7 @@ class ScannerModule(moduleItem.ModuleItem):
                 "s, Show Class A Asteroids: " + ("Yes" if self.showClassAAsteroids else "No") + \
                 ", Show Cargo: " + ("Yes" if self.showCargo else "No") + "*"
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this module into dictionary format, to be saved to file. Uses the base moduleItem toDict
         method as a starting point, and adds extra attributes implemented by this specific module.
@@ -81,7 +81,7 @@ class ScannerModule(moduleItem.ModuleItem):
         """
         if "builtIn" in moduleDict and moduleDict["builtIn"]:
             return bbData.builtInModuleObjs[moduleDict["name"]]
-            
+
         return ScannerModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
                                 timeToLock=moduleDict["timeToLock"] if "timeToLock" in moduleDict else 0,
                                 showClassAAsteroids=moduleDict["showClassAAsteroids"] if "showClassAAsteroids" in moduleDict \

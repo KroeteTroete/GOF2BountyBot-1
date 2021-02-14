@@ -44,7 +44,7 @@ class TransfusionBeamModule(moduleItem.ModuleItem):
     def statsStringShort(self):
         return "*HP/s: " + str(self.HPps) + ", Count: " + str(self.count) + "*"
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this module into dictionary format, to be saved to file. Uses the base moduleItem
         toDict method as a starting point, and adds extra attributes implemented by this specific module.
@@ -70,7 +70,7 @@ class TransfusionBeamModule(moduleItem.ModuleItem):
         """
         if "builtIn" in moduleDict and moduleDict["builtIn"]:
             return bbData.builtInModuleObjs[moduleDict["name"]]
-            
+
         return TransfusionBeamModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
                                 HPps=moduleDict["HPps"] if "HPps" in moduleDict else 0,
                                 count=moduleDict["count"] if "count" in moduleDict else 0,

@@ -76,7 +76,7 @@ class ReactionInventoryPicker(reactionMenu.CancellableReactionMenu):
     def __init__(self, msg : Message, inventory : inventory.Inventory, itemsPerPage : int = maxItemsPerPage,
             titleTxt : str = "", desc : str = "", col : Colour = None, timeout : timedTask.TimedTask = None,
             footerTxt : str = "", img : str = "", thumb : str = "", icon : str = "", authorName : str = "",
-            targetMember : Member = None, targetRole : Role = None):        
+            targetMember : Member = None, targetRole : Role = None):
         """
         :param discord.Message msg: The discord message where this menu should be embedded
         :param inventory inventory: The inventory to display and select from (TODO: Rename)
@@ -101,11 +101,11 @@ class ReactionInventoryPicker(reactionMenu.CancellableReactionMenu):
         if itemsPerPage > maxItemsPerPage:
             raise ValueError("Tried to instantiate a ReactionItemPicker with more than " + str(maxItemsPerPage) \
                                 + " itemsPerPage (requested " + str(itemsPerPage) + ")")
-        
+
         # TODO: Does inventory actually need to be stored?
         self.inventory = inventory
         self.itemsPerPage = itemsPerPage
-        
+
         self.page = 1
         itemOptions = {}
         itemPage = inventory.getPage(self.page, self.itemsPerPage)

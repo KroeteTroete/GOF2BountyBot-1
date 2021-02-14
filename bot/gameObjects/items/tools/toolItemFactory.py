@@ -30,7 +30,7 @@ def fromDict(toolDict : dict) -> toolItem.ToolItem:
                 itemPool.append(itemConstructors[itemDict["itemType"]](itemDict))
             else:
                 itemPool.append(itemConstructors[itemDict["type"]](itemDict))
-        
+
         return crateTool.CrateTool(itemPool, name=crateDict["name"] if "name" in crateDict else "",
             value=crateDict["value"] if "value" in crateDict else 0,
             wiki=crateDict["wiki"] if "wiki" in crateDict else "",
@@ -42,7 +42,7 @@ def fromDict(toolDict : dict) -> toolItem.ToolItem:
 
     toolTypeConstructors = {"ShipSkinTool": shipSkinTool.ShipSkinTool.fromDict,
                         "CrateTool": crateFromDict}
-    
+
     if "type" not in toolDict:
         raise NameError("Required dictionary attribute missing: 'type'")
     return toolTypeConstructors[toolDict["type"]](toolDict)

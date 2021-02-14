@@ -33,7 +33,7 @@ class Weapon(GameItem):
 
         self.dps = dps
 
-    
+
     def statsStringShort(self) -> str:
         """Get a short string summary of the weapon. This currently only includes the DPS.
 

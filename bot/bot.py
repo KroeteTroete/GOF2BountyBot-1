@@ -69,7 +69,7 @@ async def initializeEmojis():
                 continue
 
         # raise an error on unexpected types
-        raise ValueError("Invalid config variable in cfg.defaultEmojis: " + 
+        raise ValueError("Invalid config variable in cfg.defaultEmojis: " +
                             "Emoji config variables must be either UninitializedBasedEmoji or List[UninitializedBasedEmoji]")
 
     # Initialize emoji vars
@@ -106,7 +106,7 @@ async def initializeBountyBoardChannels():
 
 def inferUserPermissions(message: discord.Message) -> int:
     """Get the commands access level of the user that sent the given message.
-    
+
     :return: message.author's access level, as an index of cfg.userAccessLevels
     :rtype: int
     """
@@ -432,7 +432,7 @@ async def on_ready():
 
 
     ##### DATABASE INITIALIZATION #####
-    
+
     # Load save data. If the specified files do not exist, an empty database will be created instead.
     botState.usersDB = loadUsersDB(cfg.paths.usersDB)
     botState.guildsDB = loadGuildsDB(cfg.paths.guildsDB)

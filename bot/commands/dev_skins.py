@@ -59,7 +59,7 @@ async def dev_cmd_addSkin(message : discord.Message, args : str, isDM : bool):
 
         elif skin in bbData.builtInShipData[itemObj.name]["compatibleSkins"]:
             await message.channel.send(":x: That skin is already compatible with the **" + itemObj.name + "**!")
-        
+
         else:
             await lib.discordUtil.startLongProcess(message)
             await bbData.builtInShipSkins[skin].addShip(itemObj.name, botState.client.skinStorageChannel)
@@ -122,7 +122,7 @@ async def dev_cmd_delSkin(message : discord.Message, args : str, isDM : bool):
 
         elif skin not in bbData.builtInShipData[itemObj.name]["compatibleSkins"]:
             await message.channel.send(":x: That skin is already incompatible with the **" + itemObj.name + "**!")
-        
+
         else:
             await bbData.builtInShipSkins[skin].removeShip(itemObj.name, botState.client.skinStorageChannel)
             await message.channel.send("Done!")
@@ -183,7 +183,7 @@ async def dev_cmd_makeSkin(message : discord.Message, args : str, isDM : bool):
 
         elif skin in bbData.builtInShipData[itemObj.name]["compatibleSkins"]:
             await message.channel.send(":x: That skin is already compatible with the **" + itemObj.name + "**!")
-        
+
         else:
             await bbData.builtInShipSkins[skin].addShip(itemObj.name, botState.client.skinStorageChannel)
             await message.channel.send("Done!")
@@ -221,7 +221,7 @@ async def dev_cmd_applySkin(message : discord.Message, args : str, isDM : bool):
 
         elif skin not in bbData.builtInShipData[activeShip.name]["compatibleSkins"]:
             await message.channel.send(":x: That skin is incompatible with your active ship! (" + activeShip.name + ")")
-        
+
         else:
             activeShip.applySkin(bbData.builtInShipSkins[skin])
             await message.channel.send("Done!")

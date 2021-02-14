@@ -49,7 +49,7 @@ class Criminal(aliasable.Aliasable):
         #     raise RuntimeError("CRIM_CONS_NOFAC: Attempted to create a Criminal with an empty faction")
         if faction == "":
             raise RuntimeError("CRIM_CONS_NOICO: Attempted to create a Criminal with an empty icon")
-        
+
         self.name = name
         self.faction = faction
         self.icon = icon
@@ -63,7 +63,7 @@ class Criminal(aliasable.Aliasable):
         else:
             self.hasShip = False
 
-    
+
     def clearShip(self):
         """Delete the equipped ship, removing it from memory
 
@@ -97,7 +97,7 @@ class Criminal(aliasable.Aliasable):
         self.ship = ship
         self.hasShip = True
 
-    
+
     def copyShip(self, ship : shipItem):
         """Equip the given ship, by taking a deep copy of the given object
 
@@ -121,7 +121,7 @@ class Criminal(aliasable.Aliasable):
 
     def toDict(self, **kwargs) -> dict:
         """Serialize this criminal into dictionary format, for saving to file.
-        
+
         :return: A dictionary containing all data necessary to replicate this object
         :rtype: dict
         """

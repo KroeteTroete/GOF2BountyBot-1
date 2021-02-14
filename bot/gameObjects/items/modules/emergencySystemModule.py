@@ -33,14 +33,14 @@ class EmergencySystemModule(moduleItem.ModuleItem):
         """
         super(EmergencySystemModule, self).__init__(name, aliases, value=value, wiki=wiki, manufacturer=manufacturer,
                                                     icon=icon, emoji=emoji, techLevel=techLevel, builtIn=builtIn)
-        
+
         self.duration = duration
 
-    
+
     def statsStringShort(self):
         return "*Duration: " + moduleItem.lib.stringTyping.lib.stringTyping.formatAdditive(self.duration) + "s*"
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this module into dictionary format, to be saved to file. Uses the base moduleItem
         toDict method as a starting point, and adds extra attributes implemented by this specific module.
@@ -65,7 +65,7 @@ class EmergencySystemModule(moduleItem.ModuleItem):
         """
         if "builtIn" in moduleDict and moduleDict["builtIn"]:
             return bbData.builtInModuleObjs[moduleDict["name"]]
-            
+
         return EmergencySystemModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
         duration=moduleDict["duration"] if "duration" in moduleDict else 0,
                                         value=moduleDict["value"] if "value" in moduleDict else 0,
@@ -76,4 +76,3 @@ class EmergencySystemModule(moduleItem.ModuleItem):
                                                 else lib.emojis.BasedEmoji.EMPTY,
                                         techLevel=moduleDict["techLevel"] if "techLevel" in moduleDict else -1,
                                         builtIn=moduleDict["builtIn"] if "builtIn" in moduleDict else False)
-                                        

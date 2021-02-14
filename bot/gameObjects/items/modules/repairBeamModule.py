@@ -40,12 +40,12 @@ class RepairBeamModule(moduleItem.ModuleItem):
         self.effect = effect
         self.count = count
 
-    
+
     def statsStringShort(self):
         return "*Effect: " + moduleItem.lib.stringTyping.formatMultiplier(self.effect) + \
                 ", Count: " + moduleItem.formatAdditive(self.count) + "*"
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this module into dictionary format, to be saved to file. Uses the base moduleItem
         toDict method as a starting point, and adds extra attributes implemented by this specific module.
@@ -71,7 +71,7 @@ class RepairBeamModule(moduleItem.ModuleItem):
         """
         if "builtIn" in moduleDict and moduleDict["builtIn"]:
             return bbData.builtInModuleObjs[moduleDict["name"]]
-            
+
         return RepairBeamModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
                                 effect=moduleDict["effect"] if "effect" in moduleDict else 1,
                                 count=moduleDict["count"] if "count" in moduleDict else 0,

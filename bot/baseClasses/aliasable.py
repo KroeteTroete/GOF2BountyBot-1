@@ -35,7 +35,7 @@ class Aliasable(serializable.Serializable):
 
         if name.lower() not in aliases:
             self.aliases += [name.lower()]
-    
+
 
     def __eq__(self, other : Aliasable) -> bool:
         """Decide Aliasable equality based on either object sharing the other's main name.

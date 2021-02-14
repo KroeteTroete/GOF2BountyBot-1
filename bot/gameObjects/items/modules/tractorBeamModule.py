@@ -37,11 +37,11 @@ class TractorBeamModule(moduleItem.ModuleItem):
 
         self.timeToLock = timeToLock
 
-    
+
     def statsStringShort(self):
         return "*Time To Lock: " + str(self.timeToLock) + "s*"
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this module into dictionary format, to be saved to file. Uses the base moduleItem
         toDict method as a starting point, and adds extra attributes implemented by this specific module.
@@ -66,7 +66,7 @@ class TractorBeamModule(moduleItem.ModuleItem):
         """
         if "builtIn" in moduleDict and moduleDict["builtIn"]:
             return bbData.builtInModuleObjs[moduleDict["name"]]
-            
+
         return TractorBeamModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
                                 timeToLock=moduleDict["timeToLock"] if "timeToLock" in moduleDict else 0,
                                 value=moduleDict["value"] if "value" in moduleDict else 0,

@@ -92,7 +92,7 @@ class GameItem(aliasable.Aliasable):
         """
         return "*No effect*"
 
-    
+
     def getValue(self) -> int:
         """Get the base value of this item with no additions or modifications.
 
@@ -129,13 +129,13 @@ class GameItem(aliasable.Aliasable):
             data["emoji"] = self.emoji.toDict(**kwargs)
             data["techLevel"] = self.techLevel
             data["builtIn"] = False
-        
+
         if saveType:
             data["type"] = type(self).__name__
 
         return data
 
-    
+
     def __hash__(self) -> int:
         """Calculate a hash of this item based on its location in memory.
 
@@ -160,7 +160,7 @@ def spawnItem(data : dict) -> GameItem:
         raise NameError("Not given a type")
     elif data["type"] not in subClassNames:
         raise KeyError("Unrecognised item type: " + str(data["type"]))
-    
+
     return subClassNames[data["type"]].fromDict(data)
 
 

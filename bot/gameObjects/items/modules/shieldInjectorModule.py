@@ -36,11 +36,11 @@ class ShieldInjectorModule(moduleItem.ModuleItem):
 
         self.plasmaConsumption = plasmaConsumption
 
-    
+
     def statsStringShort(self):
         return "*Plasma Consumption: " + str(self.plasmaConsumption) + "*"
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this module into dictionary format, to be saved to file. Uses the base moduleItem toDict
         method as a starting point, and adds extra attributes implemented by this specific module.
@@ -65,7 +65,7 @@ class ShieldInjectorModule(moduleItem.ModuleItem):
         """
         if "builtIn" in moduleDict and moduleDict["builtIn"]:
             return bbData.builtInModuleObjs[moduleDict["name"]]
-            
+
         return ShieldInjectorModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
                                 plasmaConsumption=moduleDict["plasmaConsumption"] if "plasmaConsumption" in moduleDict else 1,
                                 value=moduleDict["value"] if "value" in moduleDict else 0,

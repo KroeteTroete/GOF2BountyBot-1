@@ -18,7 +18,7 @@ BASED_API_URL = "https://api.github.com/repos/" + "/".join([BASED_REPO_USER, BAS
 class UpdatesCheckFailed(Exception):
     """Exception to indicate that checking for updates failed. This could be for several reasons,
     e.g if the GitHub API is down.
-    
+
     The reason for the failure should be given in the constructor.
 
     :param str reason: The reason that the updates check failed

@@ -106,12 +106,12 @@ class BasedGuild(serializable.Serializable):
             self.shop = None
         else:
             self.shop = guildShop.GuildShop() if shop is None else shop
-        
+
         self.alertRoles = {}
         for alertID in userAlerts.userAlertsIDsTypes.keys():
             if issubclass(userAlerts.userAlertsIDsTypes[alertID], userAlerts.GuildRoleUserAlert):
                 self.alertRoles[alertID] = alertRoles[alertID] if alertID in alertRoles else -1
-        
+
         self.ownedRoleMenus = ownedRoleMenus
         self.bountiesDB = bounties
         self.bountiesDisabled = bountiesDisabled
@@ -188,7 +188,7 @@ class BasedGuild(serializable.Serializable):
         :param int playChannel: The discord channel object of the guild's new bounty playing channel
         """
         self.playChannel = playChannel
-    
+
 
     def hasAnnounceChannel(self) -> bool:
         """Whether or not this guild has an announcements channel
@@ -217,7 +217,7 @@ class BasedGuild(serializable.Serializable):
             raise ValueError("Attempted to remove play channel on a BasedGuild that has no playChannel")
         self.playChannel = None
 
-    
+
     def removeAnnounceChannel(self):
         """Remove and deactivate this guild's play channel.
 
@@ -255,7 +255,7 @@ class BasedGuild(serializable.Serializable):
         """
         self.alertRoles[alertID] = -1
 
-    
+
     def hasUserAlertRoleID(self, alertID : str) -> bool:
         """Decide whether or not this guild has a role set for the given alert ID.
 
@@ -268,7 +268,7 @@ class BasedGuild(serializable.Serializable):
             return self.alertRoles[alertID] != -1
         raise KeyError("Unknown GuildRoleUserAlert ID: " + alertID)
 
-    
+
     async def addBountyBoardChannel(self, channel : channel.TextChannel, client : Client, factions : List[str]):
         """Set this guild's bounty board channel.
 
@@ -284,7 +284,7 @@ class BasedGuild(serializable.Serializable):
         await self.bountyBoardChannel.init(client, factions)
         self.hasBountyBoardChannel = True
 
-    
+
     def removeBountyBoardChannel(self):
         """Deactivate this guild's bountyBoardChannel. This does not remove any active bounty listing messages.
 
@@ -385,7 +385,7 @@ class BasedGuild(serializable.Serializable):
                             category="newBounties",
                             eventType="NONE_BTY" if self.bountiesDB.latestBounty is None else "DELAY_GEN", noPrint=True)
         return delay
-        
+
 
     def getRouteScaledBountyDelayRandom(self, baseDelayDict : Dict[str, int]) -> timedelta:
         """New bounty delay generator, generating a random delay time between two points,
@@ -413,7 +413,7 @@ class BasedGuild(serializable.Serializable):
                             eventType="NONE_BTY" if self.bountiesDB.latestBounty is None else "DELAY_GEN", noPrint=True)
         return delay
 
-    
+
     async def announceNewBounty(self, newBounty : bounty.Bounty):
         """Announce the creation of a new bounty to this guild's announceChannel, if it has one
 
@@ -567,7 +567,7 @@ class BasedGuild(serializable.Serializable):
                                                                     expiryFunction=self.spawnAndAnnounceRandomBounty)
             except KeyError:
                 raise ValueError("cfg: Unrecognised newBountyDelayType '" + cfg.newBountyDelayType + "'")
-                    
+
         botState.newBountiesTTDB.scheduleTask(self.newBountyTT)
         self.bountiesDisabled = False
 
@@ -575,7 +575,7 @@ class BasedGuild(serializable.Serializable):
     def disableBounties(self):
         """Disable bounties for this guild.
         Removes any bountyboard if one is present, and removes the guild's bounties DB and bounty spawning TimedTask.
-        
+
         :raise ValueError: If bounties are already disabled in this guild
         """
         if self.bountiesDisabled:
@@ -592,7 +592,7 @@ class BasedGuild(serializable.Serializable):
     def enableShop(self):
         """Enable the shop for this guild.
         Creates a new guildShop object for this guild.
-        
+
         :raise ValueError: If the shop is already enabled in this guild
         """
         if not self.shopDisabled:
@@ -605,7 +605,7 @@ class BasedGuild(serializable.Serializable):
     def disableShop(self):
         """Disable the shop for this guild.
         Removes the guild's guildShop object.
-        
+
         :raise ValueError: If the shop is already disabled in this guild
         """
         if self.shopDisabled:
@@ -648,7 +648,7 @@ class BasedGuild(serializable.Serializable):
         :rtype: dict
         """
         data = {    "announceChannel":  self.announceChannel.id if self.hasAnnounceChannel() else -1,
-                    "playChannel":      self.playChannel.id if self.hasPlayChannel() else -1, 
+                    "playChannel":      self.playChannel.id if self.hasPlayChannel() else -1,
                     "alertRoles":       self.alertRoles,
                     "ownedRoleMenus":   self.ownedRoleMenus,
                     "bountiesDisabled": self.bountiesDisabled,
@@ -663,7 +663,7 @@ class BasedGuild(serializable.Serializable):
 
         if not self.shopDisabled:
             data["shop"] = self.shop.toDict(**kwargs)
-        
+
         return data
 
 

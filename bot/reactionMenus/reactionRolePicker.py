@@ -86,7 +86,7 @@ class ReactionRolePickerOption(reactionMenu.ReactionMenuOption):
         """
         # baseDict = super(ReactionRolePickerOption, self).toDict(**kwargs)
         # baseDict["role"] = self.role.id
-        
+
         # return baseDict
 
         return {"role": self.role.id}

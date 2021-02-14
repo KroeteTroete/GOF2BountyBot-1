@@ -40,7 +40,7 @@ class ShipSkinTool(toolItem.ToolItem):
                             techLevel=techLevel if techLevel > -1 else skin.averageTL, builtIn=builtIn)
         self.skin = skin
 
-    
+
     async def use(self, *args, **kwargs):
         """Apply the skin to the given ship.
         After use, the tool will be removed from callingBUser's inventory. To disable this, pass callingBUser as None.
@@ -55,19 +55,19 @@ class ShipSkinTool(toolItem.ToolItem):
         if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedUser":
             raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received "
                             + type(kwargs["callingBUser"]).__name__)
-        
+
         ship, callingBUser = kwargs["ship"], kwargs["callingBUser"]
 
         if not callingBUser.ownsShip(ship):
             raise RuntimeError("User '" + str(callingBUser.id) \
                                 + "' attempted to skin a ship that does not belong to them: " \
                                 + ship.getNameAndNick())
-        
+
         if ship.isSkinned:
             return ValueError("Attempted to apply a skin to an already-skinned ship")
         if ship.name not in self.skin.compatibleShips:
             return TypeError("The given skin is not compatible with this ship")
-        
+
         ship.applySkin(self.skin)
         if self in callingBUser.inactiveTools:
             callingBUser.inactiveTools.removeItem(self)
@@ -88,7 +88,7 @@ class ShipSkinTool(toolItem.ToolItem):
                             + type(kwargs["ship"]).__name__)
         if "callingBUser" not in kwargs:
             raise NameError("Required kwarg not given: callingBUser")
-        
+
         # converted to soft type check due to circular import
         """if (not isinstance(kwargs["callingBUser"], BasedUser)) and kwargs["callingBUser"] is not None:
             raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received " \
@@ -96,14 +96,14 @@ class ShipSkinTool(toolItem.ToolItem):
         if (type(kwargs["callingBUser"]).__name__ != "BasedUser") and kwargs["callingBUser"] is not None:
             raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received " \
                             + type(kwargs["callingBUser"]).__name__)
-        
+
         ship, callingBUser = kwargs["ship"], kwargs["callingBUser"]
 
         if not callingBUser.ownsShip(ship):
             raise RuntimeError("User '" + str(callingBUser.id) \
                                 + "' attempted to skin a ship that does not belong to them: " \
                                 + ship.getNameAndNick())
-        
+
         if ship.isSkinned:
             return ":x: This ship already has a skin applied! Please equip a different ship."
         if ship.name not in self.skin.compatibleShips:
@@ -115,20 +115,20 @@ class ShipSkinTool(toolItem.ToolItem):
                 prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
             return ":x: Your ship is not compatible with this skin! Please equip a different ship, or use `" \
                     + prefix + "info skin " + self.name + "` to see what ships are compatible with this skin."
-        
+
         callingBUser = kwargs["callingBUser"]
         confirmMsg = await message.channel.send("Are you sure you want to apply the " + self.skin.name \
-                                                + " skin to your " + ship.getNameAndNick() + "?") 
+                                                + " skin to your " + ship.getNameAndNick() + "?")
         confirmation = await InlineConfirmationMenu(confirmMsg, message.author,
                                                     cfg.toolUseConfirmTimeoutSeconds).doMenu()
-        
+
         if cfg.defaultEmojis.reject in confirmation:
             return "🛑 Skin application cancelled."
         elif cfg.defaultEmojis.accept in confirmation:
             ship.applySkin(self.skin)
             if self in callingBUser.inactiveTools:
                 callingBUser.inactiveTools.removeItem(self)
-            
+
             return "🎨 Success! Your skin has been applied."
 
 
@@ -143,10 +143,10 @@ class ShipSkinTool(toolItem.ToolItem):
         except AttributeError:
             return "*Designer: user #" + str(self.manufacturer) + "*"
 
-    
+
     def toDict(self, **kwargs):
         """
-        
+
         :param bool saveType: When true, include the string name of the object type in the output.
         """
         data = super().toDict(**kwargs)
@@ -154,7 +154,7 @@ class ShipSkinTool(toolItem.ToolItem):
         data["skin"] = self.skin.toDict(**kwargs)
         return data
         # raise RuntimeError("Attempted to save a non-builtIn shipSkinTool")
-            
+
 
     @classmethod
     def fromDict(cls, toolDict : dict, **kwargs) -> ShipSkinTool:

@@ -28,7 +28,7 @@ async def printAndExpirePollResults(msgID : int):
         menu.owningBBUser.pollOwned = False
 
     maxOptionLen = 0
-    
+
     for option in menu.options.values():
         results[option] = []
         if len(option.name) > maxOptionLen:
@@ -77,7 +77,7 @@ async def printAndExpirePollResults(msgID : int):
                 if validVote and user not in results[menuOption]:
                     results[menuOption].append(user)
                     # print(str(user),"voted for", menuOption.emoji.sendable)
-    
+
     pollEmbed = menuMsg.embeds[0]
     pollEmbed.set_footer(text="This poll has ended.")
 
@@ -85,7 +85,7 @@ async def printAndExpirePollResults(msgID : int):
     for currentResult in results.values():
         if len(currentResult) > maxCount:
             maxCount = len(currentResult)
-    
+
     if maxCount > 0:
         resultsStr = "```\n"
         for currentOption in results:
@@ -97,7 +97,7 @@ async def printAndExpirePollResults(msgID : int):
         resultsStr += "```"
 
         pollEmbed.add_field(name="Results", value=resultsStr, inline=False)
-    
+
     else:
         pollEmbed.add_field(name="Results", value="No votes received!", inline=False)
 
@@ -107,7 +107,7 @@ async def printAndExpirePollResults(msgID : int):
 
     for reaction in menuMsg.reactions:
         await reaction.remove(menuMsg.guild.me)
-    
+
 
 class ReactionPollMenu(reactionMenu.ReactionMenu):
     """A saveable reaction menu taking a vote from its participants on a selection of option strings.
@@ -199,7 +199,7 @@ class ReactionPollMenu(reactionMenu.ReactionMenu):
 
         return baseEmbed
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this menu to dictionary format for saving.
 
@@ -210,7 +210,7 @@ class ReactionPollMenu(reactionMenu.ReactionMenu):
         baseDict["multipleChoice"] = self.multipleChoice
         baseDict["owningBBUser"] = self.owningBBUser.id
         return baseDict
-    
+
 
     @classmethod
     def fromDict(cls, rmDict : dict, **kwargs) -> ReactionPollMenu:

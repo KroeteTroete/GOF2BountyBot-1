@@ -32,7 +32,7 @@ class ThrusterModule(moduleItem.ModuleItem):
                                                 manufacturer=manufacturer, icon=icon, emoji=emoji, techLevel=techLevel,
                                                 builtIn=builtIn)
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this module into dictionary format, to be saved to file.
         No extra attributes implemented by this class, so just eses the base moduleItem toDict method.
@@ -55,7 +55,7 @@ class ThrusterModule(moduleItem.ModuleItem):
         """
         if "builtIn" in moduleDict and moduleDict["builtIn"]:
             return bbData.builtInModuleObjs[moduleDict["name"]]
-            
+
         return ThrusterModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
                                 handlingMultiplier=moduleDict["handlingMultiplier"] if "handlingMultiplier" \
                                                     in moduleDict else 1,

@@ -27,7 +27,7 @@ class ToolItem(gameItem.GameItem):
         """
         super().__init__(name, aliases, value=value, wiki=wiki, manufacturer=manufacturer, icon=icon, emoji=emoji,
                             techLevel=techLevel, builtIn=builtIn)
-        
+
 
     @abstractmethod
     async def use(self, *args, **kwargs):
@@ -47,7 +47,7 @@ class ToolItem(gameItem.GameItem):
         """
         pass
 
-    
+
     @abstractmethod
     def statsStringShort(self) -> str:
         """Summarise all the statistics and functionality of this item as a string.
@@ -57,7 +57,7 @@ class ToolItem(gameItem.GameItem):
         """
         return "*No effect*"
 
-    
+
     @abstractmethod
     def toDict(self, **kwargs) -> dict:
         """Serialize this tool into dictionary format.
@@ -70,4 +70,3 @@ class ToolItem(gameItem.GameItem):
         data = super().toDict(**kwargs)
         data["itemType"] = "toolItem"
         return data
-    

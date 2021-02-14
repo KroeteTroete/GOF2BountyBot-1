@@ -33,11 +33,11 @@ class SignatureModule(moduleItem.ModuleItem):
         if manufacturer == "":
             raise ValueError("Attempted to create a signatureModule with no manufacturer (faction)")
 
-    
+
     def statsStringShort(self):
         return "*Faction: " + self.manufacturer + "*"
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this module into dictionary format, to be saved to file.
         No extra attributes implemented by this class, so just eses the base moduleItem toDict method.
@@ -60,7 +60,7 @@ class SignatureModule(moduleItem.ModuleItem):
         """
         if "builtIn" in moduleDict and moduleDict["builtIn"]:
             return bbData.builtInModuleObjs[moduleDict["name"]]
-            
+
         return SignatureModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
                                 moduleDict["manufacturer"],
                                 value=moduleDict["value"] if "value" in moduleDict else 0,

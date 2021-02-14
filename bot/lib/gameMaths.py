@@ -147,4 +147,3 @@ for shopTL in range(len(itemTLSpawnChanceForShopTL)):
         if itemTLSpawnChanceForShopTL[shopTL][itemTL] != 0:
             print(" " + str(itemTL + 1) + "=" + str(truncItemSpawnResolution(itemTLSpawnChanceForShopTL[shopTL][itemTL]*100)),end="% ")
     print()
-    

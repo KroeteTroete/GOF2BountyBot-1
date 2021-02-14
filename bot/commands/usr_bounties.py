@@ -140,7 +140,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                                         + "Please check back tomorrow." if dailyBountiesMaxReached else "You have **" \
                                         + str(cfg.maxDailyBountyWins - requestedBBUser.bountyWinsToday) \
                                         + "** remaining bounty wins today!"))
-                                       
+
         # If no bounty was won, print an error message
         else:
             await message.channel.send(":telescope: **" + message.author.display_name \

@@ -39,11 +39,11 @@ class ReactionDuelChallengeMenu(reactionMenu.ReactionMenu):
         :param discord.Role targetRole: In order to interact with this menu, users must possess this role.
                                         All other reactions are ignored (Default None)
         """
-        
+
         # if desc == "":
         #     desc = botState.client.get_user(duelChallenge.sourceBBUser.id).mention + " challenged " \
         #             + botState.client.get_user(duelChallenge.targetBBUser.id).mention + " to a duel!"
-        
+
         if targetMember is None:
             targetMember = msg.guild.get_member(duelChallenge.targetBBUser.id)
 
@@ -85,7 +85,7 @@ class ReactionDuelChallengeMenu(reactionMenu.ReactionMenu):
                                         + " does not have enough credits to fight this duel! (" \
                                         + str(self.duelChallenge.stakes) + ")")
             return
-            
+
         await duelRequest.fightDuel(botState.client.get_user(self.duelChallenge.sourceBBUser.id), \
                                     botState.client.get_user(self.duelChallenge.targetBBUser.id), \
                                     self.duelChallenge, self.msg)
@@ -113,7 +113,7 @@ class ReactionDuelChallengeMenu(reactionMenu.ReactionMenu):
         baseDict = super(ReactionDuelChallengeMenu, self).toDict(**kwargs)
         return baseDict
 
-    
+
     @classmethod
     def fromDict(cls, data: dict, **kwargs) -> ReactionDuelChallengeMenu:
         raise NotImplementedError("Attempted to call fromDict on a non-saveable reaction menu")

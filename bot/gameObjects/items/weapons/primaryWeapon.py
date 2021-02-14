@@ -13,7 +13,7 @@ class PrimaryWeapon(Weapon):
     def fromDict(cls, weaponDict, **kwargs):
         """Factory function constructing a new primaryWeapon object from a dictionary serialised
         representation - the opposite of primaryWeapon.toDict.
-        
+
         :param dict weaponDict: A dictionary containing all information needed to construct the desired primaryWeapon
         :return: A new primaryWeapon object as described in weaponDict
         :rtype: primaryWeapon

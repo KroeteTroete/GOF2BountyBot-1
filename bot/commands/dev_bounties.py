@@ -45,7 +45,7 @@ async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : b
     else:
         await message.channel.send(":x: Unrecognised parameter: " + args)
         return
-    
+
     if callingBBGuild.hasBountyBoardChannel:
         await callingBBGuild.bountyBoardChannel.clear()
     callingBBGuild.bountiesDB.clearBounties()
@@ -567,4 +567,3 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
 
 botCommands.register("make-player-bounty", dev_cmd_make_player_bounty, 2, forceKeepArgsCasing=True, allowDM=True,
                         helpSection="bounties", useDoc=True)
-                        

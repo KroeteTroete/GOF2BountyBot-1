@@ -361,7 +361,7 @@ async def cmd_notify(message : discord.Message, args : str, isDM : bool):
     """
     requestedBBUser = botState.usersDB.getOrAddID(message.author.id)
     requestedBBGuild = botState.guildsDB.getGuild(message.guild.id)
-    
+
     if not message.guild.me.guild_permissions.manage_roles:
         await message.channel.send(":x: I do not have the 'Manage Roles' permission in this server! " \
                                     + "Please contact an admin :robot:")
@@ -519,7 +519,7 @@ async def cmd_poll(message : discord.Message, args : str, isDM : bool):
             if targetRole is None:
                 await message.channel.send(":x: Unknown target role!")
                 return
-        
+
         elif lib.stringTyping.isMention(kwArgs["target"]):
             targetMember = message.guild.get_member(int(kwArgs["target"].lstrip("<@!").rstrip(">")))
             if targetMember is None:
@@ -529,7 +529,7 @@ async def cmd_poll(message : discord.Message, args : str, isDM : bool):
         else:
             await message.channel.send(":x: Invalid target role/user!")
             return
-    
+
     timeoutDict = {}
 
     for timeName in ["days", "hours", "minutes", "seconds"]:
@@ -564,7 +564,7 @@ async def cmd_poll(message : discord.Message, args : str, isDM : bool):
     if not timeoutExists:
         await message.channel.send(":x: Poll timeouts cannot be disabled!")
         return
-    
+
     menuMsg = await message.channel.send("‎")
 
     timeoutDelta = lib.timeUtil.timeDeltaFromDict(cfg.timeouts.pollMenuExpiry if timeoutDict == {} else timeoutDict)

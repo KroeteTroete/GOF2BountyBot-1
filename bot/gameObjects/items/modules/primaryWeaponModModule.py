@@ -32,7 +32,7 @@ class PrimaryWeaponModModule(moduleItem.ModuleItem):
                                                         manufacturer=manufacturer, icon=icon, emoji=emoji,
                                                         techLevel=techLevel, builtIn=builtIn)
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this module into dictionary format, to be saved to file.
         No extra attributes implemented by this class, so just eses the base moduleItem toDict method.
@@ -55,7 +55,7 @@ class PrimaryWeaponModModule(moduleItem.ModuleItem):
         """
         if "builtIn" in moduleDict and moduleDict["builtIn"]:
             return bbData.builtInModuleObjs[moduleDict["name"]]
-            
+
         return PrimaryWeaponModModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
                                 dpsMultiplier=moduleDict["dpsMultiplier"] if "dpsMultiplier" in moduleDict else 1,
                                 value=moduleDict["value"] if "value" in moduleDict else 0,

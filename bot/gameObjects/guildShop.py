@@ -19,7 +19,7 @@ class GuildShop(serializable.Serializable):
     """A shop containing a random selection of items which players can buy.
     Items can be sold to the shop to the shop's inventory and listed for sale.
     Shops are assigned a random tech level, which influences ths stock generated.
-    
+
     :var maxShips: The maximum number of ships generated on every stock refresh.
     :vartype maxShips: int
     :var maxModules: The maximum number of modules generated on every stock refresh.
@@ -61,7 +61,7 @@ class GuildShop(serializable.Serializable):
         :param bool noRefresh: By default, if all shop stocks are empty, the shop will refresh. Give True here to disable this
                                 functionality and allow empty shops. (Default False)
         """
-        
+
         self.maxShips = maxShips
         self.maxModules = maxModules
         self.maxWeapons = maxWeapons
@@ -110,7 +110,7 @@ class GuildShop(serializable.Serializable):
                 raise ValueError("Attempted to refresh a shop at tech level " + str(level) + ". must be within the range " \
                                     + str(cfg.minTechLevel) + " to " + str(cfg.maxTechLevel))
             self.currentTechLevel = level
-            
+
         for i in range(self.maxShips):
             tlShipKeys = bbData.shipKeysByTL[gameMaths.pickRandomItemTL(self.currentTechLevel) - 1]
             if len(tlShipKeys) != 0:
@@ -191,7 +191,7 @@ class GuildShop(serializable.Serializable):
         """
         return amount >= ship.getValue()
 
-    
+
     def amountCanAffordShipIndex(self, amount : int, index : int) -> bool:
         """Decide whether amount of credits is enough to buy the ship at the given index in the shop's stock.
         This is used for checking whether a user would be able to afford a ship, if they sold their active one.
@@ -212,8 +212,8 @@ class GuildShop(serializable.Serializable):
         :param int index: The index of the requested ship in the shop's ships inventory's array of keys
         """
         self.userBuyShipObj(user, self.shipsStock[index].item)
-        
-        
+
+
     def userBuyShipObj(self, user : basedUser.BasedUser, requestedShip : shipItem.Ship):
         """Sell the given ship to the given user,
         removing the appropriate balance of credits fromt the user and adding the item into the user's inventory.
@@ -241,7 +241,7 @@ class GuildShop(serializable.Serializable):
         user.credits += ship.getValue()
         self.shipsStock.addItem(ship)
         user.inactiveShips.removeItem(ship)
-    
+
 
     def userSellShipIndex(self, user : basedUser.BasedUser, index : int):
         """Buy the weapon at the given index in the given user's ships inventory,
@@ -253,7 +253,7 @@ class GuildShop(serializable.Serializable):
         self.userSellShipObj(user, user.inactiveShips[index].item)
 
 
-    
+
     # WEAPON MANAGEMENT
     def userCanAffordWeaponIndex(self, user : basedUser.BasedUser, index : int) -> bool:
         """Decide whether a user can afford to buy a weapon from the shop's stock
@@ -274,7 +274,7 @@ class GuildShop(serializable.Serializable):
         :param int index: The index of the requested weapon in the shop's weapons inventory's array of keys
         """
         self.userBuyWeaponObj(user, self.weaponsStock[index].item)
-        
+
 
     def userBuyWeaponObj(self, user : basedUser.BasedUser, requestedWeapon : primaryWeapon.PrimaryWeapon):
         """Sell the given weapon to the given user,
@@ -303,7 +303,7 @@ class GuildShop(serializable.Serializable):
         user.credits += weapon.getValue()
         self.weaponsStock.addItem(weapon)
         user.inactiveWeapons.removeItem(weapon)
-    
+
 
     def userSellWeaponIndex(self, user : basedUser.BasedUser, index : int):
         """Buy the weapon at the given index in the given user's weapons inventory,
@@ -315,7 +315,7 @@ class GuildShop(serializable.Serializable):
         self.userSellWeaponObj(user, user.inactiveWeapons[index].item)
 
 
-    
+
     # MODULE MANAGEMENT
     def userCanAffordModuleIndex(self, user : basedUser.BasedUser, index : int) -> bool:
         """Decide whether a user can afford to buy a module from the shop's stock
@@ -336,7 +336,7 @@ class GuildShop(serializable.Serializable):
         :param int index: The index of the requested module in the shop's modules inventory's array of keys
         """
         self.userBuyModuleObj(user, self.modulesStock[index].item)
-        
+
 
     def userBuyModuleObj(self, user : basedUser.BasedUser, requestedModule : moduleItem.ModuleItem):
         """Sell the given module to the given user,
@@ -365,7 +365,7 @@ class GuildShop(serializable.Serializable):
         user.credits += module.getValue()
         self.modulesStock.addItem(module)
         user.inactiveModules.removeItem(module)
-    
+
 
     def userSellModuleIndex(self, user : basedUser.BasedUser, index : int):
         """Buy the module at the given index in the given user's modules inventory,
@@ -398,8 +398,8 @@ class GuildShop(serializable.Serializable):
         :param int index: The index of the requested turret in the shop's turrets inventory's array of keys
         """
         self.userBuyTurretObj(user, self.turretsStock[index].item)
-        
-        
+
+
     def userBuyTurretObj(self, user : basedUser.BasedUser, requestedTurret : turretWeapon.TurretWeapon):
         """Sell the given turret to the given user,
         removing the appropriate balance of credits fromt the user and adding the item into the user's inventory.
@@ -427,7 +427,7 @@ class GuildShop(serializable.Serializable):
         user.credits += turret.getValue()
         self.turretsStock.addItem(turret)
         user.inactiveTurrets.removeItem(turret)
-    
+
 
     def userSellTurretIndex(self, user : basedUser.BasedUser, index : int):
         """Buy the turret at the given index in the given user's turrets inventory,
@@ -487,7 +487,7 @@ class GuildShop(serializable.Serializable):
     @classmethod
     def fromDict(cls, shopDict : dict, **kwargs) -> GuildShop:
         """Recreate a guildShop instance from its dictionary-serialized representation - the opposite of guildShop.toDict
-        
+
         :param dict shopDict: A dictionary containing all information needed to construct the shop
         :return: A new guildShop object as described by shopDict
         :rtype: guildShop

@@ -177,7 +177,7 @@ class TimedTask:
         """Reschedule this task, with the timedelta given/calculated on the task's creation,
         or to a given expiryTime/Delta. Rescheduling will update the task's issueTime to now.
         TODO: A firstIssueTime may be useful in the future to represent creation time.
-        
+
         Giving an expiryTime or expiryDelta will not update the task's stored expiryDelta.
         I.e, if the task is rescheduled again without giving an expiryDelta,
         The expiryDelta given/calculated on the task's creation will be used.

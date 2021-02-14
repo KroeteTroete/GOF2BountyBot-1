@@ -56,7 +56,7 @@ class ShipSkin(serializable.Serializable):
     async def addShip(self, ship, rendersChannel):
         if ship not in bbData.builtInShipData:
             raise KeyError("Ship not found: '" + str(ship) + "'")
-        
+
         shipData = bbData.builtInShipData[ship]
 
         if not shipData["skinnable"]:
@@ -68,7 +68,7 @@ class ShipSkin(serializable.Serializable):
             # emojiRenderPath = _outputSkinFile + "_emoji-RENDER.png"
             texPath = _outputSkinFile + ".jpg"
             # emojiTexPath = _outputSkinFile + "_emoji.jpg"
-            
+
             # if not os.path.isfile(renderPath):
             textureFiles = {0: self.path + os.sep + "1.jpg"}
             for i in range(self.textureRegions):
@@ -93,23 +93,23 @@ class ShipSkin(serializable.Serializable):
 
         if ship not in self.compatibleShips:
             self.compatibleShips.append(ship)
-            
+
         if self.name not in shipData["compatibleSkins"]:
             shipData["compatibleSkins"].append(self.name.lower())
 
         _saveShip(ship)
         self._save()
 
-    
+
     async def removeShip(self, ship, rendersChannel):
         if ship not in bbData.builtInShipData:
             raise KeyError("Ship not found: '" + str(ship) + "'")
-        
+
         shipData = bbData.builtInShipData[ship]
 
         if ship in self.compatibleShips:
             self.compatibleShips.remove(ship)
-        
+
         if self.name in shipData["compatibleSkins"]:
             try:
                 os.remove(shipData["path"] + os.sep + "skins" + os.sep + self.name + ".png")

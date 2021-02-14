@@ -40,7 +40,7 @@ class CabinModule(moduleItem.ModuleItem):
     def statsStringShort(self):
         return "*Cabin Size: " + str(self.cabinSize) + "*"
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this module into dictionary format, to be saved to file. Uses the base moduleItem
         toDict method as a starting point, and adds extra attributes implemented by this specific module.
@@ -65,7 +65,7 @@ class CabinModule(moduleItem.ModuleItem):
         """
         if "builtIn" in moduleDict and moduleDict["builtIn"]:
             return bbData.builtInModuleObjs[moduleDict["name"]]
-            
+
         return CabinModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
                                 cabinSize=moduleDict["cabinSize"] if "cabinSize" in moduleDict else 0,
                                 value=moduleDict["value"] if "value" in moduleDict else 0,

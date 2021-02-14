@@ -99,4 +99,4 @@ async def admin_cmd_remove_bounty_board_channel(message : discord.Message, args 
 
 botCommands.register("remove-bounty-board-channel", admin_cmd_remove_bounty_board_channel, 1, allowDM=False,
                     helpSection="channels", signatureStr="**remove-bounty-board-channel**",
-                    shortHelp="Send from any channel to remove the server's bountyboard channel, if one is set.")   
+                    shortHelp="Send from any channel to remove the server's bountyboard channel, if one is set.")

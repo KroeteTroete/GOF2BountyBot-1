@@ -529,13 +529,13 @@ async def cmd_info_commodity(message : discord.Message, args : str, isDM : bool)
 # botCommands.register("info-commodity", 0, cmd_commodity)
 
 
-async def cmd_info_skin(message : discord.Message, args : str, isDM : bool):	
+async def cmd_info_skin(message : discord.Message, args : str, isDM : bool):
     """return statistics about a specified inbuilt skin	
-    
+
     :param discord.Message message: the discord message calling the command	
     :param str args: string containing a skin name	
     :param bool isDM: Whether or not the command is being called from a DM channel	
-    """	
+    """
     if isDM:
         prefix = cfg.defaultCommandPrefix
     else:
@@ -550,26 +550,26 @@ async def cmd_info_skin(message : discord.Message, args : str, isDM : bool):
             await message.channel.send(":x: The **" + skin + "** skin is not in my database! :detective:")
         else:
             await message.channel.send(":x: The **" + skin[0:15] + "**... skin is not in my database! :detective:")
-    else:	
-        requestedSkin = bbData.builtInShipSkins[skin]	
-        # build the stats embed	
+    else:
+        requestedSkin = bbData.builtInShipSkins[skin]
+        # build the stats embed
         statsEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), desc="__Ship Skin File__",
                                                 titleTxt=requestedSkin.name.title(), thumb=cfg.defaultShipSkinToolIcon,
                                                 footerTxt=("Preview this skin with the " + "`" + prefix \
                                                                 + "showme` command.") \
-                                                            if len(requestedSkin.compatibleShips) > 0 else "")	
+                                                            if len(requestedSkin.compatibleShips) > 0 else "")
         statsEmbed.add_field(name="Designed by:", value=lib.discordUtil.userTagOrDiscrim(str(requestedSkin.designer),
-                                guild=message.guild))	
-        compatibleShipsStr = ""	
-        for ship in requestedSkin.compatibleShips:	
-            compatibleShipsStr += " - " + ship + "\n"	
+                                guild=message.guild))
+        compatibleShipsStr = ""
+        for ship in requestedSkin.compatibleShips:
+            compatibleShipsStr += " - " + ship + "\n"
         statsEmbed.add_field(name="Compatible ships:", value=compatibleShipsStr[:-1] if compatibleShipsStr != "" else "None")
-        if requestedSkin.averageTL != -1:	
-            statsEmbed.add_field(name="Average tech level of compatible ships:", value=requestedSkin.averageTL)	
-        if requestedSkin.hasWiki:	
-            statsEmbed.add_field( name="‎", value="[Wiki](" + requestedSkin.wiki + ")", inline=False)	
-        # send the embed	
-        await message.channel.send(embed=statsEmbed)	
+        if requestedSkin.averageTL != -1:
+            statsEmbed.add_field(name="Average tech level of compatible ships:", value=requestedSkin.averageTL)
+        if requestedSkin.hasWiki:
+            statsEmbed.add_field( name="‎", value="[Wiki](" + requestedSkin.wiki + ")", inline=False)
+        # send the embed
+        await message.channel.send(embed=statsEmbed)
 # botCommands.register("commodity", cmd_commodity)
 
 
@@ -605,8 +605,8 @@ async def cmd_info(message : discord.Message, args : str, isDM : bool):
     elif argsSplit[0] == "turret":
         await cmd_info_turret(message, args[7:], isDM)
     elif argsSplit[0] == "commodity":
-        await cmd_info_commodity(message, args[10:], isDM)	
-    elif argsSplit[0] == "skin":	
+        await cmd_info_commodity(message, args[10:], isDM)
+    elif argsSplit[0] == "skin":
         await cmd_info_skin(message, args[5:], isDM)
     else:
         await message.channel.send(":x: Unknown object type! (system/criminal/ship/weapon/module/turret/commodity/skin)")
@@ -618,284 +618,284 @@ botCommands.register("info", cmd_info, 0, allowDM=True, helpSection="gof2 info",
                                     + "to refer to your object in commands.")
 
 
-async def cmd_showme_criminal(message : discord.Message, args : str, isDM : bool):	
+async def cmd_showme_criminal(message : discord.Message, args : str, isDM : bool):
     """Return the URL of the image bountybot uses to represent the specified inbuilt criminal	
-    
+
     :param discord.Message message: the discord message calling the command	
     :param str args: string containing a criminal name	
     :param bool isDM: Whether or not the command is being called from a DM channel	
-    """	
+    """
     if isDM:
         prefix = cfg.defaultCommandPrefix
     else:
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
-    # verify a criminal was given	
-    if args == "":	
-        await message.channel.send(":x: Please provide a criminal! Example: `" + prefix + "criminal Toma Prakupy`")	
-        return	
-    # look up the criminal object	
-    criminalName = args.title()	
-    criminalObj = None	
-    for crim in bbData.builtInCriminalObjs.keys():	
-        if bbData.builtInCriminalObjs[crim].isCalled(criminalName):	
-            criminalObj = bbData.builtInCriminalObjs[crim]	
-    # report unrecognised criminal names	
-    if criminalObj is None:	
-        if len(criminalName) < 20:	
-            await message.channel.send(":x: **" + criminalName + "** is not in my database! :detective:")	
-        else:	
-            await message.channel.send(":x: **" + criminalName[0:15] + "**... is not in my database! :detective:")	
-    else:	
+    # verify a criminal was given
+    if args == "":
+        await message.channel.send(":x: Please provide a criminal! Example: `" + prefix + "criminal Toma Prakupy`")
+        return
+    # look up the criminal object
+    criminalName = args.title()
+    criminalObj = None
+    for crim in bbData.builtInCriminalObjs.keys():
+        if bbData.builtInCriminalObjs[crim].isCalled(criminalName):
+            criminalObj = bbData.builtInCriminalObjs[crim]
+    # report unrecognised criminal names
+    if criminalObj is None:
+        if len(criminalName) < 20:
+            await message.channel.send(":x: **" + criminalName + "** is not in my database! :detective:")
+        else:
+            await message.channel.send(":x: **" + criminalName[0:15] + "**... is not in my database! :detective:")
+    else:
         itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=criminalObj.icon,
-                                                titleTxt=criminalObj.name, footerTxt="Wanted criminal")	
-        await message.channel.send(embed=itemEmbed)	
+                                                titleTxt=criminalObj.name, footerTxt="Wanted criminal")
+        await message.channel.send(embed=itemEmbed)
 
-# botCommands.register("showme-criminal", cmd_showme_criminal)	
+# botCommands.register("showme-criminal", cmd_showme_criminal)
 
 
-async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):	
+async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
     """Return the URL of the image bountybot uses to represent the specified inbuilt ship	
-    
+
     :param discord.Message message: the discord message calling the command	
     :param str args: string containing a ship name and optionally a skin, prefaced with a + character.	
     :param bool isDM: Whether or not the command is being called from a DM channel	
-    """	
+    """
     if isDM:
         prefix = cfg.defaultCommandPrefix
     else:
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
-    # verify a item was given	
-    if args == "":	
-        await message.channel.send(":x: Please provide a ship! Example: `" + prefix + "ship Groza Mk II`")	
-        return	
-    if "+" in args:	
-        if len(args.split("+")) > 2:	
-            await message.channel.send(":x: Please only provide one skin, with one `+`!")	
-            return	
-        elif args.split("+")[1] == "":	
-            if len(message.attachments) < 1:	
+    # verify a item was given
+    if args == "":
+        await message.channel.send(":x: Please provide a ship! Example: `" + prefix + "ship Groza Mk II`")
+        return
+    if "+" in args:
+        if len(args.split("+")) > 2:
+            await message.channel.send(":x: Please only provide one skin, with one `+`!")
+            return
+        elif args.split("+")[1] == "":
+            if len(message.attachments) < 1:
                 await message.channel.send(":x: Please either give a skin name after your `+`, or attach a 2048x2048 jpg " \
-                                            + "to render.")	
-                return	
-            args, skin = args.split("+")[0], "$ATTACHEDFILE$"	
-            if args.lower().endswith("full"):	
-                args = args.split("full")[0]	
-                skin = "$ATTACHEDFILEFULL$"	
-        else:	
-            args, skin = args.split("+")	
-    else:	
-        skin = ""	
-    	
-    # look up the ship object	
-    itemName = args.rstrip(" ").title()	
-    itemObj = None	
-    for ship in bbData.builtInShipData.values():	
-        shipObj = shipItem.Ship.fromDict(ship)	
-        if shipObj.isCalled(itemName):	
-            itemObj = shipObj	
-    # report unrecognised ship names	
-    if itemObj is None:	
-        if len(itemName) < 20:	
-            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")	
-        else:	
-            await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")	
-        return	
-    if skin != "":	
-        shipData = bbData.builtInShipData[itemObj.name]	
-        if not shipData["skinnable"]:	
-            await message.channel.send(":x: That ship is not skinnable!")	
-            return	
-        if skin in ["$ATTACHEDFILE$", "$ATTACHEDFILEFULL$"]:	
-            if len(botState.currentRenders) >= cfg.maxConcurrentRenders:	
+                                            + "to render.")
+                return
+            args, skin = args.split("+")[0], "$ATTACHEDFILE$"
+            if args.lower().endswith("full"):
+                args = args.split("full")[0]
+                skin = "$ATTACHEDFILEFULL$"
+        else:
+            args, skin = args.split("+")
+    else:
+        skin = ""
+
+    # look up the ship object
+    itemName = args.rstrip(" ").title()
+    itemObj = None
+    for ship in bbData.builtInShipData.values():
+        shipObj = shipItem.Ship.fromDict(ship)
+        if shipObj.isCalled(itemName):
+            itemObj = shipObj
+    # report unrecognised ship names
+    if itemObj is None:
+        if len(itemName) < 20:
+            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")
+        else:
+            await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
+        return
+    if skin != "":
+        shipData = bbData.builtInShipData[itemObj.name]
+        if not shipData["skinnable"]:
+            await message.channel.send(":x: That ship is not skinnable!")
+            return
+        if skin in ["$ATTACHEDFILE$", "$ATTACHEDFILEFULL$"]:
+            if len(botState.currentRenders) >= cfg.maxConcurrentRenders:
                 await message.channel.send(":x: My rendering queue is full currently. Please try this command again once " \
-                                            + "someone else's render has completed.")	
-                return	
-            if itemObj.name in botState.currentRenders:	
+                                            + "someone else's render has completed.")
+                return
+            if itemObj.name in botState.currentRenders:
                 await message.channel.send(":x: Someone else is currently rendering this ship! Please use this command " \
-                                            + "again once my other " + itemObj.name + " render has completed.")	
-                return	
-                	
-            botState.currentRenders.append(itemObj.name)	
-            if len(message.attachments) < 1:	
+                                            + "again once my other " + itemObj.name + " render has completed.")
+                return
+
+            botState.currentRenders.append(itemObj.name)
+            if len(message.attachments) < 1:
                 await message.channel.send(":x: Please either give a skin name after your `+`, " \
-                                            + "or attach a 2048x2048 jpg to render.")	
-                botState.currentRenders.remove(itemObj.name)	
-                return	
-            skinFile = message.attachments[0]	
+                                            + "or attach a 2048x2048 jpg to render.")
+                botState.currentRenders.remove(itemObj.name)
+                return
+            skinFile = message.attachments[0]
             if (not skinFile.filename.lower().endswith(".jpg")) or not (skinFile.width == 2048 and skinFile.height == 2048):
                 await message.channel.send(":x: Please either give a skin name after your `+`, " \
                                             + "or attach a 2048x2048 jpg to render.")
                 botState.currentRenders.remove(itemObj.name)
-                return	
-            try:	
-                await skinFile.save(CWD + os.sep + cfg.paths.rendererTempFolder + os.sep + str(message.id) + "_0.jpg")	
-            except (discord.HTTPException, discord.NotFound):	
-                await message.channel.send(":x: I couldn't download your skin file. Did you delete it?")	
-                botState.currentRenders.remove(itemObj.name)	
-                return	
-            skinPaths = {0:CWD + os.sep + cfg.paths.rendererTempFolder + os.sep + str(message.id) + "_0.jpg"}	
-            disabledLayers = []	
-            if skin == "$ATTACHEDFILE$" and shipData["textureRegions"]:	
-                layerIndices = [i for i in range(1, shipData["textureRegions"] + 1)]	
-                layersPickerMsg = await message.channel.send("** **")	
+                return
+            try:
+                await skinFile.save(CWD + os.sep + cfg.paths.rendererTempFolder + os.sep + str(message.id) + "_0.jpg")
+            except (discord.HTTPException, discord.NotFound):
+                await message.channel.send(":x: I couldn't download your skin file. Did you delete it?")
+                botState.currentRenders.remove(itemObj.name)
+                return
+            skinPaths = {0:CWD + os.sep + cfg.paths.rendererTempFolder + os.sep + str(message.id) + "_0.jpg"}
+            disabledLayers = []
+            if skin == "$ATTACHEDFILE$" and shipData["textureRegions"]:
+                layerIndices = [i for i in range(1, shipData["textureRegions"] + 1)]
+                layersPickerMsg = await message.channel.send("** **")
                 layersPickerMenu = ReactionSkinRegionPicker(layersPickerMsg, message.author, cfg.toolUseConfirmTimeoutSeconds,
                                                             numRegions=shipData["textureRegions"])
-                pickedLayers = []	
-                menuOutput = await layersPickerMenu.doMenu()	
-                if cfg.defaultEmojis.spiral in menuOutput:	
-                    pickedLayers = layerIndices	
-                elif cfg.defaultEmojis.cancel in menuOutput:	
-                    await message.channel.send("🛑 Skin render cancelled.")	
-                    for skinPath in skinPaths.values():	
-                        os.remove(skinPath)	
-                    botState.currentRenders.remove(itemObj.name)	
-                    return	
-                else:	
-                    for react in menuOutput:	
-                        try:	
-                            pickedLayers.append(cfg.defaultEmojis.numbers.index(react))	
-                        except ValueError:	
-                            pass	
-                	
-                remainingIndices = [i for i in layerIndices if i not in pickedLayers]	
-                if remainingIndices:	
+                pickedLayers = []
+                menuOutput = await layersPickerMenu.doMenu()
+                if cfg.defaultEmojis.spiral in menuOutput:
+                    pickedLayers = layerIndices
+                elif cfg.defaultEmojis.cancel in menuOutput:
+                    await message.channel.send("🛑 Skin render cancelled.")
+                    for skinPath in skinPaths.values():
+                        os.remove(skinPath)
+                    botState.currentRenders.remove(itemObj.name)
+                    return
+                else:
+                    for react in menuOutput:
+                        try:
+                            pickedLayers.append(cfg.defaultEmojis.numbers.index(react))
+                        except ValueError:
+                            pass
+
+                remainingIndices = [i for i in layerIndices if i not in pickedLayers]
+                if remainingIndices:
                     disabledLayersPickerMenu = ReactionSkinRegionPicker(layersPickerMsg, message.author,
                                                                         cfg.toolUseConfirmTimeoutSeconds,
                                                                         possibleRegions=remainingIndices,
-                                                                        desc="Would you like to disable any regions?")	
-                    menuOutput = await disabledLayersPickerMenu.doMenu()	
-                    if cfg.defaultEmojis.spiral in menuOutput:	
-                        disabledLayers = remainingIndices	
-                    elif cfg.defaultEmojis.cancel in menuOutput:	
-                        await message.channel.send("🛑 Skin render cancelled.")	
-                        for skinPath in skinPaths.values():	
-                            os.remove(skinPath)	
-                        botState.currentRenders.remove(itemObj.name)	
-                        return	
-                    else:	
-                        for react in menuOutput:	
-                            try:	
-                                disabledLayers.append(cfg.defaultEmojis.numbers.index(react))	
-                            except ValueError:	
-                                pass	
-                	
-                def showmeAdditionalMessageCheck(newMessage):	
+                                                                        desc="Would you like to disable any regions?")
+                    menuOutput = await disabledLayersPickerMenu.doMenu()
+                    if cfg.defaultEmojis.spiral in menuOutput:
+                        disabledLayers = remainingIndices
+                    elif cfg.defaultEmojis.cancel in menuOutput:
+                        await message.channel.send("🛑 Skin render cancelled.")
+                        for skinPath in skinPaths.values():
+                            os.remove(skinPath)
+                        botState.currentRenders.remove(itemObj.name)
+                        return
+                    else:
+                        for react in menuOutput:
+                            try:
+                                disabledLayers.append(cfg.defaultEmojis.numbers.index(react))
+                            except ValueError:
+                                pass
+
+                def showmeAdditionalMessageCheck(newMessage):
                     return newMessage.author == message.author and (newMessage.content.lower().startswith(prefix + "cancel") \
-                            or len(newMessage.attachments) > 0)	
-                for regionNum in pickedLayers:	
+                            or len(newMessage.attachments) > 0)
+                for regionNum in pickedLayers:
                     nextLayerMsg = await message.channel.send("Please send your image for texture region #" + str(regionNum) \
                                                                 + ", or `" + prefix \
                                                                 + "cancel` to cancel the render, within " \
-                                                                + str(cfg.toolUseConfirmTimeoutSeconds) + " seconds.")	
-                    try:	
+                                                                + str(cfg.toolUseConfirmTimeoutSeconds) + " seconds.")
+                    try:
                         imgMsg = await botState.client.wait_for("message", check=showmeAdditionalMessageCheck,
-                                                                timeout=cfg.toolUseConfirmTimeoutSeconds)	
-                    except asyncio.TimeoutError:	
+                                                                timeout=cfg.toolUseConfirmTimeoutSeconds)
+                    except asyncio.TimeoutError:
                         await nextLayerMsg.edit(content="This menu has now expired. Please try the command again.\n" \
-                                                        + "🛑 Skin render cancelled.")	
-                        for skinPath in skinPaths.values():	
-                            os.remove(skinPath)	
-                        botState.currentRenders.remove(itemObj.name)	
-                        return	
-                    else:	
-                        if imgMsg.content.lower().startswith(prefix + "cancel"):	
-                            await message.channel.send("🛑 Skin render cancelled.")	
-                            for skinPath in skinPaths.values():	
-                                os.remove(skinPath)	
-                            botState.currentRenders.remove(itemObj.name)	
-                            return	
-                        nextLayer = imgMsg.attachments[0]	
+                                                        + "🛑 Skin render cancelled.")
+                        for skinPath in skinPaths.values():
+                            os.remove(skinPath)
+                        botState.currentRenders.remove(itemObj.name)
+                        return
+                    else:
+                        if imgMsg.content.lower().startswith(prefix + "cancel"):
+                            await message.channel.send("🛑 Skin render cancelled.")
+                            for skinPath in skinPaths.values():
+                                os.remove(skinPath)
+                            botState.currentRenders.remove(itemObj.name)
+                            return
+                        nextLayer = imgMsg.attachments[0]
                         if (not nextLayer.filename.lower().endswith(".jpg")) or \
                                 not (nextLayer.width == 2048 and nextLayer.height == 2048):
-                            await message.channel.send(":x: Please only give 2048x2048 jpgs!\n🛑 Skin render cancelled.")	
-                            for skinPath in skinPaths.values():	
-                                os.remove(skinPath)	
-                            botState.currentRenders.remove(itemObj.name)	
-                            return	
-                        try:	
+                            await message.channel.send(":x: Please only give 2048x2048 jpgs!\n🛑 Skin render cancelled.")
+                            for skinPath in skinPaths.values():
+                                os.remove(skinPath)
+                            botState.currentRenders.remove(itemObj.name)
+                            return
+                        try:
                             await nextLayer.save(CWD + os.sep + cfg.paths.rendererTempFolder + os.sep + str(message.id) \
-                                                    + "_" + str(regionNum) + ".jpg")	
-                        except (discord.HTTPException, discord.NotFound):	
+                                                    + "_" + str(regionNum) + ".jpg")
+                        except (discord.HTTPException, discord.NotFound):
                             await message.channel.send(":x: I couldn't download your skin file. Did you delete it?\n" \
-                                                        + "🛑 Skin render cancelled.")	
-                            for skinPath in skinPaths.values():	
-                                os.remove(skinPath)	
-                            botState.currentRenders.remove(itemObj.name)	
-                            return	
+                                                        + "🛑 Skin render cancelled.")
+                            for skinPath in skinPaths.values():
+                                os.remove(skinPath)
+                            botState.currentRenders.remove(itemObj.name)
+                            return
                         skinPaths[regionNum] = CWD + os.sep + cfg.paths.rendererTempFolder + os.sep + str(message.id) + "_" \
-                                                + str(regionNum) + ".jpg"	
-            waitMsg = await message.channel.send("🤖 Render started! I'll ping you when I'm done.")	
-            	
-            renderPath = shipData["path"] + os.sep + "skins" + os.sep + str(message.id) + "-RENDER.png"	
-            outSkinPath = shipData["path"] + os.sep + "skins" + os.sep + str(message.id) + ".jpg"	
-            await lib.discordUtil.startLongProcess(waitMsg)	
-            try:	
+                                                + str(regionNum) + ".jpg"
+            waitMsg = await message.channel.send("🤖 Render started! I'll ping you when I'm done.")
+
+            renderPath = shipData["path"] + os.sep + "skins" + os.sep + str(message.id) + "-RENDER.png"
+            outSkinPath = shipData["path"] + os.sep + "skins" + os.sep + str(message.id) + ".jpg"
+            await lib.discordUtil.startLongProcess(waitMsg)
+            try:
                 await shipRenderer.renderShip(str(message.id), shipData["path"], shipData["model"], skinPaths, disabledLayers,
                                                 cfg.skinRenderShowmeResolution[0], cfg.skinRenderShowmeResolution[1],
-                                                full=skin == "$ATTACHEDFILEFULL$")	
-            except shipRenderer.RenderFailed:	
+                                                full=skin == "$ATTACHEDFILEFULL$")
+            except shipRenderer.RenderFailed:
                 await message.channel.send(message.author.mention + "\n🥺 Render failed! The error has been logged, " \
-                                            + "please try a different ship.")	
-                botState.logger.log("Main", "cmd_showme_ship", "Ship render failed with args: '" + args + "'")	
-            else:	
-                with open(renderPath, "rb") as f:	
+                                            + "please try a different ship.")
+                botState.logger.log("Main", "cmd_showme_ship", "Ship render failed with args: '" + args + "'")
+            else:
+                with open(renderPath, "rb") as f:
                     msgText = "u" + str(message.author.id) + "g" \
                                 + ("DM" if message.channel.type in [discord.ChannelType.private, discord.ChannelType.group] \
                                     else str(message.guild.id)) + "c" + str(message.channel.id) + "m" + str(message.id)
                     storageChannel = botState.client.get_channel(cfg.showmeSkinRendersChannel)
-                    imageEmbedMsg = await storageChannel.send(msgText, file=discord.File(f))	
+                    imageEmbedMsg = await storageChannel.send(msgText, file=discord.File(f))
                     renderEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(),
                                                             img=imageEmbedMsg.attachments[0].url,
                                                             authorName="Skin Render Complete!",
                                                             icon=robotIcon,
-                                                            footerTxt="Custom skinned " + itemObj.name.capitalize())	
-                    await message.channel.send(message.author.mention, embed=renderEmbed)	
-            	
-            botState.currentRenders.remove(itemObj.name)	
-            try:	
-                os.remove(renderPath)	
-            except FileNotFoundError:	
-                pass	
-            	
-            for skinPath in skinPaths.values():	
-                os.remove(skinPath)	
-            	
-            try:	
-                os.remove(outSkinPath)	
-            except FileNotFoundError:	
-                pass	
-            await lib.discordUtil.endLongProcess(waitMsg)	
-            return	
-        else:	
-            skin = skin.lstrip(" ").lower()	
-            if skin not in bbData.builtInShipSkins:	
-                if len(itemName) < 20:	
-                    await message.channel.send(":x: The **" + skin + "** skin is not in my database! :detective:")	
-                else:	
+                                                            footerTxt="Custom skinned " + itemObj.name.capitalize())
+                    await message.channel.send(message.author.mention, embed=renderEmbed)
+
+            botState.currentRenders.remove(itemObj.name)
+            try:
+                os.remove(renderPath)
+            except FileNotFoundError:
+                pass
+
+            for skinPath in skinPaths.values():
+                os.remove(skinPath)
+
+            try:
+                os.remove(outSkinPath)
+            except FileNotFoundError:
+                pass
+            await lib.discordUtil.endLongProcess(waitMsg)
+            return
+        else:
+            skin = skin.lstrip(" ").lower()
+            if skin not in bbData.builtInShipSkins:
+                if len(itemName) < 20:
+                    await message.channel.send(":x: The **" + skin + "** skin is not in my database! :detective:")
+                else:
                     await message.channel.send(":x: The **" + skin[0:15] + "**... skin is not in my database! :detective:")
-            elif skin not in bbData.builtInShipData[itemObj.name]["compatibleSkins"]:	
-                await message.channel.send(":x: That skin is not compatible with the **" + itemObj.name + "**!")	
-            	
-            else:	
+            elif skin not in bbData.builtInShipData[itemObj.name]["compatibleSkins"]:
+                await message.channel.send(":x: That skin is not compatible with the **" + itemObj.name + "**!")
+
+            else:
                 itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(),
                                                         img=bbData.builtInShipSkins[skin].shipRenders[itemObj.name][0],
                                                         titleTxt=itemObj.name,
-                                                        footerTxt="Custom skin: " + skin.capitalize())	
-                await message.channel.send(embed=itemEmbed)	
-    else:	
-        if not itemObj.hasIcon:	
-            await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")	
-        else:	
+                                                        footerTxt="Custom skin: " + skin.capitalize())
+                await message.channel.send(embed=itemEmbed)
+    else:
+        if not itemObj.hasIcon:
+            await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")
+        else:
             itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name,
-                                                    footerTxt=itemObj.manufacturer.capitalize() + " ship")	
-            await message.channel.send(embed=itemEmbed)	
+                                                    footerTxt=itemObj.manufacturer.capitalize() + " ship")
+            await message.channel.send(embed=itemEmbed)
 
-# botCommands.register("showme-ship", cmd_showme_ship)	
+# botCommands.register("showme-ship", cmd_showme_ship)
 
 
 async def cmd_showme_weapon(message : discord.Message, args : str, isDM : bool):
     """Return the URL of the image bountybot uses to represent the specified inbuilt weapon
-    
+
     :param discord.Message message: the discord message calling the command
     :param str args: string containing a weapon name
     :param bool isDM: Whether or not the command is being called from a DM channel
@@ -913,7 +913,7 @@ async def cmd_showme_weapon(message : discord.Message, args : str, isDM : bool):
     itemObj = None
     for weap in bbData.builtInWeaponObjs.keys():
         if bbData.builtInWeaponObjs[weap].isCalled(itemName):
-            itemObj = bbData.builtInWeaponObjs[weap]	
+            itemObj = bbData.builtInWeaponObjs[weap]
     # report unrecognised weapon names
     if itemObj is None:
         if len(itemName) < 20:
@@ -925,15 +925,15 @@ async def cmd_showme_weapon(message : discord.Message, args : str, isDM : bool):
             await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")
         else:
             itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name,
-                                                    footerTxt="Level " + str(itemObj.techLevel) + " weapon")	
-            await message.channel.send(embed=itemEmbed)	
+                                                    footerTxt="Level " + str(itemObj.techLevel) + " weapon")
+            await message.channel.send(embed=itemEmbed)
 
-# botCommands.register("showme-weapon", cmd_showme_weapon)	
+# botCommands.register("showme-weapon", cmd_showme_weapon)
 
 
-async def cmd_showme_module(message : discord.Message, args : str, isDM : bool):	
+async def cmd_showme_module(message : discord.Message, args : str, isDM : bool):
     """Return the URL of the image bountybot uses to represent the specified inbuilt module	
-    
+
     :param discord.Message message: the discord message calling the command	
     :param str args: string containing a module name	
     :param bool isDM: Whether or not the command is being called from a DM channel	
@@ -955,21 +955,21 @@ async def cmd_showme_module(message : discord.Message, args : str, isDM : bool):
     # report unrecognised module names
     if itemObj is None:
         if len(itemName) < 20:
-            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")	
-        else:	
+            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")
+        else:
             await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
-    else:	
-        if not itemObj.hasIcon:	
-            await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")	
-        else:	
+    else:
+        if not itemObj.hasIcon:
+            await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")
+        else:
             itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name,
-                                                    footerTxt="Level " + str(itemObj.techLevel) + " module")	
-            await message.channel.send(embed=itemEmbed)	
+                                                    footerTxt="Level " + str(itemObj.techLevel) + " module")
+            await message.channel.send(embed=itemEmbed)
 
-# botCommands.register("showme-module", cmd_showme_module)	
+# botCommands.register("showme-module", cmd_showme_module)
 
 
-async def cmd_showme_turret(message : discord.Message, args : str, isDM : bool):	
+async def cmd_showme_turret(message : discord.Message, args : str, isDM : bool):
     """Return the URL of the image bountybot uses to represent the specified inbuilt turret	
     :param discord.Message message: the discord message calling the command	
     :param str args: string containing a turret name	
@@ -979,47 +979,47 @@ async def cmd_showme_turret(message : discord.Message, args : str, isDM : bool):
         prefix = cfg.defaultCommandPrefix
     else:
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
-    # verify a item was given	
-    if args == "":	
-        await message.channel.send(":x: Please provide a turret! Example: `" + prefix + "turret Groza Mk II`")	
-        return	
-    # look up the turret object	
-    itemName = args.title()	
-    itemObj = None	
-    for turr in bbData.builtInTurretObjs.keys():	
-        if bbData.builtInTurretObjs[turr].isCalled(itemName):	
-            itemObj = bbData.builtInTurretObjs[turr]	
-    # report unrecognised turret names	
-    if itemObj is None:	
-        if len(itemName) < 20:	
-            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")	
-        else:	
-            await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")	
-    else:	
-        if not itemObj.hasIcon:	
-            await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")	
-        else:	
+    # verify a item was given
+    if args == "":
+        await message.channel.send(":x: Please provide a turret! Example: `" + prefix + "turret Groza Mk II`")
+        return
+    # look up the turret object
+    itemName = args.title()
+    itemObj = None
+    for turr in bbData.builtInTurretObjs.keys():
+        if bbData.builtInTurretObjs[turr].isCalled(itemName):
+            itemObj = bbData.builtInTurretObjs[turr]
+    # report unrecognised turret names
+    if itemObj is None:
+        if len(itemName) < 20:
+            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")
+        else:
+            await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
+    else:
+        if not itemObj.hasIcon:
+            await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")
+        else:
             itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name,
-                                                    footerTxt="Level " + str(itemObj.techLevel) + " turret")	
-            await message.channel.send(embed=itemEmbed)	
+                                                    footerTxt="Level " + str(itemObj.techLevel) + " turret")
+            await message.channel.send(embed=itemEmbed)
 
-# botCommands.register("showme-turret", cmd_showme_turret)	
+# botCommands.register("showme-turret", cmd_showme_turret)
 
 
-async def cmd_showme_commodity(message : discord.Message, args : str, isDM : bool):	
+async def cmd_showme_commodity(message : discord.Message, args : str, isDM : bool):
     """Return the URL of the image bountybot uses to represent the specified inbuilt commodity	
     :param discord.Message message: the discord message calling the command	
     :param str args: string containing a commodity name	
     :param bool isDM: Whether or not the command is being called from a DM channel	
     """
-    await message.channel.send("Commodity items have not been implemented yet!")	
+    await message.channel.send("Commodity items have not been implemented yet!")
     return
     if isDM:
         prefix = cfg.defaultCommandPrefix
     else:
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
-    # verify a item was given	
-    if args == "":	
+    # verify a item was given
+    if args == "":
         await message.channel.send(":x: Please provide a commodity! Example: `" + prefix + "commodity Groza Mk II`")
         return
     # look up the commodity object
@@ -1039,12 +1039,12 @@ async def cmd_showme_commodity(message : discord.Message, args : str, isDM : boo
             await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")
         else:
             itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name)
-            await message.channel.send(embed=itemEmbed)	
+            await message.channel.send(embed=itemEmbed)
 
-# botCommands.register("showme-commodity", cmd_showme_commodity)	
+# botCommands.register("showme-commodity", cmd_showme_commodity)
 
 
-async def cmd_showme(message : discord.Message, args : str, isDM : bool):	
+async def cmd_showme(message : discord.Message, args : str, isDM : bool):
     """Return the URL of the image bountybot uses to represent the named game object, of a specified type.	
     The named used to reference the object may be an alias.	
 
@@ -1053,28 +1053,28 @@ async def cmd_showme(message : discord.Message, args : str, isDM : bool):
                         For example, 'criminal toma prakupy'	
     :param bool isDM: Whether or not the command is being called from a DM channel	
     """
-    if args == "":	
+    if args == "":
         await message.channel.send(":x: Please give an object type to look up! " \
-                                    + "(system/criminal/ship/weapon/module/turret/commodity)")	
-        return	
-    argsSplit = args.split(" ")	
-    if argsSplit[0] not in ["system", "criminal", "ship", "weapon", "module", "turret", "commodity"]:	
-        await message.channel.send(":x: Invalid object type! (system/criminal/ship/weapon/module/turret/commodity)")	
-        return	
-    if argsSplit[0] == "criminal":	
-        await cmd_showme_criminal(message, args[9:], isDM)	
-    elif argsSplit[0] == "ship":	
-        await cmd_showme_ship(message, args[5:], isDM)	
-    elif argsSplit[0] == "weapon":	
-        await cmd_showme_weapon(message, args[7:], isDM)	
-    elif argsSplit[0] == "module":	
-        await cmd_showme_module(message, args[7:], isDM)	
-    elif argsSplit[0] == "turret":	
-        await cmd_showme_turret(message, args[7:], isDM)	
-    elif argsSplit[0] == "commodity":	
-        await cmd_showme_commodity(message, args[10:], isDM)	
-    else:	
-        await message.channel.send(":x: Unknown object type! (criminal/ship/weapon/module/turret/commodity)")	
+                                    + "(system/criminal/ship/weapon/module/turret/commodity)")
+        return
+    argsSplit = args.split(" ")
+    if argsSplit[0] not in ["system", "criminal", "ship", "weapon", "module", "turret", "commodity"]:
+        await message.channel.send(":x: Invalid object type! (system/criminal/ship/weapon/module/turret/commodity)")
+        return
+    if argsSplit[0] == "criminal":
+        await cmd_showme_criminal(message, args[9:], isDM)
+    elif argsSplit[0] == "ship":
+        await cmd_showme_ship(message, args[5:], isDM)
+    elif argsSplit[0] == "weapon":
+        await cmd_showme_weapon(message, args[7:], isDM)
+    elif argsSplit[0] == "module":
+        await cmd_showme_module(message, args[7:], isDM)
+    elif argsSplit[0] == "turret":
+        await cmd_showme_turret(message, args[7:], isDM)
+    elif argsSplit[0] == "commodity":
+        await cmd_showme_commodity(message, args[10:], isDM)
+    else:
+        await message.channel.send(":x: Unknown object type! (criminal/ship/weapon/module/turret/commodity)")
 
 botCommands.register("showme", cmd_showme, 0, allowDM=True, aliases=["show", "render"], helpSection="gof2 info",
                         signatureStr="**showme <object-type> <name>** *[[full]+ [skinName]]*",

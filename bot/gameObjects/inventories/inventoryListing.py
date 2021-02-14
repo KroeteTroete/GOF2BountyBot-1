@@ -55,7 +55,7 @@ class InventoryListing(serializable.Serializable):
 
     def storesItem(self, otherItem) -> bool:
         """Decide whether this inventory listing stores the given object
-        
+
         :return: True if otherItem is the same object as the one stored in the listing, down to memory location.
                     False otherwise
         :rtype: bool
@@ -84,7 +84,7 @@ class InventoryListing(serializable.Serializable):
         """
         return {"item": self.item.toDict(**kwargs), "count": self.count}
 
-    
+
     @classmethod
     def fromDict(cls, listingDict : dict, **kwargs):
         raise NotImplementedError("Cannot fromDict on InventoryListing in the general case. " \

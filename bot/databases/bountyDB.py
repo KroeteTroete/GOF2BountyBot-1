@@ -12,7 +12,7 @@ class BountyDB(serializable.Serializable):
     Faction names are case sensitive.
 
     TODO: Give factions default values
-    
+
     :var bounties: Dictionary of faction name to list of bounties
     :vartype bounties: dict
     :var factions: List of str faction names, to be used in self.bounties keys
@@ -38,7 +38,7 @@ class BountyDB(serializable.Serializable):
 
         self.latestBounty = None
 
-    
+
     def addFaction(self, faction: str):
         """Add a new useable faction name to the DB
 
@@ -51,7 +51,7 @@ class BountyDB(serializable.Serializable):
         # Initialise faction's database to empty
         self.bounties[faction] = []
 
-    
+
     def removeFaction(self, faction: str):
         """Remove a faction name from this DB
 
@@ -64,10 +64,10 @@ class BountyDB(serializable.Serializable):
         # Remove the faction name from the DB
         self.bounties.pop(faction)
 
-    
+
     def clearBounties(self, faction : str = None):
         """Clear all bounties stored under a faction, or under all factions if none is specified
-        
+
         :param str faction: The faction whose bounties to clear.
                             All factions' bounties are cleared if None is given. (default None)
         :raise KeyError: When given a faction which does not exist in this DB
@@ -86,7 +86,7 @@ class BountyDB(serializable.Serializable):
 
         self.latestBounty = None
 
-    
+
     def getFactions(self) -> List[bounty.Bounty]:
         """Get the list of useable faction names for this DB
 
@@ -95,7 +95,7 @@ class BountyDB(serializable.Serializable):
         """
         return self.factions
 
-    
+
     def factionExists(self, faction : str) -> bool:
         """Decide whether a given faction name is useable in this DB
 
@@ -106,7 +106,7 @@ class BountyDB(serializable.Serializable):
         """
         return faction in self.getFactions()
 
-    
+
     def getFactionBounties(self, faction : str) -> List[bounty.Bounty]:
         """Get a list of all bounty objects stored under a given faction.
 
@@ -118,18 +118,18 @@ class BountyDB(serializable.Serializable):
         """
         return self.bounties[faction]
 
-    
+
     def getFactionNumBounties(self, faction : str) -> int:
         """Get the number of bounties stored by a faction.
 
         :param str faction: The faction whose bounties to return. Case sensitive.
-        
+
         :return: Integer number of bounties stored by a faction
         :rtype: int
         """
         return len(self.bounties[faction])
 
-    
+
     def getBounty(self, name : str, faction : str = None) -> bounty.Bounty:
         """Get the bounty object for a given criminal name or alias.
         This process is much more efficient when given the faction that the criminal is wanted by.
@@ -137,7 +137,7 @@ class BountyDB(serializable.Serializable):
         :param str name: A name or alias for the criminal whose bounty is to be fetched.
         :param str faction: The faction by which the criminal is wanted. Give None if this is not known,
                             to search all factions. (default None)
-        
+
         :return: the bounty object tracking the named criminal
         :rtype: gameObjects.bounties.bounty.Bounty
 
@@ -158,7 +158,7 @@ class BountyDB(serializable.Serializable):
                 for bounty in self.bounties[fac]:
                     if bounty.criminal.isCalled(name):
                         return bounty
-        
+
         # The criminal was not recognised, raise an error
         raise KeyError("Bounty not found: " + name)
 
@@ -178,18 +178,18 @@ class BountyDB(serializable.Serializable):
         # No faction found with space remaining
         return False
 
-    
+
     def factionCanMakeBounty(self, faction : str) -> bool:
         """Check whether a faction has space for more bounties
 
         :param str faction: the faction whose DB space to check
-        
+
         :return: True if the requested faction has space for more bounties, False otherwise
         :rtype: bool
         """
         return self.getFactionNumBounties(faction) < cfg.maxBountiesPerFaction
 
-    
+
     def bountyNameExists(self, name : str, faction : str = None) -> bool:
         """Check whether a criminal with the given name or alias exists in the DB
         The process is much more efficient if the faction where the criminal should reside is known.
@@ -197,7 +197,7 @@ class BountyDB(serializable.Serializable):
         :param str name: The name or alias to check for criminal existence against
         :param str faction: The faction whose bounties to check for the named criminal.
                             Use None if the faction is not known. (default None)
-        
+
         :return: True if a bounty is found for a criminal with the given name,
                     False if the given name does not correspond to an active bounty in this DB
         :rtype: bool
@@ -210,7 +210,7 @@ class BountyDB(serializable.Serializable):
             return False
         return True
 
-    
+
     def bountyObjExists(self, bounty : bounty.Bounty) -> bool:
         """Check whether a given bounty object exists in the DB.
         Existence is checked by the bounty __eq__ method, which is currently object equality
@@ -233,7 +233,7 @@ class BountyDB(serializable.Serializable):
     #     return self.getBountyObjIndex(self.getBounty(name, faction=faction))
     """
 
-    
+
     def addBounty(self, bounty : bounty.Bounty):
         """Add a given bounty object to the database.
         Bounties cannot be added if the bounty.faction does not have space for more bounties.
@@ -270,7 +270,7 @@ class BountyDB(serializable.Serializable):
         # Add the bounty to the database
         self.escapedBounties[bounty.faction].append(bounty)
 
-    
+
     def removeBountyName(self, name : str, faction : str = None):
         """Find the bounty associated with the given criminal name or alias, and remove it from the database.
         This process is much more efficient if the faction under which the bounty is wanted is given.
@@ -281,7 +281,7 @@ class BountyDB(serializable.Serializable):
         """
         self.removeBountyObj(self.getBounty(name, faction=faction))
 
-    
+
     def removeBountyObj(self, bounty : bounty.Bounty):
         """Remove a given bounty object from the database.
 
@@ -294,7 +294,7 @@ class BountyDB(serializable.Serializable):
 
     def hasBounties(self, faction : str = None) -> bool:
         """Check whether the given faction has any bounties stored, or if ANY faction has bounties stored if none is given.
-        
+
         :param str faction: The faction whose bounties to check. Give None to check all factions for bounties. (default None)
         :return: True if at least one bounty is stored in this DB, False otherwise
         :rtype: bool
@@ -311,9 +311,9 @@ class BountyDB(serializable.Serializable):
             return self.getFactionNumBounties(faction) != 0
 
         # no bounties found, return false
-        return False 
+        return False
 
-    
+
     def __str__(self) -> str:
         """Return summarising info about this bountyDB in string format.
         Currently: The number of factions in the DB.
@@ -347,7 +347,7 @@ class BountyDB(serializable.Serializable):
         :param dict bountyDBDict: a dictionary representation of the bountyDB, to convert to an object
         :param bool dbReload: Whether or not this bountyDB is being created during the initial database loading
                                 phase of bountybot. This is used to toggle name checking in bounty contruction.
-        
+
         :return: The new bountyDB object
         :rtype: bountyDB
         """

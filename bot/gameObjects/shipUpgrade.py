@@ -61,7 +61,7 @@ class ShipUpgrade(serializable.Serializable):
     :var builtIn: Whether this upgrade is built into BountyBot (loaded in from bbData) or was custom spawned.
     :vartype builtIn: bool
     """
-    
+
     def __init__(self, name : str, shipToUpgradeValueMult : float, armour : int = 0.0, armourMultiplier : float = 1.0,
                     cargo : int = 0, cargoMultiplier : float = 1.0, maxSecondaries : int = 0,
                     maxSecondariesMultiplier : float = 1.0, handling : int = 0, handlingMultiplier : float = 1.0,
@@ -112,7 +112,7 @@ class ShipUpgrade(serializable.Serializable):
 
         self.maxPrimaries = maxPrimaries
         self.maxPrimariesMultiplier = maxPrimariesMultiplier
-        
+
         self.maxTurrets = maxTurrets
         self.maxTurretsMultiplier = maxTurretsMultiplier
 
@@ -137,7 +137,7 @@ class ShipUpgrade(serializable.Serializable):
         """
         return type(self) == type(other) and self.name == other.name
 
-    
+
     def valueForShip(self, ship : shipItem.Ship) -> int:
         """Calculate the value of this ship upgrade, when it is to be applied to the given ship
 
@@ -147,7 +147,7 @@ class ShipUpgrade(serializable.Serializable):
         """
         return ship.value * self.shipToUpgradeValueMult
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this shipUpgrade into a dictionary for saving to file
         Contains all information needed to reconstruct this upgrade. If the upgrade is builtIn,
@@ -156,7 +156,7 @@ class ShipUpgrade(serializable.Serializable):
         :return: A dictionary-serialized representation of this upgrade
         :rtype: dict
         """
-        
+
         itemDict = {"name": self.name, "builtIn": self.builtIn}
 
         if not self.builtIn:
@@ -185,7 +185,7 @@ class ShipUpgrade(serializable.Serializable):
 
         return itemDict
 
-    
+
     def statsStringShort(self) -> str:
         """Get a summary of the effects this upgrade will have on the owning ship, in string format.
 

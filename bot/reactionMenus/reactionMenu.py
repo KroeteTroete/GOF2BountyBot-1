@@ -240,7 +240,7 @@ class ReactionMenu(serializable.Serializable):
     a dictionary of emojis to roles into an options dictionary, where each option's addFunc is bound to a role granting
     function, and its removeFunc is bound to a role removing function. The only extra behaviour ReactionRolePickerOption
     implements over ReactionMenuOption is the addition of its associated role ID being saved during toDict.
-    
+
     The options in your options dictionary do not have to be of the same type - each option could have completely
     different behaviour. The only consideration you may need to make when creating such an object is whether or
     not you wish for it to be saveable - in which case, you should extend ReactionMenu into a new module,
@@ -432,7 +432,7 @@ class ReactionMenu(serializable.Serializable):
     async def delete(self):
         """⚠ WARNING: DO NOT SET THIS AS YOUR MENU'S TIMEDTASK EXPIRY FUNCTION. This method calls the menu's
         TimedTask expiry function.
-        
+
         Forcibly delete the menu.
         If a timeout TimedTask was defined in this menu's constructor, this will be forcibly expired.
         If no TimedTask was given, the menu will default to calling deleteReactionMenu.
@@ -570,11 +570,11 @@ class CancellableReactionMenu(ReactionMenu):
 
 class SingleUserReactionMenu(ReactionMenu):
     """An in-place menu solution.
-    
+
     InlineReactionMenus do not need to be recorded in the reactionMenusDB, but instead have a
     doMenu coroutine which should be awaited. Once execution returns, doMenu will return a list containing all of the
     currently selected options.
-    
+
     This menu style is only available for use by single users - hence the requirement for targetMember.
     returnTriggers is given as a kwarg, but if no returnTriggers are given, then the menu will only expire due ot timeout.
 

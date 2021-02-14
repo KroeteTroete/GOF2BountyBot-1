@@ -197,16 +197,16 @@ async def cmd_hangar(message : discord.Message, args : str, isDM : bool):
                                             + currentItem.name,
                                         value=currentItem.statsStringShort(), inline=False)
 
-        if item in ["all", "tool"]:	
-            for toolNum in range(firstPlace, requestedBBUser.lastItemNumberOnPage("tool", page, maxPerPage) + 1):	
-                if toolNum == firstPlace:	
-                    hangarEmbed.add_field(name="‎", value="__**Stored Tools**__", inline=False)	
-                currentItem = requestedBBUser.inactiveTools[toolNum - 1].item	
-                currentItemCount = requestedBBUser.inactiveTools.items[currentItem].count	
+        if item in ["all", "tool"]:
+            for toolNum in range(firstPlace, requestedBBUser.lastItemNumberOnPage("tool", page, maxPerPage) + 1):
+                if toolNum == firstPlace:
+                    hangarEmbed.add_field(name="‎", value="__**Stored Tools**__", inline=False)
+                currentItem = requestedBBUser.inactiveTools[toolNum - 1].item
+                currentItemCount = requestedBBUser.inactiveTools.items[currentItem].count
                 hangarEmbed.add_field(name=str(toolNum) + ". " \
                                             + (currentItem.emoji.sendable + " " if currentItem.hasEmoji else "") \
                                             + ((" `(" + str(currentItemCount) + ")` ") if currentItemCount > 1 else "") \
-                                            + currentItem.name,	
+                                            + currentItem.name,
                                         value=currentItem.statsStringShort(), inline=False)
 
         try:

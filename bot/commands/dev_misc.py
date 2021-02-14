@@ -198,6 +198,6 @@ async def dev_cmd_reset_transfer_cool(message : discord.Message, args : str, isD
     else:
         botState.usersDB.getUser(int(args.lstrip("<@!").rstrip(">"))).guildTransferCooldownEnd = datetime.utcnow()
     await message.channel.send("Done!")
-    
+
 
 botCommands.register("reset-transfer-cool", dev_cmd_reset_transfer_cool, 2, allowDM=True, useDoc=True)

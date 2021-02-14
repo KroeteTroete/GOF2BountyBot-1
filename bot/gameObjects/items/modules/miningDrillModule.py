@@ -40,12 +40,12 @@ class MiningDrillModule(moduleItem.ModuleItem):
         self.oreYield = oreYield
         self.handling = handling
 
-    
+
     def statsStringShort(self):
         return "*Yield: " + moduleItem.lib.stringTyping.formatMultiplier(self.oreYield) + \
                 ", Handling: " + moduleItem.formatMultiplier(self.handling) + "*"
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this module into dictionary format, to be saved to file. Uses the base moduleItem toDict
         method as a starting point, and adds extra attributes implemented by this specific module.
@@ -71,7 +71,7 @@ class MiningDrillModule(moduleItem.ModuleItem):
         """
         if "builtIn" in moduleDict and moduleDict["builtIn"]:
             return bbData.builtInModuleObjs[moduleDict["name"]]
-            
+
         return MiningDrillModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
                                 oreYield=moduleDict["oreYield"] if "oreYield" in moduleDict else 1,
                                 handling=moduleDict["handling"] if "handling" in moduleDict else 0,

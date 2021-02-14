@@ -21,7 +21,7 @@ class AStarNode(solarSystem.SolarSystem):
     :var f: The node's estimated "value" when picking the next node in the route, equal to g + h
     :vartype f: float
     """
-    
+
     def __init__(self, syst : solarSystem.SolarSystem, parent : AStarNode, g : float = 0, h : float = 0):
         """
         :param solarSystem syst: this node's associated solarSystem object.

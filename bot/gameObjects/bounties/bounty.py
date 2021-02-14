@@ -81,7 +81,7 @@ class Bounty(serializable.Serializable):
         self.checked = config.checked
         self.answer = config.answer
 
-        
+
     # return 0 => system not in route
     # return 1 => system already checked
     # return 2 => system was unchecked, but is not the answer
@@ -109,7 +109,7 @@ class Bounty(serializable.Serializable):
 
     def systemChecked(self, system : str) -> bool:
         """Decide whether or not a system has been checked.
-        
+
         :param str system: The system to inspect for checking
         :return: True if system has been checked yet, False otherwise
         :rtype: bool
@@ -167,7 +167,7 @@ class Bounty(serializable.Serializable):
         """
         dbReload = kwargs["dbReload"] if "dbReload" in kwargs else False
         return Bounty(dbReload=dbReload,
-                        criminalObj=criminal.Criminal.fromDict(bounty["criminal"]), 
+                        criminalObj=criminal.Criminal.fromDict(bounty["criminal"]),
                         config=bountyConfig.BountyConfig(faction=bounty["faction"], route=bounty["route"],
                         answer=bounty["answer"], checked=bounty["checked"], reward=bounty["reward"],
                         issueTime=bounty["issueTime"], endTime=bounty["endTime"]))

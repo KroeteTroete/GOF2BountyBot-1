@@ -82,7 +82,7 @@ class StateUserAlert(UABase):
         super(StateUserAlert, self).__init__()
         self.state = state
 
-    
+
     async def toggle(self, dcGuild : Guild, bGuild : 'basedGuild.BasedGuild', dcMember : Member) -> bool:
         """Invert the alert's state (i.e if currently off, switch to on, and vice versa).
 
@@ -107,7 +107,7 @@ class StateUserAlert(UABase):
         """
         return self.state
 
-    
+
     async def setState(self, dcGuild : Guild, bGuild : 'basedGuild.BasedGuild', dcMember : Member, newState : bool) -> bool:
         """Set the alert's state.
 
@@ -227,7 +227,7 @@ class UA_Duels_Challenge_Incoming_New(StateUserAlert):
         :param state: The initial state of the alert (enabled/disabled)
         """
         super(UA_Duels_Challenge_Incoming_New, self).__init__(state)
-        
+
 
 class UA_Duels_Challenge_Incoming_Cancel(StateUserAlert):
     """Alert a user, independant of guild, when a user cancels a duel they issued to the user.
@@ -275,36 +275,36 @@ class UA_System_Misc(GuildRoleUserAlert):
 
 # Translate UA ID strings into types
 userAlertsIDsTypes = {  "bounties_new": UA_Bounties,
-                        
+
                         "shop_refresh": UA_Shop_Refresh,
 
                         "duels_challenge_incoming_new": UA_Duels_Challenge_Incoming_New,
                         "duels_challenge_incoming_cancel": UA_Duels_Challenge_Incoming_Cancel,
-                        
+
                         "system_updates_major": UA_System_Updates_Major,
                         "system_updates_minor": UA_System_Updates_Minor,
                         "system_misc": UA_System_Misc}
 
 # Translate UA types into ID strings
 userAlertsTypesIDs = {  UA_Bounties: "bounties_new",
-                        
+
                         UA_Shop_Refresh: "shop_refresh",
 
                         UA_Duels_Challenge_Incoming_New: "duels_challenge_incoming_new",
                         UA_Duels_Challenge_Incoming_Cancel: "duels_challenge_incoming_cancel",
-                        
+
                         UA_System_Updates_Major: "system_updates_major",
                         UA_System_Updates_Minor: "system_updates_minor",
                         UA_System_Misc: "system_misc"}
 
 # Translate UA types into user-friendly alert name strings
 userAlertsTypesNames = {UA_Bounties: "new bounties",
-    
+
                         UA_Shop_Refresh: "new shop stock",
 
                         UA_Duels_Challenge_Incoming_New: "new duel challenges",
                         UA_Duels_Challenge_Incoming_Cancel: "cancelled duel challenges",
-                        
+
                         UA_System_Updates_Major: "BountyBot major updates",
                         UA_System_Updates_Minor: "BountyBot minor updates",
                         UA_System_Misc: "BountyBot misc. announcements"}

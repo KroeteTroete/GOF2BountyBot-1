@@ -81,7 +81,7 @@ class ModuleItem(GameItem):
         self.handling = handling
         self.handlingMultiplier = handlingMultiplier
 
-    
+
     def statsStringShort(self) -> str:
         """Summarise all effects of this module as a string.
         This method should be overriden in any modules that implement custom behaviour, outside of simple stat boosts.
@@ -103,7 +103,7 @@ class ModuleItem(GameItem):
 
         return statsStr if len(statsStr) > 1 else "*No effect*"
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this moduleItem into dictionary format, for saving to file.
         This method should be overriden and used as a base in any modules that implement
@@ -120,7 +120,7 @@ class ModuleItem(GameItem):
             kwargs["saveType"] = True
 
         itemDict = super(ModuleItem, self).toDict(**kwargs)
-        
+
         if not self.builtIn:
             additiveStats = {   "armour": self.armour, "shield": self.shield, "dps": self.dps,
                                 "cargo": self.cargo, "handling": self.handling}
@@ -143,7 +143,7 @@ class ModuleItem(GameItem):
         representation - the opposite of moduleItem.toDict. This generic module factory function is unlikely
         to ever be called, your module type-specific fromDict should be used instead. Except of course, in the
         case of custom-spawned, custom-typed modules which do not correspond to a BountyBot-known module type.
-        
+
         :param dict moduleDict: A dictionary containing all information needed to construct the desired moduleItem
         :return: A new moduleItem object as described in moduleDict
         :rtype: moduleItem

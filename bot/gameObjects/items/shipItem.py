@@ -114,7 +114,7 @@ class Ship(GameItem):
         self.cargo = cargo
         self.maxSecondaries = maxSecondaries
         self.handling = handling
-        
+
         self.maxPrimaries = maxPrimaries
         self.maxTurrets = maxTurrets
         self.maxModules = maxModules
@@ -153,7 +153,7 @@ class Ship(GameItem):
         """
         return self.getNumWeaponsEquipped() < self.getMaxPrimaries()
 
-    
+
     def getNumModulesEquipped(self) -> int:
         """Fetch the number of modules this ship currently has equipped
 
@@ -171,7 +171,7 @@ class Ship(GameItem):
         """
         return self.getNumModulesEquipped() < self.getMaxModules()
 
-    
+
     def getNumTurretsEquipped(self) -> int:
         """Fetch the number of turrets this ship currently has equipped
 
@@ -189,7 +189,7 @@ class Ship(GameItem):
         """
         return self.getNumTurretsEquipped() < self.getMaxTurrets()
 
-    
+
     def hasWeaponsEquipped(self) -> bool:
         """Decide whether or not this ship has any Weapons equipped
 
@@ -226,7 +226,7 @@ class Ship(GameItem):
         if not self.canEquipMoreWeapons():
             raise OverflowError("Attempted to equip a weapon but all weapon slots are full")
         self.weapons.append(weapon)
-    
+
 
     def unequipWeaponObj(self, weapon : primaryWeapon):
         """Unequip the given weapon object reference from the ship
@@ -252,7 +252,7 @@ class Ship(GameItem):
         :rtype: primaryWeapon
         """
         return self.weapons[index]
-    
+
 
     def canEquipModuleType(self, moduleType : type) -> bool:
         """Decide whether or not the ship has space for a module of the given type.
@@ -285,7 +285,7 @@ class Ship(GameItem):
             raise ValueError("Attempted to equip a module of a type that is already at its maximum capacity: " + str(module))
 
         self.modules.append(module)
-    
+
 
     def unequipModuleObj(self, module : moduleItem.ModuleItem):
         """Unequip the given module object reference
@@ -322,7 +322,7 @@ class Ship(GameItem):
         if not self.canEquipMoreTurrets():
             raise OverflowError("Attempted to equip a turret but all turret slots are full")
         self.turrets.append(turret)
-    
+
 
     def unequipTurretObj(self, turret : turretWeapon):
         """Unequip the given turret object reference from the ship
@@ -349,7 +349,7 @@ class Ship(GameItem):
         """
         return self.turrets[index]
 
-    
+
     # TODO: All of these 'get total' functions could probably be consolidated into a single function,
     # making use of getActivesByName etc
     def getDPS(self, shipUpgradesOnly : bool = False) -> int:
@@ -373,13 +373,13 @@ class Ship(GameItem):
             for module in self.modules:
                 total += module.dps
                 multiplier *= module.dpsMultiplier
-        
+
         for upgrade in self.upgradesApplied:
             total += upgrade.dps
             multiplier *= upgrade.dpsMultiplier
         return total * multiplier
 
-    
+
     def getShield(self, shipUpgradesOnly : bool = False) -> int:
         """Get the total Shield provided by the equipped items and upgrades.
         If shipUpgradesOnly is given as True, then only applied shipUpgrades will be included in the calculation.
@@ -397,7 +397,7 @@ class Ship(GameItem):
             for module in self.modules:
                 total += module.shield
                 multiplier *= module.shieldMultiplier
-        
+
         for upgrade in self.upgradesApplied:
             total += upgrade.shield
             multiplier *= upgrade.shieldMultiplier
@@ -421,7 +421,7 @@ class Ship(GameItem):
             for module in self.modules:
                 total += module.armour
                 multiplier *= module.armourMultiplier
-        
+
         for upgrade in self.upgradesApplied:
             total += upgrade.armour
             multiplier *= upgrade.armourMultiplier
@@ -445,7 +445,7 @@ class Ship(GameItem):
             for module in self.modules:
                 total += module.cargo
                 multiplier *= module.cargoMultiplier
-        
+
         for upgrade in self.upgradesApplied:
             total += upgrade.cargo
             multiplier *= upgrade.cargoMultiplier
@@ -469,7 +469,7 @@ class Ship(GameItem):
             for module in self.modules:
                 total += module.handling
                 multiplier *= module.handlingMultiplier
-        
+
         for upgrade in self.upgradesApplied:
             total += upgrade.handling
             multiplier *= upgrade.handlingMultiplier
@@ -490,7 +490,7 @@ class Ship(GameItem):
         """
         total = self.maxSecondaries
         multiplier = 1
-        
+
         for upgrade in self.upgradesApplied:
             total += upgrade.maxSecondaries
             multiplier *= upgrade.maxSecondariesMultiplier
@@ -511,7 +511,7 @@ class Ship(GameItem):
         """
         total = self.maxPrimaries
         multiplier = 1
-        
+
         for upgrade in self.upgradesApplied:
             total += upgrade.maxPrimaries
             multiplier *= upgrade.maxPrimariesMultiplier
@@ -532,7 +532,7 @@ class Ship(GameItem):
         """
         total = self.maxTurrets
         multiplier = 1
-        
+
         for upgrade in self.upgradesApplied:
             total += upgrade.maxTurrets
             multiplier *= upgrade.maxTurretsMultiplier
@@ -552,7 +552,7 @@ class Ship(GameItem):
         """
         total = self.maxModules
         multiplier = 1
-        
+
         for upgrade in self.upgradesApplied:
             total += upgrade.maxModules
             multiplier *= upgrade.maxModulesMultiplier
@@ -584,7 +584,7 @@ class Ship(GameItem):
 
         return total
 
-    
+
     def applyUpgrade(self, upgrade : shipUpgrade):
         """Apply the given ship upgrade, locking it and its stats into the ship.
         Ship upgrades cannot be removed.
@@ -593,7 +593,7 @@ class Ship(GameItem):
         """
         self.upgradesApplied.append(upgrade)
 
-    
+
     def changeNickname(self, nickname : str):
         """Change the ship's custom nickname.
         giving nickname = "" is equivilent to a call to removeNickname
@@ -604,7 +604,7 @@ class Ship(GameItem):
         if nickname != "":
             self.hasNickname = True
 
-    
+
     def removeNickname(self):
         """Remove the ship's custom nickname, setting BB to display the ship type instead where needed.
         """
@@ -612,7 +612,7 @@ class Ship(GameItem):
             self.nickname = ""
             self.hasNickname = False
 
-        
+
     def getNameOrNick(self) -> str:
         """Return the ship's nickname if it has one, or the name of the ship.
 
@@ -621,7 +621,7 @@ class Ship(GameItem):
         """
         return self.nickname if self.hasNickname else self.name
 
-    
+
     def getNameAndNick(self) -> str:
         """If the ship has a nickname, return the nickname followed by the ship name in brackets. Otherwise, just return the
         ship's name.
@@ -653,7 +653,7 @@ class Ship(GameItem):
                 other.equipModule(self.modules.pop(0))
             else:
                 leftoverModules.append(self.modules.pop(0))
-                
+
         for leftoverModule in leftoverModules:
             self.modules.append(leftoverModule)
 
@@ -721,7 +721,7 @@ class Ship(GameItem):
 
     def statsStringShort(self) -> str:
         """Summarise all of the ship's statistics as a string, including equipped item names.
-        
+
         :return: A summary of all of the ship's attributes and equipped items
         :rtype: str
         """
@@ -754,7 +754,7 @@ class Ship(GameItem):
             stats = stats[:-2] + "]*\n"
         return stats
 
-    
+
     def statsStringNoItems(self) -> str:
         """Return a shorter summary of the ship's statistics, ignoring any equipped items.
 
@@ -786,7 +786,7 @@ class Ship(GameItem):
         weaponsList = []
         for weapon in self.weapons:
             weaponsList.append(weapon.toDict(**kwargs))
-        
+
         modulesList = []
         for module in self.modules:
             modulesList.append(module.toDict(**kwargs))
@@ -794,7 +794,7 @@ class Ship(GameItem):
         turretsList = []
         for turret in self.turrets:
             turretsList.append(turret.toDict(**kwargs))
-        
+
         upgradesList = []
         for upgrade in self.upgradesApplied:
             upgradesList.append(upgrade.toDict(**kwargs))
@@ -816,7 +816,7 @@ class Ship(GameItem):
             itemDict["maxPrimaries"] = self.maxPrimaries
             itemDict["maxTurrets"] = self.maxTurrets
             itemDict["maxModules"] = self.maxModules
-        
+
         return itemDict
 
 
@@ -859,7 +859,7 @@ class Ship(GameItem):
         if "shipUpgrades" in shipDict:
             for currentUpgrade in shipDict["shipUpgrades"]:
                 shipUpgrades.append(shipUpgrade.ShipUpgrade.fromDict(currentUpgrade))
-        
+
         if shipDict["builtIn"]:
             builtInDict = bbData.builtInShipData[shipDict["name"]]
 

@@ -61,7 +61,7 @@ class SolarSystem(aliasable.Aliasable):
 
     def getNeighbours(self) -> List[str]:
         """Get a list of system names that can be reached from this system's jump gate. May be empty.
-        
+
         :return: A list of system names that can be reached from this system's jump gate
         :rtype: list[str]
         """
@@ -86,7 +86,7 @@ class SolarSystem(aliasable.Aliasable):
         :rtype: bool
         """
         return bool(self.neighbours)
-        
+
 
     def toDict(self, **kwargs) -> dict:
         data = super().toDict(**kwargs)
@@ -94,7 +94,7 @@ class SolarSystem(aliasable.Aliasable):
         data["neighbours"] = self.neighbours
         data["security"] = self.security
         data["coordinates"] = self.coordinates
-        
+
         if self.hasWiki:
             data["wiki"] = self.wiki
         if self.hasTechLevel:

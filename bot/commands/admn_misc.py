@@ -130,7 +130,7 @@ async def admin_cmd_config(message : discord.Message, args : str, isDM : bool):
         await message.channel.send(":x: Unknown setting!")
 
 botCommands.register("config", admin_cmd_config, 1, signatureStr="**config <setting> <value>**",
-                        shortHelp="Set various settings for how bountybot will function in this server.", 
+                        shortHelp="Set various settings for how bountybot will function in this server.",
                         longHelp="Set various settings for how bountybot will function in this server. Currently, " \
                                     +"`setting` can be either 'bounties' or 'shop', and `value` can either " \
                                     + "'enable' or 'disable', all with a few handy aliases. This command is lets you enable " \
@@ -178,7 +178,7 @@ async def admin_cmd_set_notify_role(message : discord.Message, args : str, isDM 
     if alertsToSet[0] == "ERR":
         await message.channel.send(alertsToSet[1].replace("$COMMANDPREFIX$", requestedBBGuild.commandPrefix))
         return
-    
+
     if lib.stringTyping.isRoleMention(argsSplit[-1]):
         requestedRole = message.guild.get_role(int(argsSplit[-1][3:-1]))
     else:
@@ -277,7 +277,7 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
     for currRole in message.guild.me.roles:
         if currRole.name == message.guild.me.name and currRole.managed:
             potentialRoles.append(currRole)
-    
+
     if potentialRoles == []:
         await message.channel.send(":x: I can't find my '" + message.guild.me.name + "' role! Have you renamed it?")
         return
@@ -359,7 +359,7 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
             if targetRole is None:
                 await message.channel.send(":x: Unknown target role!")
                 return
-        
+
         elif lib.stringTyping.isMention(kwArgs["target"]):
             targetMember = message.guild.get_member(int(kwArgs["target"].lstrip("<@!").rstrip(">")))
             if targetMember is None:
@@ -369,7 +369,7 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
         else:
             await message.channel.send(":x: Invalid target role/user!")
             return
-    
+
     timeoutDict = {}
 
     for timeName in ["days", "hours", "minutes", "seconds"]:
@@ -399,7 +399,7 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
         if timeoutDict[timeName] != -1:
             timeoutExists = True
     timeoutExists = timeoutExists or timeoutDict == {}
-    
+
     menuMsg = await message.channel.send("‎")
 
     if timeoutExists:
@@ -407,7 +407,7 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
         timeoutTT = timedTask.TimedTask(expiryDelta=timeoutDelta, expiryFunction=reactionRolePicker.markExpiredRoleMenu,
                                         expiryFunctionArgs=menuMsg.id)
         botState.reactionMenusTTDB.scheduleTask(timeoutTT)
-    
+
     else:
         timeoutTT = None
 
@@ -452,7 +452,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
     if args.endswith("-full"):
         args = args.split("-full")[0]
         full = True
-    
+
     # look up the ship object
     itemName = args.rstrip(" ").title()
     itemObj = None
@@ -482,7 +482,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
         await message.channel.send(":x: Someone else is currently rendering this ship! Please use this command again once " \
                                     + "my other " + itemObj.name + " render has completed.")
         return
-        
+
     botState.currentRenders.append(itemObj.name)
 
     if len(message.attachments) < 1:
@@ -527,7 +527,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
                     pickedLayers.append(cfg.defaultEmojis.numbers.index(react))
                 except ValueError:
                     pass
-        
+
         remainingIndices = [i for i in layerIndices if i not in pickedLayers]
 
         if remainingIndices:
@@ -551,7 +551,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
                         disabledLayers.append(cfg.defaultEmojis.numbers.index(react))
                     except ValueError:
                         pass
-        
+
         def showmeAdditionalMessageCheck(newMessage):
             return newMessage.author is message.author and \
                     (newMessage.content.lower().startswith(prefix + "cancel") or len(newMessage.attachments) > 0)
@@ -594,7 +594,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
                                         + str(regionNum) + ".jpg"
 
     waitMsg = await message.channel.send("🤖 Render started! I'll ping you when I'm done.")
-    
+
     renderPath = shipData["path"] + os.sep + "skins" + os.sep + str(message.id) + "-RENDER.png"
     outSkinPath = shipData["path"] + os.sep + "skins" + os.sep + str(message.id) + ".jpg"
 
@@ -618,17 +618,17 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
                                                     authorName="Skin Render Complete!",
                                                     icon=robotIcon, footerTxt="Custom skinned " + itemObj.name.capitalize())
             await message.channel.send(message.author.mention, embed=renderEmbed)
-    
+
     botState.currentRenders.remove(itemObj.name)
 
     try:
         os.remove(renderPath)
     except FileNotFoundError:
         pass
-    
+
     for skinPath in skinPaths.values():
         os.remove(skinPath)
-    
+
     try:
         os.remove(outSkinPath)
     except FileNotFoundError:
@@ -636,7 +636,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
 
     await lib.discordUtil.endLongProcess(waitMsg)
     return
-    
+
 
 botCommands.register("showmehd", admin_cmd_showmeHD, 1, allowDM=False, signatureStr="**showmeHD <ship-name>** *[-full]*",
                         shortHelp="Render your specified ship with the given skin, in full HD 1080p! " \

@@ -140,7 +140,7 @@ def fightShips(ship1 : shipItem.Ship, ship2 : shipItem.Ship, variancePercent : f
     # Handling to be implemented
     # ship1Handling = ship1.getHandling()
     # ship2Handling = ship2.getHandling()
-    # ship1HandlingPenalty = 
+    # ship1HandlingPenalty =
 
     # Calculate ship TTKs
     ship1TTK = ship1HPVaried / ship2DPSVaried
@@ -153,7 +153,7 @@ def fightShips(ship1 : shipItem.Ship, ship2 : shipItem.Ship, variancePercent : f
         winningShip = ship2
     else:
         winningShip = None
-    
+
     return {"winningShip":winningShip,
             "ship1":{"health":{"stock":ship1HP, "varied":ship1HPVaried},
                     "DPS": {"stock":ship1DPS, "varied":ship1DPSVaried},
@@ -247,7 +247,7 @@ async def fightDuel(sourceUser : User, targetUser : User, duelReq : DuelRequest,
                     if duelResults["ship1"]["TTK"] != -1 else "inf.") + "s time to kill." + "**" + targetUser.name \
                     + "** had " + (str(duelResults["ship2"]["TTK"]) if duelResults["ship2"]["TTK"] != -1 else "inf.") \
                     + "s time to kill."
-        
+
         statsEmbed = makeDuelStatsEmbed(duelResults, sourceUser, targetUser)
 
         if acceptMsg.guild.get_member(winningBasedUser.id) is None:

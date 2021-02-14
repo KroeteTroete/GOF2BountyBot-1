@@ -36,11 +36,11 @@ class RepairBotModule(moduleItem.ModuleItem):
 
         self.HPps = HPps
 
-    
+
     def statsStringShort(self):
         return "*HP/s: " + str(self.HPps) + "*"
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this module into dictionary format, to be saved to file. Uses the base moduleItem toDict
         method as a starting point, and adds extra attributes implemented by this specific module.
@@ -65,7 +65,7 @@ class RepairBotModule(moduleItem.ModuleItem):
         """
         if "builtIn" in moduleDict and moduleDict["builtIn"]:
             return bbData.builtInModuleObjs[moduleDict["name"]]
-            
+
         return RepairBotModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
         HPps=moduleDict["HPps"] if "HPps" in moduleDict else 0,
                                 value=moduleDict["value"] if "value" in moduleDict else 0,

@@ -54,7 +54,7 @@ def _loadGameItemsFromDir(itemDir : str, itemFolderExt : str) -> Dict[str, dict]
                 # Ensure a meta file exists
                 if not os.path.isfile(dirpath + os.sep + "META.json"):
                     raise lib.exceptions.InvalidGameObjectFolder(dirpath, "missing META.json")
-                
+
                 # Read in the object metadata and add to the database
                 with open(dirpath + os.sep + "META.json", "r") as f:
                     currentItemData = json.loads(f.read())
@@ -81,7 +81,7 @@ def _loadShipItemsFromDir(shipsDir : str) -> Dict[str, dict]:
                 # Ensure a meta file exists
                 if not os.path.isfile(dirpath + os.sep + "META.json"):
                     raise lib.exceptions.InvalidGameObjectFolder(dirpath, "missing META.json")
-                
+
                 # Read in the ship metadata
                 with open(dirpath + os.sep + "META.json", "r") as f:
                     currentItemData = json.loads(f.read())
@@ -106,7 +106,7 @@ def _loadShipItemsFromDir(shipsDir : str) -> Dict[str, dict]:
                         if cfg.shipMaxPriceTechLevels[tl] >= currentItemData["value"]:
                             currentItemData["techLevel"] = tl + 1
                             break
-                
+
                 # add to the database
                 itemDB[currentItemData["name"]] = currentItemData
     print("[gameConfigurator] " + str(len(itemDB)) + " Ships loaded.")
@@ -130,13 +130,13 @@ def _loadShipSkinsFromDir(shipsDir : str) -> Dict[str, dict]:
                 # Ensure a meta file exists
                 if not os.path.isfile(dirpath + os.sep + "META.json"):
                     raise lib.exceptions.InvalidGameObjectFolder(dirpath, "missing META.json")
-                
+
                 # Read in the skin metadata
                 with open(dirpath + os.sep + "META.json", "r") as f:
                     currentItemData = json.loads(f.read())
 
                 currentItemData["path"] = CWD + os.sep + dirpath
-                
+
                 # register the skin to the database under the LOWER-shifted skin name
                 itemDB[currentItemData["name"].lower()] = currentItemData
     print("[gameConfigurator] " + str(len(itemDB)) + " ShipSkins loaded.")
@@ -171,7 +171,7 @@ def _sortShipKeys():
 
 def _sortGameObjects(objsDB : Dict[str, Any]) -> List[List[Any]]:
     """Create a list, containing lists the objects found in objsDB, sorted by tech level.
-    
+
     :return: A list with one sub-list for each techlevel, each containing the items in objsDB of that tech Level.
     :rtype: List[List[Any]]
     """
@@ -270,7 +270,7 @@ def loadAllGameObjects():
                 (bbData.builtInShipSkinsData,bbData.builtInShipSkins,   shipSkin.ShipSkin.fromDict)
             ):
         _loadGameObjects(dataDB, objsDB, deserializer)
-    
+
     # generate shipSkinTool objects for each shipSkin
     for currentSkin in bbData.builtInShipSkins.values():
         # if len(currentSkin.compatibleShips) > 0:

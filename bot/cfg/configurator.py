@@ -41,7 +41,7 @@ for varname, varvalue in cfg.defaultEmojis.items():
 
 class ConfigProxy:
     """Similar to a dictionary, except attributes are dot-accessed.
-    
+
     :var attrnames: A list of all attribute names in the config
     :vartype attrnames: List[str]
     """
@@ -75,7 +75,7 @@ def init():
         # Create missing directories
         if pathDir and not os.path.isdir(pathDir):
             os.makedirs(pathDir)
-    
+
     # Load ConfigProxys
     cfg.defaultEmojis = ConfigProxy(cfg.defaultEmojis)
     cfg.timeouts = ConfigProxy(cfg.timeouts)
@@ -108,7 +108,7 @@ def makeDefaultCfg(fileName: str = "defaultCfg" + CFG_FILE_EXT):
     # If fileName already exists, make a new one by adding a number onto fileName.
     fileName = fileName.split(CFG_FILE_EXT)[0]
     cfgPath = fileName
-    
+
     currentExt = 0
     while os.path.exists(cfgPath + CFG_FILE_EXT):
         currentExt += 1
@@ -147,7 +147,7 @@ def loadCfg(cfgFile: str):
     # Ensure the given config is toml
     if not cfgFile.endswith(CFG_FILE_EXT):
         raise ValueError("config files must be TOML")
-    
+
     # Load from toml to dictionary
     with open(cfgFile, "r", encoding="utf-8") as f:
         config = toml.loads(f.read())

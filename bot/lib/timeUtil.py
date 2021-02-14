@@ -60,7 +60,7 @@ def getRandomDelaySeconds(minmaxDict : Dict[str, int]) -> timedelta:
 
 def tomorrow(today: datetime = None) -> datetime:
     """Make a new timestamp at 12am tomorrow. Or edit the provided one, to be one day later.
-    
+
     :param datetime today: A timestamp whose day to increment by one, and all other time attributes to zero out (default now)
     :return: a timestamp for 12am tomorrow utc time if today is not given. Return today after changing to tomorrow otherwise.
     """

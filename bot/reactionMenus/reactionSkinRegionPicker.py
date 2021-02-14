@@ -2,7 +2,7 @@ from . import reactionMenu
 from ..cfg import cfg
 from discord import Message, User, Member, Colour
 from typing import Union, List
-    
+
 
 class ReactionSkinRegionPicker(reactionMenu.SingleUserReactionMenu):
     """An unsaveable menu allowing users to choose autoskin layer indices that they want to provide.
@@ -41,7 +41,7 @@ class ReactionSkinRegionPicker(reactionMenu.SingleUserReactionMenu):
             if numRegions < 0:
                 raise IndexError("Attempted to create a ReactionSkinRegionPicker choosing from fewer than zero regions," \
                                     + " possibleRegions not provided")
-        
+
         if desc == "":
             desc = "This ship has **" + str(numRegions) + "** optional texture region" + ("" if numRegions == 1 else "s") \
                     + ".\nWhich regions would you like to change?"
@@ -53,16 +53,15 @@ class ReactionSkinRegionPicker(reactionMenu.SingleUserReactionMenu):
         for regionNumber in (possibleRegions if possibleRegions else range(1, numRegions + 1)):
             regionOptions[cfg.defaultEmojis.emojis.numbers[regionNumber]] = \
                 reactionMenu.DummyReactionMenuOption("Layer " + str(regionNumber), cfg.defaultEmojis.emojis.numbers[regionNumber])
-        
+
         regionOptions[cfg.defaultEmojis.submit] = reactionMenu.DummyReactionMenuOption("Submit", cfg.defaultEmojis.submit)
         regionOptions[cfg.defaultEmojis.cancel] = reactionMenu.DummyReactionMenuOption("Cancel render", cfg.defaultEmojis.cancel)
 
         super(ReactionSkinRegionPicker, self).__init__(msg, owningUser, timeoutSeconds,
                                                         returnTriggers=[    cfg.defaultEmojis.spiral,
-                                                                            cfg.defaultEmojis.submit, 
+                                                                            cfg.defaultEmojis.submit,
                                                                             cfg.defaultEmojis.cancel],
                                                         options=regionOptions, titleTxt=titleTxt, desc=desc, col=col,
                                                         footerTxt=footerTxt, img=img, thumb=thumb, icon=icon,
                                                         authorName=authorName)
         self.saveable = False
-    

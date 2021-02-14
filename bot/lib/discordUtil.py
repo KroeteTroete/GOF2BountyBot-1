@@ -348,7 +348,7 @@ def messageArgsFromStr(msgStr: str) -> Dict[str, Union[str, Embed]]:
             img for the URL to the image to display in the main embed content
             authorName for smaller text to display in place of the title 
             icon for the URL to the image to display to the left of authorName
-        
+
         To give fields for the embed, give field names and values separated by a new line.
         {NL} in any field will be replaced with a new line.
 
@@ -384,7 +384,7 @@ def messageArgsFromStr(msgStr: str) -> Dict[str, Union[str, Embed]]:
                 msgStr = msgStr[endIndex + 2:]
             except ValueError:
                 pass
-            
+
         msgEmbed = makeEmbed(**embedKwargs)
 
         try:

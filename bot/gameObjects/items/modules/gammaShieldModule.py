@@ -36,11 +36,11 @@ class GammaShieldModule(moduleItem.ModuleItem):
 
         self.effect = effect
 
-    
+
     def statsStringShort(self):
         return "*Gamma Shielding: " + moduleItem.lib.stringTyping.formatMultiplier(self.effect) + "*"
 
-    
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this module into dictionary format, to be saved to file. Uses the base moduleItem
         toDict method as a starting point, and adds extra attributes implemented by this specific module.
@@ -65,7 +65,7 @@ class GammaShieldModule(moduleItem.ModuleItem):
         """
         if "builtIn" in moduleDict and moduleDict["builtIn"]:
             return bbData.builtInModuleObjs[moduleDict["name"]]
-            
+
         return GammaShieldModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
         effect=moduleDict["effect"] if "effect" in moduleDict else 1,
                                 value=moduleDict["value"] if "value" in moduleDict else 0,

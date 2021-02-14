@@ -25,7 +25,7 @@ class Inventory(serializable.Serializable):
         # The number of item types stored; the length of self.keys
         self.numKeys = 0
 
-    
+
     def addItem(self, item : object, quantity : int = 1):
         """Add one or more of an item to the inventory.
         If at least one of item is already in the inventory, that item's InventoryListing count will be incremented.
@@ -37,7 +37,7 @@ class Inventory(serializable.Serializable):
         """
         if quantity < 0:
             raise ValueError("Quantity must be at least 1")
-        
+
         # increment totalItems tracker
         self.totalItems += quantity
         # increment count for existing bbItemListing
@@ -70,7 +70,7 @@ class Inventory(serializable.Serializable):
             # update keys counter
             self.numKeys += 1
 
-    
+
     def removeItem(self, item : object, quantity : int = 1):
         """Remove one or more of an item from the inventory.
         If the amount of item stored in the inventory is now zero, the InventoryListing is removed from the inventory.
@@ -100,7 +100,7 @@ class Inventory(serializable.Serializable):
             raise ValueError("Attempted to remove " + str(quantity) + " " + str(item) + "(s) when " + \
                                 (str(self.items[item].count) if item in self.items else "0") + " are in inventory")
 
-    
+
     def numPages(self, itemsPerPage : int) -> int:
         """Get the number of pages of items in the inventory, for a given max number of items per page
         E.g, where 3 keys are in the inventory: numPages(1) gives 3. numPages(2) gives 2.
@@ -111,7 +111,7 @@ class Inventory(serializable.Serializable):
         """
         return int(self.numKeys/itemsPerPage) + (0 if self.numKeys % itemsPerPage == 0 else 1)
 
-    
+
     def getPage(self, pageNum : int, itemsPerPage : int) -> list:
         """Get a list of the bbItemListings on the requested page.
         pageNum is 1 index-based; the first page is 1.
@@ -126,7 +126,7 @@ class Inventory(serializable.Serializable):
         # Validate the requested pageNum
         if pageNum < 1 or pageNum > self.numPages(itemsPerPage):
             raise IndexError("pageNum out of range. min=1 max=" + str(self.numPages(itemsPerPage)))
-        
+
         page = []
         # Splice self.keys around the first and last indices in the requested page
         for item in self.keys[(pageNum - 1) * itemsPerPage: min(pageNum * itemsPerPage, self.numKeys)]:
@@ -135,7 +135,7 @@ class Inventory(serializable.Serializable):
 
         return page
 
-    
+
     def stores(self, item) -> bool:
         """Decide whether a given item is stored in this inventory.
 
@@ -145,7 +145,7 @@ class Inventory(serializable.Serializable):
         """
         return item in self.keys
 
-    
+
     def numStored(self, item) -> int:
         """Get the amount stored of a given item.
 
@@ -155,7 +155,7 @@ class Inventory(serializable.Serializable):
         """
         return self.items[item].count if self.stores(item) else 0
 
-    
+
     def isEmpty(self) -> bool:
         """Decide whether or not this inventory currently stores any items.
 
@@ -164,7 +164,7 @@ class Inventory(serializable.Serializable):
         """
         return self.totalItems == 0
 
-    
+
     def clear(self):
         """Remove all items from the inventory.
         """
@@ -173,7 +173,7 @@ class Inventory(serializable.Serializable):
         self.totalItems = 0
         self.numKeys = 0
 
-    
+
     def __getitem__(self, key : int) -> inventoryListing.InventoryListing:
         """Override [subscript] operator for reading values.
         Currently returns the InventoryListing for the item at position key in self.keys.
@@ -186,7 +186,7 @@ class Inventory(serializable.Serializable):
         :raise IndexError: When given an index that isn't an int, or the given index is out of range
         :raise ValueError: When the inventory is empty
         """
-        if bool(self.keys): 
+        if bool(self.keys):
             if key in range(len(self.keys)):
                 if self.keys[key] in self.items:
                     return self.items[self.keys[key]]
@@ -196,7 +196,7 @@ class Inventory(serializable.Serializable):
                                 + str(len(self.keys)-1))
         raise ValueError("Attempted to fetch key " + str(key) + ", but keys list is empty")
 
-    
+
     def __setitem__(self, key, value):
         """Disallow assignment through the [subscript] operator.
 
@@ -207,7 +207,7 @@ class Inventory(serializable.Serializable):
         raise NotImplementedError("Cannot use [subscript] assignment for class inventory. use addItem/removeItem instead.")
         # self.items[self.keys[key]] = value
 
-    
+
     def __contains__(self, item) -> bool:
         """Override the 'in' operator.
 
@@ -215,13 +215,13 @@ class Inventory(serializable.Serializable):
         """
         return item in self.keys
 
-    
+
     def toDict(self, **kwargs) -> dict:
         data = super().toDict(**kwargs)
         data["items"] = []
         for listing in self.items.values():
             data["items"].append(listing.toDict(**kwargs))
-        
+
         return data
 
 
@@ -231,7 +231,7 @@ class Inventory(serializable.Serializable):
         if "items" in invDict:
             for listingDict in invDict["items"]:
                 newInv._addListing(inventoryListing.InventoryListing.fromDict(listingDict))
-        
+
         return newInv
 
 
@@ -246,14 +246,14 @@ class TypeRestrictedInventory(Inventory):
         super().__init__()
         self.itemType = itemType
 
-    
+
     def addItem(self, item: object, quantity : int = 1):
         if not isinstance(item, self.itemType):
             raise TypeError("Given item does not match this inventory's item type restriction. Expected '" \
                             + self.itemType.__name__ + "', given '" + type(item).__name__ + "'")
         super().addItem(item, quantity=quantity)
 
-    
+
     def _addListing(self, newListing: inventoryListing.InventoryListing):
         if not isinstance(newListing.item, self.itemType):
             raise TypeError("Given item does not match this inventory's item type restriction. Expected '" \

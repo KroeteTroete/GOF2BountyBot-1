@@ -272,7 +272,7 @@ class BasedUser(serializable.Serializable):
     def numInventoryPages(self, item : str, maxPerPage : int) -> int:
         """Get the number of pages required to display all of the user's unequipped items of the named type,
         displaying the given number of items per page
-        
+
         :param str item: The name of the item type whose inventory pages to calculate
         :param int maxPerPage: The maximum number of items that may be present on a single page of items (TODO: Add a default)
         :return: The number of pages of size maxPerPage needed to display all of the user's inactive items of the named type
@@ -305,14 +305,14 @@ class BasedUser(serializable.Serializable):
             itemsNum = numTools
         else:
             raise NotImplementedError("Valid but unsupported item name: " + item)
-        
+
         return int(itemsNum/maxPerPage) + (0 if itemsNum % maxPerPage == 0 else 1)
 
-    
+
     def lastItemNumberOnPage(self, item : str, pageNum : int, maxPerPage : int) -> int:
         """Get index of the last item on the given page number, where page numbers are of size maxPerPage.
         This is an absolute index from the start of the inventory, not a relative index from the start of the page.
-        
+
         :param str item: The name of the item type whose last index to calculate
         :param int maxPerPage: The maximum number of items that may be present on a single page of items (TODO: Add a default)
         :return: The index of the last item on page pageNum, where page numbers are of size maxPerPage
@@ -324,7 +324,7 @@ class BasedUser(serializable.Serializable):
             raise ValueError("Requested an invalid item name: " + item)
         if pageNum < self.numInventoryPages(item, maxPerPage):
             return pageNum * maxPerPage
-            
+
         elif item == "ship":
             return self.inactiveShips.numKeys
         elif item == "weapon":
@@ -383,10 +383,10 @@ class BasedUser(serializable.Serializable):
                 self.activeShip.equipModule(currentModule)
             else:
                 finalModules.append(currentModule)
-        
+
         for currentModule in finalModules:
             self.inactiveModules.addItem(currentModule)
-            
+
 
     def ownsShip(self, ship : shipItem.Ship):
         """Decide whether or not this user owns the given shipItem.
@@ -415,7 +415,7 @@ class BasedUser(serializable.Serializable):
             self.inactiveShips.removeItem(ship)
         self.activeShip = ship
 
-    
+
     def equipShipIndex(self, index : int):
         """Equip the ship at the given index in the user's inactive ships
 
@@ -582,8 +582,8 @@ class BasedUser(serializable.Serializable):
             raise ValueError("Duel request not found: " + str(duelReq.sourceBasedUser.id) + " -> " \
                                 + str(duelReq.sourceBasedUser.id))
         del self.duelRequests[duelReq.targetBasedUser]
-    
-    
+
+
     def removeDuelChallengeTarget(self, duelTarget : BasedUser.BasedUser):
         """Remove this user's duel request that is targetted at the given user.
 
@@ -638,7 +638,7 @@ class BasedUser(serializable.Serializable):
         """
         return await self.userAlerts[alertType].toggle(dcGuild, bbGuild, dcMember)
 
-    
+
     async def toggleAlertID(self, alertID : str, dcGuild : Guild, bbGuild : basedGuild.BasedGuild, dcMember : Member) -> bool:
         """Toggle the state of one of this users's userAlerts, identifying the alert by its ID as given by
         userAlerts.userAlertsIDsTypes.
@@ -665,7 +665,7 @@ class BasedUser(serializable.Serializable):
         """
         return self.userAlerts[alertType].getState(dcGuild, bbGuild, dcMember)
 
-    
+
     def isAlertedForID(self, alertID : str, dcGuild : Guild, bbGuild : basedGuild.BasedGuild, dcMember : Member) -> bool:
         """Get the state of one of this user's userAlerts, identifying the alert by its ID as given by
         userAlerts.userAlertsIDsTypes.
@@ -702,7 +702,7 @@ class BasedUser(serializable.Serializable):
             now = datetime.utcnow()
         return (not self.hasHomeGuild()) or now > self.guildTransferCooldownEnd
 
-    
+
     async def transferGuild(self, newGuild : Guild):
         """Transfer the user's homeGuildID to the given guild.
         The user must not be on guild transfer cooldown.
@@ -718,7 +718,7 @@ class BasedUser(serializable.Serializable):
                                 + lib.timeUtil.td_format_noYM(self.guildTransferCooldownEnd) + " remaining)")
         if await newGuild.fetch_member(self.id) is None:
             raise NameError("This user is not a member of the given guild '" + newGuild.name + "#" + str(newGuild.id) + "'")
-        
+
         self.homeGuildID = newGuild.id
         self.guildTransferCooldownEnd = now + lib.timeUtil.timeDeltaFromDict(cfg.homeGuildTransferCooldown)
 
