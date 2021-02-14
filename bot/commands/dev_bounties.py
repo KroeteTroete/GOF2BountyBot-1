@@ -306,7 +306,7 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
 
     # if no args were given, generate a completely random bounty
     if args == "":
-        newBounty = bounty.Bounty(bountyDB=callingBBGuild.bountiesDB)
+        newBounty = bounty.Bounty(owningDB=callingBBGuild.bountiesDB)
     # if only one argument was given, use it as a faction
     elif len(args.split("+")) == 2:
         newFaction = args.split("+")[1]
