@@ -100,7 +100,7 @@ def bbAStar(start : solarSystem.SolarSystem, end : solarSystem.SolarSystem,
             for i in range(len(open)):
                 if open[i].f > succ.f:
                     if i != 0:
-                        insertPos = i -1
+                        insertPos = i - 1
                     break
             open.insert(insertPos, succ)
 

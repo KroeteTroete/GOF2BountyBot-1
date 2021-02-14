@@ -132,7 +132,7 @@ async def admin_cmd_config(message : discord.Message, args : str, isDM : bool):
 botCommands.register("config", admin_cmd_config, 1, signatureStr="**config <setting> <value>**",
                         shortHelp="Set various settings for how bountybot will function in this server.",
                         longHelp="Set various settings for how bountybot will function in this server. Currently, " \
-                                    +"`setting` can be either 'bounties' or 'shop', and `value` can either " \
+                                    + "`setting` can be either 'bounties' or 'shop', and `value` can either " \
                                     + "'enable' or 'disable', all with a few handy aliases. This command is lets you enable " \
                                     + "or disable large amounts of functionality all together.")
 
@@ -639,14 +639,14 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
 
 botCommands.register("showmehd", admin_cmd_showmeHD, 1, allowDM=False, signatureStr="**showmeHD <ship-name>** *[-full]*",
                         shortHelp="Render your specified ship with the given skin, in full HD 1080p! " \
-                                    +"⚠ WARNING: THIS WILL TAKE A LONG TIME.",
+                                    + "⚠ WARNING: THIS WILL TAKE A LONG TIME.",
                         longHelp="You must attach a 2048x2048 jpg to your message. Render your specified ship with the " \
                                     + "given skin, in full HD 1080p! ⚠ WARNING: THIS WILL TAKE A LONG TIME. Give `-full` " \
                                     + "to disable autoskin and render exactly your provided image, " \
                                     + "with no additional texturing.")
 botCommands.register("showmehd", admin_cmd_showmeHD, 2, allowDM=True, signatureStr="**showmeHD <ship-name>** *[-full]*",
                         shortHelp="Render your specified ship with the given skin, in full HD 1080p! " \
-                                    +"⚠ WARNING: THIS WILL TAKE A LONG TIME.",
+                                    + "⚠ WARNING: THIS WILL TAKE A LONG TIME.",
                         longHelp="You must attach a 2048x2048 jpg to your message. Render your specified ship with the " \
                                     + "given skin, in full HD 1080p! ⚠ WARNING: THIS WILL TAKE A LONG TIME. Give `-full` " \
                                     + "to disable autoskin and render exactly your provided image, " \

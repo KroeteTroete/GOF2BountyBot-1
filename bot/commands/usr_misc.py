@@ -183,7 +183,7 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
                 prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
             await message.channel.send(":x: **Invalid user!** use `" + prefix + "balance` to display your own balance, or `" \
                                         + prefix + "balance <user>` to display someone else's balance!\n" \
-                                        +"When referencing a player from another server, you must use their long ID number")
+                                        + "When referencing a player from another server, you must use their long ID number")
             return
 
         # create the stats embed

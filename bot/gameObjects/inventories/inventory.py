@@ -192,7 +192,7 @@ class Inventory(serializable.Serializable):
                     return self.items[self.keys[key]]
                 raise KeyError("Failed get of key number " + str(key) + " - " + str(self.keys[key]) \
                                 + ". Key does not exist in inventory.")
-            raise IndexError("Key of incorrect type or out of range: "+ str(key) + ". Valid range: 0 - " \
+            raise IndexError("Key of incorrect type or out of range: " + str(key) + ". Valid range: 0 - " \
                                 + str(len(self.keys)-1))
         raise ValueError("Attempted to fetch key " + str(key) + ", but keys list is empty")
 
