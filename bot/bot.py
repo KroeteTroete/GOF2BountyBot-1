@@ -436,19 +436,6 @@ async def on_ready():
     gameConfigurator.loadAllGameObjects()
 
 
-    ##### DATABASE INITIALIZATION #####
-
-    # Load save data. If the specified files do not exist, an empty database will be created instead.
-    botState.usersDB = loadUsersDB(cfg.paths.usersDB)
-    botState.guildsDB = loadGuildsDB(cfg.paths.guildsDB)
-    botState.reactionMenusDB = await loadReactionMenusDB(cfg.paths.reactionMenusDB)
-
-    # Create BasedGuild instances for any guilds that the bot joined whilst it was offline
-    for guild in botState.client.guilds:
-        if not botState.guildsDB.idExists(guild.id):
-            botState.guildsDB.addDcGuild(guild)
-
-
     ##### SCHEDULING #####
 
     botState.newBountiesTTDB = TimedTaskHeap()
@@ -467,6 +454,19 @@ async def on_ready():
     # Schedule BASED updates checking
     botState.updatesCheckTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.timeouts.BASED_updateCheckFrequency),
                                         autoReschedule=True, expiryFunction=checkForUpdates)
+
+
+    ##### DATABASE INITIALIZATION #####
+
+    # Load save data. If the specified files do not exist, an empty database will be created instead.
+    botState.usersDB = loadUsersDB(cfg.paths.usersDB)
+    botState.guildsDB = loadGuildsDB(cfg.paths.guildsDB)
+    botState.reactionMenusDB = await loadReactionMenusDB(cfg.paths.reactionMenusDB)
+
+    # Create BasedGuild instances for any guilds that the bot joined whilst it was offline
+    for guild in botState.client.guilds:
+        if not botState.guildsDB.idExists(guild.id):
+            botState.guildsDB.addDcGuild(guild)
 
 
     ##### CLEANUP #####
