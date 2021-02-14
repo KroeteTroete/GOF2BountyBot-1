@@ -1,28 +1,17 @@
 from __future__ import annotations
-
-from discord import Guild
+from discord import Embed, channel, Client, Forbidden, Guild, Member, Message, HTTPException, NotFound
+from typing import List, Dict, Union
+from datetime import timedelta
 
 from .. import botState, lib
-from ..baseClasses import serializable
-from ..cfg import cfg
-
-from discord import Embed
 from ..gameObjects import guildShop
 from ..databases import bountyDB
 from ..gameObjects.bounties.bountyBoards import bountyBoardChannel
 from ..userAlerts import userAlerts
-from discord import channel, Client, Forbidden, Guild, Member, Message, HTTPException, NotFound
-from typing import List, Dict, Union
 from ..cfg import cfg, bbData
-from .. import botState, lib
 from ..scheduling.timedTask import TimedTask, DynamicRescheduleTask
 from ..gameObjects.bounties import bounty
-from datetime import timedelta
 from ..baseClasses import serializable
-
-
-class NoneDCGuildObj(Exception):
-    pass
 
 
 class BasedGuild(serializable.Serializable):
@@ -96,7 +85,8 @@ class BasedGuild(serializable.Serializable):
             raise TypeError("id must be int, given " + str(type(id)))
 
         if not isinstance(dcGuild, Guild):
-            raise NoneDCGuildObj("Given dcGuild of type '" + type(dcGuild).__name__ + "', expecting discord.Guild")
+            raise lib.exceptions.NoneDCGuildObj("Given dcGuild of type '" + type(dcGuild).__name__ \
+                                                + "', expecting discord.Guild")
 
         self.announceChannel = announceChannel
         self.playChannel = playChannel
