@@ -40,11 +40,11 @@ class ReactionDuelChallengeMenu(reactionMenu.ReactionMenu):
         """
 
         # if desc == "":
-        #     desc = botState.client.get_user(duelChallenge.sourceBBUser.id).mention + " challenged " \
-        #             + botState.client.get_user(duelChallenge.targetBBUser.id).mention + " to a duel!"
+        #     desc = botState.client.get_user(duelChallenge.sourceBasedUser.id).mention + " challenged " \
+        #             + botState.client.get_user(duelChallenge.targetBasedUser.id).mention + " to a duel!"
 
         if targetMember is None:
-            targetMember = msg.guild.get_member(duelChallenge.targetBBUser.id)
+            targetMember = msg.guild.get_member(duelChallenge.targetBasedUser.id)
 
         self.duelChallenge = duelChallenge
 
@@ -75,18 +75,18 @@ class ReactionDuelChallengeMenu(reactionMenu.ReactionMenu):
         """Accept a duel challenge on behalf of a user.
         This method is called when the challenge recipient adds the 'accept' reaction to this menu.
         """
-        if self.duelChallenge.sourceBBUser.credits < self.duelChallenge.stakes:
+        if self.duelChallenge.targetBasedUser.credits < self.duelChallenge.stakes:
             await self.msg.channel.send(":x: You do not have enough credits to accept this duel request! (" \
                                         + str(self.duelChallenge.stakes) + ")")
             return
-        if self.duelChallenge.targetBBUser.credits < self.duelChallenge.stakes:
-            await self.msg.channel.send(":x:" + botState.client.get_user(self.duelChallenge.sourceBBUser.id).display_name \
+        if self.duelChallenge.sourceBasedUser.credits < self.duelChallenge.stakes:
+            await self.msg.channel.send(":x:" + botState.client.get_user(self.duelChallenge.sourceBasedUser.id).display_name \
                                         + " does not have enough credits to fight this duel! (" \
                                         + str(self.duelChallenge.stakes) + ")")
             return
 
-        await duelRequest.fightDuel(botState.client.get_user(self.duelChallenge.sourceBBUser.id), \
-                                    botState.client.get_user(self.duelChallenge.targetBBUser.id), \
+        await duelRequest.fightDuel(botState.client.get_user(self.duelChallenge.sourceBasedUser.id), \
+                                    botState.client.get_user(self.duelChallenge.targetBasedUser.id), \
                                     self.duelChallenge, self.msg)
 
 
@@ -95,8 +95,8 @@ class ReactionDuelChallengeMenu(reactionMenu.ReactionMenu):
         This method is called when the challenge recipient adds the 'reject' reaction to this menu.
         """
         await duelRequest.rejectDuel(self.duelChallenge, self.msg, \
-                                        botState.client.get_user(self.duelChallenge.sourceBBUser.id), \
-                                        botState.client.get_user(self.duelChallenge.targetBBUser.id))
+                                        botState.client.get_user(self.duelChallenge.sourceBasedUser.id), \
+                                        botState.client.get_user(self.duelChallenge.targetBasedUser.id))
 
 
     def toDict(self, **kwargs) -> dict:

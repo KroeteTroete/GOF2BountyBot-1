@@ -247,7 +247,7 @@ def IDAlertedUserMentionOrName(alertID : str, dcUser : Union[Member, User] = Non
     :rtype: str
     """
     return typeAlertedUserMentionOrName(userAlerts.userAlertsIDsTypes[alertID], dcUser=dcUser, basedUser=basedUser,
-                                        BasedGuild=basedGuild, dcGuild=dcGuild)
+                                        basedGuild=basedGuild, dcGuild=dcGuild)
 
 
 async def startLongProcess(message: Message):

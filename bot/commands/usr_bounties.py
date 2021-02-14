@@ -6,7 +6,7 @@ from .. import botState, lib
 from ..cfg import cfg, bbData
 from ..gameObjects.battles import duelRequest
 from ..scheduling import timedTask
-from ..reactionMenus import reactionMenu, reactionDuelChallengeMenu
+from ..reactionMenus import reactionMenu, reactionDuelChallengeMenu, expiryFunctions
 
 
 botCommands.addHelpSection(0, "bounties")
@@ -438,7 +438,7 @@ async def cmd_duel(message : discord.Message, args : str, isDM : bool):
 
         for msg in sentMsgs:
             menuTT = timedTask.TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.timeouts.duelChallengeMenuExpiry),
-                                            expiryFunction=reactionMenu.removeEmbedAndOptions, expiryFunctionArgs=msg.id)
+                                            expiryFunction=expiryFunctions.removeEmbedAndOptions, expiryFunctionArgs=msg.id)
             botState.reactionMenusTTDB.scheduleTask(menuTT)
             newMenu = reactionDuelChallengeMenu.ReactionDuelChallengeMenu(msg, newDuelReq, timeout=menuTT)
             newDuelReq.menus.append(newMenu)
