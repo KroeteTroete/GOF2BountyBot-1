@@ -168,7 +168,9 @@ class GuildShop(serializable.Serializable):
         return user.credits >= item.getValue()
 
 
-    # SHIP MANAGEMENT
+    ##### SHIP MANAGEMENT #####
+
+
     def userCanAffordShipIndex(self, user : basedUser.BasedUser, index : int) -> bool:
         """Decide whether a user can afford to buy a ship from the shop's stock
 
@@ -253,8 +255,9 @@ class GuildShop(serializable.Serializable):
         self.userSellShipObj(user, user.inactiveShips[index].item)
 
 
+    ##### WEAPON MANAGEMENT #####
 
-    # WEAPON MANAGEMENT
+
     def userCanAffordWeaponIndex(self, user : basedUser.BasedUser, index : int) -> bool:
         """Decide whether a user can afford to buy a weapon from the shop's stock
 
@@ -315,8 +318,9 @@ class GuildShop(serializable.Serializable):
         self.userSellWeaponObj(user, user.inactiveWeapons[index].item)
 
 
+    ##### MODULE MANAGEMENT #####
 
-    # MODULE MANAGEMENT
+
     def userCanAffordModuleIndex(self, user : basedUser.BasedUser, index : int) -> bool:
         """Decide whether a user can afford to buy a module from the shop's stock
 
@@ -377,8 +381,9 @@ class GuildShop(serializable.Serializable):
         self.userSellModuleObj(user, user.inactiveModules[index].item)
 
 
+    ##### TURRET MANAGEMENT #####
 
-    # TURRET MANAGEMENT
+
     def userCanAffordTurretIndex(self, user : basedUser.BasedUser, index : int) -> bool:
         """Decide whether a user can afford to buy a turret from the shop's stock
 
@@ -438,6 +443,8 @@ class GuildShop(serializable.Serializable):
         """
         self.userSellTurretObj(user, user.inactiveTurrets[index].item)
 
+
+    ##### SERIALIZING #####
 
 
     def toDict(self, **kwargs) -> dict:

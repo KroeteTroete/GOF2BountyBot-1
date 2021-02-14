@@ -15,6 +15,9 @@ from ... import lib
 class Ship(GameItem):
     """An equippable and customisable ship for use by players and NPCs.
 
+    TODO: All of these 'get total' functions could probably be consolidated into a single function,
+    # making use of getActivesByName etc
+
     :var hasNickname: whether or not this ship has a nickname
     :vartype hasNickname: bool
     :var nickname: A custom name for this ship, assigned by the owning player
@@ -350,8 +353,6 @@ class Ship(GameItem):
         return self.turrets[index]
 
 
-    # TODO: All of these 'get total' functions could probably be consolidated into a single function,
-    # making use of getActivesByName etc
     def getDPS(self, shipUpgradesOnly : bool = False) -> int:
         """Get the total DPS provided by the equipped items and upgrades.
         If shipUpgradesOnly is given as True, then only applied shipUpgrades will be included in the calculation.

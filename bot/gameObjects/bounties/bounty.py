@@ -82,18 +82,16 @@ class Bounty(serializable.Serializable):
         self.answer = config.answer
 
 
-    # return 0 => system not in route
-    # return 1 => system already checked
-    # return 2 => system was unchecked, but is not the answer
-    # return 3 => win!
     def check(self, system : str, userID : int) -> int:
-        """Check a system along the route.
+        """Check a system along the route. The integer returned by this method indicates the results of the check:
+        0 => This system is not in the bounty route.
+        1 => this system has already been checked.
+        2 => The system was unchecked, but is not the answer.
+        3 => answer found.
 
         :param str system: The name of the system to check
         :param int userID: The id of the user checking the system
-        :return: A symbollic integer representing the result of the check. 0 => This system is not in the bounty route.
-                    1 => this system has already been checked. 2 => The system was unchecked, but is not the answer.
-                    3 => answer found.
+        :return: A symbollic integer representing the result of the check, as defined above
         :rtype: int
         """
         if system not in self.route:

@@ -64,6 +64,7 @@ class ReactionInventoryPicker(reactionMenu.CancellableReactionMenu):
     """A reaction menu allowing users to select a gameItem from a inventory.
     TODO: Implement paging
     TODO: Display item counts?
+    TODO: Reimplement as a PagedReactionMenu preset
 
     :var inventory: The inventory to display and select from (TODO: Rename)
     :vartype inventory: inventory
@@ -157,8 +158,6 @@ class ReactionInventoryPicker(reactionMenu.CancellableReactionMenu):
         baseDict = super(ReactionInventoryPicker, self).toDict(**kwargs)
 
 
-# ⚠ unfinished. idk how to save to file a reference to the inventory because idk what or where it will be.
-# might just close all inventory menus on shutdown
     @classmethod
     def fromDict(cls, rmDict : dict, **kwargs) -> ReactionInventoryPicker:
         """⚠ ReactionInventoryPickers are not currently saveable. Do not use this method.

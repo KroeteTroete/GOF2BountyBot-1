@@ -40,6 +40,8 @@ class BasedUser(serializable.Serializable):
     """A user of the bot. There is currently no guarantee that user still shares any guilds with the bot,
     though this is planned to change in the future.
 
+    TODO: Consider moving alert methods (e.g setAlertByType) to userAlerts.py
+
     :var id: The user's unique ID. The same as their unique discord ID.
     :vartype id: int
     :var credits: The amount of credits (currency) this user has
@@ -593,7 +595,6 @@ class BasedUser(serializable.Serializable):
         self.removeDuelChallengeObj(self.duelRequests[duelTarget])
 
 
-    # TODO: Consider moving these alert functions to userAlerts.py
     async def setAlertByType(self, alertType : type, dcGuild : Guild, bbGuild : basedGuild.BasedGuild, dcMember : Member,
             newState : bool) -> bool:
         """Set the state of one of this users's userAlerts, identifying the alert by its class.
