@@ -840,8 +840,8 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
             else:
                 with open(renderPath, "rb") as f:
                     msgText = "u" + str(message.author.id) + "g" \
-                                + ("DM" if message.channel.type in [discord.ChannelType.private, discord.ChannelType.group] \
-                                    else str(message.guild.id)) + "c" + str(message.channel.id) + "m" + str(message.id)
+                                + ("DM" if isDM else \
+                                    str(message.guild.id)) + "c" + str(message.channel.id) + "m" + str(message.id)
                     storageChannel = botState.client.get_channel(cfg.showmeSkinRendersChannel)
                     imageEmbedMsg = await storageChannel.send(msgText, file=discord.File(f))
                     renderEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(),

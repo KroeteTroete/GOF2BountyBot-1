@@ -166,8 +166,8 @@ class Bounty(serializable.Serializable):
                                 (Default False)
         """
         dbReload = kwargs["dbReload"] if "dbReload" in kwargs else False
-        return Bounty(dbReload=dbReload,
-                        criminalObj=criminal.Criminal.fromDict(bounty["criminal"]),
-                        config=bountyConfig.BountyConfig(faction=bounty["faction"], route=bounty["route"],
-                        answer=bounty["answer"], checked=bounty["checked"], reward=bounty["reward"],
-                        issueTime=bounty["issueTime"], endTime=bounty["endTime"]))
+        newCfg = bountyConfig.BountyConfig(faction=bounty["faction"], route=bounty["route"],
+                                            answer=bounty["answer"], checked=bounty["checked"], reward=bounty["reward"],
+                                            issueTime=bounty["issueTime"], endTime=bounty["endTime"])
+        return Bounty(dbReload=dbReload, config=newCfg,
+                        criminalObj=criminal.Criminal.fromDict(bounty["criminal"]))

@@ -610,9 +610,8 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
         with open(renderPath, "rb") as f:
             imageEmbedMsg = await botState.client.get_channel(cfg.showmeSkinRendersChannel).send("HD-u" \
                                                                 + str(message.author.id) + "g" \
-                                                                + ("DM" if message.channel.type in \
-                                                                [discord.ChannelType.private, discord.ChannelType.group] \
-                                                                else str(message.guild.id)) + "c" + str(message.channel.id) \
+                                                                + ("DM" if isDM else \
+                                                                    str(message.guild.id)) + "c" + str(message.channel.id) \
                                                                 + "m" + str(message.id), file=discord.File(f))
             renderEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=imageEmbedMsg.attachments[0].url,
                                                     authorName="Skin Render Complete!",

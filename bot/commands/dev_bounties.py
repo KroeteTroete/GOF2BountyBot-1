@@ -464,10 +464,10 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
             await message.channel.send(":x: Player not found!")
             return
         # create a new bounty at random for the specified user
-        newBounty = bounty.Bounty(bountyDB=callingBBGuild.bountiesDB,
-                                    config=bountyConfig.BountyConfig(name="<@" + str(requestedID) + ">",
-                                    isPlayer=True, icon=str(requestedUser.avatar_url_as(size=64)),
-                                    aliases=[lib.discordUtil.userTagOrDiscrim(args)]))
+        newCfg = bountyConfig.BountyConfig(name="<@" + str(requestedID) + ">", isPlayer=True,
+                                            icon=str(requestedUser.avatar_url_as(size=64)),
+                                            aliases=[lib.discordUtil.userTagOrDiscrim(args)])
+        newBounty = bounty.Bounty(bountyDB=callingBBGuild.bountiesDB, config=newCfg)
 
     # if the faction is also given
     elif len(args.split("+")) == 2:
@@ -478,10 +478,10 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
             return
         # create a bounty at random for the specified user and faction
         newFaction = args.split("+")[1]
-        newBounty = bounty.Bounty(bountyDB=callingBBGuild.bountiesDB,
-                                    config=bountyConfig.BountyConfig(name="<@" + str(requestedID) + ">", isPlayer=True,
+        newCfg = bountyConfig.BountyConfig(name="<@" + str(requestedID) + ">", isPlayer=True, faction=newFaction,
                                     icon=str(botState.client.get_user(requestedID).avatar_url_as(size=64)),
-                                    faction=newFaction, aliases=[lib.discordUtil.userTagOrDiscrim(args.split(" ")[0])]))
+                                    aliases=[lib.discordUtil.userTagOrDiscrim(args.split(" ")[0])])
+        newBounty = bounty.Bounty(bountyDB=callingBBGuild.bountiesDB, config=newCfg)
 
     # if all arguments are given
     elif len(args.split("+")) == 10:
