@@ -92,11 +92,11 @@ async def admin_cmd_config(message : discord.Message, args : str, isDM : bool):
 
     setting, value = argsSplit[0], " ".join(argsSplit[1:])
 
-    trueStrings = ["yes","true","on","enable","enabled"]
-    falseStrings = ["no","false","off","disable","disabled"]
+    trueStrings = ["yes", "true", "on", "enable", "enabled"]
+    falseStrings = ["no", "false", "off", "disable", "disabled"]
     callingBBGuild = botState.guildsDB.getGuild(message.guild.id)
 
-    if setting in ["bounty","bounties"]:
+    if setting in ["bounty", "bounties"]:
         if value in trueStrings:
             if not callingBBGuild.bountiesDisabled:
                 await message.channel.send(":x: Bounties are already enabled in this server!")
@@ -501,7 +501,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
         botState.currentRenders.remove(itemObj.name)
         return
 
-    skinPaths = {0:CWD + os.sep + cfg.paths.rendererTempFolder + os.sep + str(message.id) + "_0.jpg"}
+    skinPaths = {0: CWD + os.sep + cfg.paths.rendererTempFolder + os.sep + str(message.id) + "_0.jpg"}
     disabledLayers = []
 
     if not full:

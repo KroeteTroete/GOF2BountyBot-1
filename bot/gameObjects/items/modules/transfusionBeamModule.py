@@ -34,8 +34,8 @@ class TransfusionBeamModule(moduleItem.ModuleItem):
         :param bool builtIn: Whether this is a BountyBot standard module (loaded in from bbData) or
                                 a custom spawned module (Default False)
         """
-        super(TransfusionBeamModule, self).__init__(name, aliases, value=value, wiki=wiki, manufacturer=manufacturer, icon=icon,
-                                                    emoji=emoji, techLevel=techLevel, builtIn=builtIn)
+        super(TransfusionBeamModule, self).__init__(name, aliases, value=value, wiki=wiki, manufacturer=manufacturer,
+                                                    icon=icon, emoji=emoji, techLevel=techLevel, builtIn=builtIn)
 
         self.HPps = HPps
         self.count = count

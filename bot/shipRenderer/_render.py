@@ -94,7 +94,7 @@ def getRenderArgs() -> RenderArgs:
     :rtype: RenderArgs
     """
     args = []
-    with open(RENDER_ARGS_PATH,"r") as f:
+    with open(RENDER_ARGS_PATH, "r") as f:
         for line in f.readlines():
             args.append(line.rstrip("\n"))
     return RenderArgs(int(args[0].split("x")[0]), int(args[0].split("x")[1]), args[1], args[2], args[3], int(args[4]))

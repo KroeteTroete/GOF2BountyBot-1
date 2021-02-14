@@ -81,4 +81,5 @@ class RepairBeamModule(moduleItem.ModuleItem):
                                 icon=moduleDict["icon"] if "icon" in moduleDict else bbData.rocketIcon,
                                 emoji=lib.emojis.BasedEmoji.fromStr(moduleDict["emoji"]) if "emoji" in moduleDict else \
                                         lib.emojis.BasedEmoji.EMPTY,
-                                techLevel=moduleDict["techLevel"] if "techLevel" in moduleDict else -1, builtIn=moduleDict["builtIn"] if "builtIn" in moduleDict else False)
+                                techLevel=moduleDict["techLevel"] if "techLevel" in moduleDict else -1,
+                                builtIn=moduleDict["builtIn"] if "builtIn" in moduleDict else False)

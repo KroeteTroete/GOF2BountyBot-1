@@ -194,7 +194,7 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
         # If the requested user is not in the database, don't bother adding them just print zeroes
         if not botState.usersDB.idExists(requestedUser.id):
             statsEmbed.add_field(name="Credits balance:", value=0, inline=True)
-            statsEmbed.add_field(name="Total value:",value=str(basedUser.defaultUserValue), inline=True)
+            statsEmbed.add_field(name="Total value:", value=str(basedUser.defaultUserValue), inline=True)
             statsEmbed.add_field(name="‎", value="__Bounty Hunting__", inline=False)
             statsEmbed.add_field(name="Total systems checked:", value=0, inline=True)
             statsEmbed.add_field(name="Total bounties won:", value=0, inline=True)

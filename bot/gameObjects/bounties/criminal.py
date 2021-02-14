@@ -126,10 +126,10 @@ class Criminal(aliasable.Aliasable):
         :rtype: dict
         """
         if self.builtIn:
-            return {"builtIn":True, "name":self.name}
+            return {"builtIn": True, "name": self.name}
         else:
-            return {"builtIn":False, "isPlayer": self.isPlayer, "name":self.name, "icon":self.icon, "faction":self.faction,
-                    "aliases":self.aliases, "wiki":self.wiki}
+            return {"builtIn": False, "isPlayer": self.isPlayer, "name": self.name, "icon": self.icon, "faction": self.faction,
+                    "aliases": self.aliases, "wiki": self.wiki}
 
 
     @classmethod

@@ -130,7 +130,7 @@ class Bounty(serializable.Serializable):
             if self.systemChecked(system):
                 checkedSystems += 1
                 if self.checked[system] not in rewards:
-                    rewards[self.checked[system]] = {"reward":0,"checked":0,"won":False}
+                    rewards[self.checked[system]] = {"reward": 0, "checked": 0, "won": False}
 
         uncheckedSystems = len(self.route) - checkedSystems
 

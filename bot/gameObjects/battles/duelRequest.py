@@ -101,34 +101,34 @@ def fightShips(ship1 : shipItem.Ship, ship2 : shipItem.Ship, variancePercent : f
     if ship1DPS == 0:
         if ship2DPS == 0:
             return {"winningShip": None,
-            "ship1":{   "health":{"stock":ship1HP, "varied":ship1HP},
-                        "DPS": {"stock":ship1DPS, "varied":ship1DPS},
+            "ship1": {   "health": {"stock": ship1HP, "varied": ship1HP},
+                        "DPS": {"stock": ship1DPS, "varied": ship1DPS},
                         "TTK": -1},
-            "ship2":{   "health":{"stock":ship2HP, "varied":ship2HP},
-                        "DPS": {"stock":ship2DPS, "varied":ship2DPS},
+            "ship2": {   "health": {"stock": ship2HP, "varied": ship2HP},
+                        "DPS": {"stock": ship2DPS, "varied": ship2DPS},
                         "TTK": -1}}
         return {"winningShip": ship2,
-            "ship1":{   "health":{"stock":ship1HP, "varied":ship1HP},
-                        "DPS": {"stock":ship1DPS, "varied":ship1DPS},
+            "ship1": {   "health": {"stock": ship1HP, "varied": ship1HP},
+                        "DPS": {"stock": ship1DPS, "varied": ship1DPS},
                         "TTK": round(ship1HP / ship2DPS, 2)},
-            "ship2":{   "health":{"stock":ship2HP, "varied":ship2HP},
-                        "DPS": {"stock":ship2DPS, "varied":ship2DPS},
+            "ship2": {   "health": {"stock": ship2HP, "varied": ship2HP},
+                        "DPS": {"stock": ship2DPS, "varied": ship2DPS},
                         "TTK": -1}}
     if ship2DPS == 0:
         if ship1DPS == 0:
             return {"winningShip": None,
-            "ship1":{   "health":{"stock":ship1HP, "varied":ship1HP},
-                        "DPS": {"stock":ship1DPS, "varied":ship1DPS},
+            "ship1": {   "health": {"stock": ship1HP, "varied": ship1HP},
+                        "DPS": {"stock": ship1DPS, "varied": ship1DPS},
                         "TTK": -1},
-            "ship2":{   "health":{"stock":ship2HP, "varied":ship2HP},
-                        "DPS": {"stock":ship2DPS, "varied":ship2DPS},
+            "ship2": {   "health": {"stock": ship2HP, "varied": ship2HP},
+                        "DPS": {"stock": ship2DPS, "varied": ship2DPS},
                         "TTK": -1}}
         return {"winningShip": ship1,
-            "ship1":{   "health":{"stock":ship1HP, "varied":ship1HP},
-                        "DPS": {"stock":ship1DPS, "varied":ship1DPS},
+            "ship1": {   "health": {"stock": ship1HP, "varied": ship1HP},
+                        "DPS": {"stock": ship1DPS, "varied": ship1DPS},
                         "TTK": -1},
-            "ship2":{   "health":{"stock":ship2HP, "varied":ship2HP},
-                        "DPS": {"stock":ship2DPS, "varied":ship2DPS},
+            "ship2": {   "health": {"stock": ship2HP, "varied": ship2HP},
+                        "DPS": {"stock": ship2DPS, "varied": ship2DPS},
                         "TTK": round(ship2HP / ship1DPS, 2)}}
 
     # Vary DPSs by +=variancePercent
@@ -154,12 +154,12 @@ def fightShips(ship1 : shipItem.Ship, ship2 : shipItem.Ship, variancePercent : f
     else:
         winningShip = None
 
-    return {"winningShip":winningShip,
-            "ship1":{"health":{"stock":ship1HP, "varied":ship1HPVaried},
-                    "DPS": {"stock":ship1DPS, "varied":ship1DPSVaried},
+    return {"winningShip": winningShip,
+            "ship1": {"health": {"stock": ship1HP, "varied": ship1HPVaried},
+                    "DPS": {"stock": ship1DPS, "varied": ship1DPSVaried},
                     "TTK": ship1TTK},
-            "ship2":{"health":{"stock":ship2HP, "varied":ship2HPVaried},
-                    "DPS": {"stock":ship2DPS, "varied":ship2DPSVaried},
+            "ship2": {"health": {"stock": ship2HP, "varied": ship2HPVaried},
+                    "DPS": {"stock": ship2DPS, "varied": ship2DPSVaried},
                     "TTK": ship2TTK}}
 
 

@@ -368,7 +368,7 @@ class bountyBoardChannel(serializable.Serializable):
         for fac in self.bountyMessages:
             for crim in self.bountyMessages[fac]:
                 listings[self.bountyMessages[fac][crim].id] = crim.toDict(**kwargs)
-        return {"channel":self.channel.id, "listings":listings,
+        return {"channel": self.channel.id, "listings": listings,
                 "noBountiesMsg": self.noBountiesMessage.id if self.noBountiesMessage is not None else -1}
 
 

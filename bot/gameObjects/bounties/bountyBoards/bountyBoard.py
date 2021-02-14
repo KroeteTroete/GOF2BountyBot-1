@@ -5,7 +5,8 @@ from ....baseClasses import serializable
 
 
 class BountyBoard(serializable.Serializable):
-    """A single message that acts as a duplicate of the output of $bounties, except it is continuously updated with new and completed bounties.
+    """A single message that acts as a duplicate of the output of $bounties,
+    except it is continuously updated with new and completed bounties.
 
     :var msgID: The id of the message to continuously update
     :vartype msgID: int
@@ -33,7 +34,8 @@ class BountyBoard(serializable.Serializable):
 
     @classmethod
     def fromDict(bountyBoardDict : dict, **kwargs) -> BountyBoard:
-        """Factory function constructing a BountyBoard from the data contained in the given dictionary. The opposite of BountyBoard.toDict
+        """Factory function constructing a BountyBoard from the data contained in the given dictionary.
+        The opposite of BountyBoard.toDict
 
         :param dict bountyBoardDict: A dict containing all information needed to reconstruct the desired BountyBoard
         :return: The new BountyBoard object

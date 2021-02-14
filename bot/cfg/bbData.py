@@ -26,11 +26,11 @@ winIcon = "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120
 rocketIcon = "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/248/rocket_1f680.png"
 
 # colours to use in faction-related embed strips
-factionColours = {  "terran":Colour.gold(),
-                    "vossk":Colour.dark_green(),
-                    "midorian":Colour.dark_red(),
-                    "nivelian":Colour.dark_blue(),
-                    "neutral":Colour.purple()}
+factionColours = {  "terran": Colour.gold(),
+                    "vossk": Colour.dark_green(),
+                    "midorian": Colour.dark_red(),
+                    "nivelian": Colour.dark_blue(),
+                    "neutral": Colour.purple()}
 
 # Data representing all ship items in the game. These are used to create bbShip objects,
 # which are stored in builtInShipObjs in a similar dict format.
@@ -81,8 +81,6 @@ builtInToolObjs = {}
 # This is primarily for use in their relevent fromDict functions.
 builtInSystemObjs = {}
 builtInCriminalObjs = {}
-# Ships are now stored as keys (names) rather than objects, as ships are no longer shared - every user has a unique ship object to allow for customisation
-# builtInShipObjs = {}
 builtInModuleObjs = {}
 builtInWeaponObjs = {}
 builtInUpgradeObjs = {}

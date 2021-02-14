@@ -21,17 +21,18 @@ from .. import lib, botState
 
 
 # Dictionary-serialized shipItem to give to new players
-defaultShipLoadoutDict = {"name": "Betty", "builtIn":True,
-                        "weapons":[{"name": "Micro Gun MK I", "builtIn": True}],
-                        "modules":[{"name": "Telta Quickscan", "builtIn": True},
+defaultShipLoadoutDict = {"name": "Betty", "builtIn": True,
+                        "weapons": [{"name": "Micro Gun MK I", "builtIn": True}],
+                        "modules": [{"name": "Telta Quickscan", "builtIn": True},
                                     {"name": "E2 Exoclad", "builtIn": True},
                                     {"name": "IMT Extract 1.3", "builtIn": True}]}
 
 # Default attributes to give to new players
-defaultUserDict = {"credits":0, "bountyCooldownEnd":0, "lifetimeCredits":0, "systemsChecked":0, "bountyWins":0,
+defaultUserDict = {"credits": 0, "bountyCooldownEnd": 0, "lifetimeCredits": 0, "systemsChecked": 0, "bountyWins": 0,
                     "activeShip": defaultShipLoadoutDict,
-                    "inactiveWeapons":[{"item": {"name": "Nirai Impulse EX 1", "builtIn": True}, "count": 1}]}
-# Reference value not pre-calculated from defaultUserDict. This is not used in the game's code, but provides a reference for game design.
+                    "inactiveWeapons": [{"item": {"name": "Nirai Impulse EX 1", "builtIn": True}, "count": 1}]}
+# Reference value not pre-calculated from defaultUserDict. This is not used in the game's code,
+# but provides a reference for game design.
 defaultUserValue = 28970
 
 
@@ -451,12 +452,12 @@ class BasedUser(serializable.Serializable):
             if isinstance(self.userAlerts[alertID], userAlerts.StateUserAlert):
                 alerts[alertID] = self.userAlerts[alertID].state
 
-        return {"credits":self.credits, "lifetimeCredits":self.lifetimeCredits, "bountyCooldownEnd":self.bountyCooldownEnd,
-                "systemsChecked":self.systemsChecked, "bountyWins":self.bountyWins,
-                "activeShip": self.activeShip.toDict(**kwargs), "inactiveShips":inactiveShipsDict,
-                "inactiveModules":inactiveModulesDict, "inactiveWeapons":inactiveWeaponsDict,
+        return {"credits": self.credits, "lifetimeCredits": self.lifetimeCredits, "bountyCooldownEnd": self.bountyCooldownEnd,
+                "systemsChecked": self.systemsChecked, "bountyWins": self.bountyWins,
+                "activeShip": self.activeShip.toDict(**kwargs), "inactiveShips": inactiveShipsDict,
+                "inactiveModules": inactiveModulesDict, "inactiveWeapons": inactiveWeaponsDict,
                 "inactiveTurrets": inactiveTurretsDict, "inactiveTools": inactiveToolsDict,
-                "lastSeenGuildId":self.lastSeenGuildId, "duelWins": self.duelWins, "duelLosses": self.duelLosses,
+                "lastSeenGuildId": self.lastSeenGuildId, "duelWins": self.duelWins, "duelLosses": self.duelLosses,
                 "duelCreditsWins": self.duelCreditsWins, "bountyWinsToday": self.bountyWinsToday,
                 "dailyBountyWinsReset": self.dailyBountyWinsReset.timestamp(), "pollOwned": self.pollOwned,
                 "duelCreditsLosses": self.duelCreditsLosses, "homeGuildID": self.homeGuildID,

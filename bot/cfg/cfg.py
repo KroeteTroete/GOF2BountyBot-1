@@ -47,7 +47,7 @@ timeouts = {
     "shopRefresh": {"days": 0, "hours": 6, "minutes": 0, "seconds": 0},
 
     # time to put users on cooldown between using !bb check
-    "checkCooldown": {"minutes":3},
+    "checkCooldown": {"minutes": 3},
 
     # Default amount of time reaction menus should be active for
     "roleMenuExpiry": {"days": 1},
@@ -153,7 +153,7 @@ userAlertsIDsDefaults = {   "bounties_new": False,
                             "system_updates_minor": False,
                             "system_misc": False}
 
-homeGuildTransferCooldown = {"weeks":1}
+homeGuildTransferCooldown = {"weeks": 1}
 
 
 
@@ -217,11 +217,11 @@ newBountyDelayType = "random-routeScale"
 
 ### Fixed delay config
 # only spawn bounties at this time of day.
-newBountyFixedDailyTime = {"hours":18, "minutes":40, "seconds":0}
+newBountyFixedDailyTime = {"hours": 18, "minutes": 40, "seconds": 0}
 
 # time to wait inbetween spawning bounties
 # when using fixed-routeScale generation, use this for bounties of route length 1
-newBountyFixedDelta = {"days":0, "hours":0, "minutes":1, "seconds":0}
+newBountyFixedDelta = {"days": 0, "hours": 0, "minutes": 1, "seconds": 0}
 
 ### random delay config
 # when using random delay generation, use these min and max points

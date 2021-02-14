@@ -213,7 +213,8 @@ class ShipUpgrade(serializable.Serializable):
 
     @classmethod
     def fromDict(cls, upgradeDict : dict, **kwargs) -> ShipUpgrade:
-        """Factory function reconstructing a shipUpgrade object from its dictionary-serialized representation. The opposite of shipUpgrade.toDict
+        """Factory function reconstructing a shipUpgrade object from its dictionary-serialized representation.
+        The opposite of shipUpgrade.toDict
         If the upgrade is builtIn, return a reference to the pre-constructed upgrade object.
 
         :param dict upgradeDict: A dictionary containing all information needed to produce the required shipUpgrade

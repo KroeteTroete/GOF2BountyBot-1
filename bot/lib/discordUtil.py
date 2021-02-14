@@ -190,14 +190,15 @@ def typeAlertedUserMentionOrName(alertType : userAlerts.UABase, dcUser : Union[U
         basedUser : basedUser.BasedUser = None, basedGuild : basedGuild.BasedGuild = None, dcGuild : Guild = None) -> str:
     """If the given user has subscribed to the given alert type, return the user's mention.
     Otherwise, return their display name and discriminator. At least one of dcUser or basedUser must be provided.
-    BasedGuild and dcGuild are both optional. If neither are provided then the joined guilds will be searched for the given user.
-    This means that giving at least one of BasedGuild or dcGuild will drastically improve efficiency.
+    BasedGuild and dcGuild are both optional. If neither are provided then the joined guilds will be searched for
+    the given user. This means that giving at least one of BasedGuild or dcGuild will drastically improve efficiency.
     TODO: rename basedGuild and basedUser so it doesnt match the class name
 
     :param userAlerts.UABase alertType: The type of alert to check the state of
     :param discord.User dcUser: The user to check the alert state of. One of dcUser or basedUser is required. (Default None)
     :param BasedUser basedUser: The user to check the alert state of. One of dcUser or basedUser is required. (Default None)
-    :param BasedGuild BasedGuild: The guild in which to check the alert state. Optional, but improves efficiency. (Default None)
+    :param BasedGuild BasedGuild: The guild in which to check the alert state. Optional, but improves efficiency.
+                                    (Default None)
     :param dcGuild dcGuild: The guild in which to check the alert state. Optional, but improves efficiency. (Default None)
     :return: If the given user is alerted for the given type in the selected guild, the user's mention.
                 The user's display name and discriminator otherwise.
@@ -232,8 +233,8 @@ def IDAlertedUserMentionOrName(alertID : str, dcUser : Union[Member, User] = Non
         basedGuild : basedGuild.BasedGuild = None, dcGuild : Guild = None) -> str:
     """If the given user has subscribed to the alert type of the given ID, return the user's mention
     Otherwise, return their display name and discriminator. At least one of dcUser or basedUser must be provided.
-    BasedGuild and dcGuild are both optional. If neither are provided then the joined guilds will be searched for the given user.
-    This means that giving at least one of BasedGuild or dcGuild will drastically improve efficiency.
+    BasedGuild and dcGuild are both optional. If neither are provided then the joined guilds will be searched for
+    the given user. This means that giving at least one of BasedGuild or dcGuild will drastically improve efficiency.
     TODO: rename basedUser and basedGuild so it doesnt match the class name
 
     :param userAlerts.UABase alertType: The ID, according to userAlerts.userAlertsIDsTypes,

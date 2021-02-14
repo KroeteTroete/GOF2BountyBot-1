@@ -20,7 +20,8 @@ class CrateTool(toolItem.ToolItem):
 
         for item in itemPool:
             if not gameItem.isSpawnableItemInstance(item):
-                raise RuntimeError("Attempted to create a crateTool with something other than a spawnableItem in its itemPool.")
+                raise RuntimeError("Attempted to create a crateTool with something other than a spawnableItem " \
+                                    + "in its itemPool.")
         self.itemPool = itemPool
 
 

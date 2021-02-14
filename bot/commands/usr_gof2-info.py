@@ -733,7 +733,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
                 await message.channel.send(":x: I couldn't download your skin file. Did you delete it?")
                 botState.currentRenders.remove(itemObj.name)
                 return
-            skinPaths = {0:CWD + os.sep + cfg.paths.rendererTempFolder + os.sep + str(message.id) + "_0.jpg"}
+            skinPaths = {0: CWD + os.sep + cfg.paths.rendererTempFolder + os.sep + str(message.id) + "_0.jpg"}
             disabledLayers = []
             if skin == "$ATTACHEDFILE$" and shipData["textureRegions"]:
                 layerIndices = [i for i in range(1, shipData["textureRegions"] + 1)]

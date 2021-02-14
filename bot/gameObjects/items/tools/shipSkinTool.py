@@ -25,7 +25,8 @@ class ShipSkinTool(toolItem.ToolItem):
         :param str wiki: A web page that is displayed as the wiki page for this item. If no wiki is given and shipSkin
                             has one, that will be used instead. (Default "")
         :param str icon: A URL pointing to an image to use for this item's icon (Default cfg.defaultShipSkinToolIcon)
-        :param lib.emojis.BasedEmoji emoji: The emoji to use for this item's small icon (Default cfg.defaultEmojis.shipSkinTool)
+        :param lib.emojis.BasedEmoji emoji: The emoji to use for this item's small icon
+                                            (Default cfg.defaultEmojis.shipSkinTool)
         :param int techLevel: A rating from 1 to 10 of this item's technical advancement. Used as a measure for its
                                 effectiveness compared to other items of the same type (Default shipSkin.averageTL)
         :param bool builtIn: Whether this is a BountyBot standard item (loaded in from bbData) or a custom spawned

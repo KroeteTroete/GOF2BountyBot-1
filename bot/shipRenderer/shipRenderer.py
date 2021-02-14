@@ -34,7 +34,7 @@ def trim(im : Image) -> Image:
     :return: im, with all surrounding empty space removed
     :rtype: Image
     """
-    bg = Image.new(im.mode, im.size, im.getpixel((0,0)))
+    bg = Image.new(im.mode, im.size, im.getpixel((0, 0)))
     diff = ImageChops.difference(im, bg)
     diff = ImageChops.add(diff, diff, 2.0, -100)
     bbox = diff.getbbox()
@@ -66,8 +66,8 @@ def compositeTextures(outTexPath : str, shipPath : str, textures : Dict[int, str
                                     base texture (foreground elements). All (currently 2) remaining textures are overlayed
                                     with respect to the ship's texture region masks.
     :param List[int] disabledLayers: List of texture regions to 'disable' - setting them to the bottom texture.
-                                    TODO: Instead of doing this by recompositing the bottom texture, just iterate through disabled
-                                    layers and apply masks. Apply bottom texture at the end.
+                                    TODO: Instead of doing this by recompositing the bottom texture, just iterate through
+                                    disabled layers and apply masks. Apply bottom texture at the end.
     """
     # Load and combine the base texture and under layer
     workingTex = ensureImageMode(Image.open(textures[0]))
@@ -77,7 +77,7 @@ def compositeTextures(outTexPath : str, shipPath : str, textures : Dict[int, str
     maxLayerNum = max(max(textures), max(disabledLayers)) if disabledLayers else max(textures)
 
     # For each layer number
-    for maskNum in range(1,maxLayerNum+1):
+    for maskNum in range(1, maxLayerNum+1):
         if maskNum in textures:
             # If skinning this region, load the texture with the corresponding index
             newTex = ensureImageMode(Image.open(textures[maskNum]))
@@ -109,7 +109,7 @@ def setRenderArgs(args : List[str]):
 
     :param List[str] args: List of arguments to write to file
     """
-    with open(SCRIPT_PATH + os.sep + "render_vars","w") as f:
+    with open(SCRIPT_PATH + os.sep + "render_vars", "w") as f:
         for arg in args:
             f.write(arg + "\n")
 

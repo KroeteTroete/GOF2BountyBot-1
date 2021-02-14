@@ -164,7 +164,8 @@ def _sortShipKeys():
     # Sort ship keys by tech level
     for currentShipKey in bbData.builtInShipData.keys():
         if bbData.builtInShipData[currentShipKey]["techLevel"] == -1:
-            print("[gameConfig] techLevel -1 found for ShipItem. Excluding this Ship from bbData.shipKeysByTL: " + currentShipKey)
+            print("[gameConfig] techLevel -1 found for ShipItem. Excluding this Ship from bbData.shipKeysByTL: " \
+                    + currentShipKey)
         else:
             bbData.shipKeysByTL[bbData.builtInShipData[currentShipKey]["techLevel"] - 1].append(currentShipKey)
 
@@ -228,7 +229,7 @@ def loadAllGameObjectData():
                             ("builtInTurretData",     cfg.paths.bbTurretMETAFolder,       ".bbTurret"),
                             ("builtInCommodityData",  cfg.paths.bbCommodityMETAFolder,    ".bbCommodity"),
                             ("builtInToolData",       cfg.paths.bbToolMETAFolder,         ".bbTool"),
-                            ("builtInSecondariesData",cfg.paths.bbModuleMETAFolder,       ".bbModule")
+                            ("builtInSecondariesData", cfg.paths.bbModuleMETAFolder,       ".bbModule")
                         ):
         setattr(bbData, db, _loadGameItemsFromDir(dir, ext))
 
@@ -260,14 +261,14 @@ def loadAllGameObjects():
     bbData.builtInSecondariesObjs
     """
     for dataDB, objsDB, deserializer in (
-                (bbData.builtInCriminalData,bbData.builtInCriminalObjs, criminal.Criminal.fromDict),
+                (bbData.builtInCriminalData, bbData.builtInCriminalObjs, criminal.Criminal.fromDict),
                 (bbData.builtInSystemData,  bbData.builtInSystemObjs,   solarSystem.SolarSystem.fromDict),
                 (bbData.builtInWeaponData,  bbData.builtInWeaponObjs,   primaryWeapon.PrimaryWeapon.fromDict),
                 (bbData.builtInUpgradeData, bbData.builtInUpgradeObjs,  shipUpgrade.ShipUpgrade.fromDict),
                 (bbData.builtInTurretData,  bbData.builtInTurretObjs,   turretWeapon.TurretWeapon.fromDict),
                 (bbData.builtInModuleData,  bbData.builtInModuleObjs,   moduleItemFactory.fromDict),
                 (bbData.builtInToolData,    bbData.builtInToolObjs,     toolItemFactory.fromDict),
-                (bbData.builtInShipSkinsData,bbData.builtInShipSkins,   shipSkin.ShipSkin.fromDict)
+                (bbData.builtInShipSkinsData, bbData.builtInShipSkins,   shipSkin.ShipSkin.fromDict)
             ):
         _loadGameObjects(dataDB, objsDB, deserializer)
 
@@ -276,7 +277,9 @@ def loadAllGameObjects():
         # if len(currentSkin.compatibleShips) > 0:
         toolName = lib.stringTyping.shipSkinNameToToolName(currentSkin.name)
         if toolName not in bbData.builtInToolObjs:
-            bbData.builtInToolObjs[toolName] = shipSkinTool.ShipSkinTool(currentSkin, value=gameMaths.shipSkinValueForTL(currentSkin.averageTL), builtIn=True)
+            newTool = shipSkinTool.ShipSkinTool(currentSkin, value=gameMaths.shipSkinValueForTL(currentSkin.averageTL),
+                                                builtIn=True)
+            bbData.builtInToolObjs[toolName] = newTool
 
     _sortShipKeys()
     _makeShipSpawnRates()

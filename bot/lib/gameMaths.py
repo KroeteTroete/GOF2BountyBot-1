@@ -142,8 +142,10 @@ for shopTL in techLevelRange:
 
 print("[gameMaths] Item rarities generated:")
 for shopTL in range(len(itemTLSpawnChanceForShopTL)):
-    print("\t• shop TL" + str(shopTL+1) + ": itemTL",end="")
+    print("\t• shop TL" + str(shopTL+1) + ": itemTL", end="")
     for itemTL in range(len((itemTLSpawnChanceForShopTL[shopTL]))):
         if itemTLSpawnChanceForShopTL[shopTL][itemTL] != 0:
-            print(" " + str(itemTL + 1) + "=" + str(truncItemSpawnResolution(itemTLSpawnChanceForShopTL[shopTL][itemTL]*100)),end="% ")
+            print(" " + str(itemTL + 1) + "=" \
+                        + str(truncItemSpawnResolution(itemTLSpawnChanceForShopTL[shopTL][itemTL]*100)),
+                    end="% ")
     print()

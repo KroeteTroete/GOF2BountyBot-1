@@ -49,13 +49,16 @@ class ReactionSkinRegionPicker(reactionMenu.SingleUserReactionMenu):
             titleTxt = "Custom Skin Renderer"
 
 
-        regionOptions = {cfg.defaultEmojis.spiral: reactionMenu.DummyReactionMenuOption("Select all", cfg.defaultEmojis.spiral)}
+        regionOptions = {cfg.defaultEmojis.spiral: reactionMenu.DummyReactionMenuOption("Select all",
+                                                                                        cfg.defaultEmojis.spiral)}
         for regionNumber in (possibleRegions if possibleRegions else range(1, numRegions + 1)):
-            regionOptions[cfg.defaultEmojis.emojis.numbers[regionNumber]] = \
-                reactionMenu.DummyReactionMenuOption("Layer " + str(regionNumber), cfg.defaultEmojis.emojis.numbers[regionNumber])
+            layerOption = reactionMenu.DummyReactionMenuOption("Layer " + str(regionNumber),
+                                                                cfg.defaultEmojis.emojis.numbers[regionNumber])
+            regionOptions[cfg.defaultEmojis.emojis.numbers[regionNumber]] = layerOption
 
         regionOptions[cfg.defaultEmojis.submit] = reactionMenu.DummyReactionMenuOption("Submit", cfg.defaultEmojis.submit)
-        regionOptions[cfg.defaultEmojis.cancel] = reactionMenu.DummyReactionMenuOption("Cancel render", cfg.defaultEmojis.cancel)
+        regionOptions[cfg.defaultEmojis.cancel] = reactionMenu.DummyReactionMenuOption("Cancel render",
+                                                                                        cfg.defaultEmojis.cancel)
 
         super(ReactionSkinRegionPicker, self).__init__(msg, owningUser, timeoutSeconds,
                                                         returnTriggers=[    cfg.defaultEmojis.spiral,
