@@ -121,10 +121,10 @@ def start_render():
 
 async def renderShip(skinName : str, shipPath : str, shipModelName : str, textures : Dict[int, str],
                         disabledLayers: List[int], res_x : int, res_y : int, numSamples: int, full=False):
-                        # TODO: Add 'useBaseTexture' argument. Pass to render_vars. If true, should bypass skinBase
-                        # (for 'full' skins that don't use skinBase)
     """Render the given ship model with the specified skin layer(s).
     The resulting image is cropped to content and saved in shipPath + "/skins/" + skinName.jpg
+    TODO: Add 'useBaseTexture' argument. Pass to render_vars. If true, should bypass skinBase
+    (for 'full' skins that don't use skinBase)
 
     :param str skinName: The name of the skin being rendered. Depicts the name of the output file.
     :param str shipPath: Path to the bbShip being rendered. Must contain shipModelName
