@@ -134,9 +134,9 @@ class HeirarchicalCommandsDB:
                     len(self.helpSectionEmbeds[accessLevel][helpSection][-1].fields) > cfg.maxCommandsPerHelpPage:
 
                 self.helpSectionEmbeds[accessLevel][helpSection][-1].remove_field(-1)
-                self.helpSectionEmbeds[accessLevel][helpSection].append(Embed(
-                    title=cfg.userAccessLevels[accessLevel] + " Commands", description=cfg.helpIntro + "\n__" \
-                            + helpSection.title() + "__", colour=Colour.blue()))
+                firstEmbed = Embed(title=cfg.userAccessLevels[accessLevel] + " Commands",
+                                    description=cfg.helpIntro + "\n__" + helpSection.title() + "__", colour=Colour.blue())
+                self.helpSectionEmbeds[accessLevel][helpSection].append(firstEmbed)
                 self.helpSectionEmbeds[accessLevel][helpSection][-1].add_field(
                     name=signatureStr, value=newRegistry.shortHelp, inline=False)
                 for pageNum in range(len(self.helpSectionEmbeds[accessLevel][helpSection])):

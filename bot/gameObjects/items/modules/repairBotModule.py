@@ -67,7 +67,7 @@ class RepairBotModule(moduleItem.ModuleItem):
             return bbData.builtInModuleObjs[moduleDict["name"]]
 
         return RepairBotModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
-        HPps=moduleDict["HPps"] if "HPps" in moduleDict else 0,
+                                HPps=moduleDict["HPps"] if "HPps" in moduleDict else 0,
                                 value=moduleDict["value"] if "value" in moduleDict else 0,
                                 wiki=moduleDict["wiki"] if "wiki" in moduleDict else "",
                                 manufacturer=moduleDict["manufacturer"] if "manufacturer" in moduleDict else "",

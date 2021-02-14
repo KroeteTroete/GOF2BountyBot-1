@@ -67,7 +67,7 @@ class EmergencySystemModule(moduleItem.ModuleItem):
             return bbData.builtInModuleObjs[moduleDict["name"]]
 
         return EmergencySystemModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
-        duration=moduleDict["duration"] if "duration" in moduleDict else 0,
+                                        duration=moduleDict["duration"] if "duration" in moduleDict else 0,
                                         value=moduleDict["value"] if "value" in moduleDict else 0,
                                         wiki=moduleDict["wiki"] if "wiki" in moduleDict else "",
                                         manufacturer=moduleDict["manufacturer"] if "manufacturer" in moduleDict else "",
