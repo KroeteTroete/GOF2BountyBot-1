@@ -108,7 +108,7 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
         elif args in botCommands.commands[userAccessLevel] and botCommands.commands[userAccessLevel][args].allowHelp:
             helpEmbed = lib.discordUtil.makeEmbed(titleTxt=cfg.userAccessLevels[userAccessLevel] + " Commands",
                                                     desc=cfg.helpIntro + "\n__" \
-                                                        + botCommands.commands[userAccessLevel][args].helpSection.title()
+                                                        + botCommands.commands[userAccessLevel][args].helpSection.title() \
                                                         + "__", col=discord.Colour.blue(),
                                                     thumb=botState.client.user.avatar_url_as(size=64))
             helpEmbed.add_field(name=botCommands.commands[userAccessLevel][args].signatureStr,

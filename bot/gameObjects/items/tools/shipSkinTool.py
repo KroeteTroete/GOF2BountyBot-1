@@ -49,12 +49,12 @@ class ShipSkinTool(toolItem.ToolItem):
         if "ship" not in kwargs:
             raise NameError("Required kwarg not given: ship")
         if not isinstance(kwargs["ship"], Ship):
-            raise TypeError("Required kwarg is of the wrong type. Expected bbShip, received "
+            raise TypeError("Required kwarg is of the wrong type. Expected bbShip, received " \
                             + type(kwargs["ship"]).__name__)
         if "callingBUser" not in kwargs:
             raise NameError("Required kwarg not given: callingBUser")
         if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedUser":
-            raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received "
+            raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received " \
                             + type(kwargs["callingBUser"]).__name__)
 
         ship, callingBUser = kwargs["ship"], kwargs["callingBUser"]
@@ -85,7 +85,7 @@ class ShipSkinTool(toolItem.ToolItem):
         if "ship" not in kwargs:
             raise NameError("Required kwarg not given: ship")
         if not isinstance(kwargs["ship"], Ship):
-            raise TypeError("Required kwarg is of the wrong type. Expected bbShip, received "
+            raise TypeError("Required kwarg is of the wrong type. Expected bbShip, received " \
                             + type(kwargs["ship"]).__name__)
         if "callingBUser" not in kwargs:
             raise NameError("Required kwarg not given: callingBUser")
