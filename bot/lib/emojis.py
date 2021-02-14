@@ -1,16 +1,16 @@
 from __future__ import annotations
 from emoji import UNICODE_EMOJI
-from .. import botState
-from . import stringTyping, exceptions
 import traceback
-from ..baseClasses import serializable
-
 from typing import Union, TYPE_CHECKING
 if TYPE_CHECKING:
     from discord import PartialEmoji, Emoji
 
+from .. import botState
+from . import stringTyping, exceptions
+from ..baseClasses import serializable
+from ..cfg import cfg
 
-err_UnknownEmoji = "❓"
+
 # True to raise an UnrecognisedCustomEmoji exception when requesting an unknown custom emoji
 raiseUnkownEmojis = False
 logUnknownEmojis = True
@@ -96,7 +96,7 @@ class BasedEmoji(serializable.Serializable):
             if raiseUnkownEmojis or rejectInvalid:
                 raise exceptions.UnrecognisedCustomEmoji(
                     "Unrecognised custom emoji ID in BasedEmoji constructor: " + str(self.id), self.id)
-            self.sendable = err_UnknownEmoji
+            self.sendable = cfg.defaultEmojis.unrecognisedEmoji.sendable
 
 
     def toDict(self, **kwargs) -> dict:
