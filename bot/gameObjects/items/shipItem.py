@@ -11,6 +11,7 @@ from .. import shipSkin, shipUpgrade
 from ...cfg import cfg, bbData
 from ... import lib
 
+
 @spawnableItem
 class Ship(GameItem):
     """An equippable and customisable ship for use by players and NPCs.

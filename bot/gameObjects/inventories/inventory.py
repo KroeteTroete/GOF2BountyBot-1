@@ -2,6 +2,7 @@ from __future__ import annotations
 from . import inventoryListing
 from ...baseClasses import serializable
 
+
 class Inventory(serializable.Serializable):
     """A database of InventoryListings.
     Aside from the use of InventoryListing for the purpose of item quantities, this class is type unaware.

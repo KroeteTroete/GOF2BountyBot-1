@@ -6,9 +6,9 @@ from ...cfg import bbData
 from ...baseClasses import aliasable
 from ..items import shipItem
 
+
 class Criminal(aliasable.Aliasable):
-    """
-    A criminal to be wanted in bounties.
+    """A criminal to be wanted in bounties.
 
     :var name: The name of the criminal
     :vartype name: str

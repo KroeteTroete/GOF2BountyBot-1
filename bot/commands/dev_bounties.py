@@ -6,8 +6,8 @@ from .. import botState, lib
 from ..cfg import cfg, bbData
 from ..gameObjects.bounties import bounty, bountyConfig
 
-
 botCommands.addHelpSection(2, "bounties")
+
 
 async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : bool):
     """developer command clearing all active bounties. If a guild ID is given, clear bounties in that guild.

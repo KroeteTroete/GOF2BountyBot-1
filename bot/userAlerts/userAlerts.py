@@ -7,6 +7,7 @@ from discord import utils, Guild, Member
 from abc import ABC, abstractmethod
 from ..cfg import cfg
 
+
 class UABase(ABC):
     """A base class representing a subscription to a single type of
     alert (UserAlert) - for example, a ping or DM when a certain event occurs.
@@ -206,6 +207,7 @@ class UA_Shop_Refresh(GuildRoleUserAlert):
         :param state: Ignored
         """
         super(UA_Shop_Refresh, self).__init__()
+
 
 class UA_Bounties(GuildRoleUserAlert):
     """Alert a guild's members when a new bounty spawns, using a role.

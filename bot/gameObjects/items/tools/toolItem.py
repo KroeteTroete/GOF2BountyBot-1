@@ -4,6 +4,7 @@ from .... import lib
 from discord import Message
 from typing import List
 
+
 class ToolItem(gameItem.GameItem):
     """An item that has a function of some kind.
     Intended to be very generic at this level of implementation.

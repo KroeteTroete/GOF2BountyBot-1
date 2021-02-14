@@ -12,8 +12,8 @@ from ..gameObjects.items.tools import shipSkinTool, toolItemFactory
 from .. import lib
 from ..lib import gameMaths
 
-
 CWD = os.getcwd()
+
 
 def depthLimitedWalk(top: str, maxDepth: int):
     """os.walk but with a limited recursion depth.

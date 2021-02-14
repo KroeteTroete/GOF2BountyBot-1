@@ -1,6 +1,7 @@
 # TODO: Remake most of these with regex
 from typing import Union
 
+
 def isInt(x) -> bool:
     """Decide whether or not something is either an integer, or is castable to integer.
 

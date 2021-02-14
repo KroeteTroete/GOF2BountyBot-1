@@ -127,7 +127,8 @@ class GracefulKiller:
     """
 
     def __init__(self):
-        """Register signal handlers"""
+        """Register signal handlers
+        """
         self.kill_now = False
         # keyboard interrupt
         signal.signal(signal.SIGINT, self.exit_gracefully)
@@ -135,7 +136,8 @@ class GracefulKiller:
         signal.signal(signal.SIGTERM, self.exit_gracefully)
 
     def exit_gracefully(self, signum, frame):
-        """Termination signal received, mark kill indicator"""
+        """Termination signal received, mark kill indicator
+        """
         self.kill_now = True
 
 
@@ -356,7 +358,6 @@ botCommands.register("cancel", dummy_command, 0, allowDM=True, noHelp=True)
 
 
 ####### MAIN FUNCTIONS #######
-
 
 @botState.client.event
 async def on_guild_join(guild: discord.Guild):

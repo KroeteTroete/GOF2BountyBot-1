@@ -11,9 +11,9 @@ from datetime import datetime, timedelta
 from ...cfg import bbData, cfg
 from ... import lib
 
+
 class BountyConfig:
-    """
-    Configurator class describing all attributes needed for a bounty object.
+    """Configurator class describing all attributes needed for a bounty object.
 
     :var faction: The faction owning this bounty
     :vartype faction: str

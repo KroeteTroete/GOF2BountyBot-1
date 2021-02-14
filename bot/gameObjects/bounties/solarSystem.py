@@ -5,6 +5,7 @@ from typing import List, Tuple
 from ...baseClasses import aliasable
 import math
 
+
 class SolarSystem(aliasable.Aliasable):
     """A solar system where a bounty may be located.
 

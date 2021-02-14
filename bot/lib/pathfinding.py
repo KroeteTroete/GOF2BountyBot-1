@@ -6,6 +6,7 @@ import math
 from ..cfg import bbData
 from typing import Dict, List
 
+
 class AStarNode(solarSystem.SolarSystem):
     """A node for use in a* pathfinding.
     TODO: Does this really need to extend solarSystem?

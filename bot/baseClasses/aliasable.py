@@ -5,6 +5,7 @@ from . import serializable
 
 from abc import abstractmethod
 
+
 class Aliasable(serializable.Serializable):
     """An abstract class allowing subtype instances to be identified and compared by any list of names (aliases).
     A great example and common use case is in BountyBot's Criminal class. Criminals are NPCs that each have a unique name.
