@@ -18,7 +18,7 @@ async def cmd_balance(message : discord.Message, args : str, isDM : bool):
     # If no user is specified, send the balance of the calling user
     if args == "":
         if not botState.usersDB.idExists(message.author.id):
-            botState.usersDB.addUser(message.author.id)
+            botState.usersDB.addID(message.author.id)
         await message.channel.send(":moneybag: **" + message.author.display_name + "**, you have **" \
                                     + str(botState.usersDB.getUser(message.author.id).credits) + " Credits**.")
 
@@ -31,7 +31,7 @@ async def cmd_balance(message : discord.Message, args : str, isDM : bool):
             return
         # ensure that the user is in the users database
         if not botState.usersDB.idExists(requestedUser.id):
-            botState.usersDB.addUser(requestedUser.id)
+            botState.usersDB.addID(requestedUser.id)
         # send the user's balance
         await message.channel.send(":moneybag: **" + lib.discordUtil.userOrMemberName(requestedUser, message.guild) \
                                     + "** has **" + str(botState.usersDB.getUser(requestedUser.id).credits) + " Credits**.")
@@ -563,7 +563,7 @@ async def cmd_pay(message : discord.Message, args : str, isDM : bool):
     if botState.usersDB.idExists(message.author.id):
         sourceBBUser = botState.usersDB.getUser(message.author.id)
     else:
-        sourceBBUser = botState.usersDB.addUser(message.author.id)
+        sourceBBUser = botState.usersDB.addID(message.author.id)
 
     if not sourceBBUser.credits >= amount:
         await message.channel.send(":x: You don't have that many credits!")
@@ -572,7 +572,7 @@ async def cmd_pay(message : discord.Message, args : str, isDM : bool):
     if botState.usersDB.idExists(requestedUser.id):
         targetBBUser = botState.usersDB.getUser(requestedUser.id)
     else:
-        targetBBUser = botState.usersDB.addUser(requestedUser.id)
+        targetBBUser = botState.usersDB.addID(requestedUser.id)
 
     sourceBBUser.credits -= amount
     targetBBUser.credits += amount
@@ -604,7 +604,7 @@ async def cmd_total_value(message : discord.Message, args : str, isDM : bool):
     # If no user is specified, send the balance of the calling user
     if args == "":
         if not botState.usersDB.idExists(message.author.id):
-            botState.usersDB.addUser(message.author.id)
+            botState.usersDB.addID(message.author.id)
         await message.channel.send(":moneybag: **" + message.author.display_name \
                                     + "**, your items and balance are worth a total of **" \
                                     + str(botState.usersDB.getUser(message.author.id).getStatByName("value")) + " Credits**.")
@@ -618,7 +618,7 @@ async def cmd_total_value(message : discord.Message, args : str, isDM : bool):
             return
         # ensure that the user is in the users database
         if not botState.usersDB.idExists(requestedUser.id):
-            botState.usersDB.addUser(requestedUser.id)
+            botState.usersDB.addID(requestedUser.id)
         # send the user's balance
         await message.channel.send(":moneybag: **" + lib.discordUtil.userOrMemberName(requestedUser, message.guild) \
                                     + "**'s items and balance have a total value of **" \

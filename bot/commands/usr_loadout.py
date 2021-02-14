@@ -81,7 +81,7 @@ async def cmd_hangar(message : discord.Message, args : str, isDM : bool):
 
     if not botState.usersDB.idExists(requestedUser.id):
         if not foundUser:
-            botState.usersDB.addUser(requestedUser.id)
+            botState.usersDB.addID(requestedUser.id)
         else:
             useDummyData = True
 
@@ -249,10 +249,7 @@ async def cmd_loadout(message : discord.Message, args : str, isDM : bool):
             return
 
     if not botState.usersDB.idExists(requestedUser.id):
-        if not userFound:
-            botState.usersDB.addUser(requestedUser.id)
-        else:
-            useDummyData = True
+        useDummyData = True
 
     if useDummyData:
         activeShip = shipItem.Ship.fromDict(basedUser.defaultShipLoadoutDict)
@@ -611,7 +608,7 @@ async def cmd_nameship(message : discord.Message, args : str, isDM : bool):
     if botState.usersDB.idExists(message.author.id):
         requestedBBUser = botState.usersDB.getUser(message.author.id)
     else:
-        requestedBBUser = botState.usersDB.addUser(message.author.id)
+        requestedBBUser = botState.usersDB.addID(message.author.id)
 
     if requestedBBUser.activeShip is None:
         await message.channel.send(":x: You do not have a ship equipped!")
@@ -644,7 +641,7 @@ async def cmd_unnameship(message : discord.Message, args : str, isDM : bool):
     if botState.usersDB.idExists(message.author.id):
         requestedBBUser = botState.usersDB.getUser(message.author.id)
     else:
-        requestedBBUser = botState.usersDB.addUser(message.author.id)
+        requestedBBUser = botState.usersDB.addID(message.author.id)
 
     if requestedBBUser.activeShip is None:
         await message.channel.send(":x: You do not have a ship equipped!")
