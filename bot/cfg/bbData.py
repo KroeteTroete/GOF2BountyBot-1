@@ -97,11 +97,3 @@ turretObjsByTL = []
 bountyNames = {}
 # the length of the longest criminal name, to be used in padding during cmd_bounties
 longestBountyNameLength = 0
-
-# Fetch bounty names and longest bounty name
-for criminalName in builtInCriminalData:
-    if builtInCriminalData[criminalName]["faction"] not in bountyNames:
-        bountyNames[builtInCriminalData[criminalName]["faction"]] = []
-    bountyNames[builtInCriminalData[criminalName]["faction"]].append(criminalName)
-    if len(criminalName) > longestBountyNameLength:
-        longestBountyNameLength = len(criminalName)

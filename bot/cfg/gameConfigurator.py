@@ -287,3 +287,11 @@ def loadAllGameObjects():
                         ("turretObjsByTL", bbData.builtInTurretObjs)):
         setattr(bbData, db, _sortGameObjects(objsDB))
         _makeItemSpawnRates(objsDB)
+
+    # Fetch bounty names and longest bounty name
+    for criminalName in bbData.builtInCriminalData:
+        if bbData.builtInCriminalData[criminalName]["faction"] not in bbData.bountyNames:
+            bbData.bountyNames[bbData.builtInCriminalData[criminalName]["faction"]] = []
+        bbData.bountyNames[bbData.builtInCriminalData[criminalName]["faction"]].append(criminalName)
+        if len(criminalName) > bbData.longestBountyNameLength:
+            bbData.longestBountyNameLength = len(criminalName)
