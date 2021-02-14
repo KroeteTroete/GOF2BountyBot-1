@@ -311,9 +311,6 @@ async def dev_cmd_refreshshop(message : discord.Message, args : str, isDM : bool
     else:
         guild.shop.refreshStock(level=level)
         await guild.announceNewShopStock()
-    if guild.hasPlayChannel():
-        await guild.getPlayChannel().send(":arrows_counterclockwise: The shop stock has been refreshed!\n**        **" \
-                                            + "Now at tech level: **" + str(guild.shop.currentTechLevel) + "**")
 
 botCommands.register("refreshshop", dev_cmd_refreshshop, 2, allowDM=False, helpSection="items", useDoc=True)
 
