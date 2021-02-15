@@ -5,6 +5,7 @@ class ShutDownState:
 
 
 client = None
+shutdown = ShutDownState.restart
 
 usersDB = None
 guildsDB = None
@@ -14,16 +15,10 @@ newBountiesTTDB = None
 duelRequestTTDB = None
 shopRefreshTT = None
 
+taskScheduler = None
 logger = None
 
 dbSaveTT = None
-
-# Reaction Menus
-reactionMenusDB = None
-reactionMenusTTDB = None
-
-shutdown = ShutDownState.restart
-
 updatesCheckTT = None
 
 # Scheduling overrides

@@ -25,6 +25,7 @@ from . import lib, botState, logging
 from .databases import guildDB, reactionMenuDB, userDB
 from .scheduling.timedTask import TimedTask
 from .scheduling.timedTaskHeap import TimedTaskHeap
+from bot.scheduling import timedTaskHeap
 
 
 async def checkForUpdates():
@@ -182,6 +183,7 @@ class BasedClient(ClientBaseClass):
         self.killer = GracefulKiller()
         self.skinStorageChannel = None
 
+
     def saveAllDBs(self):
         """Save all of the bot's savedata to file.
         This currently saves:
@@ -208,6 +210,7 @@ class BasedClient(ClientBaseClass):
         - logs out of discord
         - saves all savedata to file
         """
+        botState.taskScheduler.stopTaskChecking()
         if self.storeMenus:
             # expire non-saveable reaction menus
             menus = list(botState.reactionMenusDB.values())
@@ -407,16 +410,22 @@ async def on_ready():
 
     TODO: Implement dynamic timedtask checking period
     """
-    ##### VALIDATION #####
-
-    if cfg.timedTaskCheckingType not in ["fixed", "dynamic"]:
-        raise ValueError("cfg: Invalid timedTaskCheckingType '" + cfg.timedTaskCheckingType + "'")
-
-
     ##### CLIENT INITIALIZATION #####
-
     botState.client.skinStorageChannel = botState.client.get_guild(cfg.mediaServer).get_channel(cfg.skinRendersChannel)
     botState.httpClient = aiohttp.ClientSession()
+
+    if cfg.timedTaskCheckingType == "fixed":
+        botState.taskScheduler = timedTaskHeap.TimedTaskHeap()
+    elif cfg.timedTaskCheckingType == "dynamic":
+        botState.taskScheduler = timedTaskHeap.AutoCheckingTimedTaskHeap(asyncio.get_running_loop())
+        botState.taskScheduler.startTaskChecking()
+    else:
+        raise ValueError("Unsupported cfg.timedTaskCheckingType: " + str(cfg.timedTaskCheckingType))
+
+    # Set custom bot status
+    await botState.client.change_presence(activity=discord.Game("BASED APP"))
+    # bot is now logged in
+    botState.client.loggedIn = True
 
 
     ##### EMOJI INITIALIZATION #####
@@ -445,15 +454,18 @@ async def on_ready():
     botState.shopRefreshTT = TimedTask(expiryDelta=shopRefreshDelta,
                                         autoReschedule=True,
                                         expiryFunction=refreshAndAnnounceAllShopStocks)
+                                        
+    botState.taskScheduler.scheduleTask(botState.shopRefreshTT)
 
-    # Schedule reaction menu expiry
-    botState.reactionMenusTTDB = TimedTaskHeap()
     # Schedule database saving
     botState.dbSaveTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.timeouts.dataSaveFrequency),
                                     autoReschedule=True, expiryFunction=botState.client.saveAllDBs)
     # Schedule BASED updates checking
     botState.updatesCheckTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.timeouts.BASED_updateCheckFrequency),
                                         autoReschedule=True, expiryFunction=checkForUpdates)
+
+    botState.taskScheduler.scheduleTask(botState.dbSaveTT)
+    botState.taskScheduler.scheduleTask(botState.updatesCheckTT)
 
 
     ##### DATABASE INITIALIZATION #####
@@ -480,24 +492,15 @@ async def on_ready():
     print("BASED " + versionInfo.BASED_VERSION + " loaded.\nClient logged in as {0.user}".format(botState.client))
     await checkForUpdates()
 
-    # Set custom bot status
-    await botState.client.change_presence(activity=discord.Game("BASED APP"))
-    # bot is now logged in
-    botState.client.loggedIn = True
 
-
-    # Main loop: execute regular tasks while the bot is logged in
+    ##### MAIN LOOP #####
+    
     while botState.client.loggedIn:
+        await asyncio.sleep(cfg.timedTaskLatenessThresholdSeconds)
+        
         if cfg.timedTaskCheckingType == "fixed":
-            await asyncio.sleep(cfg.timedTaskLatenessThresholdSeconds)
+            await botState.taskScheduler.doTaskChecking()
         # elif cfg.timedTaskCheckingType == "dynamic":
-
-        await botState.updatesCheckTT.doExpiryCheck()
-        await botState.shopRefreshTT.doExpiryCheck()
-        await botState.newBountiesTTDB.doTaskChecking()
-        await botState.dbSaveTT.doExpiryCheck()
-        await botState.duelRequestTTDB.doTaskChecking()
-        await botState.reactionMenusTTDB.doTaskChecking()
 
         # termination signal received from OS. Trigger graceful shutdown with database saving
         if botState.client.killer.kill_now:

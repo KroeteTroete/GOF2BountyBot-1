@@ -124,6 +124,14 @@ class GuildDB(serializable.Serializable):
         self.removeID(guild.id)
 
 
+    def refreshAllShopStocks(self):
+        """Generate new stock for all shops belonging to the stored guilds
+        """
+        for guild in self.guilds.values():
+            if not guild.shopDisabled:
+                guild.shop.refreshStock()
+
+
     def toDict(self, **kwargs) -> dict:
         """Serialise this GuildDB into dictionary format
 
