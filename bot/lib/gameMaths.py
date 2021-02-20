@@ -149,3 +149,42 @@ for shopTL in range(len(itemTLSpawnChanceForShopTL)):
                         + str(truncItemSpawnResolution(itemTLSpawnChanceForShopTL[shopTL][itemTL] * 100)),
                     end="% ")
     print()
+
+
+
+##### USER LEVELING #####
+
+BHLa = 4
+BHLb = 2300000
+BHLc = 0
+BHLd = 13.55
+
+
+# Inverse of calculateUserBountyHuntingLevel
+def bountyHuntingXPForLevel(level):
+    return max(0, int(BHLb * math.pow(10, (level - BHLd) / BHLa) - BHLc))
+
+
+# https://www.desmos.com/calculator/ljkio5xyfz
+def calculateUserBountyHuntingLevel(xp):
+    if xp <= 0:
+        return 1
+    return max(1, int(BHLa * math.log10((xp + BHLc)/BHLb) + BHLd))
+
+
+# def bountyHuntingXPForLevel(level):
+#     return int(1000 * math.exp((level - 1)/3.74) - 1000)
+
+
+# def calculateUserBountyHuntingLevel(xp):
+#     return int(1 + 3.74 * math.log((xp/1000)+1))
+
+
+
+# def bountyHuntingXPForLevel(level):
+#     return int((level + 30001)/4)
+
+
+# def calculateUserBountyHuntingLevel(xp):
+#     return 4 * xp - 30001
+

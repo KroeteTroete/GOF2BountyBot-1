@@ -8,7 +8,7 @@ from ..gameObjects import shipUpgrade, shipSkin
 from ..gameObjects.bounties import criminal, solarSystem
 from ..gameObjects.items import moduleItemFactory
 from ..gameObjects.items.weapons import primaryWeapon, turretWeapon
-from ..gameObjects.items.tools import shipSkinTool, toolItemFactory
+from ..gameObjects.items.tools import shipSkinTool, toolItemFactory, crateTool
 from .. import lib
 from ..lib import gameMaths
 
@@ -155,6 +155,20 @@ def _loadGameObjects(dataDB : Dict[str, dict], objsDB : Dict[str, Any], deserial
         dataDB[objDict["name"]]["builtIn"] = True
 
 
+def _loadToolObjects(dataDB : Dict[str, dict], objsDB : Dict[str, Any], deserializer: FunctionType):
+    """Spawn in builtIn instances of all ToolItems described in dataDB, and register into objsDB.
+    This is the same as _loadGameObjects, with the extra step of checking all spawned tools to see if they are crates,
+    and adding crates to bbData.builtInCrateObjs.
+    """
+    for objDict in dataDB.values():
+        newTool = deserializer(objDict)
+        newTool.builtIn = True
+        objsDB[newTool.name] = newTool
+        dataDB[newTool.name]["builtIn"] = True
+        if isinstance(newTool, crateTool.CrateTool):
+            bbData.builtInCrateObjs[newTool.name] = newTool
+
+
 def _sortShipKeys():
     """Populate bbData.shipKeysByTL with the names of ships from bbData.builtInShipData, sorted by tech level.
     """
@@ -202,6 +216,25 @@ def _makeItemSpawnRates(objsDB : Dict[str, Any]):
         item.shopSpawnRate = gameMaths.truncItemSpawnResolution(normalizedChance * 100)
 
 
+def _makeLevelUpCrates():
+    crates = [None] * gameMaths.numTechLevels
+
+    # generate bbCrates for bbShipSkinTools for each player bounty hunter level up
+    for level in gameMaths.techLevelRange:
+        itemPool = []
+        shipSkins = set()
+        for shipName in bbData.shipKeysByTL[level-1]:
+            if "compatibleSkins" in bbData.builtInShipData[shipName]:
+                for skinName in bbData.builtInShipData[shipName]["compatibleSkins"]:
+                    if bbData.builtInShipSkins[skinName] not in shipSkins:
+                        shipSkins.add(bbData.builtInShipSkins[skinName])
+
+        itemPool = [bbData.shipSkinToolsBySkin[skin] for skin in shipSkins]
+        crates[level-1] = crateTool.CrateTool.fromDict(itemPool, "Level " + str(level) + " skins crate", techLevel=level,
+                                                        builtIn=True, value=gameMaths.crateValueForTL(level))
+    return crates
+
+
 def loadAllGameObjectData():
     """Load json descriptions of all configured game objects into bbData variables.
     This function populates:
@@ -229,7 +262,7 @@ def loadAllGameObjectData():
                             ("builtInTurretData",     cfg.paths.bbTurretMETAFolder,       ".bbTurret"),
                             ("builtInCommodityData",  cfg.paths.bbCommodityMETAFolder,    ".bbCommodity"),
                             ("builtInToolData",       cfg.paths.bbToolMETAFolder,         ".bbTool"),
-                            ("builtInSecondariesData", cfg.paths.bbModuleMETAFolder,       ".bbModule")):
+                            ("builtInSecondariesData",cfg.paths.bbModuleMETAFolder,       ".bbModule")):
         setattr(bbData, db, _loadGameItemsFromDir(dir, ext))
 
 
@@ -266,7 +299,6 @@ def loadAllGameObjects():
                 (bbData.builtInUpgradeData, bbData.builtInUpgradeObjs,  shipUpgrade.ShipUpgrade.fromDict),
                 (bbData.builtInTurretData,  bbData.builtInTurretObjs,   turretWeapon.TurretWeapon.fromDict),
                 (bbData.builtInModuleData,  bbData.builtInModuleObjs,   moduleItemFactory.fromDict),
-                (bbData.builtInToolData,    bbData.builtInToolObjs,     toolItemFactory.fromDict),
                 (bbData.builtInShipSkinsData,bbData.builtInShipSkins,   shipSkin.ShipSkin.fromDict)):
         _loadGameObjects(dataDB, objsDB, deserializer)
 
@@ -279,6 +311,10 @@ def loadAllGameObjects():
                                                 builtIn=True)
             bbData.builtInToolObjs[toolName] = newTool
 
+        # Register skin tools in shipSkinToolsBySkin
+        if currentSkin not in bbData.shipSkinToolsBySkin:
+            bbData.shipSkinToolsBySkin[currentSkin] = bbData.builtInToolObjs[toolName]
+
     _sortShipKeys()
     _makeShipSpawnRates()
 
@@ -287,6 +323,11 @@ def loadAllGameObjects():
                         ("turretObjsByTL", bbData.builtInTurretObjs)):
         setattr(bbData, db, _sortGameObjects(objsDB))
         _makeItemSpawnRates(objsDB)
+
+    # Load in tools
+    _loadToolObjects(bbData.builtInToolData, bbData.builtInToolObjs, toolItemFactory.fromDict)
+
+    bbData.levelUpCratesByTL = _makeLevelUpCrates()
 
     # Fetch bounty names and longest bounty name
     for criminalName in bbData.builtInCriminalData:

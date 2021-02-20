@@ -96,7 +96,7 @@ maxCommandsPerHelpPage = 5
 #                           "dev_misc")
 
 includedCommandModules = (  "usr_misc", "usr_homeguilds", "usr_gof2-info", "usr_bounties", "usr_loadout", "usr_economy",
-                            "admn_channels", "admn_misc",
+                            "usr_kaamo", "admn_channels", "admn_misc",
                             "dev_misc", "dev_channels", "dev_bounties", "dev_items", "dev_skins")
 
 # Default prefix for commands
@@ -178,6 +178,15 @@ shipMaxPriceTechLevels = [50000, 100000, 200000, 500000, 1000000, 2000000, 50000
 
 
 
+##### USER LEVELING #####
+
+
+# Apply a multiplier to all rewards gained from a bounty. bounty hunter xp is thus a measure of
+# total earnings from bounty hunting.
+bountyRewardToXPGainMult = 0.1
+
+
+
 ##### DUELS #####
 
 # The amount to vary ship stats (+-) by before executing a duel
@@ -204,6 +213,7 @@ shopRefreshShips = 5
 shopRefreshWeapons = 5
 shopRefreshModules = 5
 shopRefreshTurrets = 2
+shopDefaultToolsNum = 0
 
 # bbTurret is the only item that has a probability not to be spawned.
 # This metric indicates the percentage chance of turrets being stocked on a given refresh
