@@ -97,6 +97,12 @@ def _loadShipItemsFromDir(shipsDir : str) -> Dict[str, dict]:
                 if "compatibleSkins" not in currentItemData:
                     currentItemData["compatibleSkins"] = []
 
+                # Enable normal/specular mapping if a texture is present
+                if "normSpec" in currentItemData and currentItemData["normSpec"] != "":
+                    currentItemData["useNormSpec"] = True
+                else:
+                    currentItemData["useNormSpec"] = False
+
                 # Generate tech level based on ship value
                 if "value" not in currentItemData:
                     print("[gameConfigurator] No value found for ShipItem. Assigning techlevel of -1: " + dirpath)

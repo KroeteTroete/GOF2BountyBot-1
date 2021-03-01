@@ -55,7 +55,8 @@ def ensureImageMode(tex : Image, mode="RGBA") -> Image:
     return tex if tex.mode == mode else tex.convert(mode)
 
 
-def compositeTextures(outTexPath : str, shipPath : str, textures : Dict[int, str], disabledLayers: List[int]):
+def compositeTextures(outTexPath : str, shipPath : str, textures : Dict[int, str], disabledLayers: List[int],
+                        baseTex: str):
     """Combine a list of textures into a single image, with respect to masks provided in shipPath.
 
     :param str outTexPath: Path to which the resulting texture should be saved, including file name and extension
@@ -68,10 +69,11 @@ def compositeTextures(outTexPath : str, shipPath : str, textures : Dict[int, str
     :param List[int] disabledLayers: List of texture regions to 'disable' - setting them to the bottom texture.
                                     TODO: Instead of doing this by recompositing the bottom texture, just iterate through
                                     disabled layers and apply masks. Apply bottom texture at the end.
+    :param str baseTex: The first texture to overlay. No masking is applied at this stage.
     """
     # Load and combine the base texture and under layer
     workingTex = ensureImageMode(Image.open(textures[0]))
-    baseTex = ensureImageMode(Image.open(shipPath + os.sep + "skinBase.png"))
+    baseTex = ensureImageMode(Image.open(baseTex))
     workingTex = Image.alpha_composite(workingTex, baseTex)
 
     maxLayerNum = max(max(textures), max(disabledLayers)) if disabledLayers else max(textures)
@@ -120,7 +122,8 @@ def start_render():
 
 
 async def renderShip(skinName : str, shipPath : str, shipModelName : str, textures : Dict[int, str],
-                        disabledLayers: List[int], res_x : int, res_y : int, numSamples: int, full=False):
+                        disabledLayers: List[int], res_x : int, res_y : int, numSamples: int, 
+                        normSpecs : Dict[int, str], disabledNormSpecs: List[int], full : bool = False):
     """Render the given ship model with the specified skin layer(s).
     The resulting image is cropped to content and saved in shipPath + "/skins/" + skinName.jpg
     TODO: Add 'useBaseTexture' argument. Pass to render_vars. If true, should bypass skinBase
@@ -134,7 +137,13 @@ async def renderShip(skinName : str, shipPath : str, shipModelName : str, textur
                                     The first element corresponds to the underlayer to render beneith the ship's base texture
                                     (foreground elements). All (currently 2) remaining textures are overlayed with respect to
                                     the ship's texture region masks.
+    :param Dict[int, str] normalTextures: A dictionary in the same format as textures, defining normal/specular maps to
+                                            associate with each texture.
     :param List[int] disabledLayers: List of texture regions to 'disable' - setting them to the bottom texture.
+    :param Dict[int, str] normSpecs: A dictionary in the same format as textures, definining which normal/specular textures
+                                        to composite and render.
+    :param List[int] disabledNormSpecs: A list in the same format as disabledLayers, defining which layers of normal/specular
+                                        to disable during the compositing process.
     :param int res_x: The width in pixels of the render resolution. This is not the the width of the final image, as empty
                         space around the rendered object is cropped out automatically.
     :param int res_y: The height in pixels of the render resolution. This is not the the height of the final image, as empty
@@ -145,8 +154,10 @@ async def renderShip(skinName : str, shipPath : str, shipModelName : str, textur
     """
     # Generate render arguments
     current_model = shipPath + os.sep + shipModelName
-    render_output_file = shipPath + os.sep + "skins" + os.sep + skinName + "-RENDER.png"
-    texture_output_file = shipPath + os.sep + "skins" + os.sep + skinName + ".jpg"
+    path_base = shipPath + os.sep + "skins" + os.sep + skinName
+    render_output_file = path_base + "-RENDER.png"
+    texture_output_file = path_base + ".jpg"
+    norm_spec_output_file = path_base + "-NORMSPEC" + ".jpg"
 
     if res_x > 1920:
         raise ValueError("Attempted to render an image above 1080p (width=" + str(res_x) + ")")
@@ -164,11 +175,20 @@ async def renderShip(skinName : str, shipPath : str, shipModelName : str, textur
         raise ValueError("maximum numSamples is 128")
 
     if not full:
-        compositeTextures(texture_output_file, shipPath, textures, disabledLayers)
+        compositeTextures(texture_output_file, shipPath, textures, disabledLayers, shipPath + os.sep + "skinBase.png")
+        if normSpecs:
+            compositeTextures(norm_spec_output_file, shipPath, normSpecs, disabledNormSpecs, shipPath + os.sep + "normSpecBase.png")
+        else:
+            norm_spec_output_file = "$NONORMSPEC$"
 
     # Pass the arguments to the renderer
-    setRenderArgs([render_resolution, render_output_file, current_model, textures[0] if full else \
-                                                                            texture_output_file, str(numSamples)])
+    if full:
+        setRenderArgs([render_resolution, render_output_file, current_model,
+                        textures[0], normSpecs[0] if normSpecs else "$NONORMSPEC$",
+                        str(numSamples)])
+    else:
+        setRenderArgs([render_resolution, render_output_file, current_model,
+                        texture_output_file, norm_spec_output_file, str(numSamples)])
     # Render the requested model
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(ThreadPoolExecutor(), start_render)

@@ -75,7 +75,8 @@ class ShipSkin(serializable.Serializable):
                 textureFiles[i  +1] = self.path + os.sep + str(i + 2) + ".jpg"
             await shipRenderer.renderShip(self.name, shipData["path"], shipData["model"], textureFiles, [],
                                             cfg.skinRenderIconResolution[0], cfg.skinRenderIconResolution[1],
-                                            cfg.skinRenderIconSamples)
+                                            cfg.skinRenderIconSamples,
+                                            {0: shipData["normSpec"]} if shipData["useNormSpec"] else {})
 
             # == Scrapped code for creating custom emojis for each ship reskin ==
             # await shipRenderer.renderShip(self.name + "_emoji", shipData["path"], shipData["model"], [texPath],

@@ -64,14 +64,16 @@ class RenderArgs:
     """
 
     def __init__(self, res_x : int, res_y : int, output_file_path : str, model_path : str, texture_path : str,
-            numSamples: int):
+                    norm_spec_path: str, use_norm_spec: bool, numSamples: int):
         """
         :param int res_x: The width in pixels of the render resolution.
         :param int res_y: The height in pixels of the render resolution.
         :param str output_file_path: The path to render the output image to, including the file name and extension
         :param str model_path: The path to the model to render
         :param str texture_path: path to the texture file to render on the model
+        :param str norm_spec_path: path to the normal/specular file to render on the model (ignored if use_norm_spec is False)
         :param int numSamples: The number of samples to render per pixel
+        :param bool use_norm_spec: Whether or not to render the model with normal/specular mapping
         """
         self.res_x = res_x
         self.res_y = res_y
@@ -81,6 +83,8 @@ class RenderArgs:
         self.model_filename = Path(self.model_fullpath).name
         self.model_filename_noext = Path(self.model_fullpath).stem
         self.texture_path = texture_path
+        self.norm_spec_path = norm_spec_path
+        self.use_norm_spec = use_norm_spec
         self.material = str(Path(self.model_fullpath).with_suffix(".mtl"))
         self.numSamples = numSamples
 
@@ -95,7 +99,8 @@ def getRenderArgs() -> RenderArgs:
     with open(RENDER_ARGS_PATH, "r") as f:
         for line in f.readlines():
             args.append(line.rstrip("\n"))
-    return RenderArgs(int(args[0].split("x")[0]), int(args[0].split("x")[1]), args[1], args[2], args[3], int(args[4]))
+    return RenderArgs(int(args[0].split("x")[0]), int(args[0].split("x")[1]), args[1], args[2], args[3], args[4],
+                        args[4] != "$NONORMSPEC$", int(args[5]))
 
 
 
@@ -108,9 +113,6 @@ args = getRenderArgs()
 
 ##### CONFIGURE THE SCENE #####
 
-# Point the material at the requested texture
-with open(args.material, "a") as f:
-    f.write("map_Kd " + args.texture_path)
 
 ctx = bpy.context
 # import the model into blender's scene
@@ -118,16 +120,35 @@ bpy.ops.import_scene.obj(filepath=args.model_fullpath, axis_forward='-Z', axis_u
 # ensure nothing is currently selected, in case the camera is selected for some reason
 bpy.ops.object.select_all(action='DESELECT')
 
+# get the material for the ship
+mat = bpy.data.materials["ShipMat"]
+# set the texture file
+matNodes = mat.node_tree.nodes
+diffuseNode = matNodes.get("diffuseImage")
+diffuseNode.image.filepath = args.base_texture_path
+# set the normal/specular texture file
+if args.use_norm_spec:
+    normSpecNode = matNodes.get("normSpecImage")
+    normSpecNode.image.filepath = args.norm_spec_path
+
 # find the imported model in the scene
 for obj in ctx.visible_objects:
     # Theoretically, nothing should be in the scene except for the model and the camera
-    if obj.type != 'CAMERA':
+    if obj.type not in ['CAMERA', 'LIGHT']:
         # Select the model
         obj.select_set(True)
         # Point the model in the correct direction
         obj.rotation_euler[0] = radians(0)
         # Set the camera view distance as configured earlier
         ctx.scene.camera.data.clip_end = CAM_CLIP
+
+        # Assign material to object
+        if obj.data.materials:
+            # assign to 1st material slot
+            obj.data.materials[0] = mat
+        else:
+            # no slots
+            obj.data.materials.append(mat)
 
 
 
@@ -152,14 +173,3 @@ bpy.ops.view3d.camera_to_view_selected()
 bpy.data.cameras.values()[0].lens = 49
 # Render the scene
 bpy.ops.render.render(write_still=True)
-
-
-
-##### CLEANUP #####
-
-# Remove the material's pointer to the requested texture (will always be on the last line unless given an invalid material)
-with open(args.material, "r") as f:
-    lines = f.readlines()
-with open(args.material, "w") as f:
-    for line in lines[:-1]:
-        f.write(line)
