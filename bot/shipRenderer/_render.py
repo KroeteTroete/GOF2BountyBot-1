@@ -4,7 +4,7 @@ EARLY UNFINISHED PROTOTYPE
 
 Written by Trimatix
 """
-import bpy
+import bpy, bpy_extras
 import os
 from math import radians
 from pathlib import Path
@@ -125,11 +125,17 @@ mat = bpy.data.materials["ShipMat"]
 # set the texture file
 matNodes = mat.node_tree.nodes
 diffuseNode = matNodes.get("diffuseImage")
-diffuseNode.image.filepath = args.base_texture_path
+if diffuseNode.image is None:
+    diffuseNode.image = bpy_extras.image_utils.load_image(args.texture_path)
+else:
+    diffuseNode.image.filepath = args.texture_path
 # set the normal/specular texture file
 if args.use_norm_spec:
     normSpecNode = matNodes.get("normSpecImage")
-    normSpecNode.image.filepath = args.norm_spec_path
+    if normSpecNode.image is None:
+        normSpecNode.image = bpy_extras.image_utils.load_image(args.norm_spec_path)
+    else:
+        normSpecNode.image.filepath = args.norm_spec_path
 
 # find the imported model in the scene
 for obj in ctx.visible_objects:

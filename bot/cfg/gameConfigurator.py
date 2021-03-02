@@ -272,7 +272,6 @@ def loadAllGameObjects():
                 (bbData.builtInUpgradeData, bbData.builtInUpgradeObjs,  shipUpgrade.ShipUpgrade.fromDict),
                 (bbData.builtInTurretData,  bbData.builtInTurretObjs,   turretWeapon.TurretWeapon.fromDict),
                 (bbData.builtInModuleData,  bbData.builtInModuleObjs,   moduleItemFactory.fromDict),
-                (bbData.builtInToolData,    bbData.builtInToolObjs,     toolItemFactory.fromDict),
                 (bbData.builtInShipSkinsData,bbData.builtInShipSkins,   shipSkin.ShipSkin.fromDict)):
         _loadGameObjects(dataDB, objsDB, deserializer)
 
@@ -280,10 +279,13 @@ def loadAllGameObjects():
     for currentSkin in bbData.builtInShipSkins.values():
         # if len(currentSkin.compatibleShips) > 0:
         toolName = lib.stringTyping.shipSkinNameToToolName(currentSkin.name)
-        if toolName not in bbData.builtInToolObjs:
+        if toolName not in bbData.builtInToolData:
             newTool = shipSkinTool.ShipSkinTool(currentSkin, value=gameMaths.shipSkinValueForTL(currentSkin.averageTL),
                                                 builtIn=True)
+            print("registering tool:",toolName)
             bbData.builtInToolObjs[toolName] = newTool
+    
+    _loadGameObjects(bbData.builtInToolData, bbData.builtInToolObjs, toolItemFactory.fromDict)
 
     _sortShipKeys()
     _makeShipSpawnRates()

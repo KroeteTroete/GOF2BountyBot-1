@@ -4,7 +4,7 @@ from discord import Embed, HTTPException, Forbidden, NotFound, Client, Message
 from ....cfg import bbData, cfg
 from .... import lib
 from .. import criminal
-from ....botState import logger
+from .... import botState
 import asyncio
 from .. import bounty
 from typing import Dict, Union, List
@@ -130,13 +130,13 @@ class bountyBoardChannel(serializable.Serializable):
                         continue
                     break
                 if not succeeded:
-                    logger.log("BBC", "init", "HTTPException thrown when fetching listing for criminal: " + crim.name,
+                    botState.logger.log("BBC", "init", "HTTPException thrown when fetching listing for criminal: " + crim.name,
                                 category='bountyBoards', eventType="LISTING_LOAD-HTTPERR")
             except Forbidden:
-                logger.log("BBC", "init", "Forbidden exception thrown when fetching listing for criminal: " + crim.name,
+                botState.logger.log("BBC", "init", "Forbidden exception thrown when fetching listing for criminal: " + crim.name,
                             category='bountyBoards', eventType="LISTING_LOAD-FORBIDDENERR")
             except NotFound:
-                logger.log("BBC", "init", "Listing message for criminal no longer exists: " + crim.name,
+                botState.logger.log("BBC", "init", "Listing message for criminal no longer exists: " + crim.name,
                             category='bountyBoards', eventType="LISTING_LOAD-NOT_FOUND")
 
         if self.noBountiesMsgToBeLoaded == -1:
@@ -157,11 +157,11 @@ class bountyBoardChannel(serializable.Serializable):
                             continue
                         break
                     if not succeeded:
-                        logger.log("BBC", "init", "HTTPException thrown when sending no bounties message",
+                        botState.logger.log("BBC", "init", "HTTPException thrown when sending no bounties message",
                                     category='bountyBoards', eventType="NOBTYMSG_LOAD-HTTPERR")
                     self.noBountiesMessage = None
                 except Forbidden:
-                    logger.log("BBC", "init", "Forbidden exception thrown when sending no bounties message",
+                    botState.logger.log("BBC", "init", "Forbidden exception thrown when sending no bounties message",
                                 category='bountyBoards', eventType="NOBTYMSG_LOAD-FORBIDDENERR")
                     self.noBountiesMessage = None
 
@@ -179,13 +179,13 @@ class bountyBoardChannel(serializable.Serializable):
                         continue
                     break
                 if not succeeded:
-                    logger.log("BBC", "init", "HTTPException thrown when fetching no bounties message",
+                    botState.logger.log("BBC", "init", "HTTPException thrown when fetching no bounties message",
                                 category='bountyBoards', eventType="NOBTYMSG_LOAD-HTTPERR")
             except Forbidden:
-                logger.log("BBC", "init", "Forbidden exception thrown when fetching no bounties message",
+                botState.logger.log("BBC", "init", "Forbidden exception thrown when fetching no bounties message",
                             category='bountyBoards', eventType="NOBTYMSG_LOAD-FORBIDDENERR")
             except NotFound:
-                logger.log("BBC", "init", "No bounties message no longer exists", category='bountyBoards',
+                botState.logger.log("BBC", "init", "No bounties message no longer exists", category='bountyBoards',
                             eventType="NOBTYMSG_LOAD-NOT_FOUND")
                 self.noBountiesMessage = None
         # del self.messagesToBeLoaded
@@ -301,11 +301,11 @@ class bountyBoardChannel(serializable.Serializable):
                         continue
                     break
                 if not succeeded:
-                    logger.log("BBC", "remBty", "HTTPException thrown when sending no bounties message",
+                    botState.logger.log("BBC", "remBty", "HTTPException thrown when sending no bounties message",
                                 category='bountyBoards', eventType="NOBTYMSG_LOAD-HTTPERR")
                 self.noBountiesMessage = None
             except Forbidden:
-                logger.log("BBC", "remBty", "Forbidden exception thrown when sending no bounties message",
+                botState.logger.log("BBC", "remBty", "Forbidden exception thrown when sending no bounties message",
                             category='bountyBoards', eventType="NOBTYMSG_LOAD-FORBIDDENERR")
                 self.noBountiesMessage = None
 
@@ -340,13 +340,13 @@ class bountyBoardChannel(serializable.Serializable):
                     continue
                 break
             if not succeeded:
-                logger.log("BBC", "updBtyMsg", "HTTPException thrown when updating bounty listing for criminal: " \
+                botState.logger.log("BBC", "updBtyMsg", "HTTPException thrown when updating bounty listing for criminal: " \
                             + bounty.criminal.name, category='bountyBoards', eventType="UPD_LSTING-HTTPERR")
         except Forbidden:
-            logger.log("BBC", "updBtyMsg", "Forbidden exception thrown when updating bounty listing for criminal: " \
+            botState.logger.log("BBC", "updBtyMsg", "Forbidden exception thrown when updating bounty listing for criminal: " \
                         + bounty.criminal.name, category='bountyBoards', eventType="UPD_LSTING-FORBIDDENERR")
         except NotFound:
-            logger.log("BBC", "updBtyMsg", "Bounty listing message no longer exists, BBC entry removed: " \
+            botState.logger.log("BBC", "updBtyMsg", "Bounty listing message no longer exists, BBC entry removed: " \
                         + bounty.criminal.name, category='bountyBoards', eventType="UPD_LSTING-NOT_FOUND")
             await self.removeBounty(bounty)
 

@@ -10,7 +10,7 @@ from .items.weapons import primaryWeapon, turretWeapon
 from .items.modules import moduleItem
 from .inventories import inventory
 import random
-from ..botState import logger
+from .. import botState
 from ..lib import gameMaths
 from ..baseClasses import serializable
 
@@ -459,7 +459,7 @@ class GuildShop(serializable.Serializable):
             if ship in self.shipsStock.items:
                 shipsStockDict.append(self.shipsStock.items[ship].toDict(**kwargs))
             else:
-                logger.log("bbShp", "toDict", "Failed to save invalid ship key '" + str(ship) \
+                botState.logger.log("bbShp", "toDict", "Failed to save invalid ship key '" + str(ship) \
                                                 + "' - not found in items dict", category="shop", eventType="UNKWN_KEY")
 
         weaponsStockDict = []
@@ -467,7 +467,7 @@ class GuildShop(serializable.Serializable):
             if weapon in self.weaponsStock.items:
                 weaponsStockDict.append(self.weaponsStock.items[weapon].toDict(**kwargs))
             else:
-                logger.log("bbShp", "toDict", "Failed to save invalid weapon key '" + str(weapon) \
+                botState.logger.log("bbShp", "toDict", "Failed to save invalid weapon key '" + str(weapon) \
                                                 + "' - not found in items dict", category="shop", eventType="UNKWN_KEY")
 
         modulesStockDict = []
@@ -475,7 +475,7 @@ class GuildShop(serializable.Serializable):
             if module in self.modulesStock.items:
                 modulesStockDict.append(self.modulesStock.items[module].toDict(**kwargs))
             else:
-                logger.log("bbShp", "toDict", "Failed to save invalid module key '" + str(module) \
+                botState.logger.log("bbShp", "toDict", "Failed to save invalid module key '" + str(module) \
                                                 + "' - not found in items dict", category="shop", eventType="UNKWN_KEY")
 
         turretsStockDict = []
@@ -483,7 +483,7 @@ class GuildShop(serializable.Serializable):
             if turret in self.turretsStock.items:
                 turretsStockDict.append(self.turretsStock.items[turret].toDict(**kwargs))
             else:
-                logger.log("bbShp", "toDict", "Failed to save invalid turret key '" + str(turret) \
+                botState.logger.log("bbShp", "toDict", "Failed to save invalid turret key '" + str(turret) \
                                                 + "' - not found in items dict", category="shop", eventType="UNKWN_KEY")
 
         return {"maxShips": self.maxShips, "maxWeapons": self.maxWeapons, "maxModules": self.maxModules,

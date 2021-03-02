@@ -79,7 +79,9 @@ def init():
     # Load ConfigProxys
     cfg.defaultEmojis = ConfigProxy(cfg.defaultEmojis)
     cfg.timeouts = ConfigProxy(cfg.timeouts)
+    print("rendererTempFolder" in cfg.paths)
     cfg.paths = ConfigProxy(cfg.paths)
+    print("PATHS:",cfg.paths.attrNames)
 
 
 def makeDefaultCfg(fileName: str = "defaultCfg" + CFG_FILE_EXT):

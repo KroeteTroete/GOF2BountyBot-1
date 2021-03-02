@@ -41,7 +41,9 @@ def fromDict(toolDict : dict) -> toolItem.ToolItem:
             builtIn=crateDict["builtIn"] if "builtIn" in crateDict else False)
 
     toolTypeConstructors = {"ShipSkinTool": shipSkinTool.ShipSkinTool.fromDict,
-                        "CrateTool": crateFromDict}
+                            "CrateTool": crateFromDict}
+    for k, v in toolTypeConstructors.items():
+        itemConstructors[k] = v
 
     if "type" not in toolDict:
         raise NameError("Required dictionary attribute missing: 'type'")

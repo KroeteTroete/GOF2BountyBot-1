@@ -590,7 +590,9 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
     await lib.discordUtil.startLongProcess(waitMsg)
     try:
         await shipRenderer.renderShip(str(message.id), shipData["path"], shipData["model"], skinPaths, disabledLayers,
-                                        cfg.skinRenderShowmeHDResolution[0], cfg.skinRenderShowmeHDResolution[1], full=full)
+                                        cfg.skinRenderShowmeHDResolution[0], cfg.skinRenderShowmeHDResolution[1],
+                                        cfg.skinRenderShowmeHDSamples,
+                                        {0: shipData["path"] + os.sep + shipData["normSpec"]} if shipData["useNormSpec"] else {}, [], full=full)
     except shipRenderer.RenderFailed:
         await message.channel.send(message.author.mention \
                                     + "\n🥺 Render failed! The error has been logged, please try a different ship.")

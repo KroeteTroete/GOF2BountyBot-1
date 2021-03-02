@@ -4,7 +4,7 @@ from .... import lib
 from discord import Message
 from ....cfg import cfg
 from .. import gameItem
-from ....botState import logger
+from .... import botState
 from ....reactionMenus.confirmationReactionMenu import InlineConfirmationMenu
 
 
@@ -113,13 +113,13 @@ class CrateTool(toolItem.ToolItem):
                     errorType = "BAD_TYPE"
                 if errorStr:
                     if skipInvalidItems:
-                        logger.log("crateTool", "fromDict", errorStr, eventType=errorType)
+                        botState.logger.log("crateTool", "fromDict", errorStr, eventType=errorType)
                     else:
                         raise ValueError(errorStr)
                 else:
                     itemPool.append(gameItem.spawnItem(itemDict))
         else:
-            logger.log("crateTool", "fromDict", "fromDict-ing a crateTool with no itemPool.")
+            botState.logger.log("crateTool", "fromDict", "fromDict-ing a crateTool with no itemPool.")
 
         return CrateTool(itemPool, name=crateDict["name"] if "name" in crateDict else "",
             value=crateDict["value"] if "value" in crateDict else 0,

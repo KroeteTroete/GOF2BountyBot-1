@@ -66,6 +66,10 @@ paths = {
     # path to folder to save log txts to
     "logsFolder": "saveData" + "/" + "logs",
 
+    
+    "rendererTempFolder": "bot/shipRenderer/temp",
+
+
     # folders containing game objects to load into the game
     "CriminalMETAFolder": "game objects" + "/" + "criminals",
     "shipSkinMETAFolder": "game objects" + "/" + "ship skins",
@@ -267,7 +271,7 @@ skinRenderIconSamples = 8
 skinRenderEmojiResolution = [400, 400]
 skinRenderEmojiSamples = 8
 # Resolution of skin renders from cmd_showme_ship calls
-skinRenderShowmeResolution = [352, 240]
+skinRenderShowmeResolution = [800, 800]
 skinRenderShowmeSamples = 4
 # Resolution of skin renders from admin_cmd_showmeHD calls
 skinRenderShowmeHDResolution = [1920, 1080]
