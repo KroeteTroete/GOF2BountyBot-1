@@ -18,7 +18,7 @@ This repository is a work-in-progress port of [BountyBot](https://github.com/Tri
   /></a>
   <a href="https://github.com/GOF2BountyBot/GOF2BountyBot/labels/bug"
     ><img
-      src="https://img.shields.io/github/issues-search?label=bugs&query=repo%3AGOF2BountyBot%2FGOF2BountyBot%20is%3Aopen%20label%3Abug"
+      src="https://img.shields.io/github/issues-search?color=eb4034&label=bugs&query=repo%3AGOF2BountyBot%2FGOF2BountyBot%20is%3Aopen%20label%3Abug"
       alt="GitHub open bug reports"
   /></a>
 </p>
