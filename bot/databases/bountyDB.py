@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ..gameObjects.bounties import bounty
+from ..gameObjects.bounties import bounty, criminal
 from typing import List
 from ..baseClasses import serializable
 from ..cfg import cfg
@@ -27,7 +27,6 @@ class BountyDB(serializable.Serializable):
         :param list factions: list of unique faction names useable in this db's bounties
         """
         # Dictionary of faction name : list of bounties
-        # TODO: add criminal.__hash__, and change bountyDB.bounties into dict of faction:{criminal:bounty}
         self.bounties = {}
         self.escapedBounties = {}
 
@@ -35,6 +34,7 @@ class BountyDB(serializable.Serializable):
         self.factions = factions
         for fac in factions:
             self.bounties[fac] = []
+            self.escapedBounties[fac]
 
         self.latestBounty = None
 
@@ -223,17 +223,6 @@ class BountyDB(serializable.Serializable):
         return bounty in self.bounties[bounty.faction]
 
 
-    """Commented out as bounty indices should not be used in the main code, object references should be used instead.
-
-    # def getBountyObjIndex(self, bounty):
-    #     return self.bounties[bounty.faction].index(bounty)
-
-
-    # def getBountyNameIndex(self, name, faction=None):
-    #     return self.getBountyObjIndex(self.getBounty(name, faction=faction))
-    """
-
-
     def addBounty(self, bounty : bounty.Bounty):
         """Add a given bounty object to the database.
         Bounties cannot be added if the bounty.faction does not have space for more bounties.
@@ -256,6 +245,15 @@ class BountyDB(serializable.Serializable):
         self.latestBounty = bounty
 
 
+    def escapedCriminalExists(self, crim):
+        """Decide whether a bbCriminal is recorded in the escaped criminals database.
+        :param bbCriminal crim: The bbCriminal to check for existence
+        :return: True if crim is in this database's escaped criminals record, False otherwise
+        :rtype: bool
+        """
+        return crim in self.escapedCriminals[crim.faction]
+
+
     def addEscapedBounty(self, bounty : bounty.Bounty):
         """Add a given bounty object to the escaped bounties database.
         Bounties cannot be added if the object or name already exists in the database.
@@ -264,11 +262,22 @@ class BountyDB(serializable.Serializable):
         :raise ValueError: if the requested bounty's name already exists in the database
         """
         # ensure the given bounty does not already exist
-        if self.bountyNameExists(bounty.criminal.name) or bounty.criminal.name in self.escapedBounties[bounty.faction]:
+        if self.bountyNameExists(bounty.criminal.name) or self.escapedCriminalExists(bounty.criminal):
             raise ValueError("Attempted to add a bounty whose name already exists: " + bounty.name)
 
         # Add the bounty to the database
         self.escapedBounties[bounty.faction].append(bounty)
+
+
+    def removeEscapedCriminal(self, crim):
+        """Remove a criminal from the record of escaped criminals.
+        crim must already be recorded in the escaped criminals database.
+        :param bbCriminal crim: The criminal to remove from the record
+        """
+        if self.escapedCriminalExists(crim):
+            raise KeyError("criminal not found: " + crim.name)
+        self.escapedCriminals[crim.faction].remove(crim)
+        del self.escapedCriminalTimeouts[crim]
 
 
     def removeBountyName(self, name : str, faction : str = None):

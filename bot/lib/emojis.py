@@ -119,16 +119,6 @@ class BasedEmoji(serializable.Serializable):
         return "<BasedEmoji-" + ("id" if self.isID else "unicode") + ":" + (str(self.id) if self.isID else self.unicode) + ">"
 
 
-    def __hash__(self) -> int:
-        """Calculate a hash of this emoji, based on its repr string.
-        Two BasedEmoji objects representing the same emoji will have the same repr and hash.
-
-        :return: A hash of this emoji
-        :rtype: int
-        """
-        return hash(repr(self))
-
-
     def __eq__(self, other: BasedEmoji) -> bool:
         """Decide if this BasedEmoji is equal to another.
         Two BasedEmojis are equal if they represent the same emoji (i.e ID/unicode) of the same type (custom/unicode)

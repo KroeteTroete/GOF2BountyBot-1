@@ -116,16 +116,6 @@ class ReactionMenuOption(serializable.Serializable):
             return await self.removeFunc() if self.removeIsCoroutine else self.removeFunc()
 
 
-    def __hash__(self) -> int:
-        """Calculate a hash of this menu option from its repr string.
-        As of writing, this is based on the object's memory location.
-
-        :return: A hash of this menu option
-        :rtype: int
-        """
-        return hash(repr(self))
-
-
     @abstractmethod
     def toDict(self, **kwargs) -> dict:
         """Serialize this menu option into dictionary format for saving to file.

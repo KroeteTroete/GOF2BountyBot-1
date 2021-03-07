@@ -110,15 +110,6 @@ class Criminal(aliasable.Aliasable):
         self.hasShip = True
 
 
-    def __hash__(self) -> int:
-        """Provide a hash of this object based on the object's location in memory.
-
-        :return: A hash of this criminal
-        :rtype: int
-        """
-        return hash(repr(self))
-
-
     def toDict(self, **kwargs) -> dict:
         """Serialize this criminal into dictionary format, for saving to file.
 
