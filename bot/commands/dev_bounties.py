@@ -22,7 +22,7 @@ async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : b
             if not guild.bountiesDisabled:
                 if guild.hasBountyBoardChannel:
                     await guild.bountyBoardChannel.clear()
-                guild.bountiesDB.clearBounties()
+                guild.bountiesDB.clearAllBounties()
         await message.channel.send(":ballot_box_with_check: All active bounties cleared.")
         return
     elif args == "":
@@ -48,7 +48,7 @@ async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : b
 
     if callingBBGuild.hasBountyBoardChannel:
         await callingBBGuild.bountyBoardChannel.clear()
-    callingBBGuild.bountiesDB.clearBounties()
+    callingBBGuild.bountiesDB.clearAllBounties()
     await message.channel.send(":ballot_box_with_check: Active bounties cleared" + ((" for '" + callingBBGuild.dcGuild.name \
                                 + "'.") if callingBBGuild.dcGuild is not None else "."))
 

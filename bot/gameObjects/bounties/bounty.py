@@ -8,6 +8,7 @@ from . import bountyConfig
 from ...cfg import bbData
 from . import criminal
 from ...baseClasses import serializable
+from ...scheduling.timedTask import TimedTask
 
 
 class Bounty(serializable.Serializable):
@@ -80,6 +81,7 @@ class Bounty(serializable.Serializable):
         self.reward = config.reward
         self.checked = config.checked
         self.answer = config.answer
+        self.respawnTT: TimedTask = None
 
 
     def check(self, system : str, userID : int) -> int:
@@ -141,6 +143,49 @@ class Bounty(serializable.Serializable):
                 else:
                     rewards[self.checked[system]]["reward"] += int(self.reward / len(self.route))
         return rewards
+
+
+    def isEscaped(self) -> bool:
+        """Decide whether this bounty has escaped and is awaiting respawn.
+
+        :return: True if the bounty is escaped and waiting to respawn, False otherwise
+        :rtype: bool
+        """
+        return self.respawnTT is None
+
+
+    def escape(self, respawnTT: TimedTask):
+        """Mark this bounty as escaped.
+        Does not schedule respawning or register the bounty as escaped in the owning bountyDB.
+
+        :param TimedTask respawnTT: The timedtask responsible for the respawning of the bounty
+        :raise ValueError: If the bounty is already marked as escaped
+        """
+        if self.isEscaped():
+            raise ValueError("Attempted to mark a bounty as escaped that is already escaped: " + self.criminal.name)
+        self.respawnTT = respawnTT
+
+
+    def cancelRespawn(self):
+        """Cancel the respawning of the bounty, by forcing the expiry of its respawn TimedTask.
+
+        :raise ValueError: If the bounty is not escaped
+        """
+        if not self.isEscaped():
+            raise ValueError("Attempted to cancelRespawn on a bounty that is not awaiting respawn: " + self.criminal.name)
+        self.respawnTT.forceExpire(callExpiryFunc=False)
+        self.respawnTT = None
+
+
+    def forceRespawn(self):
+        """Force the immediate respawning of the bounty, by forcing the expiry of its respawn TimedTask.
+
+        :raise ValueError: If the bounty is not escaped
+        """
+        if not self.isEscaped():
+            raise ValueError("Attempted to forceRespawn on a bounty that is not awaiting respawn: " + self.criminal.name)
+        self.respawnTT.forceExpire(callExpiryFunc=True)
+        self.respawnTT = None
 
 
     def toDict(self, **kwargs) -> dict:

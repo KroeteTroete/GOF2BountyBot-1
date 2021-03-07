@@ -1,8 +1,10 @@
 from __future__ import annotations
+from typing import Dict
 
 from ..gameObjects.bounties import bounty, criminal
 from typing import List
 from ..baseClasses import serializable
+from ..baseClasses.aliasableDict import AliasableDict
 from ..cfg import cfg
 
 
@@ -22,21 +24,45 @@ class BountyDB(serializable.Serializable):
     :vartype latestBounty: gameObjects.bounties.bounty.Bounty
     """
 
-    def __init__(self, factions: str):
+    def __init__(self, factions: List[str]):
         """
-        :param list factions: list of unique faction names useable in this db's bounties
+        :param List[str] factions: list of unique faction names useable in this db's bounties
         """
-        # Dictionary of faction name : list of bounties
-        self.bounties = {}
-        self.escapedBounties = {}
+        # Dictionary of faction name : dict of criminal : bounty
+        self.bounties: Dict[str, AliasableDict[criminal.Criminal, bounty.Bounty]] = {f: {} for f in factions}
+        # Dictionary of faction name : dict of criminal : bounty
+        self.escapedBounties: Dict[str, AliasableDict[criminal.Criminal, bounty.Bounty]] = {f: {} for f in factions}
+        self.latestBounty: bounty.Bounty = None
 
-        # Useable faction names for this bountyDB
-        self.factions = factions
-        for fac in factions:
-            self.bounties[fac] = []
-            self.escapedBounties[fac]
 
-        self.latestBounty = None
+    def getFactions(self) -> List[bounty.Bounty]:
+        """Get the list of useable faction names for this DB
+
+        :return: A list containing this DB's useable faction names
+        :rtype: list
+        """
+        return self.bounties.keys()
+
+
+    def getFactionBounties(self, faction : str) -> List[bounty.Bounty]:
+        """Get a list of all bounty objects stored under a given faction.
+
+        :param str faction: The faction whose bounties to return. Case sensitive.
+        :return: A list containing references to all bounties made available by faction.
+        :rtype: ValuesView
+        """
+        return self.bounties[faction].values()
+
+    
+    def factionExists(self, faction : str) -> bool:
+        """Decide whether a given faction name is useable in this DB
+
+        :param str faction: The faction to test for existence. Case sensitive.
+
+        :return: True if faction is one of this DB's factions, false otherwise.
+        :rtype: bool
+        """
+        return faction in self.getFactions()
 
 
     def addFaction(self, faction: str):
@@ -49,7 +75,8 @@ class BountyDB(serializable.Serializable):
         if self.factionExists(faction):
             raise KeyError("Attempted to add a faction that already exists: " + faction)
         # Initialise faction's database to empty
-        self.bounties[faction] = []
+        self.bounties[faction] = {}
+        self.escapedBounties[faction] = {}
 
 
     def removeFaction(self, faction: str):
@@ -62,61 +89,32 @@ class BountyDB(serializable.Serializable):
         if not self.factionExists(faction):
             raise KeyError("Unrecognised faction: " + faction)
         # Remove the faction name from the DB
-        self.bounties.pop(faction)
+        del self.bounties[faction]
+        del self.escapedBounties[faction]
 
 
-    def clearBounties(self, faction : str = None):
-        """Clear all bounties stored under a faction, or under all factions if none is specified
+    def clearFactionBounties(self, faction: str):
+        """Clear all bounties stored under a given faction
 
-        :param str faction: The faction whose bounties to clear.
-                            All factions' bounties are cleared if None is given. (default None)
+        :param str faction: The faction whose bounties to clear
         :raise KeyError: When given a faction which does not exist in this DB
         """
-        if faction is not None:
-            # Ensure the faction name exists
-            if not self.factionExists(faction):
-                raise KeyError("Unrecognised faction: " + faction)
-            # Empty the faction's bounties
-            self.bounties[faction] = []
-        # If no faction is given
-        else:
-            # clearBounties for each faction in the DB
-            for fac in self.getFactions():
-                self.clearBounties(faction=fac)
-
-        self.latestBounty = None
+        # Ensure the faction name exists
+        if not self.factionExists(faction):
+            raise KeyError("Unrecognised faction: " + faction)
+        # Remove latest bounty if they are in this faction
+        if self.latestBounty.faction == faction:
+            self.latestBounty = None
+        # Empty the faction's bounties
+        self.bounties[faction] = {}
+        self.escapedBounties[faction] = {}
 
 
-    def getFactions(self) -> List[bounty.Bounty]:
-        """Get the list of useable faction names for this DB
-
-        :return: A list containing this DB's useable faction names
-        :rtype: list
+    def clearAllBounties(self):
+        """Clear all bounties, for all factions in the DB
         """
-        return self.factions
-
-
-    def factionExists(self, faction : str) -> bool:
-        """Decide whether a given faction name is useable in this DB
-
-        :param str faction: The faction to test for existence. Case sensitive.
-
-        :return: True if faction is one of this DB's factions, false otherwise.
-        :rtype: bool
-        """
-        return faction in self.getFactions()
-
-
-    def getFactionBounties(self, faction : str) -> List[bounty.Bounty]:
-        """Get a list of all bounty objects stored under a given faction.
-
-        :param str faction: The faction whose bounties to return. Case sensitive.
-
-        :return: A list containing references to all bbBounties made available by faction.
-                    ⚠ Muteable, and can alter the DB!
-        :rtype: list
-        """
-        return self.bounties[faction]
+        for fac in self.getFactions():
+            self.clearFactionBounties(fac)
 
 
     def getFactionNumBounties(self, faction : str) -> int:
@@ -127,7 +125,7 @@ class BountyDB(serializable.Serializable):
         :return: Integer number of bounties stored by a faction
         :rtype: int
         """
-        return len(self.bounties[faction])
+        return len(self.getFactionBounties(faction))
 
 
     def getBounty(self, name : str, faction : str = None) -> bounty.Bounty:
@@ -139,28 +137,61 @@ class BountyDB(serializable.Serializable):
                             to search all factions. (default None)
 
         :return: the bounty object tracking the named criminal
-        :rtype: gameObjects.bounties.bounty.Bounty
+        :rtype: Bounty
 
         :raise KeyError: If the requested criminal name does not exist in this DB
         """
         # If the criminal's faction is known
         if faction is not None:
-            # Search the given faction's bounties
-            for currentBounty in self.bounties[faction]:
-                # Return the named criminal's bounty if the name is found
-                if currentBounty.criminal.isCalled(name):
-                    return currentBounty
+            return self.bounties[faction].getValueForKeyNamed(name)
 
         # If the criminal's faction is not known, search all factions
         else:
             for fac in self.getFactions():
-                # Return the named criminal's bounty if the name is found
-                for currentBounty in self.bounties[fac]:
-                    if currentBounty.criminal.isCalled(name):
-                        return currentBounty
+                try:
+                    return self.bounties[faction].getValueForKeyNamed(name)
+                except KeyError:
+                    pass
+        
+        raise KeyError("No bounty found for name: '" + name + ("'" if faction == "" else "' and faction: " + faction))
+
+
+    def getEscapedCriminal(self, name: str, faction : str = None) -> criminal.Criminal:
+        """Get the criminal object for a given name or alias, from the list of escaped criminals.
+        This process is much more efficient when given the faction that the criminal is wanted by.
+
+        :param str name: A name or alias for the criminal to be fetched.
+        :param str faction: The faction by which the criminal is wanted.
+                            Give None if this is not known, to search all factions. (Default None)
+        :return: The named criminal
+        :rtype: str
+        :throws KeyError: If the requested criminal name does not exist in the escapedCriminals list
+        """
+        # If the criminal's faction is known
+        if faction is not None:
+            return self.escapedBounties[faction].getKeyNamed(name)
+
+        # If the criminal's faction is not known, search all factions
+        else:
+            for fac in self.getFactions():
+                try:
+                    return self.escapedBounties[fac].getKeyNamed(name)
+                except KeyError:
+                    pass
 
         # The criminal was not recognised, raise an error
         raise KeyError("Bounty not found: " + name)
+
+
+    def factionCanMakeBounty(self, faction : str) -> bool:
+        """Check whether a faction has space for more bounties
+
+        :param str faction: the faction whose DB space to check
+
+        :return: True if the requested faction has space for more bounties, False otherwise
+        :rtype: bool
+        """
+        return self.getFactionNumBounties(faction) < cfg.maxBountiesPerFaction
 
 
     def canMakeBounty(self) -> bounty.Bounty:
@@ -179,24 +210,14 @@ class BountyDB(serializable.Serializable):
         return False
 
 
-    def factionCanMakeBounty(self, faction : str) -> bool:
-        """Check whether a faction has space for more bounties
-
-        :param str faction: the faction whose DB space to check
-
-        :return: True if the requested faction has space for more bounties, False otherwise
-        :rtype: bool
-        """
-        return self.getFactionNumBounties(faction) < cfg.maxBountiesPerFaction
-
-
-    def bountyNameExists(self, name : str, faction : str = None) -> bool:
+    def bountyNameExists(self, name : str, faction : str = None, noEscapedCrim : bool = True) -> bool:
         """Check whether a criminal with the given name or alias exists in the DB
         The process is much more efficient if the faction where the criminal should reside is known.
 
         :param str name: The name or alias to check for criminal existence against
         :param str faction: The faction whose bounties to check for the named criminal.
                             Use None if the faction is not known. (default None)
+        :param bool noEscapedCrim: When False, the escaped criminals database is also checked (default True)
 
         :return: True if a bounty is found for a criminal with the given name,
                     False if the given name does not correspond to an active bounty in this DB
@@ -207,7 +228,13 @@ class BountyDB(serializable.Serializable):
             self.getBounty(name, faction)
         # Return False if the name was not found, True otherwise
         except KeyError:
-            return False
+            if not noEscapedCrim:
+                try:
+                    self.getEscapedCriminal(name, faction)
+                except KeyError:
+                    return False
+            else:
+                return False
         return True
 
 
@@ -220,7 +247,7 @@ class BountyDB(serializable.Serializable):
         :return: True if the given bounty is found within the DB, False otherwise
         :rtype: bool
         """
-        return bounty in self.bounties[bounty.faction]
+        return bounty in self.getFactionBounties(bounty.faction)
 
 
     def addBounty(self, bounty : bounty.Bounty):
@@ -237,8 +264,8 @@ class BountyDB(serializable.Serializable):
             raise OverflowError("Requested faction's bounty DB is full")
 
         # ensure the given bounty does not already exist
-        if self.bountyNameExists(bounty.criminal.name):
-            raise ValueError("Attempted to add a bounty whose name already exists: " + bounty.name)
+        if self.bountyNameExists(bounty.criminal.name, noEscapedCrim=False):
+            raise ValueError("Attempted to add a bounty whose name already exists: " + bounty.criminal.name)
 
         # Add the bounty to the database
         self.bounties[bounty.faction].append(bounty)
@@ -246,12 +273,12 @@ class BountyDB(serializable.Serializable):
 
 
     def escapedCriminalExists(self, crim):
-        """Decide whether a bbCriminal is recorded in the escaped criminals database.
-        :param bbCriminal crim: The bbCriminal to check for existence
+        """Decide whether a criminal is recorded in the escaped criminals database.
+        :param criminal crim: The criminal to check for existence
         :return: True if crim is in this database's escaped criminals record, False otherwise
         :rtype: bool
         """
-        return crim in self.escapedCriminals[crim.faction]
+        return crim in self.escapedBounties[crim.faction]
 
 
     def addEscapedBounty(self, bounty : bounty.Bounty):
@@ -263,7 +290,7 @@ class BountyDB(serializable.Serializable):
         """
         # ensure the given bounty does not already exist
         if self.bountyNameExists(bounty.criminal.name) or self.escapedCriminalExists(bounty.criminal):
-            raise ValueError("Attempted to add a bounty whose name already exists: " + bounty.name)
+            raise ValueError("Attempted to add a bounty whose name already exists: " + bounty.criminal.name)
 
         # Add the bounty to the database
         self.escapedBounties[bounty.faction].append(bounty)
@@ -272,12 +299,24 @@ class BountyDB(serializable.Serializable):
     def removeEscapedCriminal(self, crim):
         """Remove a criminal from the record of escaped criminals.
         crim must already be recorded in the escaped criminals database.
-        :param bbCriminal crim: The criminal to remove from the record
+        This does not perform respawning of the bounty.
+
+        :param criminal crim: The criminal to remove from the record
+        :raise KeyError: If criminal is not registered in the db
         """
         if self.escapedCriminalExists(crim):
             raise KeyError("criminal not found: " + crim.name)
-        self.escapedCriminals[crim.faction].remove(crim)
-        del self.escapedCriminalTimeouts[crim]
+        del self.escapedBounties[crim.faction][crim]
+
+
+    def removeBountyObj(self, bounty : bounty.Bounty):
+        """Remove a given bounty object from the database.
+
+        :param bounty.Bounty bounty: the bounty object to remove from the database
+        """
+        if bounty is self.latestBounty:
+            self.latestBounty = None
+        del self.bounties[bounty.faction][bounty.criminal]
 
 
     def removeBountyName(self, name : str, faction : str = None):
@@ -289,16 +328,6 @@ class BountyDB(serializable.Serializable):
                             Use None if the faction is not known. (default None)
         """
         self.removeBountyObj(self.getBounty(name, faction=faction))
-
-
-    def removeBountyObj(self, bounty : bounty.Bounty):
-        """Remove a given bounty object from the database.
-
-        :param bounty.Bounty bounty: the bounty object to remove from the database
-        """
-        if bounty is self.latestBounty:
-            self.latestBounty = None
-        self.bounties[bounty.faction].remove(bounty)
 
 
     def hasBounties(self, faction : str = None) -> bool:
@@ -314,13 +343,12 @@ class BountyDB(serializable.Serializable):
             for fac in self.getFactions():
                 if self.getFactionNumBounties(fac) != 0:
                     return True
+            # no bounties found, return false
+            return False
 
         # If a faction is specified, return true if it has at least one bounty
         else:
             return self.getFactionNumBounties(faction) != 0
-
-        # no bounties found, return false
-        return False
 
 
     def __str__(self) -> str:
@@ -342,16 +370,14 @@ class BountyDB(serializable.Serializable):
         data = {"active": {}, "escaped": {}}
         # Serialise all factions into name : list of serialised bounty
         for fac in self.bounties:
-            data["active"][fac] = []
             # Serialise all of the current faction's bounties into dictionary
-            for currentBounty in self.getFactionBounties(fac):
-                data["active"][fac].append(currentBounty.toDict(**kwargs))
+            data["active"][fac] = [currentBounty.toDict(**kwargs) for currentBounty in self.getFactionBounties(fac)]
+
         # Serialise all factions into name : list of serialised escaped bounty
         for fac in self.escapedBounties:
-            data["escaped"][fac] = []
             # Serialise all of the current faction's bounties into dictionary
-            for currentBounty in self.escapedBounties[fac]:
-                data["escaped"][fac].append(currentBounty.toDict(**kwargs))
+            data["escaped"][fac] = [currentBounty.toDict(**kwargs) for currentBounty in self.escapedBounties(fac)]
+
         return data
 
 
