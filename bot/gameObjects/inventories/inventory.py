@@ -16,6 +16,8 @@ class Inventory(serializable.Serializable):
     :var numKeys: The number of item types stored; the length of self.keys
     :vartype numKeys: int
     """
+    listingType = inventoryListing.InventoryListing
+
     def __init__(self):
         # The actual item listings
         self.items = {}
@@ -46,7 +48,7 @@ class Inventory(serializable.Serializable):
             self.items[item].count += quantity
         # Add a new bbItemListing if one does not exist
         else:
-            self.items[item] = inventoryListing.InventoryListing(item, quantity)
+            self.items[item] = self.listingType(item, quantity)
             # Update keys and numKeys trackers
             self.keys.append(item)
             self.numKeys += 1
@@ -231,7 +233,7 @@ class Inventory(serializable.Serializable):
         newInv = Inventory()
         if "items" in invDict:
             for listingDict in invDict["items"]:
-                newInv._addListing(inventoryListing.InventoryListing.fromDict(listingDict))
+                newInv._addListing(cls.listingType.fromDict(listingDict))
 
         return newInv
 
@@ -260,3 +262,10 @@ class TypeRestrictedInventory(Inventory):
             raise TypeError("Given item does not match this inventory's item type restriction. Expected '" \
                             + self.itemType.__name__ + "', given '" + type(newListing.item).__name__ + "'")
         super()._addListing(newListing)
+
+
+
+class DiscountableTypeRestrictedInventory(TypeRestrictedInventory):
+    """A TypeRestrictedInventory storing DiscountableItemListing instead of bbItemListings.
+    """
+    listingType = inventoryListing.DiscountableItemListing
