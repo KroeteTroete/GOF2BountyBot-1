@@ -48,7 +48,7 @@ class BasedGuild(serializable.Serializable):
 
     def __init__(self, id: int, dcGuild: Guild, bounties: bountyDB.BountyDB, commandPrefix: str = cfg.defaultCommandPrefix,
             announceChannel : channel.TextChannel = None, playChannel : channel.TextChannel = None,
-            shop : guildShop.GuildShop = None, bountyBoardChannel : bountyBoardChannel.bountyBoardChannel = None,
+            shop : guildShop.TechLeveledShop = None, bountyBoardChannel : bountyBoardChannel.bountyBoardChannel = None,
             alertRoles : Dict[str, int] = {}, ownedRoleMenus : int = 0, bountiesDisabled : bool = False,
             shopDisabled : bool = False):
         """
@@ -91,7 +91,7 @@ class BasedGuild(serializable.Serializable):
         if shopDisabled:
             self.shop = None
         else:
-            self.shop = guildShop.GuildShop() if shop is None else shop
+            self.shop = guildShop.TechLeveledShop() if shop is None else shop
 
         self.alertRoles = {}
         for alertID in userAlerts.userAlertsIDsTypes.keys():
@@ -120,7 +120,8 @@ class BasedGuild(serializable.Serializable):
 
             if cfg.newBountyDelayType == "fixed":
                 self.newBountyTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.newBountyFixedDelta),
-                                                autoReschedule=True, expiryFunction=self.spawnAndAnnounceRandomBounty)
+                                                autoReschedule=True, expiryFunction=self.spawnAndAnnounceBounty,
+                                                expiryFunctionArgs={"newBounty": None})
             else:
                 try:
                     delayGenerator = bountyDelayGenerators[cfg.newBountyDelayType]
@@ -131,7 +132,8 @@ class BasedGuild(serializable.Serializable):
                     self.newBountyTT = DynamicRescheduleTask(delayGenerator,
                                                             delayTimeGeneratorArgs=generatorArgs,
                                                             autoReschedule=True,
-                                                            expiryFunction=self.spawnAndAnnounceRandomBounty)
+                                                            expiryFunction=self.spawnAndAnnounceBounty,
+                                                            expiryFunctionArgs={"newBounty": None})
 
             botState.newBountiesTTDB.scheduleTask(self.newBountyTT)
 
@@ -406,17 +408,18 @@ class BasedGuild(serializable.Serializable):
 
         :param bounty newBounty: the bounty to announce
         """
+        print("Difficulty", newBounty.criminal.techLevel, "New bounty with value:", newBounty.criminal.activeShip.getValue())
         # Create the announcement embed
         bountyEmbed = lib.discordUtil.makeEmbed(titleTxt=lib.discordUtil.criminalNameOrDiscrim(newBounty.criminal),
-                                                desc="⛓ __New Bounty Available__",
+                                                desc=cfg.emojis.newBounty + " __New Bounty Available__",
                                                 col=bbData.factionColours[newBounty.faction],
                                                 thumb=newBounty.criminal.icon, footerTxt=newBounty.faction.title())
-        bountyEmbed.add_field(name="Reward:", value=str(newBounty.reward) + " Credits")
-        bountyEmbed.add_field(name="Possible Systems:", value=len(newBounty.route))
-        bountyEmbed.add_field(name="See the culprit's route with:",
-                                value="`" + self.commandPrefix + "route " \
-                                        + lib.discordUtil.criminalNameOrDiscrim(newBounty.criminal) + "`",
-                                inline=False)
+        bountyEmbed.add_field(name="**Reward Pool:**", value=str(newBounty.reward) + " Credits")
+        bountyEmbed.add_field(name="**Difficulty:**", value=str(newBounty.criminal.techLevel))
+        bountyEmbed.add_field(name="**See the culprit's loadout with:**",
+                                value="`" + self.commandPrefix + "loadout criminal " + newBounty.criminal.name + "`")
+        bountyEmbed.add_field(name="**Route:**", value=", ".join(newBounty.route), inline=False)
+
         # Create the announcement text
         msg = "A new bounty is now available from **" + newBounty.faction.title() + "** central command:"
 
@@ -458,22 +461,50 @@ class BasedGuild(serializable.Serializable):
             # TODO: may wish to add handling for invalid announceChannels - e.g remove them from the BasedGuild object
 
 
-    async def spawnAndAnnounceRandomBounty(self):
-        """Generate a completely random bounty, spawn it, and announce it if this guild has
-        an appropriate channel selected.
+    async def spawnAndAnnounceBounty(self, newBountyData):
+        """Generate a new bounty, either at random or by the given bbBountyConfig, spawn it,
+        and announce it if this guild has an appropriate channel selected.
         """
         if self.bountiesDisabled:
-            raise ValueError("Attempted to spawn a bounty into a guild where bounties are disabled")
+            botState.logger.log("basedGuild", "spwnAndAnncBty",
+                                "Attempted to spawn a bounty into a guild where bounties are disabled: " \
+                                    + (self.dcGuild.name if self.dcGuild is not None else "") + "#" + str(self.id),
+                                eventType="BTYS_DISABLED")
+            return
         # ensure a new bounty can be created
         if self.bountiesDB.canMakeBounty():
-            newBounty = bounty.Bounty(owningDB=self.bountiesDB)
+            newBounty = newBountyData["newBounty"]
+            if newBounty is None:
+                newBounty = bounty.Bounty(owningDB=self.bountiesDB,
+                                            config=newBountyData["newConfig"] if "newConfig" in newBountyData else None)
+            else:
+                if self.bountiesDB.escapedCriminalExists(newBounty.criminal):
+                    self.bountiesDB.removeEscapedCriminal(newBounty.criminal)
+
+                if "newConfig" in newBountyData and newBountyData["newConfig"] is not None:
+                    newConfig = newBountyData["newConfig"]
+                    if not newConfig.generated:
+                        newConfig.generate(self.bountiesDB)
+                    newBounty.route = newConfig.route
+                    newBounty.start = newConfig.start
+                    newBounty.end = newConfig.end
+                    newBounty.answer = newConfig.answer
+                    newBounty.checked = newConfig.checked
+                    newBounty.reward = newConfig.reward
+                    newBounty.issueTime = newConfig.issueTime
+                    newBounty.endTime = newConfig.endTime
+
             # activate and announce the bounty
             self.bountiesDB.addBounty(newBounty)
             await self.announceNewBounty(newBounty)
+        
+        else:
+            raise OverflowError("Attempted to spawnAndAnnounceBounty when no more space is available for bounties " \
+                                + "in the bountiesDB")
 
 
     async def announceBountyWon(self, bounty : bounty.Bounty, rewards : Dict[int, Dict[str, Union[int, bool]]],
-            winningUser : Member):
+                                winningUser : Member):
         """Announce the completion of a bounty
         Messages will be sent to the playChannel if one is set
 
@@ -493,9 +524,11 @@ class BasedGuild(serializable.Serializable):
 
                 # Add the winning user to the embed
                 rewardsEmbed.add_field(name="1. 🏆 " + str(rewards[winningUserId]["reward"]) + " credits:",
-                                        value=winningUser.mention + " checked " \
-                                        + str(int(rewards[winningUserId]["checked"])) + " system" \
-                                        + ("s" if int(rewards[winningUserId]["checked"]) != 1 else ""), inline=False)
+                                        value=winningUser.mention + " checked " + int(rewards[winningUserId]["checked"]) \
+                                            + " system" + ("s" if int(rewards[winningUserId]["checked"]) != 1 else "") \
+                                            + "\n*+" + str(rewards[winningUserId]["xp"]) + "xp*",
+                                        inline=False)
+
 
                 # The index of the current user in the embed
                 place = 2
@@ -504,8 +537,10 @@ class BasedGuild(serializable.Serializable):
                     if not rewards[userID]["won"]:
                         rewardsEmbed.add_field(name=str(place) + ". " + str(rewards[userID]["reward"]) + " credits:",
                                                 value="<@" + str(userID) + "> checked " \
-                                                + str(int(rewards[userID]["checked"])) + " system" \
-                                                + ("s" if int(rewards[userID]["checked"]) != 1 else ""), inline=False)
+                                                    + str(int(rewards[userID]["checked"])) \
+                                                    + " system" + ("s" if int(rewards[userID]["checked"]) != 1 else "") \
+                                                    + "\n*+" + str(rewards[winningUserId]["xp"]) + "xp*",
+                                                inline=False)
                         place += 1
 
                 # Send the announcement to the guild's playChannel
@@ -542,14 +577,16 @@ class BasedGuild(serializable.Serializable):
 
         if cfg.newBountyDelayType == "fixed":
             self.newBountyTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.newBountyFixedDelta),
-                                            autoReschedule=True, expiryFunction=self.spawnAndAnnounceRandomBounty)
+                                            autoReschedule=True, expiryFunction=self.spawnAndAnnounceBounty,
+                                            expiryFunctionArgs={"newBounty": None})
         else:
             try:
                 generatorArgs = bountyDelayGeneratorArgs[cfg.newBountyDelayType]
                 self.newBountyTT = DynamicRescheduleTask(bountyDelayGenerators[cfg.newBountyDelayType],
                                                             delayTimeGeneratorArgs=generatorArgs,
                                                             autoReschedule=True,
-                                                            expiryFunction=self.spawnAndAnnounceRandomBounty)
+                                                            expiryFunction=self.spawnAndAnnounceBounty,
+                                                            expiryFunctionArgs={"newBounty": None})
             except KeyError:
                 raise ValueError("cfg: Unrecognised newBountyDelayType '" + cfg.newBountyDelayType + "'")
 
@@ -583,7 +620,7 @@ class BasedGuild(serializable.Serializable):
         if not self.shopDisabled:
             raise ValueError("The shop is already enabled in this guild")
 
-        self.shop = guildShop.GuildShop(noRefresh=True)
+        self.shop = guildShop.TechLeveledShop(noRefresh=True)
         self.shopDisabled = False
 
 
@@ -700,14 +737,13 @@ class BasedGuild(serializable.Serializable):
             shop = None
         else:
             if "shop" in guildDict:
-                shop = guildShop.GuildShop.fromDict(guildDict["shop"])
+                shop = guildShop.TechLeveledShop.fromDict(guildDict["shop"])
             else:
-                shop = guildShop.GuildShop()
+                shop = guildShop.TechLeveledShop()
         
 
         return BasedGuild(guildID, dcGuild, bountiesDB, announceChannel=announceChannel, playChannel=playChannel,
-                            shop=shop, bountyBoardChannel=bbc,
-                            shopDisabled=guildDict["shopDisabled"] if "shopDisabled" in guildDict else False,
+                            shop=shop, bountyBoardChannel=bbc, shopDisabled=shop is None,
                             alertRoles=guildDict["alertRoles"] if "alertRoles" in guildDict else {},
                             ownedRoleMenus=guildDict["ownedRoleMenus"] if "ownedRoleMenus" in guildDict else 0,
                             bountiesDisabled=guildDict["bountiesDisabled"] if "bountiesDisabled" in guildDict else False,
