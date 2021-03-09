@@ -38,18 +38,11 @@ class GuildShop(serializable.Serializable):
             turretsStock : inventory.Inventory = inventory.TypeRestrictedInventory(turretWeapon.TurretWeapon),
             toolsStock : inventory.Inventory = inventory.TypeRestrictedInventory(toolItem.ToolItem)):
         """
-        :param int maxShips: The maximum number of ships generated on every stock refresh. (Default cfg.shopRefreshShips)
-        :param int maxModules: The maximum number of modules generated on every stock refresh (Default cfg.shopRefreshModules)
-        :param int maxWeapons: The maximum number of weapons generated on every stock refresh (Default cfg.shopRefreshWeapons)
-        :param int maxTurrets: The maximum number of turrets generated on every stock refresh (Default cfg.shopRefreshTurrets)
-        :param int currentTechLevel: The current tech level of the shop, influencing the tech levels of the stock generated
-                                        upon refresh. (Default empty inventory)
         :param inventory shipsStock: The shop's current stock of ships (Default empty inventory)
         :param inventory weaponsStock: The shop's current stock of weapons (Default empty inventory)
         :param inventory modulesStock: The shop's current stock of modules (Default empty inventory)
-        :param inventory turretsStock: The shop's current stock of turrets (Default cfg.minTechLevel)
-        :param bool noRefresh: By default, if all shop stocks are empty, the shop will refresh. Give True here to disable this
-                                functionality and allow empty shops. (Default False)
+        :param inventory turretsStock: The shop's current stock of turrets (Default empty inventory)
+        :param inventory toolsStock: The shop's current stock of tools (Default empty inventory)
         """
 
         # TODO: Somewhere, stocks are getting passed in and shared amongst all shops. Fix this. Temporary inventory clear here
@@ -511,3 +504,127 @@ class GuildShop(serializable.Serializable):
 
         return GuildShop(shipsStock=shipsStock, weaponsStock=weaponsStock, modulesStock=modulesStock,
                             turretsStock=turretsStock, toolsStock=toolsStock)
+
+
+class TechLeveledShop(GuildShop):
+    """A shop containing a random selection of items which players can buy.
+    Items can be sold to the shop to the shop's inventory and listed for sale.
+    Shops are assigned a random tech level, which influences ths stock generated.
+    
+    :var currentTechLevel: The current tech level of the shop, influencing the tech levels of the stock generated upon refresh.
+    :vartype currentTechLevel: int
+    """
+
+    def __init__(self, shipsStock : inventory.Inventory = inventory.TypeRestrictedInventory(shipItem.Ship),
+            weaponsStock : inventory.Inventory = inventory.TypeRestrictedInventory(primaryWeapon.PrimaryWeapon),
+            modulesStock : inventory.Inventory = inventory.TypeRestrictedInventory(moduleItem.ModuleItem),
+            turretsStock : inventory.Inventory = inventory.TypeRestrictedInventory(turretWeapon.TurretWeapon),
+            toolsStock : inventory.Inventory = inventory.TypeRestrictedInventory(toolItem.ToolItem),
+            currentTechLevel : int = cfg.minTechLevel, noRefresh : bool = False):
+        """
+        :param int currentTechLevel: The current tech level of the shop, influencing the tech levels of the stock generated
+                                        upon refresh. (Default empty inventory)
+        :param inventory shipsStock: The shop's current stock of ships (Default empty inventory)
+        :param inventory weaponsStock: The shop's current stock of weapons (Default empty inventory)
+        :param inventory modulesStock: The shop's current stock of modules (Default empty inventory)
+        :param inventory turretsStock: The shop's current stock of turrets (Default empty inventory)
+        :param inventory toolsStock: The shop's current stock of tools (Default empty inventory)
+        :param bool noRefresh: By default, if all shop stocks are empty, the shop will refresh. Give True here to disable this
+                                functionality and allow empty shops. (Default False)
+        """
+        super().__init__(shipsStock=shipsStock, weaponsStock=weaponsStock, modulesStock=modulesStock, turretsStock=turretsStock, toolsStock=toolsStock)
+
+        self.currentTechLevel = currentTechLevel
+        if (not noRefresh) and shipsStock.isEmpty() and weaponsStock.isEmpty() and modulesStock.isEmpty() and turretsStock.isEmpty():
+            self.refreshStock()
+
+
+    def refreshStock(self, level : int = -1):
+        """Refresh the stock of the shop by picking random items according to the given tech level. All previous stock is deleted.
+        If level = -1 is given, a new shop tech level is generated at random.
+
+        :param int level: The new tech level of the shop. Give -1 to pick a level at random according to cfg.pickRandomShopTL()
+        :raise ValueError: When given a tech level that is out of range
+        """
+        self.shipsStock.clear()
+        self.weaponsStock.clear()
+        self.modulesStock.clear()
+        self.turretsStock.clear()
+        self.toolsStock.clear()
+
+        if level == -1:
+            self.currentTechLevel = gameMaths.pickRandomShopTL()
+        else:
+            if level not in range(cfg.minTechLevel, cfg.maxTechLevel + 1):
+                raise ValueError("Attempted to refresh a shop at tech level " + str(level) + ". must be within the range " \
+                                    + str(cfg.minTechLevel) + " to " + str(cfg.maxTechLevel))
+            self.currentTechLevel = level
+
+        for maxCount, stock, keys in (  (cfg.shopDefaultModulesNum, self.modulesStock, bbData.moduleObjsByTL),
+                                        (cfg.shopDefaultWeaponsNum, self.weaponsStock, bbData.weaponObjsByTL),
+                                        (cfg.shopDefaultTurretsNum, self.turretsStock, bbData.turretObjsByTL),
+                                        (cfg.shopDefaultToolsNum,   self.toolsStock,   bbData.toolObjsByTL)):
+            for _ in range(maxCount):
+                itemTL = cfg.pickRandomItemTL(self.currentTechLevel)
+                if len(keys[itemTL - 1]) != 0:
+                    stock.addItem(random.choice(keys[itemTL - 1]))
+
+        for _ in range(cfg.shopDefaultShipsNum):
+            itemTL = cfg.pickRandomItemTL(self.currentTechLevel)
+            if len(bbData.shipKeysByTL[itemTL - 1]) != 0:
+                newShip = shipItem.Ship.fromDict(bbData.builtInShipData[random.choice(bbData.shipKeysByTL[itemTL - 1])])
+                self.shipsStock.addItem(newShip)
+
+
+    def toDict(self, **kwargs) -> dict:
+        """Get a dictionary containing all information needed to reconstruct this shop instance.
+        This includes maximum item counts, current tech level, and current stocks.
+
+        :return: A dictionary containing all information needed to reconstruct this shop object
+        :rtype: dict
+        """
+        data = super().toDict(**kwargs)
+        data["currentTechLevel"] = self.currentTechLevel
+        return data
+
+
+    @classmethod
+    def fromDict(cls, shopDict : dict, **kwargs) -> TechLeveledShop:
+        """Recreate a TechLeveledShop instance from its dictionary-serialized representation - the opposite of TechLeveledShop.toDict
+        
+        :param dict shopDict: A dictionary containing all information needed to construct the shop
+        :return: A new TechLeveledShop object as described by shopDict
+        :rtype: TechLeveledShop
+        """
+        shipsStock = inventory.TypeRestrictedInventory(shipItem.Ship)
+        weaponsStock = inventory.TypeRestrictedInventory(primaryWeapon.PrimaryWeapon)
+        modulesStock = inventory.TypeRestrictedInventory(moduleItem.ModuleItem)
+        turretsStock = inventory.TypeRestrictedInventory(turretWeapon.TurretWeapon)
+        toolsStock = inventory.TypeRestrictedInventory(toolItem.ToolItem)
+
+        if "shipsStock" in shopDict:
+            for shipListingDict in shopDict["shipsStock"]:
+                shipsStock.addItem(shipItem.Ship.fromDict(shipListingDict["item"]), quantity=shipListingDict["count"])
+
+        if "weaponsStock" in shopDict:
+            for weaponListingDict in shopDict["weaponsStock"]:
+                weaponsStock.addItem(primaryWeapon.PrimaryWeapon.fromDict(weaponListingDict["item"]),
+                                                                            quantity=weaponListingDict["count"])
+
+        if "modulesStock" in shopDict:
+            for moduleListingDict in shopDict["modulesStock"]:
+                modulesStock.addItem(moduleItemFactory.fromDict(moduleListingDict["item"]),
+                                                                quantity=moduleListingDict["count"])
+
+        if "turretsStock" in shopDict:
+            for turretListingDict in shopDict["turretsStock"]:
+                turretsStock.addItem(turretWeapon.TurretWeapon.fromDict(turretListingDict["item"]),
+                                                                        quantity=turretListingDict["count"])
+
+        if "toolsStock" in shopDict:
+            for toolListingDict in shopDict["toolsStock"]:
+                toolsStock.addItem(toolItemFactory.fromDict(toolListingDict["item"]), quantity=toolListingDict["count"])
+
+        return TechLeveledShop(currentTechLevel=shopDict["currentTechLevel"] if "currentTechLevel" in shopDict else 1,
+                                shipsStock=shipsStock, weaponsStock=weaponsStock, modulesStock=modulesStock,
+                                turretsStock=turretsStock, toolsStock=toolsStock)
