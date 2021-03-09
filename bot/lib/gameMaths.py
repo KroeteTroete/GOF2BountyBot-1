@@ -118,7 +118,8 @@ def shipSkinValueForTL(averageTL : int) -> int:
     :return: The value to assign to the ship skin
     :rtype: int
     """
-    return averageTL * 10000
+    # return averageTL * 10000
+    return 0
 
 
 # Calculate spawn chance for each shop TL
@@ -188,3 +189,53 @@ def calculateUserBountyHuntingLevel(xp):
 # def calculateUserBountyHuntingLevel(xp):
 #     return 4 * xp - 30001
 
+
+def rewardPerSysCheck(techLevel : int, loadoutValue: int) -> int:
+    """The number of credits to award for each system check of a bounty
+
+    :param int techLevel: The level of the bounty
+    :param int loadoutValue: The total value of the criminal's loadout
+    :return: The number of credits to award participating players for each system they check in the bounty's route
+    :rtype: int
+    """
+    return int((loadoutValue * (1.3 if techLevel == 1 else 1)) / (2*(techLevel+(1 if techLevel == 1 else 2)) * 10))
+
+
+def crateValueForTL(TL : int) -> int:
+    """Calculate how crate are valued with respect to their techlevel.
+
+    :param int averageTL: The techLevel of the crate
+    :return: The value to assign to the crate
+    :rtype: int
+    """
+    # TL * 5000
+    return 0
+
+
+# The probability of a shop spawning with a given tech level. Tech level = index + 1
+cumulativeCriminalTLChance = [0] * numTechLevels
+
+# Calculate spawn chance for each criminal TL
+for criminalTL in range(cfg.minTechLevel - 1, cfg.maxTechLevel + 1):
+    itemChance = truncItemSpawnResolution(1 - math.exp((criminalTL - 10.5) / 5))
+
+cumulativeCriminalTLChance = normalizeArray(cumulativeCriminalTLChance)
+cumulativeCriminalTLChance = makeCumulative(cumulativeCriminalTLChance)
+
+print("[gameMaths] Criminal difficulty spawn rates generated:")
+for criminalTL in range(cfg.minTechLevel - 1, cfg.maxTechLevel + 1):
+    print("\t• level" + str(criminalTL + 1) + ": " + str(truncItemSpawnResolution(cumulativeCriminalTLChance[criminalTL])),
+            end="%\n")
+
+
+def pickRandomCriminalTL() -> int:
+    """Pick a random criminal difficulty level based on the spawn rates defined in cumulativeCriminalTLChance
+
+    :return: An integer representing a difficulty level to spawn a criminal with
+    :rtype: int
+    """
+    tlChance = random.randint(1, itemSpawnRateResDigits) / itemSpawnRateResDigits
+    for criminalTL in range(len(cumulativeCriminalTLChance)):
+        if cumulativeCriminalTLChance[criminalTL] >= tlChance:
+            return criminalTL
+    return cfg.maxTechLevel

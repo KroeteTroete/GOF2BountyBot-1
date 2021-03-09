@@ -34,6 +34,7 @@ defaultEmojis = {
     # Default emoji to assign to bbCrates containing shipSkinTools
     # "skinCrate": UninitializedBasedEmoji(723709178736017419)
     "skinCrate": UninitializedBasedEmoji("🥞"),
+    "defaultCrate": UninitializedBasedEmoji(723709178736017419),
     
     # Emoji sent with new bounty listings
     "newBounty": UninitializedBasedEmoji(723709178589347921)
@@ -119,6 +120,8 @@ maxRoleMenusPerGuild = 10
 toolUseConfirmTimeoutSeconds = 60
 # Amount of time to allow for response to the cmd_transfer confirmation menu
 homeGuildTransferConfirmTimeoutSeconds = 60
+# Amount of time to allow for response to the cmd_prestige confirmation menu
+prestigeConfirmTimeoutSeconds = 60
 
 
 
@@ -211,16 +214,19 @@ numWeaponRanks = 10
 numModuleRanks = 7
 numTurretRanks = 3
 
-# The default number of items shops should generate every shopRefreshStockPeriod
-shopRefreshShips = 5
-shopRefreshWeapons = 5
-shopRefreshModules = 5
-shopRefreshTurrets = 2
+# The default number of items shops should generate every timeouts.shopRefresh
+shopDefaultShipsNum = 5
+shopDefaultWeaponsNum = 5
+shopDefaultModulesNum = 5
+shopDefaultTurretsNum = 2
 shopDefaultToolsNum = 0
 
 # bbTurret is the only item that has a probability not to be spawned.
 # This metric indicates the percentage chance of turrets being stocked on a given refresh
 turretSpawnProbability = 45
+
+# The number of items users may store in their Kaamo Club.
+kaamoMaxCapacity = 70
 
 
 
@@ -263,6 +269,21 @@ closeBountyThreshold = 4
 bbcNoBountiesMsg = "```css\n[ NO ACTIVE BOUNTIES ]\n\nThere are currently no active bounty listings.\n" \
                     + "Please check back later, or use [ $notify bounties ] to be pinged when new ones become available!\n```"
 
+# The percentage of a criminal's ship value to award to the winner
+shipValueRewardPercentage = 0.01
+
+# The probability of a criminal equipping a turret, should their ship have space for one
+criminalEquipTurretChance = 30
+
+# The maximum total-value a player may have before being disallowed from hunting a tech-level of bounty. 0th index = tech level 1
+# I.e, to hunt level 1 bounties, a player must be worth no more than bountyTLMaxPlayerValues[0] credits.
+bountyTLMaxPlayerValues = [50000, 75000, 100000, 200000, 450000, 600000, 800000, 1000000, 2000000, 3000000, 999999999]
+
+level0CrimLoadout = {"name": "Betty", "builtIn":True,
+                    "weapons":[{"name": "Nirai Impulse EX 1", "builtIn": True}],
+                    "modules":[{"name": "Telta Quickscan", "builtIn": True}, {"name": "ZMI Optistore", "builtIn": True},
+                                {"name": "IMT Extract 2.7", "builtIn": True}]}
+
 
 
 ##### SKINS #####
@@ -291,6 +312,8 @@ defaultShipSkinToolIcon = "https://cdn.discordapp.com/attachments/70068354410374
 
 # The maximum number of rendering threads that may be dispatched simultaneously
 maxConcurrentRenders = 1
+
+defaultCrateIcon = "https://cdn.discordapp.com/attachments/700683544103747594/723472359113359410/secure_container.png" 
 
 
 
