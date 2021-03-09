@@ -11,7 +11,7 @@ from .items.modules import moduleItem
 from .items.tools import toolItem, toolItemFactory
 from .inventories import inventory
 import random
-from ..botState import logger
+from .. import botState
 from ..lib import gameMaths
 from ..baseClasses import serializable
 
@@ -455,7 +455,7 @@ class GuildShop(serializable.Serializable):
                 if currentItem in currentStock.items:
                     stockDict.append(currentStock.items[currentItem].toDict(**kwargs))
                 else:
-                    logger.log("bbShp", "toDict",
+                    botState.logger.log("bbShp", "toDict",
                                 "Failed to save invalid " + invType + " key '" + str(currentItem) \
                                     + "' - not found in items dict",
                                 category="shop", eventType="UNKWN_KEY")
