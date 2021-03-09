@@ -1,5 +1,5 @@
 from ...baseClasses import serializable
-from .itemDiscount import ItemDiscount
+from ..itemDiscount import ItemDiscount
 
 
 class InventoryListing(serializable.Serializable):
