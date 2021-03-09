@@ -602,28 +602,14 @@ class TechLeveledShop(GuildShop):
         turretsStock = inventory.TypeRestrictedInventory(turretWeapon.TurretWeapon)
         toolsStock = inventory.TypeRestrictedInventory(toolItem.ToolItem)
 
-        if "shipsStock" in shopDict:
-            for shipListingDict in shopDict["shipsStock"]:
-                shipsStock.addItem(shipItem.Ship.fromDict(shipListingDict["item"]), quantity=shipListingDict["count"])
-
-        if "weaponsStock" in shopDict:
-            for weaponListingDict in shopDict["weaponsStock"]:
-                weaponsStock.addItem(primaryWeapon.PrimaryWeapon.fromDict(weaponListingDict["item"]),
-                                                                            quantity=weaponListingDict["count"])
-
-        if "modulesStock" in shopDict:
-            for moduleListingDict in shopDict["modulesStock"]:
-                modulesStock.addItem(moduleItemFactory.fromDict(moduleListingDict["item"]),
-                                                                quantity=moduleListingDict["count"])
-
-        if "turretsStock" in shopDict:
-            for turretListingDict in shopDict["turretsStock"]:
-                turretsStock.addItem(turretWeapon.TurretWeapon.fromDict(turretListingDict["item"]),
-                                                                        quantity=turretListingDict["count"])
-
-        if "toolsStock" in shopDict:
-            for toolListingDict in shopDict["toolsStock"]:
-                toolsStock.addItem(toolItemFactory.fromDict(toolListingDict["item"]), quantity=toolListingDict["count"])
+        for key, stock, deserializer in (("shipsStock", shipsStock, shipItem.Ship.fromDict),
+                                        ("weaponsStock", weaponsStock, primaryWeapon.PrimaryWeapon.fromDict),
+                                        ("modulesStock", modulesStock, moduleItemFactory.fromDict),
+                                        ("turretsStock", turretsStock, turretWeapon.TurretWeapon.fromDict),
+                                        ("toolsStock", toolsStock, toolItemFactory.fromDict)):
+            if key in shopDict:
+                for listingDict in shopDict[key]:
+                    stock.addItem(deserializer(listingDict["item"]), quantity=listingDict["count"])
 
         return TechLeveledShop(currentTechLevel=shopDict["currentTechLevel"] if "currentTechLevel" in shopDict else 1,
                                 shipsStock=shipsStock, weaponsStock=weaponsStock, modulesStock=modulesStock,
