@@ -10,6 +10,8 @@ from datetime import datetime, timedelta
 
 from ...cfg import bbData, cfg
 from ... import lib
+from ...lib import gameMaths
+from ..items.modules import armourModule, shieldModule, moduleItem
 
 
 class BountyConfig:
@@ -49,15 +51,16 @@ class BountyConfig:
     :var generated: whether or not this config is ready to be used. The config must verify and generate its attributes before
                     they can be used in a bounty.
     :vartype generated: bool
-    :var ship: The shipItem this criminal should equip
-    :vartype ship: shipItem
+    :var activeShip: The shipItem this criminal should equip
+    :vartype activeShip: shipItem
     """
 
     def __init__(self, faction : str = "", name : str = "", isPlayer : bool = None,
                     route : List[str] = [], start : str = "", end : str = "",
                     answer : str = "", checked : Dict[str, int] = {}, reward : int = -1,
                     issueTime : float = -1.0, endTime : float = -1.0, icon : str = "",
-                    aliases : List[str] = [], wiki : str = "", ship : shipItem.Ship = None):
+                    aliases : List[str] = [], wiki : str = "", activeShip : shipItem.Ship = None,
+                    techLevel : int = -1, rewardPerSys : int = -1):
         """All parameters are optional. If a parameter is not given, it will be randomly generated.
 
         :param faction: The faction owning this bounty
@@ -89,8 +92,8 @@ class BountyConfig:
         :type aliases: list[str]
         :param wiki: The page to link to as the criminal's wiki, in their info embed
         :type wiki: str
-        :param ship: The shipItem this criminal should equip
-        :type ship: shipItem
+        :param activeShip: The shipItem this criminal should equip
+        :type activeShip: shipItem
         """
         self.faction = faction.lower()
         self.name = name.title()
@@ -104,6 +107,9 @@ class BountyConfig:
         self.answer = answer.title()
         self.checked = checked
         self.reward = reward
+        self.rewardPerSys = rewardPerSys
+        if type(rewardPerSys) == float:
+            self.rewardPerSys = int(rewardPerSys)
         if type(reward) == float:
             self.reward = int(reward)
         self.issueTime = issueTime
@@ -115,7 +121,8 @@ class BountyConfig:
         self.aliases = aliases
         self.wiki = wiki
 
-        self.ship = ship
+        self.activeShip = activeShip
+        self.techLevel = techLevel
 
 
     def generate(self, owningDB : bountyDB.BountyDB, noCriminal : bool = True, forceKeepChecked : bool = False,
@@ -155,10 +162,10 @@ class BountyConfig:
                 if self.name == "":
                     self.builtIn = True
                     self.name = random.choice(bbData.bountyNames[self.faction])
-                    while doDBCheck and owningDB.bountyNameExists(self.name):
+                    while doDBCheck and owningDB.bountyNameExists(self.name, noEscapedCrim=False):
                         self.name = random.choice(bbData.bountyNames[self.faction])
                 else:
-                    if doDBCheck and owningDB.bountyNameExists(self.name):
+                    if doDBCheck and owningDB.bountyNameExists(self.name, noEscapedCrim=False):
                         raise KeyError("BountyConfig: attempted to create config for pre-existing bounty: " + self.name)
 
                     if self.icon == "":
@@ -168,6 +175,9 @@ class BountyConfig:
             if doDBCheck and not owningDB.factionCanMakeBounty(self.faction):
                 raise IndexError("BOUCONF_CONS_FACDBFULL: Attempted to generate new bounty config when " \
                                     + "no slots are available for faction: '" + self.faction + "'")
+
+        if self.techLevel == -1:
+            self.techLevel = gameMaths.pickRandomCriminalTL()
 
         if self.route == []:
             if self.start == "":
@@ -193,8 +203,128 @@ class BountyConfig:
         elif self.answer not in bbData.builtInSystemObjs:
             raise KeyError("Bounty constructor: Invalid answer requested '" + self.answer + "'")
 
+        if self.activeShip is None:
+            if self.isPlayer:
+                raise ValueError("Attempted to generate a player bounty without providing the activeShip")
+
+            # tech leve 0 = guaranteed lowest difficulty loadout
+            if self.techLevel == 0:
+                self.activeShip = shipItem.Ship.fromDict(cfg.level0CrimLoadout)
+            # Otherwise, generate one based on difficulty
+            else:
+                itemTL = self.techLevel - 1
+                if len(bbData.shipKeysByTL[itemTL]) < 1:
+                    raise RuntimeError("Attempted to spawn a bounty at level " + str(self.techLevel) \
+                                        + ", but no ships exist at this level")
+                shipWithPrimaryExists = False
+                for shipKey in bbData.shipKeysByTL[itemTL]:
+                    shipData = bbData.builtInShipData[shipKey]
+                    if "maxPrimaries" in shipData and shipData["maxPrimaries"] > 0:
+                        shipWithPrimaryExists = True
+                        break
+
+                if shipWithPrimaryExists:
+                    shipHasPrimary = False
+                    shipKey = ""
+                    while not shipHasPrimary:
+                        shipKey = random.choice(bbData.shipKeysByTL[itemTL])
+                        shipHasPrimary = "maxPrimaries" in bbData.builtInShipData[shipKey] \
+                                            and bbData.builtInShipData[shipKey]["maxPrimaries"] > 0
+
+                    if shipHasPrimary:
+                        self.activeShip = shipItem.Ship.fromDict(bbData.builtInShipData[shipKey])
+                    else:
+                        newShipData = bbData.builtInShipData[random.choice(bbData.shipKeysByTL[itemTL])]
+                        self.activeShip = shipItem.Ship.fromDict(newShipData)
+
+                    # if self.techLevel < self.activeShip.maxPrimaries:
+                    #     numWeapons = random.randint(self.techLevel, self.activeShip.maxPrimaries)
+                    # else:
+                    #     numWeapons = self.activeShip.maxPrimaries
+                    numWeapons = random.randint(max(1, self.activeShip.maxPrimaries - 1), self.activeShip.maxPrimaries)
+                    for i in range(numWeapons):
+                        self.activeShip.equipWeapon(random.choice(bbData.weaponObjsByTL[itemTL]))
+
+                else:
+                    newShipData = bbData.builtInShipData[random.choice(bbData.shipKeysByTL[itemTL])]
+                    self.activeShip = shipItem.Ship.fromDict(newShipData)
+
+                moduleTypesToEquip = {armourModule.ArmourModule: 0, shieldModule.ShieldModule: 0}
+                reservedSlots = 0
+                # ensure criminals above TL 1 have armour
+                if self.techLevel > 1:
+                    moduleTypesToEquip[armourModule.ArmourModule] = 1
+                    reservedSlots += 1
+                # ensure criminals above TL 3 have shield
+                if self.techLevel > 3:
+                    moduleTypesToEquip[shieldModule.ShieldModule] = 1
+                    reservedSlots += 1
+
+                maxExtraModules = self.activeShip.maxModules - self.activeShip.getNumModulesEquipped()
+                moduleTypesToEquip[moduleItem.ModuleItem] = random.randint(1, maxExtraModules)
+
+                for moduleType in moduleTypesToEquip:
+                    while self.activeShip.canEquipMoreModules() and self.activeShip.canEquipModuleType(moduleType) \
+                            and moduleTypesToEquip[moduleType]:
+                        moduleTL = -1
+                        itemTLHasType = False
+                        while not itemTLHasType:
+                            moduleTL = gameMaths.pickRandomItemTL(self.techLevel) - 1
+                            for item in bbData.moduleObjsByTL[moduleTL]:
+                                if isinstance(item, moduleType):
+                                    itemTLHasType = True
+                                    break
+
+                        itemToEquip = random.choice(bbData.moduleObjsByTL[moduleTL])
+                        while not isinstance(itemToEquip, moduleType):
+                            itemToEquip = random.choice(bbData.moduleObjsByTL[moduleTL])
+
+                        self.activeShip.equipModule(itemToEquip)
+                        moduleTypesToEquip[moduleType] -= 1
+
+                for _ in range(self.activeShip.maxTurrets):
+                    equipTurret = random.randint(1,100)
+                    if equipTurret <= cfg.criminalEquipTurretChance:
+                        # turretTL = self.techLevel - 1
+                        turretTL = gameMaths.pickRandomItemTL(self.techLevel) - 1
+                        tries = 5
+                        while len(bbData.turretObjsByTL[turretTL]) == 0:
+                            turretTL = gameMaths.pickRandomItemTL(self.techLevel) - 1
+                            tries -= 1
+                            if tries == 0:
+                                break
+                        if tries == 0:
+                                break
+                        self.activeShip.equipTurret(random.choice(bbData.turretObjsByTL[turretTL]))
+
+            # Purely random loadout generation
+            # self.activeShip = shipItem.Ship.fromDict(random.choice(list(bbData.builtInShipData.values())))
+            # for i in range(self.activeShip.maxPrimaries):
+            #     self.activeShip.equipWeapon(random.choice(list(bbData.builtInWeaponObjs.values())))
+            # for i in range(random.randint(1, self.activeShip.maxModules)):
+            #     moduleNotFound = True
+            #     while moduleNotFound:
+            #         try:
+            #             self.activeShip.equipModule(random.choice(list(bbData.builtInModuleObjs.values())))
+            #             moduleNotFound = False
+            #         except ValueError:
+            #             pass
+            # for i in range(self.activeShip.maxTurrets):
+            #     equipTurret = random.randint(1,100)
+            #     if equipTurret <= 30:
+            #         turretNotFound = True
+            #         while turretNotFound:
+            #             try:
+            #                 self.activeShip.equipTurret(random.choice(list(bbData.builtInTurretObjs.values())))
+            #                 turretNotFound = False
+            #             except ValueError:
+            #                 pass
+
         if self.reward == -1:
-            self.reward = int(len(self.route) * cfg.bPointsToCreditsRatio)
+            # self.reward = int(len(self.route) * cfg.bPointsToCreditsRatio \
+            #                 + self.activeShip.getValue() * cfg.shipValueRewardPercentage)
+            self.rewardPerSys = gameMaths.rewardPerSysCheck(self.techLevel, self.activeShip.getValue())
+            self.reward = self.rewardPerSys * len(self.route)
         elif self.reward < 0:
             raise ValueError("Bounty constructor: Invalid reward requested '" + str(self.reward) + "'")
         if self.issueTime == -1.0:
