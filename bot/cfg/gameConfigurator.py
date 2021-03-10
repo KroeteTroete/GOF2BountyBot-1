@@ -166,7 +166,7 @@ def _loadToolObjects(dataDB : Dict[str, dict], objsDB : Dict[str, Any], deserial
         objsDB[newTool.name] = newTool
         dataDB[newTool.name]["builtIn"] = True
         if isinstance(newTool, crateTool.CrateTool):
-            bbData.builtInCrateObjs[newTool.name] = newTool
+            bbData.builtInCrateObjs[newTool.typeNum] = newTool
 
 
 def _sortShipKeys():

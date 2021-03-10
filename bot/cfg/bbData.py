@@ -100,5 +100,5 @@ bountyNames = {}
 longestBountyNameLength = 0
 
 shipSkinToolsBySkin = {}
-builtInCrateObjs = {}
+builtInCrateObjs = []
 levelUpCratesByTL = []
