@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ...databases import bountyDB
 
 from . import bountyConfig
-from ...cfg import bbData
+from ...cfg import bbData, cfg
 from . import criminal
 from ...baseClasses import serializable
 from ...scheduling.timedTask import TimedTask
@@ -74,13 +74,23 @@ class Bounty(serializable.Serializable):
         else:
             self.criminal = criminalObj
 
+        if not self.criminal.hasShip:
+            # Don't just claim player ships! players could unequip ship items. Take a deep copy of the ship
+            if config.isPlayer:
+                self.criminal.copyShip(config.activeShip)
+            else:
+                self.criminal.equipShip(config.activeShip)
+
         self.faction = self.criminal.faction
         self.issueTime = config.issueTime
         self.endTime = config.endTime
         self.route = config.route
         self.reward = config.reward
+        self.rewardPerSys = config.rewardPerSys
         self.checked = config.checked
         self.answer = config.answer
+        if self.criminal.techLevel == -1:
+            self.criminal.techLevel = config.techLevel
         self.respawnTT: TimedTask = None
 
 
@@ -124,24 +134,32 @@ class Bounty(serializable.Serializable):
                     the reward credits, and whether this user ID won or not.
         :rtype: dict[int, dict[str, int or bool]]]
         """
+        creditsPool = self.reward
         rewards = {}
         checkedSystems = 0
         for system in self.route:
             if self.systemChecked(system):
                 checkedSystems += 1
                 if self.checked[system] not in rewards:
-                    rewards[self.checked[system]] = {"reward": 0, "checked": 0, "won": False}
+                    rewards[self.checked[system]] = {"reward": 0, "checked": 0, "won": False, "xp":0}
 
-        uncheckedSystems = len(self.route) - checkedSystems
+        winningUserID = self.checked[self.answer]
 
         for system in self.route:
             if self.systemChecked(system):
                 rewards[self.checked[system]]["checked"] += 1
-                if self.answer == system:
-                    rewards[self.checked[system]]["reward"] += int(self.reward / len(self.route)) * (uncheckedSystems + 1)
-                    rewards[self.checked[system]]["won"] = True
-                else:
-                    rewards[self.checked[system]]["reward"] += int(self.reward / len(self.route))
+                if self.checked[system] != winningUserID:
+                    # currentReward = int(self.reward / len(self.route))
+                    # currentReward = bbConfig.bPointsToCreditsRatio
+                    currentReward = self.rewardPerSys
+                    rewards[self.checked[system]]["reward"] += currentReward
+                    creditsPool -= currentReward
+
+        rewards[self.checked[self.answer]]["reward"] = creditsPool
+        rewards[self.checked[self.answer]]["won"] = True
+
+        for user in rewards:
+            rewards[user]["xp"] = int(rewards[user]["reward"] * cfg.bountyRewardToXPGainMult)
         return rewards
 
 
@@ -196,7 +214,7 @@ class Bounty(serializable.Serializable):
         """
         return {"faction": self.faction, "route": self.route, "answer": self.answer, "checked": self.checked,
                 "reward": self.reward, "issueTime": self.issueTime, "endTime": self.endTime,
-                "criminal": self.criminal.toDict(**kwargs)}
+                "criminal": self.criminal.toDict(**kwargs), "rewardPerSys": self.rewardPerSys}
 
 
     @classmethod
@@ -215,7 +233,7 @@ class Bounty(serializable.Serializable):
         dbReload = kwargs["dbReload"] if "dbReload" in kwargs else False
         newCfg = bountyConfig.BountyConfig(faction=bounty["faction"], route=bounty["route"],
                                             answer=bounty["answer"], checked=bounty["checked"], reward=bounty["reward"],
-                                            issueTime=bounty["issueTime"], endTime=bounty["endTime"])
-        return Bounty(dbReload=dbReload, config=newCfg,
-                        criminalObj=criminal.Criminal.fromDict(bounty["criminal"]),
-                        owningDB=owningDB)
+                                            issueTime=bounty["issueTime"], endTime=bounty["endTime"],
+                                            rewardPerSys=bounty["rewardPerSys"])
+        return Bounty(dbReload=dbReload, config=newCfg, owningDB=owningDB,
+                        criminalObj=criminal.Criminal.fromDict(bounty["criminal"]))
