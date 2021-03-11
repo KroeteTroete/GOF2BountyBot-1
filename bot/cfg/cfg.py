@@ -9,7 +9,7 @@ defaultEmojis = {
     "longProcess": UninitializedBasedEmoji("⏳"),
     # When a user message prompts a DM to be sent, this emoji will be added to the message reactions.
     "dmSent": UninitializedBasedEmoji("📬"),
-    "cancel": UninitializedBasedEmoji("🇽"),
+    "cancel": UninitializedBasedEmoji("🚫"),
     "submit": UninitializedBasedEmoji("✅"),
     "spiral": UninitializedBasedEmoji("🌀"),
     "error": UninitializedBasedEmoji("❓"),
