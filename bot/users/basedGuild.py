@@ -734,8 +734,9 @@ class BasedGuild(serializable.Serializable):
             else:
                 shop = guildShop.TechLeveledShop()
         
-
-        newGuild = BasedGuild(guildID, dcGuild, None, announceChannel=announceChannel, playChannel=playChannel,
+        # This will be replaced after guild instancing
+        tempBountiesDB = bountyDB.BountyDB(bbData.bountyFactions, owningBasedGuild=None)
+        newGuild = BasedGuild(guildID, dcGuild, tempBountiesDB, announceChannel=announceChannel, playChannel=playChannel,
                             shop=shop, bountyBoardChannel=bbc, shopDisabled=shop is None,
                             alertRoles=guildDict["alertRoles"] if "alertRoles" in guildDict else {},
                             ownedRoleMenus=guildDict["ownedRoleMenus"] if "ownedRoleMenus" in guildDict else 0,
