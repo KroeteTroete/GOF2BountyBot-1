@@ -411,7 +411,7 @@ class BasedGuild(serializable.Serializable):
         print("Difficulty", newBounty.criminal.techLevel, "New bounty with value:", newBounty.criminal.activeShip.getValue())
         # Create the announcement embed
         bountyEmbed = lib.discordUtil.makeEmbed(titleTxt=lib.discordUtil.criminalNameOrDiscrim(newBounty.criminal),
-                                                desc=cfg.defaultEmojis.newBounty + " __New Bounty Available__",
+                                                desc=cfg.defaultEmojis.newBounty.sendable + " __New Bounty Available__",
                                                 col=bbData.factionColours[newBounty.faction],
                                                 thumb=newBounty.criminal.icon, footerTxt=newBounty.faction.title())
         bountyEmbed.add_field(name="**Reward Pool:**", value=str(newBounty.reward) + " Credits")
