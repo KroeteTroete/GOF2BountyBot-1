@@ -196,7 +196,7 @@ def _sortGameObjects(objsDB : Dict[str, Any]) -> List[List[Any]]:
     :rtype: List[List[Any]]
     """
     # Sort module objects by tech level
-    sortedDB = [[] for _ in range(cfg.minTechLevel, cfg.maxTechLevel + 1)]
+    sortedDB = [[]] * (cfg.maxTechLevel - cfg.minTechLevel + 1)
     for obj in objsDB.values():
         sortedDB[obj.techLevel - 1].append(obj)
     return sortedDB
@@ -327,6 +327,7 @@ def loadAllGameObjects():
                         ("weaponObjsByTL", bbData.builtInWeaponObjs),
                         ("turretObjsByTL", bbData.builtInTurretObjs)):
         setattr(bbData, db, _sortGameObjects(objsDB))
+        print(len(db))
         _makeItemSpawnRates(objsDB)
 
     bbData.builtInCrateObjs = {crateType: [] for crateType in cfg.crateTypes}
