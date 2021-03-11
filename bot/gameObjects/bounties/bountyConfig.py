@@ -12,6 +12,7 @@ from ...cfg import bbData, cfg
 from ... import lib
 from ...lib import gameMaths
 from ..items.modules import armourModule, shieldModule, moduleItem
+from ..items import shipItem
 
 
 class BountyConfig:
@@ -242,7 +243,7 @@ class BountyConfig:
                     # else:
                     #     numWeapons = self.activeShip.maxPrimaries
                     numWeapons = random.randint(max(1, self.activeShip.maxPrimaries - 1), self.activeShip.maxPrimaries)
-                    for i in range(numWeapons):
+                    for _ in range(numWeapons):
                         self.activeShip.equipWeapon(random.choice(bbData.weaponObjsByTL[itemTL]))
 
                 else:
