@@ -330,7 +330,7 @@ def loadAllGameObjects():
     # Load in tools
     _loadToolObjects(bbData.builtInToolData, bbData.builtInToolObjs, toolItemFactory.fromDict)
 
-    bbData.levelUpCratesByTL = _makeLevelUpCrates()
+    bbData.builtInCrateObjs["levelUp"] = _makeLevelUpCrates()
 
     # Fetch bounty names and longest bounty name
     for criminalName in bbData.builtInCriminalData:

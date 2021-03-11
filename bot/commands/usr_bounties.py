@@ -6,10 +6,15 @@ from .. import botState, lib
 from ..cfg import cfg, bbData
 from ..gameObjects.battles import duelRequest
 from ..scheduling import timedTask
-from ..reactionMenus import reactionMenu, reactionDuelChallengeMenu, expiryFunctions
+from ..reactionMenus import reactionDuelChallengeMenu, expiryFunctions, confirmationReactionMenu
+from ..users import basedUser
+from ..gameObjects.items import shipItem
+from ..gameObjects.items.weapons import primaryWeapon
+from ..gameObjects.items.tools import crateTool
+from ..lib import gameMaths
 
 
-botCommands.addHelpSection(0, "bounties")
+botCommands.addHelpSection(0, "bounty hunting")
 
 
 async def cmd_check(message : discord.Message, args : str, isDM : bool):
@@ -81,6 +86,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
     # ensure the calling user is not on checking cooldown
     if datetime.utcfromtimestamp(requestedBBUser.bountyCooldownEnd) < datetime.utcnow():
         bountyWon = False
+        bountyLost = False
         systemInBountyRoute = False
         dailyBountiesMaxReached = False
 
@@ -89,30 +95,90 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
             # list of completed bounties to remove from the bounties database
             toPop = []
             for bounty in callingGuild.bountiesDB.getFactionBounties(fac):
+                userLevel = gameMaths.calculateUserBountyHuntingLevel(requestedBBUser.bountyHuntingXP)
+                levelDiff = abs(userLevel - bounty.criminal.techLevel)
+                if bounty.answer == requestedSystem and levelDiff > 1:
+                    lvlMsg = "high" if userLevel > bounty.criminal.techLevel + 1 else "low"
+                    await message.channel.send(":space_invader: You located **" + bounty.criminal.name \
+                                                + "**, but you are too " + lvlMsg + " level to fight them!")
+                    continue
 
                 # Check the passed system in current bounty
                 # If current bounty resides in the requested system
                 checkResult = bounty.check(requestedSystem, message.author.id)
                 if checkResult == 3:
-                    requestedBBUser.bountyWinsToday += 1
-                    if not dailyBountiesMaxReached and requestedBBUser.bountyWinsToday >= cfg.maxDailyBountyWins:
-                        requestedBBUser.dailyBountyWinsReset = lib.timeUtil.tomorrow()
-                        dailyBountiesMaxReached = True
+                    duelResults = duelRequest.fightShips(requestedBBUser.activeShip, bounty.criminal.activeShip,
+                                                            cfg.duelVariancePercent)
+                    statsEmbed = lib.discordUtil.makeEmbed(authorName="**Duel Stats**")
+                    statsEmbed.add_field(name="DPS (" + str(cfg.duelVariancePercent * 100) + "% RNG)",
+                                            value=message.author.mention + ": " \
+                                                + str(round(duelResults["ship1"]["DPS"]["varied"], 2)) + "\n" \
+                                                + bounty.criminal.name + ": " \
+                                                + str(round(duelResults["ship2"]["DPS"]["varied"], 2)))
+                    statsEmbed.add_field(name="Health (" + str(cfg.duelVariancePercent * 100) + "% RNG)",
+                                            value=message.author.mention + ": " \
+                                                + str(round(duelResults["ship1"]["health"]["varied"])) + "\n" \
+                                                + bounty.criminal.name + ": " \
+                                                + str(round(duelResults["ship2"]["health"]["varied"], 2)))
+                    statsEmbed.add_field(name="Time To Kill",
+                                            value=message.author.mention + ": " \
+                                                + (str(round(duelResults["ship1"]["TTK"], 2)) \
+                                                    if duelResults["ship1"]["TTK"] != -1 else "inf.") + "s\n" \
+                                                + bounty.criminal.name + ": " \
+                                                + (str(round(duelResults["ship2"]["TTK"], 2)) \
+                                                    if duelResults["ship2"]["TTK"] != -1 else "inf.") + "s")
 
-                    bountyWon = True
-                    # reward all contributing users
-                    rewards = bounty.calcRewards()
-                    for userID in rewards:
-                        botState.usersDB.getUser(
-                            userID).credits += rewards[userID]["reward"]
-                        botState.usersDB.getUser(
-                            userID).lifetimeCredits += rewards[userID]["reward"]
+                    if duelResults["winningShip"] is not requestedBBUser.activeShip:
+                        bounty.escape()
+                        bountyLost = True
+                        await message.channel.send(bounty.criminal.name + " got away! ",embed=statsEmbed)
+                        # + respawnTT.expiryTime.strftime("%B %d %H %M %S")
+
+                    else:
+                        bountyWon = True
+                        requestedBBUser.bountyWinsToday += 1
+                        if not dailyBountiesMaxReached and requestedBBUser.bountyWinsToday >= cfg.maxDailyBountyWins:
+                            today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+                            requestedBBUser.dailyBountyWinsReset = today + lib.timeUtil.timeDeltaFromDict({"hours": 24})
+                            dailyBountiesMaxReached = True
+
+                        # reward all contributing users
+                        rewards = bounty.calcRewards()
+                        levelUpMsg = ""
+                        for userID in rewards:
+                            currentBBUser = botState.usersDB.getUser(userID)
+                            currentBBUser.credits += rewards[userID]["reward"]
+                            currentBBUser.lifetimeCredits += rewards[userID]["reward"]
+
+                            oldLevel = gameMaths.calculateUserBountyHuntingLevel(currentBBUser.bountyHuntingXP)
+                            currentBBUser.bountyHuntingXP += rewards[userID]["xp"]
+
+                            newLevel = gameMaths.calculateUserBountyHuntingLevel(currentBBUser.bountyHuntingXP)
+                            if newLevel > oldLevel:
+                                levelUpCrate = bbData.builtInCrateObjs["levelUp"][newLevel]
+                                currentBBUser.inactiveTools.addItem(levelUpCrate)
+                                levelUpMsg += "\n:arrow_up: **Level Up!**\n" \
+                                                + lib.discordUtil.userOrMemberName(botState.client.get_user(currentBBUser.id),
+                                                                                    message.guild) \
+                                                + " reached **Bounty Hunter Level " + str(newLevel) \
+                                                + "!** :partying_face:\n" + "You got a **" + levelUpCrate.name + "**."
+
+                        if levelUpMsg != "":
+                            await message.channel.send(levelUpMsg)
+
+                        # Announce the bounty has been completed
+                        await callingGuild.announceBountyWon(bounty, rewards, message.author)
+                        await message.channel.send("__Duel Statistics__",embed=statsEmbed)
+
+                        # criminal ship unequip is delayed until now rather than handled in bounty.check
+                        # to allow for duel info printing.
+                        # this could instead be replaced by bounty.check returning the ShipFight info.
+                        bounty.criminal.clearShip()
+
                     # add this bounty to the list of bounties to be removed
                     toPop += [bounty]
-                    # Announce the bounty has ben completed
-                    await callingGuild.announceBountyWon(bounty, rewards, message.author)
 
-                if checkResult != 0:
+                if checkResult in [2, 3]:
                     systemInBountyRoute = True
                     await callingGuild.updateBountyBoardChannel(bounty, bountyComplete=checkResult == 3)
 
@@ -143,7 +209,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                                         + "** remaining bounty wins today!"))
 
         # If no bounty was won, print an error message
-        else:
+        elif not bountyLost:
             await message.channel.send(":telescope: **" + message.author.display_name \
                                         + "**, you did not find any criminals in **" + requestedSystem.title() \
                                         + "**!\n" + sightedCriminalsStr)
@@ -166,7 +232,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                                     + "**, your *Khador Drive* is still charging! please wait **" + str(minutes) + "m " \
                                     + str(seconds) + "s.**")
 
-botCommands.register("check", cmd_check, 0, aliases=["search"], allowDM=False, helpSection="bounties",
+botCommands.register("check", cmd_check, 0, aliases=["search"], allowDM=False, helpSection="bounty hunting",
                         signatureStr="**check <system>**",
                         shortHelp="Check if any criminals are in the given system, arrest them, and get paid! 💰" \
                         + "\n🌎 This command must be used in your **home server**.")
@@ -268,7 +334,7 @@ async def cmd_bounties(message : discord.Message, args : str, isDM : bool):
                                         + callingGuild.commandPrefix + "route` and `" + callingGuild.commandPrefix \
                                         + "check`!" + maxBountiesMsg)
 
-botCommands.register("bounties", cmd_bounties, 0, allowDM=False, helpSection="bounties",
+botCommands.register("bounties", cmd_bounties, 0, allowDM=False, helpSection="bounty hunting",
                         signatureStr="**bounties** *[faction]*", shortHelp="List all active bounties, " \
                                                                             + "in detail if a faction is specified.",
                         longHelp="If no faction is given, name all currently active bounties.\n" \
@@ -315,7 +381,7 @@ async def cmd_route(message : discord.Message, args : str, isDM : bool):
                         + callingGuild.commandPrefix + "route Trimatix#2244`"
         await message.channel.send(outmsg)
 
-botCommands.register("route", cmd_route, 0, allowDM=False, helpSection="bounties", signatureStr="**route <criminal name>**",
+botCommands.register("route", cmd_route, 0, allowDM=False, helpSection="bounty hunting", signatureStr="**route <criminal name>**",
                         shortHelp="Get the named criminal's current route.",
                         longHelp="Get the named criminal's current route.\n" \
                                     + "For a list of aliases for a given criminal, see `info criminal`.")
@@ -505,7 +571,7 @@ async def cmd_duel(message : discord.Message, args : str, isDM : bool):
 
         await duelRequest.fightDuel(message.author, requestedUser, requestedDuel, message)
 
-botCommands.register("duel", cmd_duel, 0, forceKeepArgsCasing=True, allowDM=False, helpSection="bounties",
+botCommands.register("duel", cmd_duel, 0, forceKeepArgsCasing=True, allowDM=False, helpSection="bounty hunting",
                         signatureStr="**duel [action] [user]** *<stakes>*",
                         shortHelp="Fight other players! Action can be `challenge`, `cancel`, `accept` or `reject`.",
                         longHelp="Fight other players! Action can be `challenge`, `cancel`, `accept` or `reject`. " \
@@ -541,8 +607,74 @@ async def cmd_use(message : discord.Message, args : str, isDM : bool):
             await message.channel.send(result)
 
 
-botCommands.register("use", cmd_use, 0, allowDM=False, helpSection="bounties", signatureStr="**use [tool number]**",
+botCommands.register("use", cmd_use, 0, allowDM=False, helpSection="bounty hunting", signatureStr="**use [tool number]**",
                         shortHelp="Use the tool in your hangar with the given number. See `hangar` for tool numbers.",
                         longHelp="Use the tool in your hangar with the given number. Tool numbers can be seen next your " \
                                     + "items in `hangar tool`. For example, if tool number `1` is a ship skin, `use 1` will" \
                                     + " apply the skin to your active ship.")
+
+
+async def cmd_prestige(message : discord.Message, args : str, isDM : bool):
+    """Reset the calling user's bounty hunter xp to zero and remove all of their items.
+    Can only be used by level 10 bounty hunters.
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: ignored
+    :param bool isDM: Whether or not the command is being called from a DM channel
+    """
+    if not botState.usersDB.userIDExists(message.author.id):
+        await message.channel.send(":x: This command can only be used by level 10 bounty hunters!")
+        return
+
+    callingBBUser = botState.usersDB.getUser(message.author.id)
+    if gameMaths.calculateUserBountyHuntingLevel(callingBBUser.bountyHuntingXP) < 10:
+        await message.channel.send(":x: This command can only be used by level 10 bounty hunters!")
+        return
+
+    commandPrefix = cfg.defaultCommandPrefix if isDM else botState.guildsDB.getGuild(message.guild.id).commandPrefix
+
+    confirmMsg = await message.channel.send("Are you sure you want to prestige now? Your bounty hunter level, loadout, " \
+                                            + "balance, hangar and loma will all be **reset**.\n" \
+                                            + "You will be awarded with a ship upgrade, and a special skins crate!\n" \
+                                            + "You can save items from being removed by storing them in `" \
+                                            + commandPrefix + "kaamo`, but you will not be able to retreive your " \
+                                            + "items until you reach level 10.")
+    confirmResult = await confirmationReactionMenu.InlineConfirmationMenu(confirmMsg, message.author,
+                                                                            cfg.prestigeConfirmTimeoutSeconds).doMenu()
+
+    if cfg.defaultEmojis.accept in confirmResult:
+        callingBBUser.bountyHuntingXP = gameMaths.bountyHuntingXPForLevel(1)
+        callingBBUser.activeShip = shipItem.Ship.fromDict(basedUser.defaultShipLoadoutDict)
+        callingBBUser.credits = 0
+        callingBBUser.inactiveShips.clear()
+        callingBBUser.inactiveModules.clear()
+        callingBBUser.inactiveWeapons.clear()
+        for weaponDict in basedUser.defaultUserDict["inactiveWeapons"]:
+            callingBBUser.inactiveWeapons.addItem(primaryWeapon.PrimaryWeapon.fromDict(weaponDict["item"]),
+                                                    quantity=weaponDict["count"])
+        callingBBUser.inactiveTurrets.clear()
+        callingBBUser.inactiveTools.clear()
+        if callingBBUser.loma is not None:
+            callingBBUser.loma.shipsStock.clear()
+            callingBBUser.loma.weaponsStock.clear()
+            callingBBUser.loma.modulesStock.clear()
+            callingBBUser.loma.turretsStock.clear()
+            callingBBUser.loma.toolsStock.clear()
+
+        callingBBUser.prestiges += 1
+        newCrate = crateTool.CrateTool.fromDict({"type": "bbCrate", "crateType": "special", "typeNum": 0, "builtIn": True})
+        callingBBUser.inactiveTools.addItem(newCrate)
+
+        await message.channel.send("👩‍🚀 **" + lib.discordUtil.userOrMemberName(message.author, message.guild) \
+                                    + " prestiged!** :tada:\n • You got a **" + newCrate.name + "!**")
+    else:
+        await message.channel.send("🛑 Prestige cancelled.")
+
+
+botCommands.register("prestige", cmd_prestige, 0, helpSection="bounty hunting", signatureStr="**prestige**",
+                        shortHelp="Reset your items and bounty hunting XP, in exchange for a ship upgrade! " \
+                            + "Command unlocked at level 10. Kaamo items are saved.",
+                        longHelp="Reset your save data, including your bounty hunter level, loadout, balance, hangar and " \
+                            + "loma. You will be awarded with a ship upgrade available in Loma!\n\n" \
+                            + "You can save items from being removed by first storing them in `Kaamo`. Items stored in " \
+                            + "`Kaamo` will be made accessible again once you reach level 10!")
