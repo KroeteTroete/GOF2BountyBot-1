@@ -34,10 +34,12 @@ defaultEmojis = {
     # Default emoji to assign to bbCrates containing shipSkinTools
     # "skinCrate": UninitializedBasedEmoji(723709178736017419)
     "skinCrate": UninitializedBasedEmoji("🥞"),
-    "defaultCrate": UninitializedBasedEmoji(723709178736017419),
+    # "defaultCrate": UninitializedBasedEmoji(723709178736017419)
+    "defaultCrate": UninitializedBasedEmoji("🥞"),
     
     # Emoji sent with new bounty listings
-    "newBounty": UninitializedBasedEmoji(723709178589347921)
+    # "newBounty": UninitializedBasedEmoji(723709178589347921)
+    "newBounty": UninitializedBasedEmoji("🥞")
 }
 
 timeouts = {
