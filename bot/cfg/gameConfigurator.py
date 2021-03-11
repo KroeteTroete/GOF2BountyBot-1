@@ -327,7 +327,6 @@ def loadAllGameObjects():
                         ("weaponObjsByTL", bbData.builtInWeaponObjs),
                         ("turretObjsByTL", bbData.builtInTurretObjs)):
         setattr(bbData, db, _sortGameObjects(objsDB))
-        print(len(db))
         _makeItemSpawnRates(objsDB)
 
     bbData.builtInCrateObjs = {crateType: [] for crateType in cfg.crateTypes}

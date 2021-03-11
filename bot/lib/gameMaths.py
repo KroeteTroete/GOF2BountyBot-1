@@ -224,7 +224,8 @@ cumulativeCriminalTLChance = makeCumulative(cumulativeCriminalTLChance)
 
 print("[gameMaths] Criminal difficulty spawn rates generated:")
 for criminalTL in range(cfg.minTechLevel - 1, cfg.maxTechLevel + 1):
-    print("\t• level" + str(criminalTL + 1) + ": " + str(truncItemSpawnResolution(cumulativeCriminalTLChance[criminalTL])),
+    print("\t• level " + str(criminalTL + 1) + ": " \
+                + str(truncItemSpawnResolution(cumulativeCriminalTLChance[criminalTL] * 100)),
             end="%\n")
 
 
