@@ -222,7 +222,7 @@ def _makeItemSpawnRates(objsDB : Dict[str, Any]):
 
 
 def _makeLevelUpCrates():
-    crates = [crateTool.CrateTool("$INVALID_CRATE_LUP0$", [], builtIn=True)] + [None] * gameMaths.numTechLevels
+    crates = [crateTool.CrateTool([], "$INVALID_CRATE_LUP0$", [], builtIn=True)] + [None] * gameMaths.numTechLevels
 
     # generate bbCrates for bbShipSkinTools for each player bounty hunter level up
     for level in gameMaths.techLevelRange:
