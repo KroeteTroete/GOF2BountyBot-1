@@ -1,7 +1,7 @@
 # Typing imports
-from __future__ import annotations, Dict, List
+from __future__ import annotations
 
-from typing import Union, TYPE_CHECKING
+from typing import Union, TYPE_CHECKING, Dict, List
 if TYPE_CHECKING:
     from ..gameObjects.battles import duelRequest
 
