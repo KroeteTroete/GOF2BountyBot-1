@@ -391,7 +391,7 @@ async def dev_cmd_show_incompatible_skin(message : discord.Message, args : str, 
             await lib.discordUtil.endLongProcess(message)
 
 
-botState.register("show-incompatible-skin", dev_cmd_show_incompatible_skin, 2, helpSection="skins", useDoc=True)
+botCommands.register("show-incompatible-skin", dev_cmd_show_incompatible_skin, 2, helpSection="skins", useDoc=True)
 
 
 async def dev_cmd_try_all_skins(message : discord.Message, args : str, isDM : bool):
