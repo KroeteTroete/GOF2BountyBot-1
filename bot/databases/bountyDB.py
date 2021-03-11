@@ -153,11 +153,11 @@ class BountyDB(serializable.Serializable):
         else:
             for fac in self.getFactions():
                 try:
-                    return self.bounties[faction].getValueForKeyNamed(name)
+                    return self.bounties[fac].getValueForKeyNamed(name)
                 except KeyError:
                     pass
         
-        raise KeyError("No bounty found for name: '" + name + ("'" if faction == "" else "' and faction: " + faction))
+        raise KeyError("No bounty found for name: '" + name + ("'" if not faction else "' and faction: " + faction))
 
 
     def getEscapedCriminal(self, name: str, faction : str = None) -> criminal.Criminal:
