@@ -400,8 +400,10 @@ class BountyDB(serializable.Serializable):
         if "owningBasedGuild" not in kwargs:
             raise ValueError("missing required kwarg: owningBasedGuild")
 
-        escapedBountiesData = bountyDBDict["escaped"] if "escaped" in bountyDBDict else {fac: {} for fac in bbData.factions}
-        activeBountiesData = bountyDBDict["active"] if "active" in bountyDBDict else {fac: {} for fac in bbData.factions}
+        escapedBountiesData = bountyDBDict["escaped"] if "escaped" in bountyDBDict \
+                                else {fac: AliasableDict() for fac in bbData.factions}
+        activeBountiesData = bountyDBDict["active"] if "active" in bountyDBDict \
+                                else {fac: AliasableDict() for fac in bbData.factions}
 
         # Instanciate a new bountyDB
         newDB = BountyDB(activeBountiesData.keys(), kwargs["owningBasedGuild"])
