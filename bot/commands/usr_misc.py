@@ -1,3 +1,4 @@
+from bot.lib import gameMaths
 import discord
 from datetime import datetime
 from aiohttp import client_exceptions
@@ -196,6 +197,10 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
             statsEmbed.add_field(name="Credits balance:", value=0, inline=True)
             statsEmbed.add_field(name="Total value:", value=str(basedUser.defaultUserValue), inline=True)
             statsEmbed.add_field(name="‎", value="__Bounty Hunting__", inline=False)
+            statsEmbed.add_field(name="Bounty Hunter Level:", value="1")
+            statsEmbed.add_field(name="XP until next level:",
+                                    value=str(gameMaths.bountyHuntingXPForLevel(2) - gameMaths.bountyHuntingXPForLevel(1)))
+            statsEmbed.add_field(name="Prestiges:", value="0")
             statsEmbed.add_field(name="Total systems checked:", value=0, inline=True)
             statsEmbed.add_field(name="Total bounties won:", value=0, inline=True)
             statsEmbed.add_field(name="Total earned from bounties:", value=0, inline=True)
@@ -211,6 +216,11 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
             statsEmbed.add_field(name="Credits balance:", value=str(userObj.credits), inline=True)
             statsEmbed.add_field(name="Total value:", value=str(userObj.getStatByName("value")), inline=True)
             statsEmbed.add_field(name="‎", value="__Bounty Hunting__", inline=False)
+            hunterLvl = gameMaths.calculateUserBountyHuntingLevel(userObj.bountyHuntingXP)
+            statsEmbed.add_field(name="Bounty Hunter Level:", value=str(hunterLvl))
+            statsEmbed.add_field(name="XP until next level:",
+                                    value=str(gameMaths.bountyHuntingXPForLevel(hunterLvl + 1) - userObj.bountyHuntingXP))
+            statsEmbed.add_field(name="Prestiges:", value=str(userObj.prestiges))
             statsEmbed.add_field(name="Total systems checked:", value=str( userObj.systemsChecked), inline=True)
             statsEmbed.add_field(name="Total bounties won:", value=str( userObj.bountyWins), inline=True)
             statsEmbed.add_field(name="Total credits earned from bounties:", value=str( userObj.lifetimeCredits), inline=True)
