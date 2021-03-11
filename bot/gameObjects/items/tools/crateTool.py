@@ -1,3 +1,4 @@
+from bot.lib import gameMaths
 import random
 from . import toolItem
 from .... import lib, botState
@@ -5,11 +6,12 @@ from discord import Message
 from ....cfg import cfg, bbData
 from .. import gameItem
 from ....reactionMenus.confirmationReactionMenu import InlineConfirmationMenu
+from typing import List
 
 
 @gameItem.spawnableItem
 class CrateTool(toolItem.ToolItem):
-    def __init__(self, itemPool, name : str = "", value : int = 0, wiki : str = "",
+    def __init__(self, itemPool: List[gameItem.GameItem], name : str = "", value : int = 0, wiki : str = "",
             manufacturer : str = "", icon : str = cfg.defaultCrateIcon, emoji : lib.emojis.BasedEmoji = None,
             techLevel : int = -1, builtIn : bool = False, crateType : str = "", typeNum : int = 0):
 
