@@ -1,5 +1,6 @@
 # Set up bot config
 
+from bot.gameObjects.items import shipItem
 from .cfg import cfg, versionInfo, bbData, gameConfigurator
 
 
@@ -28,12 +29,6 @@ from .scheduling.timedTask import TimedTask
 from .scheduling.timedTaskHeap import TimedTaskHeap
 from bot.scheduling import timedTaskHeap
 from .reactionMenus import reactionMenu
-
-
-# BountyBot imports
-
-from .gameObjects.bounties import bountyConfig, bounty
-from .gameObjects.items.tools import crateTool
 
 
 
