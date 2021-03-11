@@ -306,7 +306,7 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
                 if arg.lower().startswith(kwArg):
                     kwArgs[kwArg[:-1]] = arg[len(kwArg):]
                     break
-        # except lib.emojis.UnrecognisedCustomEmoji:
+        # except lib.exceptions.UnrecognisedCustomEmoji:
         #     await message.channel.send(":x: I don't know your " + str(argPos) + lib.stringTyping.getNumExtension(argPos) \
         #                                 + " emoji!\nYou can only use built in emojis, or custom emojis " \
         #                                 + "that are in this server.")

@@ -583,7 +583,7 @@ async def cmd_info_skin(message : discord.Message, args : str, isDM : bool):
             if "emoji" in shipData:
                 try:
                     compatibleShipStrs.append(lib.emojis.dumbEmojiFromStr(shipData["emoji"], rejectInvalid=True).sendable)
-                except lib.emojis.UnrecognisedCustomEmoji:
+                except lib.exceptions.UnrecognisedCustomEmoji:
                     pass
                 else:
                     continue
