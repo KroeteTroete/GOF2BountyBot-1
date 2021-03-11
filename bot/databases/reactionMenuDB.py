@@ -70,8 +70,8 @@ async def fromDict(dbDict: dict) -> ReactionMenuDB:
                                 category="reactionMenus", eventType="unknMsg")
             continue
 
-        if menuData["type"] in reactionMenu.saveableNameMenuTypes:
-            newDB[int(msgID)] = reactionMenu.saveableNameMenuTypes[menuData["type"]].fromDict(menuData, msg=msg)
+        if reactionMenu.isSaveableMenuTypeName(menuData["type"]):
+            newDB[int(msgID)] = reactionMenu.saveableMenuClassFromName(menuData["type"]).fromDict(menuData, msg=msg)
         else:
             botState.logger.log("reactionMenuDB", "fromDict",
                                 "Attempted to fromDict a non-saveable menu type, ignoring and removing. " \

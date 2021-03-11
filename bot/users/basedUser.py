@@ -816,7 +816,7 @@ class BasedUser(serializable.Serializable):
         ownedMenus = {}
         if "ownedMenus" in userDict:
             for menuType in userDict["ownedMenus"]:
-                if menuType not in reactionMenu.saveableNameMenuTypes:
+                if not reactionMenu.isSaveableMenuTypeName(menuType):
                     botState.logger.log("basedUser", "fromDict",
                                         "Ignoring unrecognised reactionmenu type: " + menuType + "stored in user #" + str(id),
                                         category="reactionMenus", eventType="unknMenuType")
