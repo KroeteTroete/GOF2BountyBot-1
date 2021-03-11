@@ -254,9 +254,17 @@ class BasedUser(serializable.Serializable):
 
         self.bountyWinsToday = bountyWinsToday
         self.dailyBountyWinsReset = dailyBountyWinsReset
+        self.bountyHuntingXP = bountyHuntingXP
 
         self.homeGuildID = homeGuildID
         self.guildTransferCooldownEnd = guildTransferCooldownEnd
+
+        self.kaamo = kaamo
+        self.loma = loma
+
+        self.prestiges = prestiges
+
+        self.ownedMenus = ownedMenus
 
 
     def resetUser(self):
