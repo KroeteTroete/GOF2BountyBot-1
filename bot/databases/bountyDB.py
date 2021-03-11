@@ -32,9 +32,11 @@ class BountyDB(serializable.Serializable):
         :param BasedGuild owningBasedGuild: The guild that owns this bountyDB
         """
         # Dictionary of faction name : dict of criminal : bounty
-        self.bounties: Dict[str, AliasableDict[criminal.Criminal, bounty.Bounty]] = {f: {} for f in factions}
+        self.bounties: Dict[str, AliasableDict[criminal.Criminal, bounty.Bounty]] = {f: AliasableDict() \
+                                                                                        for f in factions}
         # Dictionary of faction name : dict of criminal : bounty
-        self.escapedBounties: Dict[str, AliasableDict[criminal.Criminal, bounty.Bounty]] = {f: {} for f in factions}
+        self.escapedBounties: Dict[str, AliasableDict[criminal.Criminal, bounty.Bounty]] = {f: AliasableDict() \
+                                                                                                for f in factions}
         self.latestBounty: bounty.Bounty = None
         self.owningBasedGuild = owningBasedGuild
 
