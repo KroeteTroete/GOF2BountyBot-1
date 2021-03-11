@@ -168,6 +168,9 @@ def _loadToolObjects(dataDB : Dict[str, dict], objsDB : Dict[str, Any], deserial
         if isinstance(newTool, crateTool.CrateTool):
             if newTool.crateType not in bbData.builtInCrateObjs:
                 raise ValueError("Unknown cratetype for crate '" + newTool.name + "': " + newTool.crateType)
+            if len(bbData.builtInCrateObjs[newTool.crateType]) < newTool.typeNum + 1:
+                slotsToAdd = newTool.typeNum - len(bbData.builtInCrateObjs[newTool.crateType]) + 1
+                bbData.builtInCrateObjs[newTool.crateType] += [None] * slotsToAdd
             bbData.builtInCrateObjs[newTool.crateType][newTool.typeNum] = newTool
 
 
