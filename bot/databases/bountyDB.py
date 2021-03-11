@@ -6,6 +6,7 @@ from typing import List
 from ..baseClasses import serializable
 from ..baseClasses.aliasableDict import AliasableDict
 from ..cfg import cfg
+from ..users import basedGuild
 
 
 class BountyDB(serializable.Serializable):
@@ -24,15 +25,17 @@ class BountyDB(serializable.Serializable):
     :vartype latestBounty: gameObjects.bounties.bounty.Bounty
     """
 
-    def __init__(self, factions: List[str]):
+    def __init__(self, factions: List[str], owningBasedGuild: "basedGuild.BasedGuild"):
         """
         :param List[str] factions: list of unique faction names useable in this db's bounties
+        :param BasedGuild owningBasedGuild: The guild that owns this bountyDB
         """
         # Dictionary of faction name : dict of criminal : bounty
         self.bounties: Dict[str, AliasableDict[criminal.Criminal, bounty.Bounty]] = {f: {} for f in factions}
         # Dictionary of faction name : dict of criminal : bounty
         self.escapedBounties: Dict[str, AliasableDict[criminal.Criminal, bounty.Bounty]] = {f: {} for f in factions}
         self.latestBounty: bounty.Bounty = None
+        self.owningBasedGuild = owningBasedGuild
 
 
     def getFactions(self) -> List[bounty.Bounty]:
@@ -393,12 +396,14 @@ class BountyDB(serializable.Serializable):
         :rtype: bountyDB
         """
         dbReload = kwargs["dbReload"] if "dbReload" in kwargs else False
+        if "owningBasedGuild" not in kwargs:
+            raise ValueError("missing required kwarg: owningBasedGuild")
 
         escapedBountiesData = bountyDBDict["escaped"] if "escaped" in bountyDBDict else {}
         activeBountiesData = bountyDBDict["active"] if "active" in bountyDBDict else {}
 
         # Instanciate a new bountyDB
-        newDB = BountyDB(activeBountiesData.keys())
+        newDB = BountyDB(activeBountiesData.keys(), kwargs["owningBasedGuild"])
         # Iterate over all factions in the DB
         for fac in activeBountiesData.keys():
             # Convert each serialised bounty into a bounty object

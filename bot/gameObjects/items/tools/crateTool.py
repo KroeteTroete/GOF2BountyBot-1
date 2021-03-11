@@ -110,10 +110,8 @@ class CrateTool(toolItem.ToolItem):
 
         if "builtIn" in crateDict and crateDict["builtIn"]:
             if "crateType" in crateDict:
-                if crateDict["crateType"] == "levelUp":
-                    return bbData.levelUpCratesByTL[crateDict["typeNum"]-1]
-                elif crateDict["crateType"] == "special":
-                    return bbData.builtInCrateObjs[crateDict["typeNum"]]
+                if crateDict["crateType"] in bbData.builtInCrateObjs:
+                    return bbData.builtInCrateObjs[crateDict["crateType"]][crateDict["typeNum"]]
                 else:
                     raise ValueError("Unknown crateType: " + str(crateDict["crateType"]))
             else:

@@ -356,6 +356,9 @@ maxModuleTypeEquips = {     "bbArmourModule": 1,
                             "bbShieldInjectorModule": 1,
                             "bbTimeExtenderModule": 1}
 
+# valid types of crateItem that are in the game. Each will be associated with a zero-indexed (crateNum) list of crate objects
+crateTypes = ("levelUp", "special")
+
 
 
 ##### MISC #####

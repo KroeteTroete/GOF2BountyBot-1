@@ -166,7 +166,9 @@ def _loadToolObjects(dataDB : Dict[str, dict], objsDB : Dict[str, Any], deserial
         objsDB[newTool.name] = newTool
         dataDB[newTool.name]["builtIn"] = True
         if isinstance(newTool, crateTool.CrateTool):
-            bbData.builtInCrateObjs[newTool.typeNum] = newTool
+            if newTool.crateType not in bbData.builtInCrateObjs:
+                raise ValueError("Unknown cratetype for crate '" + newTool.name + "': " + newTool.crateType)
+            bbData.builtInCrateObjs[newTool.crateType][newTool.typeNum] = newTool
 
 
 def _sortShipKeys():
@@ -217,7 +219,7 @@ def _makeItemSpawnRates(objsDB : Dict[str, Any]):
 
 
 def _makeLevelUpCrates():
-    crates = [None] * gameMaths.numTechLevels
+    crates = [crateTool.CrateTool("$INVALID_CRATE_LUP0$", [], builtIn=True)] + [None] * gameMaths.numTechLevels
 
     # generate bbCrates for bbShipSkinTools for each player bounty hunter level up
     for level in gameMaths.techLevelRange:
@@ -230,7 +232,7 @@ def _makeLevelUpCrates():
                         shipSkins.add(bbData.builtInShipSkins[skinName])
 
         itemPool = [bbData.shipSkinToolsBySkin[skin] for skin in shipSkins]
-        crates[level-1] = crateTool.CrateTool.fromDict(itemPool, "Level " + str(level) + " skins crate", techLevel=level,
+        crates[level] = crateTool.CrateTool.fromDict(itemPool, "Level " + str(level) + " skins crate", techLevel=level,
                                                         builtIn=True, value=gameMaths.crateValueForTL(level))
     return crates
 
@@ -324,6 +326,7 @@ def loadAllGameObjects():
         setattr(bbData, db, _sortGameObjects(objsDB))
         _makeItemSpawnRates(objsDB)
 
+    bbData.builtInCrateObjs = {crateType: [] for crateType in cfg.crateTypes}
     # Load in tools
     _loadToolObjects(bbData.builtInToolData, bbData.builtInToolObjs, toolItemFactory.fromDict)
 

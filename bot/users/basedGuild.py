@@ -722,16 +722,9 @@ class BasedGuild(serializable.Serializable):
 
 
         if "bountiesDisabled" in guildDict and guildDict["bountiesDisabled"]:
-            bountiesDB = None
             bbc = None
-        else:
-            if "bountiesDB" in guildDict:
-                bountiesDB = bountyDB.BountyDB.fromDict(guildDict["bountiesDB"], dbReload=dbReload)
-            else:
-                bountiesDB = bountyDB.BountyDB(bbData.bountyFactions)
-            
-            if "bountyBoardChannel" in guildDict and guildDict["bountyBoardChannel"] != -1:
-                bbc = bountyBoardChannel.bountyBoardChannel.fromDict(guildDict["bountyBoardChannel"])
+        elif "bountyBoardChannel" in guildDict and guildDict["bountyBoardChannel"] != -1:
+            bbc = bountyBoardChannel.bountyBoardChannel.fromDict(guildDict["bountyBoardChannel"])
         
         if "shopDisabled" in guildDict and guildDict["shopDisabled"]:
             shop = None
@@ -742,10 +735,19 @@ class BasedGuild(serializable.Serializable):
                 shop = guildShop.TechLeveledShop()
         
 
-        return BasedGuild(guildID, dcGuild, bountiesDB, announceChannel=announceChannel, playChannel=playChannel,
+        newGuild = BasedGuild(guildID, dcGuild, None, announceChannel=announceChannel, playChannel=playChannel,
                             shop=shop, bountyBoardChannel=bbc, shopDisabled=shop is None,
                             alertRoles=guildDict["alertRoles"] if "alertRoles" in guildDict else {},
                             ownedRoleMenus=guildDict["ownedRoleMenus"] if "ownedRoleMenus" in guildDict else 0,
                             bountiesDisabled=guildDict["bountiesDisabled"] if "bountiesDisabled" in guildDict else False,
                             commandPrefix=guildDict["commandPrefix"] if "commandPrefix" in guildDict else \
                                             cfg.defaultCommandPrefix)
+
+        if "bountiesDisabled" not in guildDict or not guildDict["bountiesDisabled"]:
+            if "bountiesDB" in guildDict:
+                bountiesDB = bountyDB.BountyDB.fromDict(guildDict["bountiesDB"], dbReload=dbReload, owningBasedGuild=newGuild)
+            else:
+                bountiesDB = bountyDB.BountyDB(bbData.bountyFactions, owningBasedGuild=newGuild)
+            newGuild.bountiesDB = bountiesDB
+
+        return newGuild

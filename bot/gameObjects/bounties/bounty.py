@@ -9,6 +9,8 @@ from ...cfg import bbData, cfg
 from . import criminal
 from ...baseClasses import serializable
 from ...scheduling.timedTask import TimedTask
+from datetime import datetime
+from ... import lib, botState
 
 
 class Bounty(serializable.Serializable):
@@ -92,6 +94,7 @@ class Bounty(serializable.Serializable):
         if self.criminal.techLevel == -1:
             self.criminal.techLevel = config.techLevel
         self.respawnTT: TimedTask = None
+        self.owningDB = owningDB
 
 
     def check(self, system : str, userID : int) -> int:
@@ -172,7 +175,7 @@ class Bounty(serializable.Serializable):
         return self.respawnTT is None
 
 
-    def escape(self, respawnTT: TimedTask):
+    def escape(self, respawnTT : TimedTask = None):
         """Mark this bounty as escaped.
         Does not schedule respawning or register the bounty as escaped in the owning bountyDB.
 
@@ -181,7 +184,28 @@ class Bounty(serializable.Serializable):
         """
         if self.isEscaped():
             raise ValueError("Attempted to mark a bounty as escaped that is already escaped: " + self.criminal.name)
-        self.respawnTT = respawnTT
+        
+        if respawnTT is None:
+            self.respawnTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict({"minutes": len(self.route)}), 
+                                        expiryFunction=self._respawn,
+                                        rescheduleOnExpiryFuncFailure=True)
+        else:
+            self.respawnTT = respawnTT
+
+        botState.taskScheduler.scheduleTask(self.respawnTT)
+        self.owningDB.addEscapedBounty(self, len(self.route))
+
+
+    async def _respawn(self):
+        if not self.isEscaped():
+            raise ValueError("Attempted to respawn on a bounty that is not awaiting respawn: " + self.criminal.name)
+
+        respawnArgs = {"newBounty": self,
+                        "newConfig": bountyConfig.BountyConfig(faction=self.criminal.faction,
+                                                                techLevel=self.criminal.techLevel)}
+        await self.owningDB.owningBasedGuild.spawnAndAnnounceBounty(respawnArgs)
+        self.owningDB.removeEscapedCriminal(self.criminal)
+        self.respawnTT = None
 
 
     def cancelRespawn(self):
@@ -203,7 +227,6 @@ class Bounty(serializable.Serializable):
         if not self.isEscaped():
             raise ValueError("Attempted to forceRespawn on a bounty that is not awaiting respawn: " + self.criminal.name)
         self.respawnTT.forceExpire(callExpiryFunc=True)
-        self.respawnTT = None
 
 
     def toDict(self, **kwargs) -> dict:
@@ -212,13 +235,18 @@ class Bounty(serializable.Serializable):
         :return: A dictionary representation of this bounty.
         :rtype: dict
         """
-        return {"faction": self.faction, "route": self.route, "answer": self.answer, "checked": self.checked,
-                "reward": self.reward, "issueTime": self.issueTime, "endTime": self.endTime,
+        data = {"faction": self.faction, "route": self.route, "answer": self.answer, "checked": self.checked,
+                "reward": self.reward, "issueTime": self.issueTime, "endTime": self.endTime, "isEscaped": self.isEscaped(),
                 "criminal": self.criminal.toDict(**kwargs), "rewardPerSys": self.rewardPerSys}
+        
+        if self.isEscaped():
+            data["respawnTime"] = self.respawnTT.expiryTime.timestamp()
+
+        return data
 
 
     @classmethod
-    def fromDict(cls, bounty : dict, **kwargs) -> Bounty:
+    def fromDict(cls, data : dict, **kwargs) -> Bounty:
         """Factory function constructing a new bounty from a dictionary serialized description - the opposite of bounty.toDict
 
         :param dict bounty: Dictionary containing all information needed to construct the desired bounty
@@ -231,9 +259,21 @@ class Bounty(serializable.Serializable):
         else:
             owningDB = None
         dbReload = kwargs["dbReload"] if "dbReload" in kwargs else False
-        newCfg = bountyConfig.BountyConfig(faction=bounty["faction"], route=bounty["route"],
-                                            answer=bounty["answer"], checked=bounty["checked"], reward=bounty["reward"],
-                                            issueTime=bounty["issueTime"], endTime=bounty["endTime"],
-                                            rewardPerSys=bounty["rewardPerSys"])
-        return Bounty(dbReload=dbReload, config=newCfg, owningDB=owningDB,
-                        criminalObj=criminal.Criminal.fromDict(bounty["criminal"]))
+
+        newCfg = bountyConfig.BountyConfig(faction=data["faction"], route=data["route"],
+                                            answer=data["answer"], checked=data["checked"], reward=data["reward"],
+                                            issueTime=data["issueTime"], endTime=data["endTime"],
+                                            rewardPerSys=data["rewardPerSys"])
+                                            
+        newBounty = Bounty(dbReload=dbReload, config=newCfg, owningDB=owningDB,
+                            criminalObj=criminal.Criminal.fromDict(data["criminal"]))
+        
+        if "isEscaped" in data and data["isEscaped"]:
+            if "respawnTime" not in data:
+                raise ValueError("Not given respawnTime for escaped criminal " + data["criminal"]["name"])
+            respawnTT = TimedTask(expiryTime=datetime.utcfromtimestamp(data["respawnTime"]), 
+                                    expiryFunction=newBounty._respawn,
+                                    rescheduleOnExpiryFuncFailure=True)
+            newBounty.escape(respawnTT=respawnTT)
+
+        return newBounty

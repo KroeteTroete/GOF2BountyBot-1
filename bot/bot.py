@@ -17,6 +17,7 @@ import traceback
 import asyncio
 import signal
 import aiohttp
+import sys
 
 
 # BASED Imports
@@ -26,6 +27,16 @@ from .databases import guildDB, reactionMenuDB, userDB
 from .scheduling.timedTask import TimedTask
 from .scheduling.timedTaskHeap import TimedTaskHeap
 from bot.scheduling import timedTaskHeap
+
+
+# BountyBot imports
+
+from .gameObjects.bounties import bountyConfig, bounty
+from .gameObjects.items.tools import crateTool
+
+
+
+##### UTIL FUNCTIONS #####
 
 
 async def checkForUpdates():

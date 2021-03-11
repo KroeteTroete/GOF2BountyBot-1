@@ -100,5 +100,6 @@ bountyNames = {}
 longestBountyNameLength = 0
 
 shipSkinToolsBySkin = {}
-builtInCrateObjs = []
+# Dict of crate type (str) : list of crates
+builtInCrateObjs = {}
 levelUpCratesByTL = []
