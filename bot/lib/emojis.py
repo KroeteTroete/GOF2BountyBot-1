@@ -219,8 +219,6 @@ class BasedEmoji(serializable.Serializable):
         s may also be a BasedEmoji (returns s), a dictionary-serialized BasedEmoji (returns BasedEmoji.fromDict(s)), or
         only an ID of a discord custom emoji (may be either str or int)
 
-        If
-
         :param str s: A string containing only one of: A unicode emoji, a discord custom emoji, or
                         the ID of a discord custom emoji.
         :param bool rejectInvalid: When true, an exception is guaranteed to raise if an invalid emoji is requested,
