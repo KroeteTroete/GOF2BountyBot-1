@@ -176,62 +176,62 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
     # If a user is specified
     else:
         requestedUser = lib.discordUtil.getMemberByRefOverDB(args, dcGuild=message.guild)
-        # verify the user mention
-        if requestedUser is None:
-            if isDM:
-                prefix = cfg.defaultCommandPrefix
-            else:
-                prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
-            await message.channel.send(":x: **Invalid user!** use `" + prefix + "balance` to display your own balance, or `" \
-                                        + prefix + "balance <user>` to display someone else's balance!\n" \
-                                        + "When referencing a player from another server, you must use their long ID number")
-            return
-
-        # create the stats embed
-        statsEmbed = lib.discordUtil.makeEmbed(col=bbData.factionColours["neutral"], desc="__Pilot Statistics__",
-                                                titleTxt=lib.discordUtil.userOrMemberName(requestedUser, message.guild),
-                                                footerTxt="Pilot number #" + requestedUser.discriminator,
-                                                thumb=requestedUser.avatar_url_as(size=64))
-        # If the requested user is not in the database, don't bother adding them just print zeroes
-        if not botState.usersDB.idExists(requestedUser.id):
-            statsEmbed.add_field(name="Credits balance:", value=0, inline=True)
-            statsEmbed.add_field(name="Total value:", value=str(basedUser.defaultUserValue), inline=True)
-            statsEmbed.add_field(name="‎", value="__Bounty Hunting__", inline=False)
-            statsEmbed.add_field(name="Bounty Hunter Level:", value="1")
-            statsEmbed.add_field(name="XP until next level:",
-                                    value=str(gameMaths.bountyHuntingXPForLevel(2) - gameMaths.bountyHuntingXPForLevel(1)))
-            statsEmbed.add_field(name="Prestiges:", value="0")
-            statsEmbed.add_field(name="Total systems checked:", value=0, inline=True)
-            statsEmbed.add_field(name="Total bounties won:", value=0, inline=True)
-            statsEmbed.add_field(name="Total earned from bounties:", value=0, inline=True)
-            statsEmbed.add_field(name="‎", value="__Dueling__", inline=False)
-            statsEmbed.add_field(name="Duels won:", value="0", inline=True)
-            statsEmbed.add_field(name="Duels lost:", value="0", inline=True)
-            statsEmbed.add_field(name="Total credits won:", value="0", inline=True)
-            statsEmbed.add_field(name="Total credits lost:", value="0", inline=True)
-
-        # Otherwise, print the stats stored in the user's database entry
+    # verify the user mention
+    if requestedUser is None:
+        if isDM:
+            prefix = cfg.defaultCommandPrefix
         else:
-            userObj = botState.usersDB.getUser(requestedUser.id)
-            statsEmbed.add_field(name="Credits balance:", value=str(userObj.credits), inline=True)
-            statsEmbed.add_field(name="Total value:", value=str(userObj.getStatByName("value")), inline=True)
-            statsEmbed.add_field(name="‎", value="__Bounty Hunting__", inline=False)
-            hunterLvl = gameMaths.calculateUserBountyHuntingLevel(userObj.bountyHuntingXP)
-            statsEmbed.add_field(name="Bounty Hunter Level:", value=str(hunterLvl))
-            statsEmbed.add_field(name="XP until next level:",
-                                    value=str(gameMaths.bountyHuntingXPForLevel(hunterLvl + 1) - userObj.bountyHuntingXP))
-            statsEmbed.add_field(name="Prestiges:", value=str(userObj.prestiges))
-            statsEmbed.add_field(name="Total systems checked:", value=str( userObj.systemsChecked), inline=True)
-            statsEmbed.add_field(name="Total bounties won:", value=str( userObj.bountyWins), inline=True)
-            statsEmbed.add_field(name="Total credits earned from bounties:", value=str( userObj.lifetimeCredits), inline=True)
-            statsEmbed.add_field(name="‎", value="__Dueling__", inline=False)
-            statsEmbed.add_field(name="Duels won:", value=str( userObj.duelWins), inline=True)
-            statsEmbed.add_field(name="Duels lost:", value=str( userObj.duelLosses), inline=True)
-            statsEmbed.add_field(name="Total credits won:", value=str( userObj.duelCreditsWins), inline=True)
-            statsEmbed.add_field(name="Total credits lost:", value=str( userObj.duelCreditsLosses), inline=True)
+            prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
+        await message.channel.send(":x: **Invalid user!** use `" + prefix + "balance` to display your own balance, or `" \
+                                    + prefix + "balance <user>` to display someone else's balance!\n" \
+                                    + "When referencing a player from another server, you must use their long ID number")
+        return
 
-        # send the stats embed
-        await message.channel.send(embed=statsEmbed)
+    # create the stats embed
+    statsEmbed = lib.discordUtil.makeEmbed(col=bbData.factionColours["neutral"], desc="__Pilot Statistics__",
+                                            titleTxt=lib.discordUtil.userOrMemberName(requestedUser, message.guild),
+                                            footerTxt="Pilot number #" + requestedUser.discriminator,
+                                            thumb=requestedUser.avatar_url_as(size=64))
+    # If the requested user is not in the database, don't bother adding them just print zeroes
+    if not botState.usersDB.idExists(requestedUser.id):
+        statsEmbed.add_field(name="Credits balance:", value=0, inline=True)
+        statsEmbed.add_field(name="Total value:", value=str(basedUser.defaultUserValue), inline=True)
+        statsEmbed.add_field(name="‎", value="__Bounty Hunting__", inline=False)
+        statsEmbed.add_field(name="Bounty Hunter Level:", value="1")
+        statsEmbed.add_field(name="XP until next level:",
+                                value=str(gameMaths.bountyHuntingXPForLevel(2) - gameMaths.bountyHuntingXPForLevel(1)))
+        statsEmbed.add_field(name="Prestiges:", value="0")
+        statsEmbed.add_field(name="Total systems checked:", value=0, inline=True)
+        statsEmbed.add_field(name="Total bounties won:", value=0, inline=True)
+        statsEmbed.add_field(name="Total earned from bounties:", value=0, inline=True)
+        statsEmbed.add_field(name="‎", value="__Dueling__", inline=False)
+        statsEmbed.add_field(name="Duels won:", value="0", inline=True)
+        statsEmbed.add_field(name="Duels lost:", value="0", inline=True)
+        statsEmbed.add_field(name="Total credits won:", value="0", inline=True)
+        statsEmbed.add_field(name="Total credits lost:", value="0", inline=True)
+
+    # Otherwise, print the stats stored in the user's database entry
+    else:
+        userObj = botState.usersDB.getUser(requestedUser.id)
+        statsEmbed.add_field(name="Credits balance:", value=str(userObj.credits), inline=True)
+        statsEmbed.add_field(name="Total value:", value=str(userObj.getStatByName("value")), inline=True)
+        statsEmbed.add_field(name="‎", value="__Bounty Hunting__", inline=False)
+        hunterLvl = gameMaths.calculateUserBountyHuntingLevel(userObj.bountyHuntingXP)
+        statsEmbed.add_field(name="Bounty Hunter Level:", value=str(hunterLvl))
+        statsEmbed.add_field(name="XP until next level:",
+                                value=str(gameMaths.bountyHuntingXPForLevel(hunterLvl + 1) - userObj.bountyHuntingXP))
+        statsEmbed.add_field(name="Prestiges:", value=str(userObj.prestiges))
+        statsEmbed.add_field(name="Total systems checked:", value=str( userObj.systemsChecked), inline=True)
+        statsEmbed.add_field(name="Total bounties won:", value=str( userObj.bountyWins), inline=True)
+        statsEmbed.add_field(name="Total credits earned from bounties:", value=str( userObj.lifetimeCredits), inline=True)
+        statsEmbed.add_field(name="‎", value="__Dueling__", inline=False)
+        statsEmbed.add_field(name="Duels won:", value=str( userObj.duelWins), inline=True)
+        statsEmbed.add_field(name="Duels lost:", value=str( userObj.duelLosses), inline=True)
+        statsEmbed.add_field(name="Total credits won:", value=str( userObj.duelCreditsWins), inline=True)
+        statsEmbed.add_field(name="Total credits lost:", value=str( userObj.duelCreditsLosses), inline=True)
+
+    # send the stats embed
+    await message.channel.send(embed=statsEmbed)
 
 botCommands.register("stats", cmd_stats, 0, aliases=["profile"], forceKeepArgsCasing=True, allowDM=True,
                         signatureStr="**stats** *[user]*",
