@@ -79,8 +79,8 @@ class BountyDB(serializable.Serializable):
         if self.factionExists(faction):
             raise KeyError("Attempted to add a faction that already exists: " + faction)
         # Initialise faction's database to empty
-        self.bounties[faction] = {}
-        self.escapedBounties[faction] = {}
+        self.bounties[faction] = AliasableDict()
+        self.escapedBounties[faction] = AliasableDict()
 
 
     def removeFaction(self, faction: str):
@@ -110,8 +110,8 @@ class BountyDB(serializable.Serializable):
         if self.latestBounty.faction == faction:
             self.latestBounty = None
         # Empty the faction's bounties
-        self.bounties[faction] = {}
-        self.escapedBounties[faction] = {}
+        self.bounties[faction] = AliasableDict()
+        self.escapedBounties[faction] = AliasableDict()
 
 
     def clearAllBounties(self):
@@ -272,7 +272,7 @@ class BountyDB(serializable.Serializable):
             raise ValueError("Attempted to add a bounty whose name already exists: " + bounty.criminal.name)
 
         # Add the bounty to the database
-        self.bounties[bounty.faction].append(bounty)
+        self.bounties[bounty.faction][bounty.criminal] = bounty
         self.latestBounty = bounty
 
 
@@ -297,7 +297,7 @@ class BountyDB(serializable.Serializable):
             raise ValueError("Attempted to add a bounty whose name already exists: " + bounty.criminal.name)
 
         # Add the bounty to the database
-        self.escapedBounties[bounty.faction].append(bounty)
+        self.escapedBounties[bounty.faction][bounty.criminal] = bounty
 
 
     def removeEscapedCriminal(self, crim):
@@ -308,7 +308,7 @@ class BountyDB(serializable.Serializable):
         :param criminal crim: The criminal to remove from the record
         :raise KeyError: If criminal is not registered in the db
         """
-        if self.escapedCriminalExists(crim):
+        if not self.escapedCriminalExists(crim):
             raise KeyError("criminal not found: " + crim.name)
         del self.escapedBounties[crim.faction][crim]
 
@@ -320,6 +320,8 @@ class BountyDB(serializable.Serializable):
         """
         if bounty is self.latestBounty:
             self.latestBounty = None
+        if not self.bountyObjExists(bounty):
+            raise KeyError("criminal not found: " + crim.name)
         del self.bounties[bounty.faction][bounty.criminal]
 
 
