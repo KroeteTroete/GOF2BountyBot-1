@@ -212,12 +212,12 @@ def crateValueForTL(TL : int) -> int:
     return 0
 
 
-# The probability of a shop spawning with a given tech level. Tech level = index + 1
-cumulativeCriminalTLChance = [0] * numTechLevels
+# The probability of a criminal spawning with a given tech level. Tech level = index
+cumulativeCriminalTLChance = [0] * (numTechLevels + 1)
 
 # Calculate spawn chance for each criminal TL
 for criminalTL in range(cfg.minTechLevel - 1, cfg.maxTechLevel + 1):
-    itemChance = truncItemSpawnResolution(1 - math.exp((criminalTL - 10.5) / 5))
+    cumulativeCriminalTLChance[criminalTL] = truncItemSpawnResolution(1 - math.exp((criminalTL - 10.5) / 5))
 
 cumulativeCriminalTLChance = normalizeArray(cumulativeCriminalTLChance)
 cumulativeCriminalTLChance = makeCumulative(cumulativeCriminalTLChance)
