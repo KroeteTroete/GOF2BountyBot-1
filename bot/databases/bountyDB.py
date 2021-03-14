@@ -323,7 +323,7 @@ class BountyDB(serializable.Serializable):
         if bounty is self.latestBounty:
             self.latestBounty = None
         if not self.bountyObjExists(bounty):
-            raise KeyError("criminal not found: " + crim.name)
+            raise KeyError("criminal not found: " + bounty.criminal.name)
         del self.bounties[bounty.faction][bounty.criminal]
 
 
