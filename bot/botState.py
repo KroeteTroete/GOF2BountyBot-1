@@ -23,6 +23,8 @@ logger: Logger = None
 dbSaveTT = None
 updatesCheckTT = None
 
+temperatureDecayTT = None
+
 # Scheduling overrides
 newBountyFixedDeltaChanged = False
 

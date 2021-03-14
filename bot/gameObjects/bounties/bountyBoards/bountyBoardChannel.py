@@ -292,7 +292,20 @@ class bountyBoardChannel(serializable.Serializable):
                                     + criminal.name,
                                 category='bountyBoards', eventType="LISTING_REM-NO_EXST")
         # listingMsg = await self.channel.fetch_message(self.bountyMessages[criminal.faction][criminal])
-        await self.bountyMessages[criminal.faction][criminal].delete()
+        try:
+            await self.bountyMessages[criminal.faction][criminal].delete()
+        except HTTPException:
+            botState.logger.log("BountyBoardChannel", "removeCriminal",
+                                "HTTPException thrown when removing bounty listing message for criminal: " \
+                                + criminal.name, category='bountyBoards', eventType="RM_LISTING-HTTPERR")
+        except Forbidden:
+            botState.logger.log("BountyBoardChannel", "removeCriminal",
+                                "Forbidden exception thrown when removing bounty listing message for criminal: " \
+                                + criminal.name, category='bountyBoards', eventType="RM_LISTING-FORBIDDENERR")
+        except NotFound:
+            botState.logger.log("BountyBoardChannel", "removeCriminal",
+                                "Bounty listing message no longer exists, BBC entry removed: " + criminal.name,
+                                category='bountyBoards', eventType="RM_LISTING-NOT_FOUND")
         del self.bountyMessages[criminal.faction][criminal]
 
         if self.isEmpty():

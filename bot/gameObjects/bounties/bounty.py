@@ -91,8 +91,9 @@ class Bounty(serializable.Serializable):
         self.rewardPerSys = config.rewardPerSys
         self.checked = config.checked
         self.answer = config.answer
-        if self.criminal.techLevel == -1:
-            self.criminal.techLevel = config.techLevel
+        # if self.criminal.techLevel == -1:
+        self.criminal.techLevel = config.techLevel
+        print("ASSIGNED CRIMINAL TL",config.techLevel)
         self.respawnTT: TimedTask = None
         self.owningDB = owningDB
 

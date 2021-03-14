@@ -524,7 +524,7 @@ class BasedGuild(serializable.Serializable):
 
                 # Add the winning user to the embed
                 rewardsEmbed.add_field(name="1. 🏆 " + str(rewards[winningUserId]["reward"]) + " credits:",
-                                        value=winningUser.mention + " checked " + int(rewards[winningUserId]["checked"]) \
+                                        value=winningUser.mention + " checked " + str(rewards[winningUserId]["checked"]) \
                                             + " system" + ("s" if int(rewards[winningUserId]["checked"]) != 1 else "") \
                                             + "\n*+" + str(rewards[winningUserId]["xp"]) + "xp*",
                                         inline=False)

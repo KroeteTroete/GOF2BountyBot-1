@@ -236,7 +236,8 @@ def _makeLevelUpCrates():
 
         itemPool = [bbData.shipSkinToolsBySkin[skin] for skin in shipSkins]
         crates[level] = crateTool.CrateTool(itemPool, "Level " + str(level) + " skins crate", techLevel=level,
-                                                builtIn=True, value=gameMaths.crateValueForTL(level))
+                                                builtIn=True, value=gameMaths.crateValueForTL(level),
+                                                crateType="levelUp", typeNum=level)
     return crates
 
 

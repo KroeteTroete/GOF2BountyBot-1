@@ -6,6 +6,7 @@ from .. import botState, lib
 from ..lib import gameMaths
 from ..cfg import cfg, bbData
 from ..gameObjects.bounties import bounty, bountyConfig
+from ..users import guildActivity
 
 botCommands.addHelpSection(2, "bounties")
 
@@ -593,8 +594,8 @@ async def dev_cmd_set_bounty_xp(message : discord.Message, args : str, isDM : bo
         await message.channel.send(":x: invalid user!!")
         return
 
-    if not botState.usersDB.userIDExists(requestedUser.id):
-        requestedBBUser = botState.usersDB.addUser(requestedUser.id)
+    if not botState.usersDB.idExists(requestedUser.id):
+        requestedBBUser = botState.usersDB.addID(requestedUser.id)
     else:
         requestedBBUser = botState.usersDB.getUser(requestedUser.id)
 
@@ -629,7 +630,7 @@ async def dev_cmd_set_bounty_level(message : discord.Message, args : str, isDM :
         await message.channel.send(":x: invalid user!!")
         return
 
-    if not botState.usersDB.userIDExists(requestedUser.id):
+    if not botState.usersDB.idExists(requestedUser.id):
         requestedBBUser = botState.usersDB.addUser(requestedUser.id)
     else:
         requestedBBUser = botState.usersDB.getUser(requestedUser.id)
@@ -639,3 +640,56 @@ async def dev_cmd_set_bounty_level(message : discord.Message, args : str, isDM :
     await message.channel.send("Done!")
 
 botCommands.register("set-bounty-level", dev_cmd_set_bounty_level, 2, allowDM=True, helpSection="bounties", useDoc=True) 
+
+
+async def dev_cmd_measure_temps(message : discord.Message, args : str, isDM : bool):
+    """developer command fetching the current activity temperatures in the calling guild.
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: ignored
+    :param bool isDM: Whether or not the command is being called from a DM channel
+    """
+    callingBBGuild = botState.guildsDB.getGuild(message.guild.id)
+    if callingBBGuild.bountiesDisabled:
+        await message.reply(":x: Bounties are disabled in this server!")
+    else:
+        activityEmbed = lib.discordUtil.makeEmbed("Activity Temperatures", desc=message.guild.name, col=discord.Colour.random(),
+                        thumb=message.guild.icon_url_as(size=64))
+        for tl in guildActivity._tlsRange:
+            activityEmbed.add_field(name="Level " + str(tl), value=callingBBGuild.bountiesDB.activityMonitor.temperatures[tl])
+        await message.author.send(embed=activityEmbed)
+
+botCommands.register("measure-temps", dev_cmd_measure_temps, 2, allowDM=False,
+                        helpSection="bounties", useDoc=True)
+
+
+async def dev_cmd_decay_temps(message : discord.Message, args : str, isDM : bool):
+    """developer command decaying the activity temperatures of the calling guild
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: ignored
+    :param bool isDM: Whether or not the command is being called from a DM channel
+    """
+    callingBBGuild = botState.guildsDB.getGuild(message.guild.id)
+    if callingBBGuild.bountiesDisabled:
+        await message.reply(":x: Bounties are disabled in this server!")
+    else:
+        callingBBGuild.bountiesDB.activityMonitor.decayTemps()
+        await message.reply("Activity temperatures decayed for " + message.guild.name + ".")
+
+botCommands.register("decay-temps", dev_cmd_decay_temps, 2, allowDM=False,
+                        helpSection="bounties", useDoc=True)
+
+
+async def dev_cmd_decay_all_temps(message : discord.Message, args : str, isDM : bool):
+    """developer command decaying the activity temperatures of ALL guilds
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: ignored
+    :param bool isDM: Whether or not the command is being called from a DM channel
+    """
+    botState.temperatureDecayTT.forceExpire()
+    await message.reply("Attempting temperature decay for all guilds.")
+
+botCommands.register("decay-all-temps", dev_cmd_decay_all_temps, 2, allowDM=True,
+                        helpSection="bounties", useDoc=True)

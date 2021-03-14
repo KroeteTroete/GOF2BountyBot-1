@@ -158,6 +158,8 @@ class GuildDB(serializable.Serializable):
         else:
             for g in self.getGuilds():
                 self._decayGuildTemps(g)
+        botState.logger.log("GuildDB", "decayAllTemps", "All guild activity temperatures decayed successfuly.",
+                            category="bountiesDB", eventType="TEMPS_DECAY")
 
 
     def toDict(self, **kwargs) -> dict:

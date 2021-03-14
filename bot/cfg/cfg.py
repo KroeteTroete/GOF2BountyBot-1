@@ -60,7 +60,9 @@ timeouts = {
     # Default amount of time reaction menus should be active for
     "roleMenuExpiry": {"days": 1},
     "duelChallengeMenuExpiry": {"hours": 2},
-    "pollMenuExpiry": {"minutes": 5}
+    "pollMenuExpiry": {"minutes": 5},
+
+    "guildActivityDecay": {"days": 1}
 }
 
 paths = {
@@ -295,7 +297,7 @@ guildActivityDecayRate = 2/3
 # The lowest rating a guild can achieve for player activitivity at a certain tech level
 minGuildActivity = 1
 
-#
+# Amount to raise the guild's activity temperature by for each player contributing to a bounty
 activityTempPerPlayer = 1
 
 

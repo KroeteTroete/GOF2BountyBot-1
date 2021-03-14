@@ -66,6 +66,7 @@ class BasedEmoji(serializable.Serializable):
     :vartype EMPTY: BasedEmoji
     """
     EMPTY = None
+    __hash__ = serializable.Serializable.__hash__
 
     def __init__(self, id: int = -1, unicode: str = "", rejectInvalid: bool = False):
         """

@@ -177,6 +177,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
 
                         # Raise guild's activity temperature for this bounty's tl
                         numContributingUsers = len(set(rewards))
+                        print("increasing temps for tl",bounty.criminal.techLevel)
                         callingGuild.bountiesDB.activityMonitor.raiseTemp(bounty.criminal.techLevel,
                                                                             numContributingUsers * cfg.activityTempPerPlayer)
 
@@ -627,7 +628,7 @@ async def cmd_prestige(message : discord.Message, args : str, isDM : bool):
     :param str args: ignored
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
-    if not botState.usersDB.userIDExists(message.author.id):
+    if not botState.usersDB.idExists(message.author.id):
         await message.channel.send(":x: This command can only be used by level 10 bounty hunters!")
         return
 

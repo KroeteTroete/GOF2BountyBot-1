@@ -488,6 +488,14 @@ async def on_ready():
             botState.guildsDB.addDcGuild(guild)
 
 
+    ##### SCHEDULING CONTINUED #####
+    # to be moved
+    # Schedule guild activity measurement decaying
+    botState.temperatureDecayTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.timeouts.guildActivityDecay),
+                                            autoReschedule=True, expiryFunction=botState.guildsDB.decayAllTemps)
+    botState.taskScheduler.scheduleTask(botState.temperatureDecayTT)
+
+
     ##### CLEANUP #####
 
     await initializeBountyBoardChannels()

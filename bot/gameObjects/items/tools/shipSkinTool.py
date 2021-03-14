@@ -115,7 +115,7 @@ class ShipSkinTool(toolItem.ToolItem):
             else:
                 prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
             return ":x: Your ship is not compatible with this skin! Please equip a different ship, or use `" \
-                    + prefix + "info skin " + self.name + "` to see what ships are compatible with this skin."
+                    + prefix + "info skin " + self.skin.name + "` to see what ships are compatible with this skin."
 
         callingBUser = kwargs["callingBUser"]
         confirmMsg = await message.channel.send("Are you sure you want to apply the " + self.skin.name \
