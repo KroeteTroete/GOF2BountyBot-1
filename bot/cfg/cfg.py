@@ -290,7 +290,7 @@ level0CrimLoadout = {"name": "Betty", "builtIn":True,
                                 {"name": "IMT Extract 2.7", "builtIn": True}]}
 
 # The multiplier applied each day to each guild's player activity for each tech level
-guildActivityDecayRate = 1/3
+guildActivityDecayRate = 2/3
 
 # The lowest rating a guild can achieve for player activitivity at a certain tech level
 minGuildActivity = 1
