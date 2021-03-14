@@ -172,7 +172,7 @@ class Bounty(serializable.Serializable):
         :return: True if the bounty is escaped and waiting to respawn, False otherwise
         :rtype: bool
         """
-        return self.respawnTT is None
+        return self.respawnTT is not None
 
 
     def escape(self, respawnTT : TimedTask = None):
