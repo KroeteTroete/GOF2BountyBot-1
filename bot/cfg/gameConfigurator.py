@@ -196,7 +196,7 @@ def _sortGameObjects(objsDB : Dict[str, Any]) -> List[List[Any]]:
     :rtype: List[List[Any]]
     """
     # Sort module objects by tech level
-    sortedDB = [[]] * (cfg.maxTechLevel - cfg.minTechLevel + 1)
+    sortedDB = [[] for _ in range(cfg.maxTechLevel - cfg.minTechLevel + 1)]
     for obj in objsDB.values():
         sortedDB[obj.techLevel - 1].append(obj)
     return sortedDB
