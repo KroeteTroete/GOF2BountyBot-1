@@ -295,6 +295,9 @@ guildActivityDecayRate = 2/3
 # The lowest rating a guild can achieve for player activitivity at a certain tech level
 minGuildActivity = 1
 
+#
+activityTempPerPlayer = 1
+
 
 
 ##### SKINS #####

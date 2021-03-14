@@ -175,6 +175,11 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                         # this could instead be replaced by bounty.check returning the ShipFight info.
                         bounty.criminal.clearShip()
 
+                        # Raise guild's activity temperature for this bounty's tl
+                        numContributingUsers = len(set(rewards))
+                        callingGuild.bountiesDB.activityMonitor.raiseTemp(bounty.criminal.techLevel,
+                                                                            numContributingUsers * cfg.activityTempPerPlayer)
+
                     # add this bounty to the list of bounties to be removed
                     toPop += [bounty]
 
