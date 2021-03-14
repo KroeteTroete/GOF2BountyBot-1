@@ -35,7 +35,7 @@ class Bounty(serializable.Serializable):
     :vartype answer: str
     """
 
-    def __init__(self, criminalObj : criminal = None, config : bountyConfig.BountyConfig = None,
+    def __init__(self, criminalObj : criminal.Criminal = None, config : bountyConfig.BountyConfig = None,
                     owningDB : bountyDB.BountyDB = None, dbReload : bool = False):
         """
         :param criminalObj: The criminal to be wanted. Give None to randomly generate a criminal. (Default None)
