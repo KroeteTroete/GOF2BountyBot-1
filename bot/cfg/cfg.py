@@ -277,6 +277,9 @@ shipValueRewardPercentage = 0.01
 # The probability of a criminal equipping a turret, should their ship have space for one
 criminalEquipTurretChance = 30
 
+# The maximum number of levels a criminal's gear may be above their difficulty rating
+criminalMaxGearUpgrade = 1
+
 # The maximum total-value a player may have before being disallowed from hunting a tech-level of bounty. 0th index = tech level 1
 # I.e, to hunt level 1 bounties, a player must be worth no more than bountyTLMaxPlayerValues[0] credits.
 bountyTLMaxPlayerValues = [50000, 75000, 100000, 200000, 450000, 600000, 800000, 1000000, 2000000, 3000000, 999999999]
@@ -336,27 +339,27 @@ maxItemsPerHangarPageIndividual = 10
 validItemNames = ["ship", "weapon", "module", "turret", "all", "tool"]
 
 # the max number of each module type that can be equipped on a ship.
-maxModuleTypeEquips = {     "bbArmourModule": 1,
-                            "bbBoosterModule": 1,
-                            "bbCabinModule": -1,
-                            "bbCloakModule": 1,
-                            "bbCompressorModule": -1,
-                            "bbGammaShieldModule": 1,
-                            "bbMiningDrillModule": 1,
-                            "bbRepairBeamModule": 1,
-                            "bbRepairBotModule": 1,
-                            "bbScannerModule": 1,
-                            "bbShieldModule": 1,
-                            "bbSpectralFilterModule": 1,
-                            "bbThrusterModule": 1,
-                            "bbTractorBeamModule": 1,
-                            "bbTransfusionBeamModule": 1,
-                            "bbWeaponModModule": 1,
-                            "bbJumpDriveModule": 0,
-                            "bbEmergencySystemModule": 1,
-                            "bbSignatureModule": 1,
-                            "bbShieldInjectorModule": 1,
-                            "bbTimeExtenderModule": 1}
+maxModuleTypeEquips = {     "ArmourModule": 1,
+                            "BoosterModule": 1,
+                            "CabinModule": -1,
+                            "CloakModule": 1,
+                            "CompressorModule": -1,
+                            "GammaShieldModule": 1,
+                            "MiningDrillModule": 1,
+                            "RepairBeamModule": 1,
+                            "RepairBotModule": 1,
+                            "ScannerModule": 1,
+                            "ShieldModule": 1,
+                            "SpectralFilterModule": 1,
+                            "ThrusterModule": 1,
+                            "TractorBeamModule": 1,
+                            "TransfusionBeamModule": 1,
+                            "WeaponModModule": 1,
+                            "JumpDriveModule": 0,
+                            "EmergencySystemModule": 1,
+                            "SignatureModule": 1,
+                            "ShieldInjectorModule": 1,
+                            "TimeExtenderModule": 1}
 
 # valid types of crateItem that are in the game. Each will be associated with a zero-indexed (crateNum) list of crate objects
 crateTypes = ("levelUp", "special")
