@@ -96,9 +96,9 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
             toPop = []
             for bounty in callingGuild.bountiesDB.getFactionBounties(fac):
                 userLevel = gameMaths.calculateUserBountyHuntingLevel(requestedBBUser.bountyHuntingXP)
-                levelDiff = abs(userLevel - bounty.criminal.techLevel)
+                levelDiff = abs(userLevel - bounty.techLevel)
                 if bounty.answer == requestedSystem and levelDiff > 1:
-                    lvlMsg = "high" if userLevel > bounty.criminal.techLevel + 1 else "low"
+                    lvlMsg = "high" if userLevel > bounty.techLevel + 1 else "low"
                     await message.channel.send(":space_invader: You located **" + bounty.criminal.name \
                                                 + "**, but you are too " + lvlMsg + " level to fight them!")
                     continue
@@ -107,7 +107,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                 # If current bounty resides in the requested system
                 checkResult = bounty.check(requestedSystem, message.author.id)
                 if checkResult == 3:
-                    duelResults = duelRequest.fightShips(requestedBBUser.activeShip, bounty.criminal.activeShip,
+                    duelResults = duelRequest.fightShips(requestedBBUser.activeShip, bounty.activeShip,
                                                             cfg.duelVariancePercent)
                     statsEmbed = lib.discordUtil.makeEmbed(authorName="**Duel Stats**")
                     statsEmbed.add_field(name="DPS (" + str(cfg.duelVariancePercent * 100) + "% RNG)",
@@ -173,12 +173,12 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                         # criminal ship unequip is delayed until now rather than handled in bounty.check
                         # to allow for duel info printing.
                         # this could instead be replaced by bounty.check returning the ShipFight info.
-                        bounty.criminal.clearShip()
+                        bounty.clearShip()
 
                         # Raise guild's activity temperature for this bounty's tl
                         numContributingUsers = len(set(rewards))
-                        print("increasing temps for tl",bounty.criminal.techLevel)
-                        callingGuild.bountiesDB.activityMonitor.raiseTemp(bounty.criminal.techLevel,
+                        print("increasing temps for tl",bounty.techLevel)
+                        callingGuild.bountiesDB.activityMonitor.raiseTemp(bounty.techLevel,
                                                                             numContributingUsers * cfg.activityTempPerPlayer)
 
                     # add this bounty to the list of bounties to be removed

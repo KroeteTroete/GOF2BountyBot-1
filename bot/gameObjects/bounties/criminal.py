@@ -24,15 +24,10 @@ class Criminal(aliasable.Aliasable):
     :vartype isPlayer: bool
     :var builtIn: If this criminal is an NPC, are they built in or custom?
     :vartype builtIn: bool
-    :var activeShip: The ship equipped by this criminal
-    :vartype activeShip: shipItem
-    :var hasShip: Whether this criminal has a ship equipped or not
-    :vartype hasShip: bool
     """
 
     def __init__(self, name : str, faction : str, icon : str, builtIn : bool = False,
-                    isPlayer : bool = False, aliases : List[str] = [], wiki : str = "",
-                    activeShip : bool = None, techLevel : int = -1):
+                    isPlayer : bool = False, aliases : List[str] = [], wiki : str = ""):
         """
         :param str name: The name of the criminal
         :param str faction: the faction that this criminal is wanted by
@@ -40,7 +35,6 @@ class Criminal(aliasable.Aliasable):
         :param str wiki: A URL pointing to a web page to use as this criminal's wiki page in their info embed
         :param bool isPlayer: Whether this criminal is a player or an NPC
         :param bool builtIn: If this criminal is an NPC, are they built in or custom?
-        :param shipItem activeShip: The ship equipped by this criminal
         :param list[str] aliases: Alias names that can be used to refer to this criminal
         """
         super(Criminal, self).__init__(name, aliases)
@@ -58,60 +52,6 @@ class Criminal(aliasable.Aliasable):
         self.hasWiki = wiki != ""
         self.isPlayer = isPlayer
         self.builtIn = builtIn
-        self.techLevel = techLevel
-        self.activeShip = None
-        self.hasShip = False
-
-        if activeShip is not None:
-            self.copyShip(activeShip)
-
-
-    def clearShip(self):
-        """Delete the equipped ship, removing it from memory
-
-        :raise RuntimeError: If the criminal does not have a ship equipped
-        """
-        if not self.hasShip:
-            raise RuntimeError("CRIM_CLEARSH_NOSHIP: Attempted to clearShip on a Criminal with no active ship")
-        del self.activeShip
-        self.hasShip = False
-        self.techLevel = -1
-
-
-    def unequipShip(self):
-        """unequip the equipped ship, without deleting the object
-
-        :raise RuntimeError: If the criminal does not have a ship equipped
-        """
-        if not self.hasShip:
-            raise RuntimeError("CRIM_UNEQSH_NOSHIP: Attempted to unequipShip on a Criminal with no active ship")
-        self.activeShip = None
-        self.hasShip = False
-        self.techLevel = -1
-
-
-    def equipShip(self, newShip : shipItem):
-        """Equip the given ship, by reference to the given object
-
-        :param shipItem ship: The ship to equip
-        :raise RuntimeError: If the criminal already has a ship equipped
-        """
-        if self.hasShip:
-            raise RuntimeError("CRIM_EQUIPSH_HASSH: Attempted to equipShip on a Criminal that already has an active ship")
-        self.activeShip = newShip
-        self.hasShip = True
-
-
-    def copyShip(self, newShip : shipItem):
-        """Equip the given ship, by taking a deep copy of the given object
-
-        :param shipItem ship: The ship to equip
-        :raise RuntimeError: If the criminal already has a ship equipped
-        """
-        if self.hasShip:
-            raise RuntimeError("CRIM_COPYSH_HASSH: Attempted to copyShip on a Criminal that already has an active ship")
-        self.activeShip = shipItem.Ship.fromDict(newShip.toDict())
-        self.hasShip = True
 
 
     def toDict(self, **kwargs) -> dict:
@@ -121,16 +61,10 @@ class Criminal(aliasable.Aliasable):
         :rtype: dict
         """
         if self.builtIn:
-            data = {"builtIn":True, "name":self.name}
+            return {"builtIn":True, "name":self.name}
         else:
-            data = {"builtIn": False, "isPlayer": self.isPlayer, "name": self.name, "icon": self.icon,
+            return {"builtIn": False, "isPlayer": self.isPlayer, "name": self.name, "icon": self.icon,
                     "faction": self.faction, "aliases": self.aliases, "wiki": self.wiki}
-
-        if self.hasShip:
-            data["activeShip"] = self.activeShip.toDict()
-            data["techLevel"] = self.techLevel
-
-        return data
 
 
     @classmethod
@@ -148,14 +82,7 @@ class Criminal(aliasable.Aliasable):
                     (crimDict["builtIn"] if "builtIn" in crimDict else False)
 
         if builtIn:
-            crimObj = bbData.builtInCriminalObjs[crimDict["name"]]
+            return bbData.builtInCriminalObjs[crimDict["name"]]
         else:
-            crimObj = Criminal(crimDict["name"], crimDict["faction"], crimDict["icon"], isPlayer=crimDict["isPlayer"],
-                                aliases=crimDict["aliases"], wiki=crimDict["wiki"], builtIn=builtIn)
-
-        if "activeShip" in crimDict and not crimObj.hasShip:
-            crimObj.equipShip(shipItem.Ship.fromDict(crimDict["activeShip"]))
-        if "techLevel" in crimDict and crimObj.techLevel == -1:
-            crimObj.techLevel = crimDict["techLevel"] if "techLevel" in crimDict else crimObj.activeShip.techLevel
-
-        return crimObj
+            return Criminal(crimDict["name"], crimDict["faction"], crimDict["icon"], isPlayer=crimDict["isPlayer"],
+                            aliases=crimDict["aliases"], wiki=crimDict["wiki"], builtIn=builtIn)

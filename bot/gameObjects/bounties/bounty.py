@@ -11,6 +11,7 @@ from ...baseClasses import serializable
 from ...scheduling.timedTask import TimedTask
 from datetime import datetime
 from ... import lib, botState
+from ..items.shipItem import Ship
 
 
 class Bounty(serializable.Serializable):
@@ -33,6 +34,12 @@ class Bounty(serializable.Serializable):
     :vartype checked: dict[str, int]
     :var answer: The name of the system where the criminal is located
     :vartype answer: str
+    :var activeShip: The ship equipped by this criminal
+    :vartype activeShip: shipItem
+    :var hasShip: Whether this criminal has a ship equipped or not
+    :vartype hasShip: bool
+    :var techLevel: The current difficulty level of the bounty
+    :vartype techLevel: int
     """
 
     def __init__(self, criminalObj : criminal.Criminal = None, config : bountyConfig.BountyConfig = None,
@@ -52,6 +59,8 @@ class Bounty(serializable.Serializable):
         if not dbReload and owningDB is None:
             raise ValueError("Bounty constructor: No bounty database given")
         makeFresh = criminalObj is None
+        self.activeShip = None
+        self.hasShip = False
 
         if config is None:
             # generate bounty details and validate given details
@@ -65,23 +74,23 @@ class Bounty(serializable.Serializable):
             if config.builtIn:
                 self.criminal = bbData.builtInCriminalObjs[config.name]
                 # builtIn criminals cannot be players, so just equip the ship
-                # self.criminal.equipShip(config.ship)
+                # self.equipShip(config.ship)
             else:
                 self.criminal = criminal.Criminal(config.name, config.faction, config.icon, isPlayer=config.isPlayer,
                                                     aliases=config.aliases, wiki=config.wiki)
                 # Don't just claim player ships! players could unequip ship items. Take a deep copy of the ship
                 if config.isPlayer:
-                    self.criminal.copyShip(config.ship)
+                    self.copyShip(config.ship)
 
         else:
             self.criminal = criminalObj
 
-        if not self.criminal.hasShip:
+        if not self.hasShip:
             # Don't just claim player ships! players could unequip ship items. Take a deep copy of the ship
             if config.isPlayer:
-                self.criminal.copyShip(config.activeShip)
+                self.copyShip(config.activeShip)
             else:
-                self.criminal.equipShip(config.activeShip)
+                self.equipShip(config.activeShip)
 
         self.faction = self.criminal.faction
         self.issueTime = config.issueTime
@@ -91,11 +100,58 @@ class Bounty(serializable.Serializable):
         self.rewardPerSys = config.rewardPerSys
         self.checked = config.checked
         self.answer = config.answer
-        # if self.criminal.techLevel == -1:
-        self.criminal.techLevel = config.techLevel
-        print("ASSIGNED CRIMINAL TL",config.techLevel)
+
+        self.techLevel = config.techLevel
         self.respawnTT: TimedTask = None
         self.owningDB = owningDB
+
+
+    def clearShip(self):
+        """Delete the equipped ship, removing it from memory
+
+        :raise RuntimeError: If the criminal does not have a ship equipped
+        """
+        if not self.hasShip:
+            raise RuntimeError("CRIM_CLEARSH_NOSHIP: Attempted to clearShip on a Criminal with no active ship")
+        del self.activeShip
+        self.hasShip = False
+        self.techLevel = -1
+
+
+    def unequipShip(self):
+        """unequip the equipped ship, without deleting the object
+
+        :raise RuntimeError: If the criminal does not have a ship equipped
+        """
+        if not self.hasShip:
+            raise RuntimeError("CRIM_UNEQSH_NOSHIP: Attempted to unequipShip on a Criminal with no active ship")
+        self.activeShip = None
+        self.hasShip = False
+        self.techLevel = -1
+
+
+    def equipShip(self, newShip : Ship):
+        """Equip the given ship, by reference to the given object
+
+        :param shipItem ship: The ship to equip
+        :raise RuntimeError: If the criminal already has a ship equipped
+        """
+        if self.hasShip:
+            raise RuntimeError("CRIM_EQUIPSH_HASSH: Attempted to equipShip on a Criminal that already has an active ship")
+        self.activeShip = newShip
+        self.hasShip = True
+
+
+    def copyShip(self, newShip : Ship):
+        """Equip the given ship, by taking a deep copy of the given object
+
+        :param shipItem ship: The ship to equip
+        :raise RuntimeError: If the criminal already has a ship equipped
+        """
+        if self.hasShip:
+            raise RuntimeError("CRIM_COPYSH_HASSH: Attempted to copyShip on a Criminal that already has an active ship")
+        self.activeShip = Ship.fromDict(newShip.toDict())
+        self.hasShip = True
 
 
     def check(self, system : str, userID : int) -> int:
@@ -203,7 +259,7 @@ class Bounty(serializable.Serializable):
 
         respawnArgs = {"newBounty": self,
                         "newConfig": bountyConfig.BountyConfig(faction=self.criminal.faction,
-                                                                techLevel=self.criminal.techLevel)}
+                                                                techLevel=self.techLevel)}
         await self.owningDB.owningBasedGuild.spawnAndAnnounceBounty(respawnArgs)
         self.owningDB.removeEscapedCriminal(self.criminal)
         self.respawnTT = None
@@ -243,6 +299,10 @@ class Bounty(serializable.Serializable):
         if self.isEscaped():
             data["respawnTime"] = self.respawnTT.expiryTime.timestamp()
 
+        if self.hasShip:
+            data["activeShip"] = self.activeShip.toDict()
+            data["techLevel"] = self.techLevel
+
         return data
 
 
@@ -276,5 +336,10 @@ class Bounty(serializable.Serializable):
                                     expiryFunction=newBounty._respawn,
                                     rescheduleOnExpiryFuncFailure=True)
             newBounty.escape(respawnTT=respawnTT)
+
+        if "activeShip" in data and not newBounty.hasShip:
+            newBounty.equipShip(Ship.fromDict(data["activeShip"]))
+        if "techLevel" in data and newBounty.techLevel == -1:
+            newBounty.techLevel = data["techLevel"] if "techLevel" in data else newBounty.activeShip.techLevel
 
         return newBounty

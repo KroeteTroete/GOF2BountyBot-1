@@ -268,12 +268,13 @@ async def cmd_loadout(message : discord.Message, args : str, isDM : bool):
                 await message.channel.send(errmsg)
                 return
 
-            criminalObj = callingBBGuild.bountiesDB.getBounty(criminalName).criminal
+            bountyObj = callingBBGuild.bountiesDB.getBounty(criminalName)
+            criminalObj = bountyObj.criminal
 
-            activeShip = criminalObj.activeShip
+            activeShip = bountyObj.activeShip
             loadoutEmbed = lib.discordUtil.makeEmbed(titleTxt="Loadout",
                                                         desc=criminalObj.name.title() + "\n`Difficulty: " \
-                                                            + str(criminalObj.techLevel) + "`",
+                                                            + str(bountyObj.techLevel) + "`",
                                                         col=bbData.factionColours[criminalObj.faction] \
                                                             if criminalObj.faction in bbData.factionColours \
                                                             else bbData.factionColours["neutral"],

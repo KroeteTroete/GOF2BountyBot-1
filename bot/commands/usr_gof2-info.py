@@ -1170,8 +1170,8 @@ async def cmd_list(message : discord.Message, args : str, isDM : bool):
     factionObjs = {"system": bbData.builtInSystemObjs, "criminal": bbData.builtInCriminalObjs}
     manufacturerObjs = {"weapon" : bbData.builtInWeaponObjs, "module" : bbData.builtInModuleObjs,
                         "turret" : bbData.builtInTurretObjs, "ship": bbData.builtInShipData}
-    tlObjs = {"criminal": bbData.builtInCriminalObjs, "weapon" : bbData.builtInWeaponObjs,
-                "module" : bbData.builtInModuleObjs, "turret" : bbData.builtInTurretObjs, "ship": bbData.builtInShipData}
+    tlObjs = {"weapon" : bbData.builtInWeaponObjs, "module" : bbData.builtInModuleObjs, "turret" : bbData.builtInTurretObjs,
+                "ship": bbData.builtInShipData}
     dictObjs = {"ship": bbData.builtInShipData}
 
     if itemLevel != -1 and objType not in tlObjs:
