@@ -8,6 +8,8 @@ from ..baseClasses import serializable
 from ..baseClasses.aliasableDict import AliasableDict
 from ..cfg import cfg
 from ..users import basedGuild
+from ..users.guildActivity import ActivityMonitor
+from bot.users import guildActivity
 
 
 class BountyDB(serializable.Serializable):
@@ -26,7 +28,8 @@ class BountyDB(serializable.Serializable):
     :vartype latestBounty: gameObjects.bounties.bounty.Bounty
     """
 
-    def __init__(self, factions: List[str], owningBasedGuild: "basedGuild.BasedGuild"):
+    def __init__(self, factions: List[str], owningBasedGuild: "basedGuild.BasedGuild",
+                    activityMonitor: ActivityMonitor = None):
         """
         :param List[str] factions: list of unique faction names useable in this db's bounties
         :param BasedGuild owningBasedGuild: The guild that owns this bountyDB
@@ -39,6 +42,7 @@ class BountyDB(serializable.Serializable):
                                                                                                 for f in factions}
         self.latestBounty: bounty.Bounty = None
         self.owningBasedGuild = owningBasedGuild
+        self.activityMonitor = activityMonitor or ActivityMonitor()
 
 
     def getFactions(self) -> List[bounty.Bounty]:
@@ -375,7 +379,7 @@ class BountyDB(serializable.Serializable):
         :return: A dictionary containing all data needed to recreate this bountyDB.
         :rtype: dict
         """
-        data = {"active": {}, "escaped": {}}
+        data = {"active": {}, "escaped": {}, "activity": self.activityMonitor.toDict()}
         # Serialise all factions into name : list of serialised bounty
         for fac in self.bounties:
             # Serialise all of the current faction's bounties into dictionary
@@ -409,8 +413,11 @@ class BountyDB(serializable.Serializable):
         activeBountiesData = bountyDBDict["active"] if "active" in bountyDBDict \
                                 else {fac: AliasableDict() for fac in bbData.factions}
 
+        activity = guildActivity.ActivityMonitor.fromDict(bountyDBDict["activity"]) \
+                    if "activity" in bountyDBDict else guildActivity.ActivityMonitor()
+
         # Instanciate a new bountyDB
-        newDB = BountyDB(activeBountiesData.keys(), kwargs["owningBasedGuild"])
+        newDB = BountyDB(activeBountiesData.keys(), kwargs["owningBasedGuild"], activityMonitor=activity)
         # Iterate over all factions in the DB
         for fac in activeBountiesData.keys():
             # Convert each serialised bounty into a bounty object

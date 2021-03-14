@@ -1,6 +1,8 @@
 from __future__ import annotations
-from typing import List
+from typing import List, Dict
 from discord import Guild
+from concurrent.futures import ThreadPoolExecutor
+import os
 
 from ..users import basedGuild
 from . import bountyDB
@@ -8,6 +10,10 @@ from .. import botState
 from ..baseClasses import serializable
 from .. import lib
 from ..cfg import bbData
+
+
+_minGuildsToParallelize = os.cpu_count()
+_minGuildsToParallelize = (_minGuildsToParallelize + (_minGuildsToParallelize % 2)) // 2
 
 
 class GuildDB(serializable.Serializable):
@@ -19,7 +25,7 @@ class GuildDB(serializable.Serializable):
 
     def __init__(self):
         # Store guilds as a dict of guild.id: guild
-        self.guilds = {}
+        self.guilds: Dict[int, basedGuild.BasedGuild] = {}
 
 
     def getIDs(self) -> List[int]:
@@ -130,6 +136,28 @@ class GuildDB(serializable.Serializable):
         for guild in self.guilds.values():
             if not guild.shopDisabled:
                 guild.shop.refreshStock()
+
+
+    def _decayGuildTemps(self, g: basedGuild.BasedGuild):
+        """Decay the activity temperatures of a single guild, if it has bounties enabled.
+        Does nothing otherwise.
+
+        :param BasedGuild g: The guild whose temperatures to decay
+        """
+        if not g.bountiesDisabled and g.bountiesDB.activityMonitor.isActive:
+            g.bountiesDB.activityMonitor.decayTemps()
+
+
+    def decayAllTemps(self):
+        """Decay the activity temperatures of all guilds in the database.
+        This should be called daily.
+        """
+        if len(self.guilds) > _minGuildsToParallelize:
+            with ThreadPoolExecutor() as executor:
+                executor.map(self._decayGuildTemps, self.getGuilds())
+        else:
+            for g in self.getGuilds():
+                self._decayGuildTemps(g)
 
 
     def toDict(self, **kwargs) -> dict:
