@@ -109,7 +109,7 @@ class BountyDB(serializable.Serializable):
         if not self.factionExists(faction):
             raise KeyError("Unrecognised faction: " + faction)
         # Remove latest bounty if they are in this faction
-        if self.latestBounty.faction == faction:
+        if self.latestBounty is not None and self.latestBounty.faction == faction:
             self.latestBounty = None
         # Empty the faction's bounties
         self.bounties[faction] = AliasableDict()
@@ -384,7 +384,7 @@ class BountyDB(serializable.Serializable):
         # Serialise all factions into name : list of serialised escaped bounty
         for fac in self.escapedBounties:
             # Serialise all of the current faction's bounties into dictionary
-            data["escaped"][fac] = [currentBounty.toDict(**kwargs) for currentBounty in self.escapedBounties(fac)]
+            data["escaped"][fac] = [currentBounty.toDict(**kwargs) for currentBounty in self.escapedBounties[fac].values()]
 
         return data
 
