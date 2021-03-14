@@ -321,10 +321,23 @@ class Bounty(serializable.Serializable):
             owningDB = None
         dbReload = kwargs["dbReload"] if "dbReload" in kwargs else False
 
+        if "activeShip" in data:
+            activeShip = Ship.fromDict(data["activeShip"])
+        else:
+            activeShip = None
+
+        if "techLevel" in data:
+            techLevel = data["techLevel"]
+        elif activeShip is not None:
+            techLevel = activeShip.techLevel
+        else:
+            techLevel = -1
+
         newCfg = bountyConfig.BountyConfig(faction=data["faction"], route=data["route"],
                                             answer=data["answer"], checked=data["checked"], reward=data["reward"],
                                             issueTime=data["issueTime"], endTime=data["endTime"],
-                                            rewardPerSys=data["rewardPerSys"])
+                                            rewardPerSys=data["rewardPerSys"], activeShip=activeShip,
+                                            techLevel=techLevel)
                                             
         newBounty = Bounty(dbReload=dbReload, config=newCfg, owningDB=owningDB,
                             criminalObj=criminal.Criminal.fromDict(data["criminal"]))
@@ -336,10 +349,5 @@ class Bounty(serializable.Serializable):
                                     expiryFunction=newBounty._respawn,
                                     rescheduleOnExpiryFuncFailure=True)
             newBounty.escape(respawnTT=respawnTT)
-
-        if "activeShip" in data and not newBounty.hasShip:
-            newBounty.equipShip(Ship.fromDict(data["activeShip"]))
-        if "techLevel" in data and newBounty.techLevel == -1:
-            newBounty.techLevel = data["techLevel"] if "techLevel" in data else newBounty.activeShip.techLevel
 
         return newBounty
