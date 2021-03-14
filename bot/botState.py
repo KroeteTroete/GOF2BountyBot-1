@@ -1,3 +1,5 @@
+from .logging import Logger
+
 class ShutDownState:
     restart = 0
     shutdown = 1
@@ -16,7 +18,7 @@ duelRequestTTDB = None
 shopRefreshTT = None
 
 taskScheduler = None
-logger = None
+logger: Logger = None
 
 dbSaveTT = None
 updatesCheckTT = None
