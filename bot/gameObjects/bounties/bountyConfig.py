@@ -1,18 +1,137 @@
 # Typing imports
 from __future__ import annotations
-from typing import TYPE_CHECKING, List, Dict
+from typing import TYPE_CHECKING, List, Dict, Tuple, Any
 if TYPE_CHECKING:
     from ...databases import bountyDB
     from ..items import shipItem
 
 import random
 from datetime import datetime, timedelta
+from types import FunctionType
 
 from ...cfg import bbData, cfg
-from ... import lib
+from ... import lib, botState
 from ...lib import gameMaths
 from ..items.modules import armourModule, shieldModule, moduleItem
 from ..items import shipItem
+from ..items.weapons import primaryWeapon, turretWeapon
+
+
+def findItemTL(center: int, minTL: int, maxTL: int, upperBound: int, validator: FunctionType, **kwargs) -> int:
+    """Attempt to find an integer tl where:
+        minTL <= tl <= min(maxTL, center + upperBound)
+        validator(tl) == True
+
+    first [minTL... center] will be searched in descending order.
+    then, [center + 1... min(maxTL, center + upperBound)] will be searched in ascending order.
+    upperBound is provided for convenience, identical behaviour can be made by giving upperBound = 0 and
+    maxTL as center + upperBound' where upperBound' is the value which would have been given for upperBound
+
+    :param int center: The center of the search, being the upper bound for downward searching and
+                        the lower bound for upward searching
+    :param int minTL: The lowest bound for searching
+    :param int maxTL: The upper bound for searching
+    :param int upperBound: The maximum number of steps above center to search
+    :param function validator: A function deciding whether or not a tl is acceptible.
+                                validator must take one positional argument, being the tl, and return a bool.
+                                If kwargs are given, they will be passed to validator
+    :return: If one exists, a number tl, between minTL and min(maxTL, center + upperBound), and validator(tl)
+            is True. -1 if no such number exists.
+    """
+    if minTL > maxTL:
+        raise ValueError("maxTL must be at least minTL. minTL = " + str(minTL) + ", maxTL = " + str(maxTL))
+    if center < minTL or center > maxTL:
+        raise ValueError("center must be between minTL and maxTL, inclusive. " \
+                            + "minTL = " + str(minTL) + ", maxTL = " + str(maxTL) + ", center = " + str(center))
+    if upperBound < 0:
+        raise ValueError("upperBound must be at least 0. Given " + str(upperBound))
+    tl = center
+    maxTL = min(maxTL, center + upperBound)
+
+    while tl >= minTL:
+        if validator(tl, **kwargs):
+            return tl
+        tl -= 1
+    
+    if center < maxTL:
+        tl = center + 1
+        while tl <= maxTL:
+            if validator(tl, **kwargs):
+                return tl
+            tl += 1
+    
+    return -1
+
+    # # Old implementation
+    # tlsTried = 0
+    # upward = False
+    # while tlsTried < maxTL - minTL:
+    #     if validator(tl):
+    #         return tl
+    #     else:
+    #         tlsTried += 1
+    #         if tl == minTL:
+    #             if tl < maxTL - 1:
+    #                 upward = True
+    #                 tl = center + 1
+    #             else:
+    #                 break
+    #         elif upward:
+    #             if tl - center < upperBound:
+    #                 tl += 1
+    #             else:
+    #                 break
+    #         else:
+    #             tl -= 1
+    # return -1
+
+
+def shipTLHasPrimaries(tl: int) -> bool:
+    """Decide if at least one ship exists with the given tech level and has at least one primary weapon slot.
+
+    :param int tl: The tech level to search
+    :return: True if at least one ship exists with tech level tl and has at least one primary weapon slot. False otherwise
+    :rtype: False
+    """
+    for shipKey in bbData.shipKeysByTL[tl]:
+        shipData = bbData.builtInShipData[shipKey]
+        if "maxPrimaries" in shipData and shipData["maxPrimaries"] > 0:
+            return True
+    return False
+
+
+def tlDBHasType(index: int, db : List[List[Any]] = None, itemType : type = None) -> bool:
+    """Decide if db[index] contains an element of the given type.
+
+    :param int index: The index of the sub-list in db to search for an element of the given type
+    :param List[List[Any]] db: A list containing lists of objects to type check
+    :param type itemType: The element class to search for
+    :return: True if at least one element of the index'th sub-list in db is an instance of itemType, False otherwise
+    :rtype: bool
+    """
+    for item in db[index]:
+        if isinstance(item, itemType):
+            return True
+    return False
+
+
+def tlDBHasEquippableType(index: int, db : List[List[Any]] = None, itemType : type = None,
+                            activeShip : shipItem.Ship = None) -> bool:
+    """Decide if db[index] contains an element of the given type, and the type of that element is an equippable module on
+    the given ship.
+
+    :param int index: The index of the sub-list in db to search for an element of the given type
+    :param List[List[Any]] db: A list containing lists of objects to type check
+    :param type itemType: The element class to search for
+    :param Ship activeShip: The ship to test for element equippability
+    :return: True if at least one element of the index'th sub-list in db is an instance of itemType and is equippable on
+                activeShip, False otherwise
+    :rtype: bool
+    """
+    for item in db[index]:
+        if isinstance(item, itemType) and activeShip.canEquipModuleType(type(item)):
+            return True
+    return False
 
 
 class BountyConfig:
@@ -203,8 +322,10 @@ class BountyConfig:
             self.answer = random.choice(self.route)
         elif self.answer not in bbData.builtInSystemObjs:
             raise KeyError("Bounty constructor: Invalid answer requested '" + self.answer + "'")
-
-        if self.activeShip is None:
+        
+        if self.techLevel == 0:
+            self.activeShip = shipItem.Ship.fromDict(cfg.level0CrimLoadout)
+        elif self.activeShip is None:
             if self.isPlayer:
                 raise ValueError("Attempted to generate a player bounty without providing the activeShip")
 
@@ -214,41 +335,51 @@ class BountyConfig:
             # Otherwise, generate one based on difficulty
             else:
                 itemTL = self.techLevel - 1
-                if len(bbData.shipKeysByTL[itemTL]) < 1:
-                    raise RuntimeError("Attempted to spawn a bounty at level " + str(self.techLevel) \
-                                        + ", but no ships exist at this level")
-                shipWithPrimaryExists = False
-                for shipKey in bbData.shipKeysByTL[itemTL]:
-                    shipData = bbData.builtInShipData[shipKey]
-                    if "maxPrimaries" in shipData and shipData["maxPrimaries"] > 0:
-                        shipWithPrimaryExists = True
-                        break
 
+                # First attempt to find a TL for which a ship exists with primary weapon slots
+                shipTL = findItemTL(itemTL, cfg.minTechLevel - 1, cfg.maxTechLevel - 1,
+                                    cfg.criminalMaxGearUpgrade, shipTLHasPrimaries)
+                shipWithPrimaryExists = shipTL != -1
+
+                if not shipWithPrimaryExists:
+                    # If no such TL could be found, settle for a TL for which a ship exists
+                    shipTL = findItemTL(itemTL, cfg.minTechLevel - 1, cfg.maxTechLevel - 1,
+                                        cfg.criminalMaxGearUpgrade, tlDBHasType,
+                                        db=bbData.shipKeysByTL, itemType=str)
+
+                    # If no such TL could be found, there must be no ships in the game
+                    if shipTL == -1:
+                        raise ValueError("Unable to create no criminal, no ships registered in the game.")
+                
+                shipKey = random.choice(bbData.shipKeysByTL[shipTL])
                 if shipWithPrimaryExists:
-                    shipHasPrimary = False
-                    shipKey = ""
+                    shipHasPrimary = "maxPrimaries" in bbData.builtInShipData[shipKey] \
+                                            and bbData.builtInShipData[shipKey]["maxPrimaries"] > 0
                     while not shipHasPrimary:
-                        shipKey = random.choice(bbData.shipKeysByTL[itemTL])
+                        shipKey = random.choice(bbData.shipKeysByTL[shipTL])
                         shipHasPrimary = "maxPrimaries" in bbData.builtInShipData[shipKey] \
                                             and bbData.builtInShipData[shipKey]["maxPrimaries"] > 0
+                                            
+                self.activeShip = shipItem.Ship.fromDict(bbData.builtInShipData[shipKey])
 
-                    if shipHasPrimary:
-                        self.activeShip = shipItem.Ship.fromDict(bbData.builtInShipData[shipKey])
-                    else:
-                        newShipData = bbData.builtInShipData[random.choice(bbData.shipKeysByTL[itemTL])]
-                        self.activeShip = shipItem.Ship.fromDict(newShipData)
-
+                if shipWithPrimaryExists:
                     # if self.techLevel < self.activeShip.maxPrimaries:
                     #     numWeapons = random.randint(self.techLevel, self.activeShip.maxPrimaries)
                     # else:
                     #     numWeapons = self.activeShip.maxPrimaries
-                    numWeapons = random.randint(max(1, self.activeShip.maxPrimaries - 1), self.activeShip.maxPrimaries)
-                    for _ in range(numWeapons):
-                        self.activeShip.equipWeapon(random.choice(bbData.weaponObjsByTL[itemTL]))
 
-                else:
-                    newShipData = bbData.builtInShipData[random.choice(bbData.shipKeysByTL[itemTL])]
-                    self.activeShip = shipItem.Ship.fromDict(newShipData)
+                    weaponTL = findItemTL(itemTL, cfg.minTechLevel - 1, cfg.maxTechLevel - 1, cfg.criminalMaxGearUpgrade,
+                                            tlDBHasType, db=bbData.weaponObjsByTL, itemType=primaryWeapon.PrimaryWeapon)
+
+                    numWeapons = random.randint(max(1, self.activeShip.maxPrimaries - 1), self.activeShip.maxPrimaries)
+                    
+                    if weaponTL == -1:
+                        botState.logger.log("BountyConfig", "generate",
+                                            "Unable to pick weapon(s) for criminal, as no weapons are in the game",
+                                            eventType="NO_ITEMS", category="bountyConfig")
+                    else:
+                        for _ in range(numWeapons):
+                            self.activeShip.equipWeapon(random.choice(bbData.weaponObjsByTL[weaponTL]))
 
                 moduleTypesToEquip = {armourModule.ArmourModule: 0, shieldModule.ShieldModule: 0}
                 reservedSlots = 0
@@ -261,65 +392,45 @@ class BountyConfig:
                     moduleTypesToEquip[shieldModule.ShieldModule] = 1
                     reservedSlots += 1
 
-                maxExtraModules = self.activeShip.maxModules - self.activeShip.getNumModulesEquipped()
+                maxExtraModules = self.activeShip.maxModules - self.activeShip.getNumModulesEquipped() - reservedSlots
                 moduleTypesToEquip[moduleItem.ModuleItem] = random.randint(1, maxExtraModules)
 
                 for moduleType in moduleTypesToEquip:
                     while self.activeShip.canEquipMoreModules() and self.activeShip.canEquipModuleType(moduleType) \
-                            and moduleTypesToEquip[moduleType]:
-                        moduleTL = -1
-                        itemTLHasType = False
-                        while not itemTLHasType:
-                            moduleTL = gameMaths.pickRandomItemTL(self.techLevel) - 1
-                            for item in bbData.moduleObjsByTL[moduleTL]:
-                                if isinstance(item, moduleType):
-                                    itemTLHasType = True
-                                    break
+                            and moduleTypesToEquip[moduleType] > 0:
 
-                        itemToEquip = random.choice(bbData.moduleObjsByTL[moduleTL])
-                        while not isinstance(itemToEquip, moduleType):
+                        moduleTL = findItemTL(itemTL, cfg.minTechLevel - 1, cfg.maxTechLevel - 1, cfg.criminalMaxGearUpgrade,
+                                                tlDBHasEquippableType, db=bbData.moduleObjsByTL, itemType=moduleType,
+                                                activeShip=self.activeShip)
+                        
+                        if moduleTL == -1:
+                            botState.logger.log("BountyConfig", "generate",
+                                                "unable to find any TLs containing equippable " + moduleType.__name__ + "s",
+                                                eventType="NO_ITEMS", category="bountyConfig")
+                            break
+                        else:
                             itemToEquip = random.choice(bbData.moduleObjsByTL[moduleTL])
+                            while not isinstance(itemToEquip, moduleType):
+                                itemToEquip = random.choice(bbData.moduleObjsByTL[moduleTL])
 
-                        self.activeShip.equipModule(itemToEquip)
-                        moduleTypesToEquip[moduleType] -= 1
+                            if self.activeShip.canEquipModuleType(type(itemToEquip)):
+                                self.activeShip.equipModule(itemToEquip)
+                                moduleTypesToEquip[moduleType] -= 1
 
-                for _ in range(self.activeShip.maxTurrets):
-                    equipTurret = random.randint(1,100)
-                    if equipTurret <= cfg.criminalEquipTurretChance:
-                        # turretTL = self.techLevel - 1
-                        turretTL = gameMaths.pickRandomItemTL(self.techLevel) - 1
-                        tries = 5
-                        while len(bbData.turretObjsByTL[turretTL]) == 0:
-                            turretTL = gameMaths.pickRandomItemTL(self.techLevel) - 1
-                            tries -= 1
-                            if tries == 0:
-                                break
-                        if tries == 0:
-                                break
-                        self.activeShip.equipTurret(random.choice(bbData.turretObjsByTL[turretTL]))
+                if self.activeShip.maxTurrets:
+                    
+                    turretTL = findItemTL(itemTL, cfg.minTechLevel - 1, cfg.maxTechLevel - 1, cfg.criminalMaxGearUpgrade,
+                                            tlDBHasType, db=bbData.turretObjsByTL, itemType=turretWeapon.TurretWeapon)
 
-            # Purely random loadout generation
-            # self.activeShip = shipItem.Ship.fromDict(random.choice(list(bbData.builtInShipData.values())))
-            # for i in range(self.activeShip.maxPrimaries):
-            #     self.activeShip.equipWeapon(random.choice(list(bbData.builtInWeaponObjs.values())))
-            # for i in range(random.randint(1, self.activeShip.maxModules)):
-            #     moduleNotFound = True
-            #     while moduleNotFound:
-            #         try:
-            #             self.activeShip.equipModule(random.choice(list(bbData.builtInModuleObjs.values())))
-            #             moduleNotFound = False
-            #         except ValueError:
-            #             pass
-            # for i in range(self.activeShip.maxTurrets):
-            #     equipTurret = random.randint(1,100)
-            #     if equipTurret <= 30:
-            #         turretNotFound = True
-            #         while turretNotFound:
-            #             try:
-            #                 self.activeShip.equipTurret(random.choice(list(bbData.builtInTurretObjs.values())))
-            #                 turretNotFound = False
-            #             except ValueError:
-            #                 pass
+                    if turretTL == -1:
+                        botState.logger.log("BountyConfig", "generate",
+                                            "unable to find any TLs containing turrets",
+                                            eventType="NO_ITEMS", category="bountyConfig")
+                    else:
+                        for _ in range(self.activeShip.maxTurrets):
+                            equipTurret = random.randint(1,100)
+                            if equipTurret <= cfg.criminalEquipTurretChance:
+                                self.activeShip.equipTurret(random.choice(bbData.turretObjsByTL[turretTL]))
 
         if self.reward == -1:
             # self.reward = int(len(self.route) * cfg.bPointsToCreditsRatio \
