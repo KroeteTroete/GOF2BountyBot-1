@@ -51,7 +51,7 @@ class ActivityMonitor(Serializable):
             for tl in _tlsRange:
                 newTemp = self.temperatures[tl] * cfg.guildActivityDecayRate
                 # truncate to 2 decimal places and lower bound
-                self.temperatures[tl] = max(cfg.minGuildActivity, format(newTemp, '.2f'))
+                self.temperatures[tl] = max(cfg.minGuildActivity, round(newTemp, 1))
             if updateActive:
                 self.updateIsActive()
 
