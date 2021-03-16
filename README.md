@@ -28,7 +28,7 @@ This repository is a work-in-progress port of [BountyBot](https://github.com/Tri
   /></a>
   <a href="https://github.com/GOF2BountyBot/GOF2BountyBot/projects/1?card_filter_query=label%3Aenhancement"
     ><img
-      src="https://img.shields.io/github/issues-search?color=edd626&label=upcoming%20features%20issues&query=repo%3AGOF2BountyBot%2FGOF2BountyBot%20is%3Aopen%20label%3Aenhancement"
+      src="https://img.shields.io/github/issues-search?color=edd626&label=upcoming%20features&query=repo%3AGOF2BountyBot%2FGOF2BountyBot%20is%3Aopen%20label%3Aenhancement"
       alt="GitHub open enhancement issues"
   /></a>
 </p>
