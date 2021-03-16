@@ -170,16 +170,16 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                         await callingGuild.announceBountyWon(bounty, rewards, message.author)
                         await message.channel.send("__Duel Statistics__",embed=statsEmbed)
 
-                        # criminal ship unequip is delayed until now rather than handled in bounty.check
-                        # to allow for duel info printing.
-                        # this could instead be replaced by bounty.check returning the ShipFight info.
-                        bounty.clearShip()
-
                         # Raise guild's activity temperature for this bounty's tl
                         numContributingUsers = len(set(rewards))
                         print("increasing temps for tl",bounty.techLevel)
                         callingGuild.bountiesDB.activityMonitor.raiseTemp(bounty.techLevel,
                                                                             numContributingUsers * cfg.activityTempPerPlayer)
+
+                        # criminal ship unequip is delayed until now rather than handled in bounty.check
+                        # to allow for duel info printing.
+                        # this could instead be replaced by bounty.check returning the ShipFight info.
+                        bounty.clearShip()
 
                     # add this bounty to the list of bounties to be removed
                     toPop += [bounty]
