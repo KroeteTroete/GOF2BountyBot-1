@@ -237,7 +237,7 @@ kaamoMaxCapacity = 70
 ##### BOUNTIES #####
 
 # Maximum number of bounties that may simulatneously be available, per fection
-maxBountiesPerFaction = 5
+maxBountiesPerFaction = 10
 
 # The maximum number of bounties a player is allowed to win each day
 maxDailyBountyWins = 10
