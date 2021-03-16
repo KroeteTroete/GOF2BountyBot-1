@@ -1,15 +1,17 @@
 from __future__ import annotations
 from bot.cfg import bbData
 from typing import Dict
+from datetime import timedelta
 
 from ..gameObjects.bounties import bounty, criminal
+from ..gameObjects.bounties.bountyConfig import BountyConfig
 from typing import List
 from ..baseClasses import serializable
 from ..baseClasses.aliasableDict import AliasableDict
 from ..cfg import cfg
-from ..users import basedGuild
-from ..users.guildActivity import ActivityMonitor
-from bot.users import guildActivity
+from ..users import basedGuild, guildActivity
+from .. import lib, botState
+from ..scheduling.timedTask import TimedTask, DynamicRescheduleTask
 
 
 class BountyDB(serializable.Serializable):
@@ -29,7 +31,7 @@ class BountyDB(serializable.Serializable):
     """
 
     def __init__(self, factions: List[str], owningBasedGuild: "basedGuild.BasedGuild",
-                    activityMonitor: ActivityMonitor = None):
+                    activityMonitor: guildActivity.ActivityMonitor = None, dummy = False):
         """
         :param List[str] factions: list of unique faction names useable in this db's bounties
         :param BasedGuild owningBasedGuild: The guild that owns this bountyDB
@@ -40,9 +42,100 @@ class BountyDB(serializable.Serializable):
         # Dictionary of faction name : dict of criminal : bounty
         self.escapedBounties: Dict[str, AliasableDict[criminal.Criminal, bounty.Bounty]] = {f: AliasableDict() \
                                                                                                 for f in factions}
-        self.latestBounty: bounty.Bounty = None
         self.owningBasedGuild = owningBasedGuild
-        self.activityMonitor = activityMonitor or ActivityMonitor()
+        self.activityMonitor = activityMonitor or guildActivity.ActivityMonitor()
+
+        bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelaySeconds,
+                                "fixed-routeScale": self.getRouteScaledBountyDelayFixed,
+                                "random-routeScale": self.getRouteScaledBountyDelayRandom}
+
+        bountyDelayGeneratorArgs = {"random": cfg.newBountyDelayRandomRange,
+                                    "fixed-routeScale": cfg.newBountyFixedDelta,
+                                    "random-routeScale": cfg.newBountyDelayRandomRange}
+
+        self.maxBounties: List[int] = [1] * guildActivity._numTLs
+        self.newBountyTTs: List[TimedTask] = [None] * guildActivity._numTLs
+        self.latestBounties: List[bounty.Bounty] = [None] * guildActivity._numTLs
+
+        for tl in guildActivity._tlsRange:
+            # linear temperature-maxBounty scaling
+            self.maxBounties[tl] = min(int(self.activityMonitor.temperatures[tl]), cfg.maxBountiesPerFaction)
+
+        if not dummy:
+            if cfg.newBountyDelayType == "fixed":
+                self.newBountyTTs = [TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.newBountyFixedDelta),
+                                                autoReschedule=True, expiryFunction=owningBasedGuild.spawnAndAnnounceBounty,
+                                                expiryFunctionArgs={"newBounty": None,
+                                                                    "newConfig": BountyConfig(techLevel=tl)}) \
+                                                                                    for tl in guildActivity._tlsRange]
+            else:
+                for tl in guildActivity._tlsRange:
+                    try:
+                        delayGenerator = bountyDelayGenerators[cfg.newBountyDelayType]
+                        generatorArgs = [bountyDelayGeneratorArgs[cfg.newBountyDelayType], tl]
+                    except KeyError:
+                        raise ValueError("cfg: Unrecognised newBountyDelayType '" + cfg.newBountyDelayType + "'")
+                    else:
+                        self.newBountyTTs[tl] = DynamicRescheduleTask(delayGenerator,
+                                                                        delayTimeGeneratorArgs=generatorArgs,
+                                                                        autoReschedule=True,
+                                                                        expiryFunction=owningBasedGuild.spawnAndAnnounceBounty,
+                                                                        expiryFunctionArgs={"newBounty": None, \
+                                                                                        "newConfig": BountyConfig(techLevel=tl)})
+
+            for tt in self.newBountyTTs:
+                botState.taskScheduler.scheduleTask(tt)
+
+
+    def getRouteScaledBountyDelayFixed(self, data: List[Dict[str, int], int]) -> timedelta:
+        """New bounty delay generator, scaling a fixed delay by the length of the presently spawned bounty.
+
+        :param dict baseDelayDict: A lib.timeUtil.timeDeltaFromDict-compliant dictionary describing the amount of time to wait
+                                    after a bounty is spawned with route length 1
+        :return: A datetime.timedelta indicating the time to wait before spawning a new bounty
+        :rtype: datetime.timedelta
+        """
+        baseDelayDict, tl = data
+        timeScale = cfg.fallbackRouteScale if self.latestBounties[tl] is None else \
+                    len(self.latestBounties[tl].route)
+        delay = lib.timeUtil.timeDeltaFromDict(baseDelayDict) * timeScale * cfg.newBountyDelayRouteScaleCoefficient
+        botState.logger.log("Main", "routeScaleBntyDelayFixed",
+                            "New bounty delay generated, " \
+                                + ("no latest criminal." if self.latestBounties[tl] is None else \
+                                + ("latest criminal: '" + self.latestBounties[tl].criminal.name + "'. Route Length " \
+                                + str(len(self.latestBounties[tl].route)))) + "\nDelay picked: " + str(delay),
+                            category="newBounties",
+                            eventType="NONE_BTY" if self.latestBounties[tl] is None else "DELAY_GEN", noPrint=True)
+        return delay
+
+
+    def getRouteScaledBountyDelayRandom(self, data: List[Dict[str, int], int]) -> timedelta:
+        """New bounty delay generator, generating a random delay time between two points,
+        scaled by the length of the presently spawned bounty.
+
+        :param dict baseDelayDict: A dictionary describing the minimum and maximum time in seconds to wait after a bounty is
+                                    spawned with route length 1
+        :return: A datetime.timedelta indicating the time to wait before spawning a new bounty
+        :rtype: datetime.timedelta
+        """
+        baseDelayDict, tl = data
+        timeScale = cfg.fallbackRouteScale if self.latestBounties[tl] is None else \
+                    len(self.latestBounties[tl].route)
+        delay = lib.timeUtil.getRandomDelaySeconds({"min": baseDelayDict["min"] * timeScale \
+                                                        * cfg.newBountyDelayRouteScaleCoefficient,
+                                                    "max": baseDelayDict["max"] * timeScale \
+                                                        * cfg.newBountyDelayRouteScaleCoefficient})
+        botState.logger.log("Main", "routeScaleBntyDelayRand",
+                            "New bounty delay generated, " \
+                                + ("no latest criminal." if self.latestBounties[tl] is None else \
+                                    ("latest criminal: '" + self.latestBounties[tl].criminal.name \
+                                + "'. Route Length " + str(len(self.latestBounties[tl].route)))) + "\nRange: " \
+                                + str((baseDelayDict["min"] * timeScale * cfg.newBountyDelayRouteScaleCoefficient) / 60) \
+                                + "m - " \
+                                + str((baseDelayDict["max"] * timeScale * cfg.newBountyDelayRouteScaleCoefficient) / 60) \
+                                + "m\nDelay picked: " + str(delay), category="newBounties",
+                            eventType="NONE_BTY" if self.latestBounties[tl] is None else "DELAY_GEN", noPrint=True)
+        return delay
 
 
     def getFactions(self) -> List[bounty.Bounty]:
@@ -113,8 +206,9 @@ class BountyDB(serializable.Serializable):
         if not self.factionExists(faction):
             raise KeyError("Unrecognised faction: " + faction)
         # Remove latest bounty if they are in this faction
-        if self.latestBounty is not None and self.latestBounty.faction == faction:
-            self.latestBounty = None
+        for tl in guildActivity._tlsRange:
+            if self.latestBounties[tl] is not None and self.latestBounties[tl].faction == faction:
+                self.latestBounties[tl] = None
         # Empty the faction's bounties
         self.bounties[faction] = AliasableDict()
         self.escapedBounties[faction] = AliasableDict()
@@ -279,7 +373,7 @@ class BountyDB(serializable.Serializable):
 
         # Add the bounty to the database
         self.bounties[bounty.faction][bounty.criminal] = bounty
-        self.latestBounty = bounty
+        self.latestBounties[bounty.techLevel] = bounty
 
 
     def escapedCriminalExists(self, crim):
@@ -324,8 +418,8 @@ class BountyDB(serializable.Serializable):
 
         :param bounty.Bounty bounty: the bounty object to remove from the database
         """
-        if bounty is self.latestBounty:
-            self.latestBounty = None
+        if bounty is self.latestBounties[bounty.techLevel]:
+            self.latestBounties[bounty.techLevel] = None
         if not self.bountyObjExists(bounty):
             raise KeyError("criminal not found: " + bounty.criminal.name)
         del self.bounties[bounty.faction][bounty.criminal]
