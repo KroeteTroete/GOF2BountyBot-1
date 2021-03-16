@@ -221,7 +221,7 @@ async def dev_cmd_resetnewbountycool(message : discord.Message, args : str, isDM
         await message.channel.send(":x: Unrecognised parameter: " + guildStr)
         return
 
-    await callingBBGuild.newBountyTT.forceExpire()
+    await callingBBGuild.bountiesDB.newBountyTT.forceExpire()
     await message.channel.send(":ballot_box_with_check: New bounty cooldown reset for '" + callingBBGuild.dcGuild.name + "'")
 
 botCommands.register("resetnewbountycool", dev_cmd_resetnewbountycool, 2, allowDM=True, helpSection="bounties", useDoc=True)
