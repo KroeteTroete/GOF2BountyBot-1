@@ -198,33 +198,91 @@ async def dev_cmd_resetnewbountycool(message : discord.Message, args : str, isDM
     :param str args: ignored
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
-    guildStr = args
-
-    if guildStr == "":
+    argsSplit = args.split(" ")
+    tl = -1
+    callingBBGuild = None
+    if len(argsSplit) == 0:
         if isDM:
             await message.channel.send("Either give a guild id or call from within a guild")
             return
         callingBBGuild = botState.guildsDB.getGuild(message.guild.id)
-        if callingBBGuild.bountiesDisabled:
-            await message.channel.send("This guild has bounties disabled.")
+    elif len(argsSplit) == 1:
+        if lib.stringTyping.isInt(args):
+            arg = int(args)
+            if not botState.guildsDB.idExists(arg):
+                if arg < cfg.minTechLevel - 1 or arg > cfg.maxTechLevel:
+                    await message.channel.send("Unrecognised guild")
+                    return
+                else:
+                    tl = arg
+            if tl == -1:
+                callingBBGuild = botState.guildsDB.getGuild(arg)
+                if callingBBGuild.bountiesDisabled:
+                    await message.channel.send((("'" + callingBBGuild.dcGuild.name + "' ") if callingBBGuild.dcGuild is not None \
+                                                else "The requested guild ") + " has bounties disabled.")
+                    return
+            else:
+                if isDM:
+                    await message.channel.send("Either give a guild id or call from within a guild")
+                    return
+                callingBBGuild = botState.guildsDB.getGuild(message.guild.id)
+        else:
+            await message.channel.send(":x: Unrecognised parameter: " + args)
             return
-    elif lib.stringTyping.isInt(guildStr):
-        if not botState.guildsDB.idExists(int(guildStr)):
+    elif len(argsSplit) == 2:
+        for arg in argsSplit:
+            if not lib.stringTyping.isInt(arg):
+                await message.channel.send(":x: Unrecognised parameter: " + arg)
+                return
+        guildID, tl = int(argsSplit[0]), int(argsSplit[1])
+        if not botState.guildsDB.idExists(guildID):
             await message.channel.send("Unrecognised guild")
-            return
-        callingBBGuild = botState.guildsDB.getGuild(int(guildStr))
+        callingBBGuild = botState.guildsDB.getGuild(guildID)
         if callingBBGuild.bountiesDisabled:
             await message.channel.send((("'" + callingBBGuild.dcGuild.name + "' ") if callingBBGuild.dcGuild is not None \
                                         else "The requested guild ") + " has bounties disabled.")
             return
-    else:
-        await message.channel.send(":x: Unrecognised parameter: " + guildStr)
-        return
 
-    await callingBBGuild.bountiesDB.newBountyTT.forceExpire()
-    await message.channel.send(":ballot_box_with_check: New bounty cooldown reset for '" + callingBBGuild.dcGuild.name + "'")
+    if tl == -1:
+        for tt in callingBBGuild.bountiesDB.newBountyTTs:
+            await tt.forceExpire()
+        await message.channel.send(":ballot_box_with_check: All bounty cooldowns reset for '" + callingBBGuild.dcGuild.name + "'")
+    else:
+        await callingBBGuild.bountiesDB.newBountyTTs[tl].forceExpire()
+        await message.channel.send(":ballot_box_with_check: TL " + str(tl) + " bounty cooldown reset for '" + callingBBGuild.dcGuild.name + "'")
 
 botCommands.register("resetnewbountycool", dev_cmd_resetnewbountycool, 2, allowDM=True, helpSection="bounties", useDoc=True)
+
+
+async def dev_cmd_set_temp(message : discord.Message, args : str, isDM : bool):
+    """developer command setting the activity level for the calling guild at the given tech level
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: a tech level followed by an activity level
+    :param bool isDM: Whether or not the command is being called from a DM channel
+    """
+    callingBBGuild = botState.guildsDB.getGuild(message.guild.id)
+    if callingBBGuild.bountiesDisabled:
+        await message.channel.send(":x: This guild has bounties disabled.")
+        return
+    argsSplit = args.split(" ")
+    if len(argsSplit) != 2:
+        await message.channel.send(":x: Incorrect number of args. Please give the tl followed by the new temperature")
+        return
+    tl, temp = argsSplit
+    if not lib.stringTyping.isInt(tl) or int(tl) < cfg.minTechLevel - 1 or int(tl) > cfg.maxTechLevel:
+        await message.channel.send(":x: Incorrect tl '" + tl + "'")
+        return
+    tl = int(tl)
+    try:
+        temp = float(temp)
+    except ValueError:
+        await message.channel.send(":x: Incorrect temp, must be float '" + temp + "'")
+    else:
+        callingBBGuild.bountiesDB.activityMonitor.temperatures[tl] = temp
+        await message.reply("Done!")
+
+botCommands.register("set-temp", dev_cmd_set_temp, 2, allowDM=False, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_canmakebounty(message : discord.Message, args : str, isDM : bool):
@@ -678,6 +736,24 @@ async def dev_cmd_decay_temps(message : discord.Message, args : str, isDM : bool
         await message.reply("Activity temperatures decayed for " + message.guild.name + ".")
 
 botCommands.register("decay-temps", dev_cmd_decay_temps, 2, allowDM=False,
+                        helpSection="bounties", useDoc=True)
+
+
+async def dev_cmd_reset_temps(message : discord.Message, args : str, isDM : bool):
+    """developer command resetting the activity temperatures of the calling guild
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: ignored
+    :param bool isDM: Whether or not the command is being called from a DM channel
+    """
+    callingBBGuild = botState.guildsDB.getGuild(message.guild.id)
+    if callingBBGuild.bountiesDisabled:
+        await message.reply(":x: Bounties are disabled in this server!")
+    else:
+        callingBBGuild.bountiesDB.activityMonitor.temperatures = [cfg.minGuildActivity for _ in guildActivity._tlsRange]
+        await message.reply("Activity temperatures reset for " + message.guild.name + ".")
+
+botCommands.register("reset-temps", dev_cmd_reset_temps, 2, allowDM=False,
                         helpSection="bounties", useDoc=True)
 
 
