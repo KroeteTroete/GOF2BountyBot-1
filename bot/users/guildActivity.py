@@ -78,6 +78,17 @@ class ActivityMonitor(Serializable):
         return self.temperatures[tl] > cfg.minGuildActivity
 
 
+    def measureTL(self, tl: int) -> float:
+        """Read the current temperature for a one-indexed tech level.
+        Using one-indexing allows for reading of tech level 0's temperature.
+
+        :param int tl: The tech level to read
+        :return: The currentl activity level at tech level tl
+        :rtype: float
+        """
+        return self.temperatures[tl]
+
+
     def toDict(self, **kwargs) -> dict:
         """Serialize this ActivityMonitor into dictionary format, to be recreated completely.
 

@@ -399,13 +399,13 @@ class BasedGuild(serializable.Serializable):
             newBounty = newBountyData["newBounty"]
             if newBounty is None:
                 newBounty = bounty.Bounty(owningDB=self.bountiesDB,
-                                            config=newBountyData["newConfig"] if "newConfig" in newBountyData else None)
+                                            config=newBountyData["newConfig"].copy() if "newConfig" in newBountyData else None)
             else:
                 if self.bountiesDB.escapedCriminalExists(newBounty.criminal):
                     self.bountiesDB.removeEscapedCriminal(newBounty.criminal)
 
                 if "newConfig" in newBountyData and newBountyData["newConfig"] is not None:
-                    newConfig = newBountyData["newConfig"]
+                    newConfig = newBountyData["newConfig"].copy()
                     if not newConfig.generated:
                         newConfig.generate(self.bountiesDB)
                     newBounty.route = newConfig.route
@@ -489,31 +489,6 @@ class BasedGuild(serializable.Serializable):
             raise ValueError("Bounties are already enabled in this guild")
 
         self.bountiesDB = bountyDB.BountyDB(bbData.bountyFactions)
-
-        bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelaySeconds,
-                                "fixed-routeScale": self.getRouteScaledBountyDelayFixed,
-                                "random-routeScale": self.getRouteScaledBountyDelayRandom}
-
-        bountyDelayGeneratorArgs = {"random": cfg.newBountyDelayRandomRange,
-                                    "fixed-routeScale": cfg.newBountyFixedDelta,
-                                    "random-routeScale": cfg.newBountyDelayRandomRange}
-
-        if cfg.newBountyDelayType == "fixed":
-            self.newBountyTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.newBountyFixedDelta),
-                                            autoReschedule=True, expiryFunction=self.spawnAndAnnounceBounty,
-                                            expiryFunctionArgs={"newBounty": None})
-        else:
-            try:
-                generatorArgs = bountyDelayGeneratorArgs[cfg.newBountyDelayType]
-                self.newBountyTT = DynamicRescheduleTask(bountyDelayGenerators[cfg.newBountyDelayType],
-                                                            delayTimeGeneratorArgs=generatorArgs,
-                                                            autoReschedule=True,
-                                                            expiryFunction=self.spawnAndAnnounceBounty,
-                                                            expiryFunctionArgs={"newBounty": None})
-            except KeyError:
-                raise ValueError("cfg: Unrecognised newBountyDelayType '" + cfg.newBountyDelayType + "'")
-
-        botState.newBountiesTTDB.scheduleTask(self.newBountyTT)
         self.bountiesDisabled = False
 
 
@@ -528,8 +503,6 @@ class BasedGuild(serializable.Serializable):
 
         if self.hasBountyBoardChannel:
             self.removeBountyBoardChannel()
-        botState.newBountiesTTDB.unscheduleTask(self.newBountyTT)
-        self.newBountyTT = None
         self.bountiesDisabled = True
         self.bountiesDB = None
 

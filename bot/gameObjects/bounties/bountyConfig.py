@@ -451,3 +451,18 @@ class BountyConfig:
                 self.checked[station] = -1
 
         self.generated = True
+
+
+    def copy(self) -> BountyConfig:
+        """Get a new BountyConfig object with the same attributes as this instance.
+        If this instance has not yet been generated, neither will the copy.
+
+        :return: A shallow copy of this object
+        :rtype: BountyConfig
+        """
+        return BountyConfig(faction=self.faction, name=self.name, isPlayer=self.isPlayer,
+                    route=self.route, start=self.start, end=self.end,
+                    answer=self.answer, checked=self.checked, reward=self.reward,
+                    issueTime=self.issueTime, endTime=self.endTime, icon=self.icon,
+                    aliases=self.aliases, wiki=self.wiki, activeShip=self.activeShip,
+                    techLevel=self.techLevel, rewardPerSys=self.rewardPerSys)
