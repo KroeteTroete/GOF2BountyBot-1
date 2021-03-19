@@ -2,6 +2,7 @@ from __future__ import annotations
 from bot.cfg import bbData
 from typing import Dict
 from datetime import timedelta
+from random import randint
 
 from ..gameObjects.bounties import bounty, criminal
 from ..gameObjects.bounties.bountyConfig import BountyConfig
@@ -47,11 +48,13 @@ class BountyDB(serializable.Serializable):
 
         bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelaySeconds,
                                 "fixed-routeScale": self.getRouteScaledBountyDelayFixed,
-                                "random-routeScale": self.getRouteScaledBountyDelayRandom}
+                                "random-routeScale": self.getRouteScaledBountyDelayRandom,
+                                "random-routeScale-tempScale": self.getRouteTempScaledBountyDelayRandom}
 
         bountyDelayGeneratorArgs = {"random": cfg.newBountyDelayRandomRange,
                                     "fixed-routeScale": cfg.newBountyFixedDelta,
-                                    "random-routeScale": cfg.newBountyDelayRandomRange}
+                                    "random-routeScale": cfg.newBountyDelayRandomRange,
+                                    "random-routeScale-tempScale": cfg.newBountyDelayRandomRange}
 
         self.maxBounties: List[int] = [1] * guildActivity._numTLs
         self.newBountyTTs: List[TimedTask] = [None] * guildActivity._numTLs
@@ -134,6 +137,38 @@ class BountyDB(serializable.Serializable):
                                 + "m - " \
                                 + str((baseDelayDict["max"] * timeScale * cfg.newBountyDelayRouteScaleCoefficient) / 60) \
                                 + "m\nDelay picked: " + str(delay), category="newBounties",
+                            eventType="NONE_BTY" if self.latestBounties[tl] is None else "DELAY_GEN", noPrint=True)
+        return delay
+
+
+    def getRouteTempScaledBountyDelayRandom(self, data: List[Dict[str, int], int]) -> timedelta:
+        """New bounty delay generator, generating a random delay time between two points,
+        scaled by the length of the presently spawned bounty and the current activity temperature at the
+        presently spawned bounty's tech level.
+
+        :param dict baseDelayDict: A dictionary describing the minimum and maximum time in seconds to wait after a bounty is
+                                    spawned with route length 1
+        :return: A datetime.timedelta indicating the time to wait before spawning a new bounty
+        :rtype: datetime.timedelta
+        """
+        baseDelayDict, tl = data
+        timeScale = cfg.fallbackRouteScale if self.latestBounties[tl] is None else \
+                    len(self.latestBounties[tl].route)
+        tempScale = self.activityMonitor.measureTL(tl) ** - 0.1
+        numSeconds = randint(baseDelayDict["min"] * timeScale * cfg.newBountyDelayRouteScaleCoefficient,
+                            baseDelayDict["max"] * timeScale * cfg.newBountyDelayRouteScaleCoefficient)
+        delay = timedelta(seconds=tempScale * numSeconds)
+        botState.logger.log("Main", "routeTempScaleBntyDelayRand",
+                            "New bounty delay generated, " \
+                                + "temp " + str(self.activityMonitor.measureTL(tl)) + " -> scale " + str(round(tempScale, 2))
+                                + (" no latest criminal." if self.latestBounties[tl] is None else \
+                                    (" latest criminal: '" + self.latestBounties[tl].criminal.name \
+                                + "'. Route Length " + str(len(self.latestBounties[tl].route)))) + "\nRange: " \
+                                + str((baseDelayDict["min"] * timeScale * cfg.newBountyDelayRouteScaleCoefficient) / 60) \
+                                + "m - " \
+                                + str((baseDelayDict["max"] * timeScale * cfg.newBountyDelayRouteScaleCoefficient) / 60) \
+                                + "m\nPre-temp scale: " + lib.timeUtil.td_format_noYM(timedelta(seconds=numSeconds))
+                                + "\nDelay picked: " + lib.timeUtil.td_format_noYM(delay), category="newBounties",
                             eventType="NONE_BTY" if self.latestBounties[tl] is None else "DELAY_GEN", noPrint=True)
         return delay
 
