@@ -815,8 +815,10 @@ class BasedUser(serializable.Serializable):
             bountyHuntingXP = userDict["bountyHuntingXP"]
         else:
             # Roughly predict bounty hunter XP from pre-bountyShips savedata directly from total credits earned from bounties
-            bountyHuntingXP = gameMaths.bountyHuntingXPForLevel(1) if "lifetimeCredits" not in userDict \
-                                else int(userDict["lifetimeCredits"] * cfg.bountyRewardToXPGainMult)
+            if "lifetimeCredits" not in userDict or userDict["lifetimeCredits"] == 0:
+                bountyHuntingXP = gameMaths.bountyHuntingXPForLevel(1)
+            else:
+                int(userDict["lifetimeCredits"] * cfg.bountyRewardToXPGainMult)
 
         kaamo = kaamoShop.KaamoShop.fromDict(userDict["kaamo"]) if "kaamo" in userDict else None
         loma = kaamoShop.KaamoShop.fromDict(userDict["loma"]) if "loma" in userDict else None
