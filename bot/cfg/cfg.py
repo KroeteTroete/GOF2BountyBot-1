@@ -62,7 +62,7 @@ timeouts = {
     "duelChallengeMenuExpiry": {"hours": 2},
     "pollMenuExpiry": {"minutes": 5},
 
-    "guildActivityDecay": {"days": 1}
+    "guildActivityDecay": {"hours": 1}
 }
 
 paths = {
