@@ -4,12 +4,12 @@ from discord import Guild
 from concurrent.futures import ThreadPoolExecutor
 import os
 
-from ..users import basedGuild
+from ..users import basedGuild, guildActivity
 from . import bountyDB
 from .. import botState
 from ..baseClasses import serializable
 from .. import lib
-from ..cfg import bbData
+from ..cfg import bbData, cfg
 
 
 _minGuildsToParallelize = os.cpu_count()
@@ -146,6 +146,8 @@ class GuildDB(serializable.Serializable):
         """
         if not g.bountiesDisabled and g.bountiesDB.activityMonitor.isActive:
             g.bountiesDB.activityMonitor.decayTemps()
+            g.bountiesDB.maxBounties = [min(int(g.bountiesDB.activityMonitor.temperatures[tl]), cfg.maxBountiesPerFaction)
+                                        for tl in guildActivity._tlsRange]
 
 
     def decayAllTemps(self):
