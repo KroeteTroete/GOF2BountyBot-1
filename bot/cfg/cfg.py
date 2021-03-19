@@ -159,9 +159,7 @@ accessLevelTitles = ["pilot", "captain", "commander", "officer"]
 
 ##### USERS #####
 
-userAlertsIDsDefaults = {   "bounties_new": False,
-
-                            "shop_refresh": False,
+userAlertsIDsDefaults = {   "shop_refresh": False,
 
                             "duels_challenge_incoming_new": True,
                             "duels_challenge_incoming_cancel": False,
@@ -299,6 +297,18 @@ minGuildActivity = 1
 
 # Amount to raise the guild's activity temperature by for each player contributing to a bounty
 activityTempPerPlayer = 1
+
+# The RGB colours to make by default for each bounty alert role, ordered by tech level ascending
+defaultBountyAlertRoleColours = ((89, 39, 12),
+                                (99, 48, 12),
+                                (118, 63, 12),
+                                (138, 79, 12),
+                                (157, 94, 11),
+                                (177, 111, 10),
+                                (197, 126, 10),
+                                (221, 146, 10),
+                                (240, 161, 9),
+                                (255, 174, 8))
 
 
 

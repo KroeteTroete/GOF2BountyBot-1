@@ -1,7 +1,11 @@
 from __future__ import annotations
-from discord import Embed, channel, Client, Forbidden, Guild, Member, Message, HTTPException, NotFound
+from discord import Embed, channel, Client, Forbidden, Guild, Member, Message, HTTPException, NotFound, Colour, Role
+from discord import TextChannel
 from typing import List, Dict, Union
 from datetime import timedelta
+import asyncio
+from aiohttp import client_exceptions
+import traceback
 
 from .. import botState, lib
 from ..gameObjects import guildShop
@@ -44,13 +48,19 @@ class BasedGuild(serializable.Serializable):
     :vartype bountiesDisabled: bool
     :var shopDisabled: Whether or not to disable this guild's guildShop and shop refreshing
     :vartype shopDisabled: bool
+    :var bountyAlertRoles: A list of IDs corresponding to roles to ping upon the spawning of new bounties.
+                            E.g if a tech level 2 bounty is spawned, the role with id bountyAlertRoles[1]
+                            should be pinged.
+    :vartype: bountyAlertRoles: List[int]
+    :var hasBountyAlertRoles: True if the guild has roles set in bountyAlertRoles, False otherwise
+    :vartype hasBountyAlertRoles: bool
     """
 
     def __init__(self, id: int, dcGuild: Guild, bounties: bountyDB.BountyDB, commandPrefix: str = cfg.defaultCommandPrefix,
             announceChannel : channel.TextChannel = None, playChannel : channel.TextChannel = None,
             shop : guildShop.TechLeveledShop = None, bountyBoardChannel : bountyBoardChannel.bountyBoardChannel = None,
             alertRoles : Dict[str, int] = {}, ownedRoleMenus : int = 0, bountiesDisabled : bool = False,
-            shopDisabled : bool = False):
+            shopDisabled : bool = False, bountyAlertRoles : List[int] = []):
         """
         :param int id: The ID of the guild, directly corresponding to a discord guild's ID.
         :param discord.Guild dcGuild: This guild's corresponding discord.Guild object
@@ -66,6 +76,9 @@ class BasedGuild(serializable.Serializable):
         :param int ownedRoleMenus: The number of ReactionRolePickers present in this guild
         :param bool bountiesDisabled: Whether or not to disable this guild's bountyDB and bounty spawning
         :param bool shopDisabled: Whether or not to disable this guild's guildShop and shop refreshing
+        :param List[int] bountyAlertRoles: A list of IDs corresponding to roles to ping upon the spawning of new bounties.
+                                            E.g if a tech level 2 bounty is spawned, the role with id bountyAlertRoles[1]
+                                            should be pinged.
         :raise TypeError: When given an incompatible argument type
         """
 
@@ -105,9 +118,144 @@ class BasedGuild(serializable.Serializable):
         if bountiesDisabled:
             self.bountyBoardChannel = None
             self.hasBountyBoardChannel = False
+            self.hasBountyAlertRoles = False
+            self.bountyAlertRoles = []
         else:
             self.bountyBoardChannel = bountyBoardChannel
             self.hasBountyBoardChannel = bountyBoardChannel is not None
+            self.hasBountyAlertRoles = bountyAlertRoles != []
+            self.bountyAlertRoles = bountyAlertRoles
+
+
+    async def makeBountyAlertRoles(self):
+        """Create a set of new roles to ping when bounties are created.
+
+        :raise ValueError: If the guild already has new bounty alert roles set, or has bounties disabled
+        :raise Forbidden: If the bot does not have role creation permissions
+        :raise HTTPException: If creation of any role failed
+        :raise RuntimeError: If any roles failed to create for some unexpected reason
+        """
+        if self.hasBountyAlertRoles:
+            raise ValueError("This guild already has bounty alert roles")
+        if self.bountiesDisabled:
+            raise ValueError("This guild has bounties disabled")
+        self.bountyAlertRoles = [None] * (cfg.maxTechLevel - cfg.minTechLevel + 1)
+        roleMakers = set()
+        async def makeTLRole(tl: int):
+            newRole = await self.dcGuild.create_role(name="Level " + str(tl) + " Bounty Hunter",
+                                                    colour=Colour.from_rgb(*cfg.defaultBountyAlertRoleColours[tl-1]),
+                                                    reason="Creating new bounty alert roles requested by BB command")
+            self.bountyAlertRoles[tl-1] = newRole.id
+        for tl in range(cfg.minTechLevel, cfg.maxTechLevel+1):
+            task = asyncio.ensure_future(makeTLRole(tl))
+            roleMakers.add(task)
+
+        await asyncio.wait(roleMakers)
+        for task in roleMakers:
+            if task.exception() is not None:
+                self.bountyAlertRoles = []
+                raise task.exception()
+        for roleID in self.bountyAlertRoles:
+            if roleID is None:
+                self.bountyAlertRoles = []
+                raise RuntimeError("An unknown error occurred when creating roles")
+        
+        self.hasBountyAlertRoles = True
+
+
+    async def deleteBountyAlertRoles(self):
+        """Delete the bounty alert roles from the server.
+
+        :raise ValueError: If the guild does not have new bounty alert roles set
+        :raise Forbidden: If the bot does not have role deletion permissions
+        :raise HTTPException: If deletion of any role failed
+        """
+        print("REMOVING ROLES",self.bountyAlertRoles)
+        if not self.hasBountyAlertRoles:
+            raise ValueError("This guild does not have bounty alert roles")
+        roleRemovers = set()
+        async def removeTLRole(tl: int):
+            roleID = self.bountyAlertRoleIDForTL(tl)
+            tlRole = self.dcGuild.get_role(roleID)
+            if tlRole is None:
+                await self.dcGuild.fetch_roles()
+            tlRole = self.dcGuild.get_role(roleID)
+            if tlRole is not None:
+                await tlRole.delete(reason="Removing new bounty alert roles requested by BB command")
+        for tl in range(cfg.minTechLevel, cfg.maxTechLevel+1):
+            task = asyncio.ensure_future(removeTLRole(tl))
+            roleRemovers.add(task)
+        await asyncio.wait(roleRemovers)
+        self.bountyAlertRoles = []
+        for task in roleRemovers:
+            if task.exception() is not None:
+                raise task.exception()
+
+        self.hasBountyAlertRoles = False
+
+
+    def bountyAlertRoleIDForTL(self, tl: int) -> int:
+        """Get the ID of the role to ping for new bounties with the given tech level
+
+        :param int tl: The techlevel for the role to fetch
+        :return: The id of the role to ping for new bounties with the given tl
+        :rtype: int
+        :raise ValueError: If the guild does not have bounty alert roles
+        """
+        if not self.hasBountyAlertRoles:
+            raise ValueError("This guild does not have bounty alert roles")
+        try:
+            return self.bountyAlertRoles[tl-1]
+        except IndexError:
+            raise IndexError("TL: " + str(tl))
+
+
+    async def levelUpSwapRoles(self, dcUser: Member, channel: TextChannel, oldRole: Role, newRole: Role):
+        """Remove oldRole from dcUser, and grant newRole.
+        If errors occur, they will be printed in the context of dcUser leveling up their bounty Hunting level,
+        and sent in channel. If oldRole or newRole are given as None, they will be ignored and no exception raised.
+
+        :param Member dcUser: The user to toggle roles for
+        :param TextChannel channel: The channel in which to send errors
+        :param Role oldRole: The role to remove, corresponding to dcUser's previous tech level
+        :param Role newRole: The role to grant, corresponding to dcUser's new tech level
+        """
+        if oldRole is not None:
+            try:
+                await dcUser.remove_roles(oldRole, reason="User leveled up")
+            except Forbidden:
+                await channel.send(":woozy_face: I don't have permission to remove your old level role! Please ensure " \
+                                    + "it is beneath the BountyBot role.")
+            except HTTPException:
+                await channel.send(":woozy_face: Something went wrong when removing your old level role!")
+            except client_exceptions.ClientOSError:
+                await channel.send(":thinking: Whoops! A connection error occurred when removing your old level role, " \
+                                    + "the error has been logged.")
+                botState.logger.log("main", "cmd_notify",
+                                    "aiohttp.client_exceptions.ClientOSError occurred when attempting to remove new bounty " \
+                                        + "role " + oldRole.name + "#" + oldRole.id \
+                                        + " from user " + dcUser.name + "#" + str(dcUser.id) \
+                                        + " in guild " + self.dcGuild.name + "#" + str(self.id) + ".",
+                                    category="userAlerts",
+                                    eventType="ClientOSError", trace=traceback.format_exc())
+        if newRole is not None:
+            try:
+                await dcUser.add_roles(newRole, reason="User leveled up")
+            except Forbidden:
+                await channel.send(":woozy_face: I don't have permission to grant your new level role! Please ensure " \
+                                    + "it is beneath the BountyBot role.")
+            except HTTPException:
+                await channel.send(":woozy_face: Something went wrong when granting your new level role!")
+            except client_exceptions.ClientOSError:
+                await channel.send(":thinking: Whoops! A connection error occurred when granting your new level role, " \
+                                    + "the error has been logged.")
+                botState.logger.log("main", "cmd_notify",
+                                    "aiohttp.client_exceptions.ClientOSError occurred when attempting to grant new bounty " \
+                                        + "role " + newRole.name + "#" + newRole.id \
+                                        + " from user " + dcUser.name + "#" + str(dcUser.id) \
+                                        + " in guild " + self.dcGuild.name + "#" + str(self.id) + ".",
+                                    category="userAlerts",
+                                    eventType="ClientOSError", trace=traceback.format_exc())
 
 
     def getAnnounceChannel(self) -> channel:
@@ -186,7 +334,6 @@ class BasedGuild(serializable.Serializable):
         if not self.hasAnnounceChannel():
             raise ValueError("Attempted to remove announce channel on a BasedGuild that has no announceChannel")
         self.announceChannel = None
-
 
 
     def getUserAlertRoleID(self, alertID : str) -> int:
@@ -348,8 +495,8 @@ class BasedGuild(serializable.Serializable):
 
         if self.hasBountyBoardChannel:
             try:
-                if self.hasUserAlertRoleID("bounties_new"):
-                    msg = "<@&" + str(self.getUserAlertRoleID("bounties_new")) + "> " + msg
+                if self.hasBountyAlertRoles:
+                    msg = "<@&" + str(self.bountyAlertRoleIDForTL(newBounty.techLevel)) + "> " + msg
                 # announce to the given channel
                 bountyListing = await self.bountyBoardChannel.channel.send(msg, embed=bountyEmbed)
                 await self.bountyBoardChannel.addBounty(newBounty, bountyListing)
@@ -369,9 +516,9 @@ class BasedGuild(serializable.Serializable):
             currentChannel = self.getAnnounceChannel()
             if currentChannel is not None:
                 try:
-                    if self.hasUserAlertRoleID("bounties_new"):
+                    if self.hasBountyAlertRoles:
                         # announce to the given channel
-                        await currentChannel.send("<@&" + str(self.getUserAlertRoleID("bounties_new")) + "> " + msg,
+                        await currentChannel.send("<@&" + str(self.bountyAlertRoleIDForTL(newBounty.techLevel)) + "> " + msg,
                                                     embed=bountyEmbed)
                     else:
                         await currentChannel.send(msg, embed=bountyEmbed)
@@ -492,7 +639,7 @@ class BasedGuild(serializable.Serializable):
         self.bountiesDisabled = False
 
 
-    def disableBounties(self):
+    async def disableBounties(self):
         """Disable bounties for this guild.
         Removes any bountyboard if one is present, and removes the guild's bounties DB and bounty spawning TimedTask.
 
@@ -505,6 +652,9 @@ class BasedGuild(serializable.Serializable):
             self.removeBountyBoardChannel()
         self.bountiesDisabled = True
         self.bountiesDB = None
+
+        if self.hasBountyAlertRoles:
+            await self.deleteBountyAlertRoles()
 
 
     def enableShop(self):
@@ -582,6 +732,9 @@ class BasedGuild(serializable.Serializable):
         if not self.shopDisabled:
             data["shop"] = self.shop.toDict(**kwargs)
 
+        if self.hasBountyAlertRoles:
+            data["bountyAlertRoles"] = self.bountyAlertRoles
+
         return data
 
 
@@ -638,7 +791,8 @@ class BasedGuild(serializable.Serializable):
                             ownedRoleMenus=guildDict["ownedRoleMenus"] if "ownedRoleMenus" in guildDict else 0,
                             bountiesDisabled=guildDict["bountiesDisabled"] if "bountiesDisabled" in guildDict else False,
                             commandPrefix=guildDict["commandPrefix"] if "commandPrefix" in guildDict else \
-                                            cfg.defaultCommandPrefix)
+                                            cfg.defaultCommandPrefix,
+                            bountyAlertRoles=guildDict["bountyAlertRoles"] if "bountyAlertRoles" in guildDict else [])
 
         if "bountiesDisabled" not in guildDict or not guildDict["bountiesDisabled"]:
             if "bountiesDB" in guildDict:

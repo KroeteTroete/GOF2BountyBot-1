@@ -149,6 +149,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                             currentBBUser = botState.usersDB.getUser(userID)
                             currentBBUser.credits += rewards[userID]["reward"]
                             currentBBUser.lifetimeCredits += rewards[userID]["reward"]
+                            currentDCUser = message.guild.get_member(currentBBUser.id)
 
                             oldLevel = gameMaths.calculateUserBountyHuntingLevel(currentBBUser.bountyHuntingXP)
                             currentBBUser.bountyHuntingXP += rewards[userID]["xp"]
@@ -158,10 +159,25 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                                 levelUpCrate = bbData.builtInCrateObjs["levelUp"][newLevel]
                                 currentBBUser.inactiveTools.addItem(levelUpCrate)
                                 levelUpMsg += "\n:arrow_up: **Level Up!**\n" \
-                                                + lib.discordUtil.userOrMemberName(botState.client.get_user(currentBBUser.id),
-                                                                                    message.guild) \
+                                                + lib.discordUtil.userOrMemberName(currentDCUser, message.guild) \
                                                 + " reached **Bounty Hunter Level " + str(newLevel) \
                                                 + "!** :partying_face:\n" + "You got a **" + levelUpCrate.name + "**."
+                                
+                                if callingGuild.hasBountyAlertRoles:
+                                    oldRole = message.guild.get_role(callingGuild.bountyAlertRoleIDForTL(oldLevel))
+                                    if oldRole is None:
+                                        await message.channel.send(":woozy_face: I can't find the new bounty alerts role " \
+                                                                    + "for tech level " + str(oldLevel) \
+                                                                    + "! Did it get deleted?")
+                                                                    
+                                    elif oldRole in message.author.roles:
+                                        newRole = message.guild.get_role(callingGuild.bountyAlertRoleIDForTL(newLevel))
+                                        if newRole is None:
+                                            await message.channel.send(":woozy_face: I can't find the new bounty alerts " \
+                                                                        +"role for tech level " + str(newLevel) \
+                                                                        + "! Did it get deleted?")
+                                        
+                                        await callingGuild.levelUpSwapRoles(currentDCUser, message.channel, oldRole, newRole)
 
                         if levelUpMsg != "":
                             await message.channel.send(levelUpMsg)

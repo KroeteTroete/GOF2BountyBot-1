@@ -107,7 +107,7 @@ async def admin_cmd_config(message : discord.Message, args : str, isDM : bool):
             if callingBBGuild.bountiesDisabled:
                 await message.channel.send(":x: Bounties are already disabled in this server!")
             else:
-                callingBBGuild.disableBounties()
+                await callingBBGuild.disableBounties()
                 await message.channel.send(":white_check_mark: Bounties are now disabled on this server!")
         else:
             await message.channel.send(":x: Unknown value!")
@@ -231,6 +231,57 @@ botCommands.register("remove-notify-role", admin_cmd_remove_notify_role, 1,
                         shortHelp="Disable role pings for various events. For valid notification types, see `help notify`.",
                         longHelp="Disable role pings for various events. **<type>** and/or *[alert]* must specify a type of " \
                                     + "notification. For valid notification types, see `help notify`.")
+
+
+async def admin_cmd_make_bounty_notify_roles(message : discord.Message, args : str, isDM : bool):
+    """For the current guild, create 10 notify-able roles, one for each user tech level.
+    These roles will be used to alert users when new bounties spawn at each tech level.
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: ignored
+    :param bool isDM: Whether or not the command is being called from a DM channel
+    """
+    requestedBBGuild = botState.guildsDB.getGuild(message.guild.id)
+    if requestedBBGuild.hasBountyAlertRoles:
+        await message.reply(":x: This server already has new bounty alert roles!")
+    elif requestedBBGuild.bountiesDisabled:
+        await message.reply(":x: Bounties are disabled in this server!")
+    elif not message.guild.me.guild_permissions.manage_roles:
+        await message.channel.send(":x: I do not have the 'Manage Roles' permission in this server!")
+    else:
+        await requestedBBGuild.makeBountyAlertRoles()
+        await message.channel.send(":white_check_mark: New roles have been created for new bounties notifications!")
+
+botCommands.register("make-bounty-notify-roles", admin_cmd_make_bounty_notify_roles, 1,
+                        signatureStr="**make-bounty-notify-roles**",
+                        shortHelp="Make 10 roles, one for each tech levle users can be, which the bot will ping when new " \
+                                    + "bounties are spawned.",
+                        longHelp="Automatically create 10 new roles, one for each tech levle users can be. When new " \
+                                    + "spawn, the bot will ping the role for the bounty's tech level. Users can self-assign" \
+                                    + " and self-unassign these roles with the `notify` command. Moving the user between " \
+                                    + "roles as they level up is handled automatically. Once created, feel free to edit the" \
+                                    + " roles, but please do not delete them, and they must remain pingable by the bot.")
+
+
+async def admin_cmd_remove_bounty_notify_roles(message : discord.Message, args : str, isDM : bool):
+    """Remove all new bounty alert roles in the calling guild.
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: ignored
+    :param bool isDM: Whether or not the command is being called from a DM channel
+    """
+    requestedBBGuild = botState.guildsDB.getGuild(message.guild.id)
+    if not requestedBBGuild.hasBountyAlertRoles:
+        await message.reply(":x: This server does not have new bounty alert roles!")
+    elif not message.guild.me.guild_permissions.manage_roles:
+        await message.channel.send(":x: I do not have the 'Manage Roles' permission in this server!")
+    else:
+        await requestedBBGuild.deleteBountyAlertRoles()
+        await message.channel.send(":white_check_mark: New bounties notifications have been disabled, and their roles removed!")
+
+botCommands.register("remove-bounty-notify-roles", admin_cmd_remove_bounty_notify_roles, 1,
+                        signatureStr="**remove-bounty-notify-roles**",
+                        shortHelp="Disable new bounty notifications, and remove all new bounty alert roles from the server.")
 
 
 async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM : bool):

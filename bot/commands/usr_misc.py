@@ -381,6 +381,61 @@ async def cmd_notify(message : discord.Message, args : str, isDM : bool):
                                     + requestedBBGuild.commandPrefix + "notify bounties`")
         return
 
+    if args in ["bounty", "bounties", "bountys"]:
+        guildMember = message.guild.get_member(message.author.id)
+        if requestedBBGuild.hasBountyAlertRoles:
+            tl = gameMaths.calculateUserBountyHuntingLevel(requestedBBUser.bountyHuntingXP)
+            tlRole = message.guild.get_role(requestedBBGuild.bountyAlertRoleIDForTL(tl))
+            if tlRole in guildMember.roles:
+                try:
+                    await guildMember.remove_roles(tlRole,
+                                                    reason="User unsubscribed from new bounties notifications via BB command")
+                except discord.Forbidden:
+                    await message.channel.send(":woozy_face: I don't have permission to do that! Please ensure the " \
+                                                + "requested role is beneath the BountyBot role.")
+                except discord.HTTPException:
+                    await message.channel.send(":woozy_face: Something went wrong! " \
+                                                + "Please contact an admin or try again later.")
+                except client_exceptions.ClientOSError:
+                    await message.channel.send(":thinking: Whoops! A connection error occurred, and the error has been " \
+                                                + "logged. Could you try that again please?")
+                    botState.logger.log("main", "cmd_notify",
+                                        "aiohttp.client_exceptions.ClientOSError occurred when attempting to " \
+                                            + "remove new bounty role " + tlRole.name + "#" + tlRole.id \
+                                            + ", TL " + str(tl) + ", from user " \
+                                            + message.author.name + "#" + str(message.author.id) \
+                                            +  " in guild " + message.guild.name + "#" + str(message.guild.id) + ".",
+                                        category="userAlerts",
+                                        eventType="ClientOSError", trace=traceback.format_exc())
+                else:
+                    await message.channel.send(":white_check_mark: You have unsubscribed from new bounties notifications.")
+            else:
+                try:
+                    await guildMember.add_roles(tlRole,
+                                                    reason="User subscribed to new bounties notifications via BB command")
+                except discord.Forbidden:
+                    await message.channel.send(":woozy_face: I don't have permission to do that! Please ensure the " \
+                                                + "requested role is beneath the BountyBot role.")
+                except discord.HTTPException:
+                    await message.channel.send(":woozy_face: Something went wrong! " \
+                                                + "Please contact an admin or try again later.")
+                except client_exceptions.ClientOSError:
+                    await message.channel.send(":thinking: Whoops! A connection error occurred, and the error has been " \
+                                                + "logged. Could you try that again please?")
+                    botState.logger.log("main", "cmd_notify",
+                                        "aiohttp.client_exceptions.ClientOSError occurred when attempting to " \
+                                            + "grant new bounty role " + tlRole.name + "#" + tlRole.id \
+                                            + ", TL " + str(tl) + ", from user " \
+                                            + message.author.name + "#" + str(message.author.id) \
+                                            +  " in guild " + message.guild.name + "#" + str(message.guild.id) + ".",
+                                        category="userAlerts",
+                                        eventType="ClientOSError", trace=traceback.format_exc())
+                else:
+                    await message.channel.send(":white_check_mark: You have subscribed to new bounties notifications!")
+        else:
+            await message.channel.send(":x: This server does not have roles for new bounties notifications. :robot:")
+        return
+
     argsSplit = args.split(" ")
     alertsToToggle = userAlerts.getAlertIDFromHeirarchicalAliases(argsSplit)
 
