@@ -564,12 +564,12 @@ class TechLeveledShop(GuildShop):
                                         (cfg.shopDefaultWeaponsNum, self.weaponsStock, bbData.weaponObjsByTL),
                                         (cfg.shopDefaultTurretsNum, self.turretsStock, bbData.turretObjsByTL)):
             for _ in range(maxCount):
-                itemTL = cfg.pickRandomItemTL(self.currentTechLevel)
+                itemTL = gameMaths.pickRandomItemTL(self.currentTechLevel)
                 if len(keys[itemTL - 1]) != 0:
                     stock.addItem(random.choice(keys[itemTL - 1]))
 
         for _ in range(cfg.shopDefaultShipsNum):
-            itemTL = cfg.pickRandomItemTL(self.currentTechLevel)
+            itemTL = gameMaths.pickRandomItemTL(self.currentTechLevel)
             if len(bbData.shipKeysByTL[itemTL - 1]) != 0:
                 newShip = shipItem.Ship.fromDict(bbData.builtInShipData[random.choice(bbData.shipKeysByTL[itemTL - 1])])
                 self.shipsStock.addItem(newShip)
