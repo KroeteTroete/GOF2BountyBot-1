@@ -562,8 +562,7 @@ class TechLeveledShop(GuildShop):
 
         for maxCount, stock, keys in (  (cfg.shopDefaultModulesNum, self.modulesStock, bbData.moduleObjsByTL),
                                         (cfg.shopDefaultWeaponsNum, self.weaponsStock, bbData.weaponObjsByTL),
-                                        (cfg.shopDefaultTurretsNum, self.turretsStock, bbData.turretObjsByTL),
-                                        (cfg.shopDefaultToolsNum,   self.toolsStock,   bbData.toolObjsByTL)):
+                                        (cfg.shopDefaultTurretsNum, self.turretsStock, bbData.turretObjsByTL)):
             for _ in range(maxCount):
                 itemTL = cfg.pickRandomItemTL(self.currentTechLevel)
                 if len(keys[itemTL - 1]) != 0:
