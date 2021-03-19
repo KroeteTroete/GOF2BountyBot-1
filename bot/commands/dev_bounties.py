@@ -6,7 +6,7 @@ from .. import botState, lib
 from ..lib import gameMaths
 from ..cfg import cfg, bbData
 from ..gameObjects.bounties import bounty, bountyConfig
-from ..users import guildActivity
+from ..users import guildActivity, basedGuild
 
 botCommands.addHelpSection(2, "bounties")
 
@@ -280,6 +280,7 @@ async def dev_cmd_set_temp(message : discord.Message, args : str, isDM : bool):
         await message.channel.send(":x: Incorrect temp, must be float '" + temp + "'")
     else:
         callingBBGuild.bountiesDB.activityMonitor.temperatures[tl] = temp
+        callingBBGuild.bountiesDB.maxBounties[tl] = min(int(temp), cfg.maxBountiesPerFaction)
         await message.reply("Done!")
 
 botCommands.register("set-temp", dev_cmd_set_temp, 2, allowDM=False, helpSection="bounties", useDoc=True)
@@ -768,4 +769,64 @@ async def dev_cmd_decay_all_temps(message : discord.Message, args : str, isDM : 
     await message.reply("Attempting temperature decay for all guilds.")
 
 botCommands.register("decay-all-temps", dev_cmd_decay_all_temps, 2, allowDM=True,
+                        helpSection="bounties", useDoc=True)
+
+
+async def dev_cmd_current_delay(message : discord.Message, args : str, isDM : bool):
+    """developer command DMing the calling user with the current delays on all new bounty TTs for the calling guild
+    or if a tl is provided, just the current delay for that TL's TT
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: nothing, or a single tech level
+    :param bool isDM: Whether or not the command is being called from a DM channel
+    """
+    callingBBGuild: basedGuild.BasedGuild = botState.guildsDB.getGuild(message.guild.id)
+    if callingBBGuild.bountiesDisabled:
+        await message.reply(":x: Bounties are disabled in this server!")
+    else:
+        if args == "":
+            activityEmbed = lib.discordUtil.makeEmbed("Current New Bounty Delays", desc=message.guild.name,
+                            col=discord.Colour.random(), thumb=message.guild.icon_url_as(size=64))
+            for tl in guildActivity._tlsRange:
+                tlTT = callingBBGuild.bountiesDB.newBountyTTs[tl]
+                activityEmbed.add_field(name="Level " + str(tl),
+                                        value=lib.timeUtil.td_format_noYM(tlTT.expiryDelta)
+                                                + "\nExpiring " + tlTT.expiryTime.strftime("%B %d %H %M %S"))
+            await message.author.send(embed=activityEmbed)
+        elif not lib.stringTyping.isInt(args):
+            await message.reply(":x: Invalid TL")
+        else:
+            tlTT = callingBBGuild.bountiesDB.newBountyTTs[int(args)]
+            await message.author.send(lib.timeUtil.td_format_noYM(tlTT.expiryDelta)
+                                        + "\nExpiring " + tlTT.expiryTime.strftime("%B %d %H %M %S"))
+
+botCommands.register("current-delay", dev_cmd_current_delay, 2, allowDM=False,
+                        helpSection="bounties", useDoc=True)
+
+
+async def dev_cmd_current_max_bounties(message : discord.Message, args : str, isDM : bool):
+    """developer command DMing the calling user with the current max bounties for all TLs for the calling guild
+    or if a tl is provided, just the current max bounties for that TL
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: nothing, or a single tech level
+    :param bool isDM: Whether or not the command is being called from a DM channel
+    """
+    callingBBGuild: basedGuild.BasedGuild = botState.guildsDB.getGuild(message.guild.id)
+    if callingBBGuild.bountiesDisabled:
+        await message.reply(":x: Bounties are disabled in this server!")
+    else:
+        if args == "":
+            activityEmbed = lib.discordUtil.makeEmbed("Current Max Bounties", desc=message.guild.name,
+                            col=discord.Colour.random(), thumb=message.guild.icon_url_as(size=64))
+            for tl in guildActivity._tlsRange:
+                activityEmbed.add_field(name="Level " + str(tl),
+                                        value=str(callingBBGuild.bountiesDB.maxBounties[tl]))
+            await message.author.send(embed=activityEmbed)
+        elif not lib.stringTyping.isInt(args):
+            await message.reply(":x: Invalid TL")
+        else:
+            await message.author.send(str(callingBBGuild.bountiesDB.maxBounties[int(args)]))
+
+botCommands.register("current-max-bounties", dev_cmd_current_max_bounties, 2, allowDM=False,
                         helpSection="bounties", useDoc=True)

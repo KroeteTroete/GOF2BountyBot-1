@@ -172,7 +172,9 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
 
                         # Raise guild's activity temperature for this bounty's tl
                         numContributingUsers = len(set(rewards))
-                        print("increasing temps for tl",bounty.techLevel)
+                        callingGuild.bountiesDB.maxBounties[bounty.techLevel] = \
+                                            min(int(callingGuild.bountiesDB.activityMonitor.temperatures[bounty.techLevel]),
+                                                cfg.maxBountiesPerFaction)
                         callingGuild.bountiesDB.activityMonitor.raiseTemp(bounty.techLevel,
                                                                             numContributingUsers * cfg.activityTempPerPlayer)
 
