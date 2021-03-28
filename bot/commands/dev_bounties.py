@@ -769,7 +769,7 @@ async def dev_cmd_decay_all_temps(message : discord.Message, args : str, isDM : 
     :param str args: ignored
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
-    botState.temperatureDecayTT.forceExpire()
+    await botState.temperatureDecayTT.forceExpire()
     await message.reply("Attempting temperature decay for all guilds.")
 
 botCommands.register("decay-all-temps", dev_cmd_decay_all_temps, 2, allowDM=True,
