@@ -159,10 +159,13 @@ class GuildDB(serializable.Serializable):
         This should be called daily.
         """
         if len(self.guilds) > _minGuildsToParallelize:
+            print("parallelizing temp decay")
             with ThreadPoolExecutor() as executor:
                 executor.map(self._decayGuildTemps, self.getGuilds())
         else:
+            print("serializing temp decay")
             for g in self.getGuilds():
+                print("decaying guild #" + str(g.id))
                 self._decayGuildTemps(g)
         botState.logger.log("GuildDB", "decayAllTemps", "All guild activity temperatures decayed successfuly.",
                             category="bountiesDB", eventType="TEMPS_DECAY")

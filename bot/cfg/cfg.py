@@ -181,6 +181,11 @@ itemSpawnRateResDP = 3
 minTechLevel = 1
 maxTechLevel = 10
 
+# Division name: range of tech levels for bounties and players
+bountyDivisions = {"1": (0, 3),
+                    "2": (4, 7),
+                    "3": (8, 10)}
+
 # Price ranges by which ships should be ranked into tech levels. 0th index = tech level 1
 shipMaxPriceTechLevels = [50000, 100000, 200000, 500000, 1000000, 2000000, 5000000, 7000000, 7500000, 999999999]
 

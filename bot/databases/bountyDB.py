@@ -31,18 +31,12 @@ class BountyDB(serializable.Serializable):
     :vartype latestBounty: gameObjects.bounties.bounty.Bounty
     """
 
-    def __init__(self, factions: List[str], owningBasedGuild: "basedGuild.BasedGuild",
+    def __init__(self, owningBasedGuild: "basedGuild.BasedGuild",
                     activityMonitor: guildActivity.ActivityMonitor = None, dummy = False):
         """
         :param List[str] factions: list of unique faction names useable in this db's bounties
         :param BasedGuild owningBasedGuild: The guild that owns this bountyDB
         """
-        # Dictionary of faction name : dict of criminal : bounty
-        self.bounties: Dict[str, AliasableDict[criminal.Criminal, bounty.Bounty]] = {f: AliasableDict() \
-                                                                                        for f in factions}
-        # Dictionary of faction name : dict of criminal : bounty
-        self.escapedBounties: Dict[str, AliasableDict[criminal.Criminal, bounty.Bounty]] = {f: AliasableDict() \
-                                                                                                for f in factions}
         self.owningBasedGuild = owningBasedGuild
         self.activityMonitor = activityMonitor or guildActivity.ActivityMonitor()
 
