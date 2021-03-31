@@ -13,6 +13,7 @@ from ..cfg import cfg
 from ..users import basedGuild, guildActivity
 from .. import lib, botState
 from ..scheduling.timedTask import TimedTask, DynamicRescheduleTask
+from .bountyDivision import BountyDivision
 
 
 class BountyDB(serializable.Serializable):
@@ -37,6 +38,7 @@ class BountyDB(serializable.Serializable):
         :param List[str] factions: list of unique faction names useable in this db's bounties
         :param BasedGuild owningBasedGuild: The guild that owns this bountyDB
         """
+        self.divisions: Dict[range, BountyDivision] = None
         self.owningBasedGuild = owningBasedGuild
         self.activityMonitor = activityMonitor or guildActivity.ActivityMonitor()
 
@@ -314,6 +316,17 @@ class BountyDB(serializable.Serializable):
 
         # The criminal was not recognised, raise an error
         raise KeyError("Bounty not found: " + name)
+
+
+    def totalBounties(self, includeEscaped : bool = True) -> int:
+        """Decide the total number of bounties currently stored across all divisions.
+        If includeEscaped is given as true, escaped bounties will also be counted.
+
+        :param bool includeEscaped: Whether or not to count escaped bounties as well as active bounties (Default True)
+        :return: The number of bounties stored in the DB across all divisions
+        :rtype: int
+        """
+        return sum(div.getNumBounties(includeEscaped=includeEscaped) for div in self.divisions)
 
 
     def factionCanMakeBounty(self, faction : str) -> bool:
