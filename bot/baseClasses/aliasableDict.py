@@ -45,4 +45,12 @@ class AliasableDict(dict):
         if not isinstance(k, Aliasable):
             raise TypeError("Keys must be Aliasable, given " + type(k).__name__)
         super().__setitem__(k, v)
-        
+
+
+    def add(self, k: Aliasable) -> None:
+        """Register a key value pair, or change the value of an existing pair. k must be an Aliasable.
+        The key to register is inferred as k.name
+
+        :param Aliasable k: The key to register, or change the value of
+        """
+        self[k.name] = k
