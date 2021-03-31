@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Dict, Union, TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...databases import bountyDB
+    from ...databases.bountyDivision import BountyDivision
 
 from . import bountyConfig
 from ...cfg import bbData, cfg
@@ -43,7 +43,7 @@ class Bounty(serializable.Serializable):
     """
 
     def __init__(self, criminalObj : criminal.Criminal = None, config : bountyConfig.BountyConfig = None,
-                    owningDB : bountyDB.BountyDB = None, dbReload : bool = False):
+                    division : BountyDivision = None, dbReload : bool = False):
         """
         :param criminalObj: The criminal to be wanted. Give None to randomly generate a criminal. (Default None)
         :type criminalObj: criminal or None
@@ -284,6 +284,16 @@ class Bounty(serializable.Serializable):
         if not self.isEscaped():
             raise ValueError("Attempted to forceRespawn on a bounty that is not awaiting respawn: " + self.criminal.name)
         self.respawnTT.forceExpire(callExpiryFunc=True)
+
+
+    def makeRespawnConfig(self):
+        """Create a new, partially configured, ungenerated BountyConfig object, to be used in the respawning of this bounty.
+
+        :return: A new BountyConfig with the right attributes left ungenerated, to be populated on bounty respawn
+        :rtype: BountyConfig
+        """
+        return bountyConfig.BountyConfig(faction=self.faction, name=self.name, isPlayer=self.criminal.isPlayer,
+                                            issueTime=self.issueTime, activeShip=self.activeShip, techLevel=self.techLevel)
 
 
     def toDict(self, **kwargs) -> dict:
