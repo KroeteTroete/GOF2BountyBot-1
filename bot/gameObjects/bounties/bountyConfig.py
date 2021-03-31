@@ -246,7 +246,7 @@ class BountyConfig:
 
 
     def generate(self, owningDB : bountyDB.BountyDB, noCriminal : bool = True, forceKeepChecked : bool = False,
-                    forceNoDBCheck : bool = False):
+                    forceNoDBCheck : bool = False) -> BountyConfig:
         """Validate all given config data, and randomly generate missing data.
 
         :param BountyDB owningDB: Database containing all currently active bounties. When forceNoDBCheck is True,
@@ -258,6 +258,8 @@ class BountyConfig:
         :param bool forceNoDBCheck: If this is False, do not check if the bounty already exists.
                                         This should only be used as a performance and compatibility measure when
                                         loading in a bounty from file. (Default False)
+        :return: This BountyConfig object for chaining
+        :rtype: BountyConfig
         :raise ValueError: When requesting an invalid faction, or when requesting an invalid reward amount
         :raise IndexError: When no space is available for a new bounty
         :raise KeyError: When the requested criminal name already exists in a bounty or when requesting an unknown system name
@@ -451,6 +453,7 @@ class BountyConfig:
                 self.checked[station] = -1
 
         self.generated = True
+        return self
 
 
     def copy(self) -> BountyConfig:
