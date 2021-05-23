@@ -1,7 +1,11 @@
 from __future__ import annotations
-from discord import Embed, channel, Client, Forbidden, Guild, Member, Message, HTTPException, NotFound
+from discord import Embed, channel, Client, Forbidden, Guild, Member, Message, HTTPException, NotFound, Colour, Role
+from discord import TextChannel
 from typing import List, Dict, Union
 from datetime import timedelta
+import asyncio
+from aiohttp import client_exceptions
+import traceback
 
 from .. import botState, lib
 from ..gameObjects import guildShop
@@ -44,13 +48,19 @@ class BasedGuild(serializable.Serializable):
     :vartype bountiesDisabled: bool
     :var shopDisabled: Whether or not to disable this guild's guildShop and shop refreshing
     :vartype shopDisabled: bool
+    :var bountyAlertRoles: A list of IDs corresponding to roles to ping upon the spawning of new bounties.
+                            E.g if a tech level 2 bounty is spawned, the role with id bountyAlertRoles[1]
+                            should be pinged.
+    :vartype: bountyAlertRoles: List[int]
+    :var hasBountyAlertRoles: True if the guild has roles set in bountyAlertRoles, False otherwise
+    :vartype hasBountyAlertRoles: bool
     """
 
     def __init__(self, id: int, dcGuild: Guild, bounties: bountyDB.BountyDB, commandPrefix: str = cfg.defaultCommandPrefix,
             announceChannel : channel.TextChannel = None, playChannel : channel.TextChannel = None,
-            shop : guildShop.GuildShop = None, bountyBoardChannel : bountyBoardChannel.bountyBoardChannel = None,
+            shop : guildShop.TechLeveledShop = None, bountyBoardChannel : bountyBoardChannel.bountyBoardChannel = None,
             alertRoles : Dict[str, int] = {}, ownedRoleMenus : int = 0, bountiesDisabled : bool = False,
-            shopDisabled : bool = False):
+            shopDisabled : bool = False, bountyAlertRoles : List[int] = []):
         """
         :param int id: The ID of the guild, directly corresponding to a discord guild's ID.
         :param discord.Guild dcGuild: This guild's corresponding discord.Guild object
@@ -66,6 +76,9 @@ class BasedGuild(serializable.Serializable):
         :param int ownedRoleMenus: The number of ReactionRolePickers present in this guild
         :param bool bountiesDisabled: Whether or not to disable this guild's bountyDB and bounty spawning
         :param bool shopDisabled: Whether or not to disable this guild's guildShop and shop refreshing
+        :param List[int] bountyAlertRoles: A list of IDs corresponding to roles to ping upon the spawning of new bounties.
+                                            E.g if a tech level 2 bounty is spawned, the role with id bountyAlertRoles[1]
+                                            should be pinged.
         :raise TypeError: When given an incompatible argument type
         """
 
@@ -91,7 +104,7 @@ class BasedGuild(serializable.Serializable):
         if shopDisabled:
             self.shop = None
         else:
-            self.shop = guildShop.GuildShop() if shop is None else shop
+            self.shop = guildShop.TechLeveledShop() if shop is None else shop
 
         self.alertRoles = {}
         for alertID in userAlerts.userAlertsIDsTypes.keys():
@@ -102,38 +115,147 @@ class BasedGuild(serializable.Serializable):
         self.bountiesDB = bounties
         self.bountiesDisabled = bountiesDisabled
 
-        bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelaySeconds,
-                                "fixed-routeScale": self.getRouteScaledBountyDelayFixed,
-                                "random-routeScale": self.getRouteScaledBountyDelayRandom}
-
-        bountyDelayGeneratorArgs = {"random": cfg.newBountyDelayRandomRange,
-                                    "fixed-routeScale": cfg.newBountyFixedDelta,
-                                    "random-routeScale": cfg.newBountyDelayRandomRange}
-
         if bountiesDisabled:
-            self.newBountyTT = None
             self.bountyBoardChannel = None
             self.hasBountyBoardChannel = False
+            self.hasBountyAlertRoles = False
+            self.bountyAlertRoles = []
         else:
             self.bountyBoardChannel = bountyBoardChannel
             self.hasBountyBoardChannel = bountyBoardChannel is not None
+            self.hasBountyAlertRoles = bountyAlertRoles != []
+            self.bountyAlertRoles = bountyAlertRoles
 
-            if cfg.newBountyDelayType == "fixed":
-                self.newBountyTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.newBountyFixedDelta),
-                                                autoReschedule=True, expiryFunction=self.spawnAndAnnounceRandomBounty)
-            else:
-                try:
-                    delayGenerator = bountyDelayGenerators[cfg.newBountyDelayType]
-                    generatorArgs = bountyDelayGeneratorArgs[cfg.newBountyDelayType]
-                except KeyError:
-                    raise ValueError("cfg: Unrecognised newBountyDelayType '" + cfg.newBountyDelayType + "'")
-                else:
-                    self.newBountyTT = DynamicRescheduleTask(delayGenerator,
-                                                            delayTimeGeneratorArgs=generatorArgs,
-                                                            autoReschedule=True,
-                                                            expiryFunction=self.spawnAndAnnounceRandomBounty)
 
-            botState.newBountiesTTDB.scheduleTask(self.newBountyTT)
+    async def makeBountyAlertRoles(self):
+        """Create a set of new roles to ping when bounties are created.
+
+        :raise ValueError: If the guild already has new bounty alert roles set, or has bounties disabled
+        :raise Forbidden: If the bot does not have role creation permissions
+        :raise HTTPException: If creation of any role failed
+        :raise RuntimeError: If any roles failed to create for some unexpected reason
+        """
+        if self.hasBountyAlertRoles:
+            raise ValueError("This guild already has bounty alert roles")
+        if self.bountiesDisabled:
+            raise ValueError("This guild has bounties disabled")
+        self.bountyAlertRoles = [None] * (cfg.maxTechLevel - cfg.minTechLevel + 1)
+        roleMakers = set()
+        async def makeTLRole(tl: int):
+            newRole = await self.dcGuild.create_role(name="Level " + str(tl) + " Bounty Hunter",
+                                                    colour=Colour.from_rgb(*cfg.defaultBountyAlertRoleColours[tl-1]),
+                                                    reason="Creating new bounty alert roles requested by BB command")
+            self.bountyAlertRoles[tl-1] = newRole.id
+        for tl in range(cfg.minTechLevel, cfg.maxTechLevel+1):
+            task = asyncio.ensure_future(makeTLRole(tl))
+            roleMakers.add(task)
+
+        await asyncio.wait(roleMakers)
+        for task in roleMakers:
+            if task.exception() is not None:
+                self.bountyAlertRoles = []
+                raise task.exception()
+        for roleID in self.bountyAlertRoles:
+            if roleID is None:
+                self.bountyAlertRoles = []
+                raise RuntimeError("An unknown error occurred when creating roles")
+        
+        self.hasBountyAlertRoles = True
+
+
+    async def deleteBountyAlertRoles(self):
+        """Delete the bounty alert roles from the server.
+
+        :raise ValueError: If the guild does not have new bounty alert roles set
+        :raise Forbidden: If the bot does not have role deletion permissions
+        :raise HTTPException: If deletion of any role failed
+        """
+        print("REMOVING ROLES",self.bountyAlertRoles)
+        if not self.hasBountyAlertRoles:
+            raise ValueError("This guild does not have bounty alert roles")
+        roleRemovers = set()
+        async def removeTLRole(tl: int):
+            roleID = self.bountyAlertRoleIDForTL(tl)
+            tlRole = self.dcGuild.get_role(roleID)
+            if tlRole is None:
+                await self.dcGuild.fetch_roles()
+            tlRole = self.dcGuild.get_role(roleID)
+            if tlRole is not None:
+                await tlRole.delete(reason="Removing new bounty alert roles requested by BB command")
+        for tl in range(cfg.minTechLevel, cfg.maxTechLevel+1):
+            task = asyncio.ensure_future(removeTLRole(tl))
+            roleRemovers.add(task)
+        await asyncio.wait(roleRemovers)
+        self.bountyAlertRoles = []
+        for task in roleRemovers:
+            if task.exception() is not None:
+                raise task.exception()
+
+        self.hasBountyAlertRoles = False
+
+
+    def bountyAlertRoleIDForTL(self, tl: int) -> int:
+        """Get the ID of the role to ping for new bounties with the given tech level
+
+        :param int tl: The techlevel for the role to fetch
+        :return: The id of the role to ping for new bounties with the given tl
+        :rtype: int
+        :raise ValueError: If the guild does not have bounty alert roles
+        """
+        if not self.hasBountyAlertRoles:
+            raise ValueError("This guild does not have bounty alert roles")
+        try:
+            return self.bountyAlertRoles[tl-1]
+        except IndexError:
+            raise IndexError("TL: " + str(tl))
+
+
+    async def levelUpSwapRoles(self, dcUser: Member, channel: TextChannel, oldRole: Role, newRole: Role):
+        """Remove oldRole from dcUser, and grant newRole.
+        If errors occur, they will be printed in the context of dcUser leveling up their bounty Hunting level,
+        and sent in channel. If oldRole or newRole are given as None, they will be ignored and no exception raised.
+
+        :param Member dcUser: The user to toggle roles for
+        :param TextChannel channel: The channel in which to send errors
+        :param Role oldRole: The role to remove, corresponding to dcUser's previous tech level
+        :param Role newRole: The role to grant, corresponding to dcUser's new tech level
+        """
+        if oldRole is not None:
+            try:
+                await dcUser.remove_roles(oldRole, reason="User leveled up")
+            except Forbidden:
+                await channel.send(":woozy_face: I don't have permission to remove your old level role! Please ensure " \
+                                    + "it is beneath the BountyBot role.")
+            except HTTPException:
+                await channel.send(":woozy_face: Something went wrong when removing your old level role!")
+            except client_exceptions.ClientOSError:
+                await channel.send(":thinking: Whoops! A connection error occurred when removing your old level role, " \
+                                    + "the error has been logged.")
+                botState.logger.log("main", "cmd_notify",
+                                    "aiohttp.client_exceptions.ClientOSError occurred when attempting to remove new bounty " \
+                                        + "role " + oldRole.name + "#" + oldRole.id \
+                                        + " from user " + dcUser.name + "#" + str(dcUser.id) \
+                                        + " in guild " + self.dcGuild.name + "#" + str(self.id) + ".",
+                                    category="userAlerts",
+                                    eventType="ClientOSError", trace=traceback.format_exc())
+        if newRole is not None:
+            try:
+                await dcUser.add_roles(newRole, reason="User leveled up")
+            except Forbidden:
+                await channel.send(":woozy_face: I don't have permission to grant your new level role! Please ensure " \
+                                    + "it is beneath the BountyBot role.")
+            except HTTPException:
+                await channel.send(":woozy_face: Something went wrong when granting your new level role!")
+            except client_exceptions.ClientOSError:
+                await channel.send(":thinking: Whoops! A connection error occurred when granting your new level role, " \
+                                    + "the error has been logged.")
+                botState.logger.log("main", "cmd_notify",
+                                    "aiohttp.client_exceptions.ClientOSError occurred when attempting to grant new bounty " \
+                                        + "role " + newRole.name + "#" + newRole.id \
+                                        + " from user " + dcUser.name + "#" + str(dcUser.id) \
+                                        + " in guild " + self.dcGuild.name + "#" + str(self.id) + ".",
+                                    category="userAlerts",
+                                    eventType="ClientOSError", trace=traceback.format_exc())
 
 
     def getAnnounceChannel(self) -> channel:
@@ -212,7 +334,6 @@ class BasedGuild(serializable.Serializable):
         if not self.hasAnnounceChannel():
             raise ValueError("Attempted to remove announce channel on a BasedGuild that has no announceChannel")
         self.announceChannel = None
-
 
 
     def getUserAlertRoleID(self, alertID : str) -> int:
@@ -352,78 +473,30 @@ class BasedGuild(serializable.Serializable):
                     await self.bountyBoardChannel.updateBountyMessage(bounty)
 
 
-    def getRouteScaledBountyDelayFixed(self, baseDelayDict : Dict[str, int]) -> timedelta:
-        """New bounty delay generator, scaling a fixed delay by the length of the presently spawned bounty.
-
-        :param dict baseDelayDict: A lib.timeUtil.timeDeltaFromDict-compliant dictionary describing the amount of time to wait
-                                    after a bounty is spawned with route length 1
-        :return: A datetime.timedelta indicating the time to wait before spawning a new bounty
-        :rtype: datetime.timedelta
-        """
-        timeScale = cfg.fallbackRouteScale if self.bountiesDB.latestBounty is None else \
-                    len(self.bountiesDB.latestBounty.route)
-        delay = lib.timeUtil.timeDeltaFromDict(baseDelayDict) * timeScale * cfg.newBountyDelayRouteScaleCoefficient
-        botState.logger.log("Main", "routeScaleBntyDelayFixed",
-                            "New bounty delay generated, " \
-                                + ("no latest criminal." if self.bountiesDB.latestBounty is None else \
-                                + ("latest criminal: '" + self.bountiesDB.latestBounty.criminal.name + "'. Route Length " \
-                                + str(len(self.bountiesDB.latestBounty.route)))) + "\nDelay picked: " + str(delay),
-                            category="newBounties",
-                            eventType="NONE_BTY" if self.bountiesDB.latestBounty is None else "DELAY_GEN", noPrint=True)
-        return delay
-
-
-    def getRouteScaledBountyDelayRandom(self, baseDelayDict : Dict[str, int]) -> timedelta:
-        """New bounty delay generator, generating a random delay time between two points,
-        scaled by the length of the presently spawned bounty.
-
-        :param dict baseDelayDict: A dictionary describing the minimum and maximum time in seconds to wait after a bounty is
-                                    spawned with route length 1
-        :return: A datetime.timedelta indicating the time to wait before spawning a new bounty
-        :rtype: datetime.timedelta
-        """
-        timeScale = cfg.fallbackRouteScale if self.bountiesDB.latestBounty is None else \
-                    len(self.bountiesDB.latestBounty.route)
-        delay = lib.timeUtil.getRandomDelaySeconds({"min": baseDelayDict["min"] * timeScale \
-                                                        * cfg.newBountyDelayRouteScaleCoefficient,
-                                                    "max": baseDelayDict["max"] * timeScale \
-                                                        * cfg.newBountyDelayRouteScaleCoefficient})
-        botState.logger.log("Main", "routeScaleBntyDelayRand",
-                            "New bounty delay generated, " \
-                                + ("no latest criminal." if self.bountiesDB.latestBounty is None else \
-                                    ("latest criminal: '" + self.bountiesDB.latestBounty.criminal.name \
-                                + "'. Route Length " + str(len(self.bountiesDB.latestBounty.route)))) + "\nRange: " \
-                                + str((baseDelayDict["min"] * timeScale * cfg.newBountyDelayRouteScaleCoefficient) / 60) \
-                                + "m - " \
-                                + str((baseDelayDict["max"] * timeScale * cfg.newBountyDelayRouteScaleCoefficient) / 60) \
-                                + "m\nDelay picked: " + str(delay), category="newBounties",
-                            eventType="NONE_BTY" if self.bountiesDB.latestBounty is None else "DELAY_GEN", noPrint=True)
-        return delay
-
-
     async def announceNewBounty(self, newBounty : bounty.Bounty):
         """Announce the creation of a new bounty to this guild's announceChannel, if it has one
 
         :param bounty newBounty: the bounty to announce
         """
+        print("Difficulty", newBounty.techLevel, "New bounty with value:", newBounty.activeShip.getValue())
         # Create the announcement embed
         bountyEmbed = lib.discordUtil.makeEmbed(titleTxt=lib.discordUtil.criminalNameOrDiscrim(newBounty.criminal),
-                                                desc="⛓ __New Bounty Available__",
+                                                desc=cfg.defaultEmojis.newBounty.sendable + " __New Bounty Available__",
                                                 col=bbData.factionColours[newBounty.faction],
                                                 thumb=newBounty.criminal.icon, footerTxt=newBounty.faction.title())
-        bountyEmbed.add_field(name="Reward:", value=str(newBounty.reward) + " Credits")
-        bountyEmbed.add_field(name="Possible Systems:", value=len(newBounty.route))
-        bountyEmbed.add_field(name="See the culprit's route with:",
-                                value="`" + self.commandPrefix + "route " \
-                                        + lib.discordUtil.criminalNameOrDiscrim(newBounty.criminal) + "`",
-                                inline=False)
+        bountyEmbed.add_field(name="**Reward Pool:**", value=str(newBounty.reward) + " Credits")
+        bountyEmbed.add_field(name="**Difficulty:**", value=str(newBounty.techLevel))
+        bountyEmbed.add_field(name="**See the culprit's loadout with:**",
+                                value="`" + self.commandPrefix + "loadout criminal " + newBounty.criminal.name + "`")
+        bountyEmbed.add_field(name="**Route:**", value=", ".join(newBounty.route), inline=False)
+
         # Create the announcement text
         msg = "A new bounty is now available from **" + newBounty.faction.title() + "** central command:"
 
         if self.hasBountyBoardChannel:
             try:
-                if self.hasUserAlertRoleID("bounties_new"):
-                    msg = "<@&" + str(self.getUserAlertRoleID("bounties_new")) + "> " + msg
+                if newBounty.techLevel != 0 and self.hasBountyAlertRoles:
+                    msg = "<@&" + str(self.bountyAlertRoleIDForTL(newBounty.techLevel)) + "> " + msg
                 # announce to the given channel
                 bountyListing = await self.bountyBoardChannel.channel.send(msg, embed=bountyEmbed)
                 await self.bountyBoardChannel.addBounty(newBounty, bountyListing)
@@ -443,9 +516,9 @@ class BasedGuild(serializable.Serializable):
             currentChannel = self.getAnnounceChannel()
             if currentChannel is not None:
                 try:
-                    if self.hasUserAlertRoleID("bounties_new"):
+                    if newBounty.techLevel != 0 and self.hasBountyAlertRoles:
                         # announce to the given channel
-                        await currentChannel.send("<@&" + str(self.getUserAlertRoleID("bounties_new")) + "> " + msg,
+                        await currentChannel.send("<@&" + str(self.bountyAlertRoleIDForTL(newBounty.techLevel)) + "> " + msg,
                                                     embed=bountyEmbed)
                     else:
                         await currentChannel.send(msg, embed=bountyEmbed)
@@ -458,22 +531,50 @@ class BasedGuild(serializable.Serializable):
             # TODO: may wish to add handling for invalid announceChannels - e.g remove them from the BasedGuild object
 
 
-    async def spawnAndAnnounceRandomBounty(self):
-        """Generate a completely random bounty, spawn it, and announce it if this guild has
-        an appropriate channel selected.
+    async def spawnAndAnnounceBounty(self, newBountyData):
+        """Generate a new bounty, either at random or by the given bbBountyConfig, spawn it,
+        and announce it if this guild has an appropriate channel selected.
         """
         if self.bountiesDisabled:
-            raise ValueError("Attempted to spawn a bounty into a guild where bounties are disabled")
+            botState.logger.log("basedGuild", "spwnAndAnncBty",
+                                "Attempted to spawn a bounty into a guild where bounties are disabled: " \
+                                    + (self.dcGuild.name if self.dcGuild is not None else "") + "#" + str(self.id),
+                                eventType="BTYS_DISABLED")
+            return
         # ensure a new bounty can be created
         if self.bountiesDB.canMakeBounty():
-            newBounty = bounty.Bounty(owningDB=self.bountiesDB)
+            newBounty = newBountyData["newBounty"]
+            if newBounty is None:
+                newBounty = bounty.Bounty(owningDB=self.bountiesDB,
+                                            config=newBountyData["newConfig"].copy() if "newConfig" in newBountyData else None)
+            else:
+                if self.bountiesDB.escapedCriminalExists(newBounty.criminal):
+                    self.bountiesDB.removeEscapedCriminal(newBounty.criminal)
+
+                if "newConfig" in newBountyData and newBountyData["newConfig"] is not None:
+                    newConfig = newBountyData["newConfig"].copy()
+                    if not newConfig.generated:
+                        newConfig.generate(self.bountiesDB)
+                    newBounty.route = newConfig.route
+                    newBounty.start = newConfig.start
+                    newBounty.end = newConfig.end
+                    newBounty.answer = newConfig.answer
+                    newBounty.checked = newConfig.checked
+                    newBounty.reward = newConfig.reward
+                    newBounty.issueTime = newConfig.issueTime
+                    newBounty.endTime = newConfig.endTime
+
             # activate and announce the bounty
             self.bountiesDB.addBounty(newBounty)
             await self.announceNewBounty(newBounty)
+        
+        else:
+            raise OverflowError("Attempted to spawnAndAnnounceBounty when no more space is available for bounties " \
+                                + "in the bountiesDB")
 
 
     async def announceBountyWon(self, bounty : bounty.Bounty, rewards : Dict[int, Dict[str, Union[int, bool]]],
-            winningUser : Member):
+                                winningUser : Member):
         """Announce the completion of a bounty
         Messages will be sent to the playChannel if one is set
 
@@ -493,9 +594,11 @@ class BasedGuild(serializable.Serializable):
 
                 # Add the winning user to the embed
                 rewardsEmbed.add_field(name="1. 🏆 " + str(rewards[winningUserId]["reward"]) + " credits:",
-                                        value=winningUser.mention + " checked " \
-                                        + str(int(rewards[winningUserId]["checked"])) + " system" \
-                                        + ("s" if int(rewards[winningUserId]["checked"]) != 1 else ""), inline=False)
+                                        value=winningUser.mention + " checked " + str(rewards[winningUserId]["checked"]) \
+                                            + " system" + ("s" if int(rewards[winningUserId]["checked"]) != 1 else "") \
+                                            + "\n*+" + str(rewards[winningUserId]["xp"]) + "xp*",
+                                        inline=False)
+
 
                 # The index of the current user in the embed
                 place = 2
@@ -504,8 +607,10 @@ class BasedGuild(serializable.Serializable):
                     if not rewards[userID]["won"]:
                         rewardsEmbed.add_field(name=str(place) + ". " + str(rewards[userID]["reward"]) + " credits:",
                                                 value="<@" + str(userID) + "> checked " \
-                                                + str(int(rewards[userID]["checked"])) + " system" \
-                                                + ("s" if int(rewards[userID]["checked"]) != 1 else ""), inline=False)
+                                                    + str(int(rewards[userID]["checked"])) \
+                                                    + " system" + ("s" if int(rewards[userID]["checked"]) != 1 else "") \
+                                                    + "\n*+" + str(rewards[winningUserId]["xp"]) + "xp*",
+                                                inline=False)
                         place += 1
 
                 # Send the announcement to the guild's playChannel
@@ -531,33 +636,10 @@ class BasedGuild(serializable.Serializable):
             raise ValueError("Bounties are already enabled in this guild")
 
         self.bountiesDB = bountyDB.BountyDB(bbData.bountyFactions)
-
-        bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelaySeconds,
-                                "fixed-routeScale": self.getRouteScaledBountyDelayFixed,
-                                "random-routeScale": self.getRouteScaledBountyDelayRandom}
-
-        bountyDelayGeneratorArgs = {"random": cfg.newBountyDelayRandomRange,
-                                    "fixed-routeScale": cfg.newBountyFixedDelta,
-                                    "random-routeScale": cfg.newBountyDelayRandomRange}
-
-        if cfg.newBountyDelayType == "fixed":
-            self.newBountyTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.newBountyFixedDelta),
-                                            autoReschedule=True, expiryFunction=self.spawnAndAnnounceRandomBounty)
-        else:
-            try:
-                generatorArgs = bountyDelayGeneratorArgs[cfg.newBountyDelayType]
-                self.newBountyTT = DynamicRescheduleTask(bountyDelayGenerators[cfg.newBountyDelayType],
-                                                            delayTimeGeneratorArgs=generatorArgs,
-                                                            autoReschedule=True,
-                                                            expiryFunction=self.spawnAndAnnounceRandomBounty)
-            except KeyError:
-                raise ValueError("cfg: Unrecognised newBountyDelayType '" + cfg.newBountyDelayType + "'")
-
-        botState.newBountiesTTDB.scheduleTask(self.newBountyTT)
         self.bountiesDisabled = False
 
 
-    def disableBounties(self):
+    async def disableBounties(self):
         """Disable bounties for this guild.
         Removes any bountyboard if one is present, and removes the guild's bounties DB and bounty spawning TimedTask.
 
@@ -568,10 +650,11 @@ class BasedGuild(serializable.Serializable):
 
         if self.hasBountyBoardChannel:
             self.removeBountyBoardChannel()
-        botState.newBountiesTTDB.unscheduleTask(self.newBountyTT)
-        self.newBountyTT = None
         self.bountiesDisabled = True
         self.bountiesDB = None
+
+        if self.hasBountyAlertRoles:
+            await self.deleteBountyAlertRoles()
 
 
     def enableShop(self):
@@ -583,7 +666,7 @@ class BasedGuild(serializable.Serializable):
         if not self.shopDisabled:
             raise ValueError("The shop is already enabled in this guild")
 
-        self.shop = guildShop.GuildShop(noRefresh=True)
+        self.shop = guildShop.TechLeveledShop(noRefresh=True)
         self.shopDisabled = False
 
 
@@ -649,6 +732,9 @@ class BasedGuild(serializable.Serializable):
         if not self.shopDisabled:
             data["shop"] = self.shop.toDict(**kwargs)
 
+        if self.hasBountyAlertRoles:
+            data["bountyAlertRoles"] = self.bountyAlertRoles
+
         return data
 
 
@@ -685,31 +771,34 @@ class BasedGuild(serializable.Serializable):
 
 
         if "bountiesDisabled" in guildDict and guildDict["bountiesDisabled"]:
-            bountiesDB = None
             bbc = None
-        else:
-            if "bountiesDB" in guildDict:
-                bountiesDB = bountyDB.BountyDB.fromDict(guildDict["bountiesDB"], dbReload=dbReload)
-            else:
-                bountiesDB = bountyDB.BountyDB(bbData.bountyFactions)
-            
-            if "bountyBoardChannel" in guildDict and guildDict["bountyBoardChannel"] != -1:
-                bbc = bountyBoardChannel.bountyBoardChannel.fromDict(guildDict["bountyBoardChannel"])
+        elif "bountyBoardChannel" in guildDict and guildDict["bountyBoardChannel"] != -1:
+            bbc = bountyBoardChannel.bountyBoardChannel.fromDict(guildDict["bountyBoardChannel"])
         
         if "shopDisabled" in guildDict and guildDict["shopDisabled"]:
             shop = None
         else:
             if "shop" in guildDict:
-                shop = guildShop.GuildShop.fromDict(guildDict["shop"])
+                shop = guildShop.TechLeveledShop.fromDict(guildDict["shop"])
             else:
-                shop = guildShop.GuildShop()
+                shop = guildShop.TechLeveledShop()
         
-
-        return BasedGuild(guildID, dcGuild, bountiesDB, announceChannel=announceChannel, playChannel=playChannel,
-                            shop=shop, bountyBoardChannel=bbc,
-                            shopDisabled=guildDict["shopDisabled"] if "shopDisabled" in guildDict else False,
+        # This will be replaced after guild instancing
+        tempBountiesDB = bountyDB.BountyDB(bbData.bountyFactions, owningBasedGuild=None, dummy=True)
+        newGuild = BasedGuild(guildID, dcGuild, tempBountiesDB, announceChannel=announceChannel, playChannel=playChannel,
+                            shop=shop, bountyBoardChannel=bbc, shopDisabled=shop is None,
                             alertRoles=guildDict["alertRoles"] if "alertRoles" in guildDict else {},
                             ownedRoleMenus=guildDict["ownedRoleMenus"] if "ownedRoleMenus" in guildDict else 0,
                             bountiesDisabled=guildDict["bountiesDisabled"] if "bountiesDisabled" in guildDict else False,
                             commandPrefix=guildDict["commandPrefix"] if "commandPrefix" in guildDict else \
-                                            cfg.defaultCommandPrefix)
+                                            cfg.defaultCommandPrefix,
+                            bountyAlertRoles=guildDict["bountyAlertRoles"] if "bountyAlertRoles" in guildDict else [])
+
+        if "bountiesDisabled" not in guildDict or not guildDict["bountiesDisabled"]:
+            if "bountiesDB" in guildDict:
+                bountiesDB = bountyDB.BountyDB.fromDict(guildDict["bountiesDB"], dbReload=dbReload, owningBasedGuild=newGuild)
+            else:
+                bountiesDB = bountyDB.BountyDB(bbData.bountyFactions, owningBasedGuild=newGuild)
+            newGuild.bountiesDB = bountiesDB
+
+        return newGuild

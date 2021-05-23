@@ -1,5 +1,6 @@
 # Set up bot config
 
+from bot.gameObjects.items import shipItem
 from .cfg import cfg, versionInfo, bbData, gameConfigurator
 
 
@@ -17,6 +18,7 @@ import traceback
 import asyncio
 import signal
 import aiohttp
+import sys
 
 
 # BASED Imports
@@ -26,6 +28,11 @@ from .databases import guildDB, reactionMenuDB, userDB
 from .scheduling.timedTask import TimedTask
 from .scheduling.timedTaskHeap import TimedTaskHeap
 from bot.scheduling import timedTaskHeap
+from .reactionMenus import reactionMenu
+
+
+
+##### UTIL FUNCTIONS #####
 
 
 async def checkForUpdates():
@@ -215,7 +222,7 @@ class BasedClient(ClientBaseClass):
             # expire non-saveable reaction menus
             menus = list(botState.reactionMenusDB.values())
             for menu in menus:
-                if not menu.saveable:
+                if not reactionMenu.isSaveableMenuInstance(menu):
                     await menu.delete()
 
         # log out of discord
@@ -479,6 +486,14 @@ async def on_ready():
     for guild in botState.client.guilds:
         if not botState.guildsDB.idExists(guild.id):
             botState.guildsDB.addDcGuild(guild)
+
+
+    ##### SCHEDULING CONTINUED #####
+    # to be moved
+    # Schedule guild activity measurement decaying
+    botState.temperatureDecayTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.timeouts.guildActivityDecay),
+                                            autoReschedule=True, expiryFunction=botState.guildsDB.decayAllTemps)
+    botState.taskScheduler.scheduleTask(botState.temperatureDecayTT)
 
 
     ##### CLEANUP #####

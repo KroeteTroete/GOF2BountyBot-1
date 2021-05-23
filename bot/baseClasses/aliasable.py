@@ -17,6 +17,7 @@ class Aliasable(serializable.Serializable):
     :var aliases: A list of alternative identifiers for the object
     :vartype aliases: list[str]
     """
+    __hash__ = serializable.Serializable.__hash__
 
     def __init__(self, name : str, aliases : List[str], forceAllowEmpty : bool = False):
         """

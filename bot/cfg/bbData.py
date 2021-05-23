@@ -1,4 +1,5 @@
 from discord import Colour
+from ..lib.emojis import UninitializedBasedEmoji
 
 # all factions recognised by BB
 factions = ["terran", "vossk", "midorian", "nivelian", "neutral"]
@@ -97,3 +98,7 @@ turretObjsByTL = []
 bountyNames = {}
 # the length of the longest criminal name, to be used in padding during cmd_bounties
 longestBountyNameLength = 0
+
+shipSkinToolsBySkin = {}
+# Dict of crate type (str) : list of crates
+builtInCrateObjs = {}

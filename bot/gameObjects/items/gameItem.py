@@ -136,15 +136,6 @@ class GameItem(aliasable.Aliasable):
         return data
 
 
-    def __hash__(self) -> int:
-        """Calculate a hash of this item based on its location in memory.
-
-        :return: This item instance's unique hash
-        :rtype: int
-        """
-        return hash(repr(self))
-
-
 def spawnableItem(cls):
     if not issubclass(cls, GameItem):
         raise TypeError("Invalid use of spawnableItem decorator: " + cls.__name__ + " is not a gameItem subtype")

@@ -1,18 +1,23 @@
+from bot.lib import gameMaths
 import random
 from . import toolItem
-from .... import lib
+from .... import lib, botState
 from discord import Message
-from ....cfg import cfg
+from ....cfg import cfg, bbData
 from .. import gameItem
-from ....botState import logger
 from ....reactionMenus.confirmationReactionMenu import InlineConfirmationMenu
+from typing import List
 
 
 @gameItem.spawnableItem
 class CrateTool(toolItem.ToolItem):
-    def __init__(self, itemPool, name : str = "", value : int = 0, wiki : str = "",
-            manufacturer : str = "", icon : str = "", emoji : lib.emojis.BasedEmoji = lib.emojis.BasedEmoji.EMPTY,
-            techLevel : int = -1, builtIn : bool = False):
+    def __init__(self, itemPool: List[gameItem.GameItem], name : str = "", value : int = 0, wiki : str = "",
+            manufacturer : str = "", icon : str = cfg.defaultCrateIcon, emoji : lib.emojis.BasedEmoji = None,
+            techLevel : int = -1, builtIn : bool = False, crateType : str = "", typeNum : int = 0):
+
+        if emoji is None:
+            emoji = cfg.defaultEmojis.defaultCrate
+
 
         super().__init__(name, [], value=value, wiki=wiki,
             manufacturer=manufacturer, icon=icon, emoji=emoji,
@@ -23,6 +28,8 @@ class CrateTool(toolItem.ToolItem):
                 raise RuntimeError("Attempted to create a crateTool with something other than a spawnableItem " \
                                     + "in its itemPool.")
         self.itemPool = itemPool
+        self.crateType = crateType
+        self.typeNum = typeNum
 
 
     async def use(self, *args, **kwargs):
@@ -55,7 +62,7 @@ class CrateTool(toolItem.ToolItem):
                             + type(kwargs["callingBUser"]).__name__)
 
         callingBUser = kwargs["callingBUser"]
-        confirmMsg = await message.channel.send("Are you sure you want to open this crate?")
+        confirmMsg = await message.channel.send("Are you sure you want to open your '" + self.name + "' crate?")
         confirmation = await InlineConfirmationMenu(confirmMsg, message.author,
                                                     cfg.toolUseConfirmTimeoutSeconds).doMenu()
 
@@ -86,12 +93,16 @@ class CrateTool(toolItem.ToolItem):
         :rtype: dict
         """
         data = super().toDict(**kwargs)
-        if "saveType" not in kwargs:
-            kwargs["saveType"] = True
+        if self.builtIn:
+            data["crateType"] = self.crateType
+            data["typeNum"] = self.typeNum
+        else:
+            if "saveType" not in kwargs:
+                kwargs["saveType"] = True
 
-        data["itemPool"] = []
-        for item in self.itemPool:
-            data["itemPool"].append(item.toDict(**kwargs))
+            data["itemPool"] = []
+            for item in self.itemPool:
+                data["itemPool"].append(item.toDict(**kwargs))
         return data
 
 
@@ -99,9 +110,20 @@ class CrateTool(toolItem.ToolItem):
     def fromDict(cls, crateDict, **kwargs):
         skipInvalidItems = kwargs["skipInvalidItems"] if "skipInvalidItems" in kwargs else False
 
+        if "builtIn" in crateDict and crateDict["builtIn"]:
+            if "crateType" in crateDict:
+                if crateDict["crateType"] in bbData.builtInCrateObjs:
+                    return bbData.builtInCrateObjs[crateDict["crateType"]][crateDict["typeNum"]]
+                else:
+                    raise ValueError("Unknown crateType: " + str(crateDict["crateType"]))
+            else:
+                raise ValueError("Attempted to spawn builtIn CrateTool with no given crateType")
+        else:
+            crateToSpawn = crateDict
+
         itemPool = []
-        if "itemPool" in crateDict:
-            for itemDict in crateDict["itemPool"]:
+        if "itemPool" in crateToSpawn:
+            for itemDict in crateToSpawn["itemPool"]:
                 errorStr = ""
                 errorType = ""
                 if "type" not in itemDict:
@@ -113,19 +135,23 @@ class CrateTool(toolItem.ToolItem):
                     errorType = "BAD_TYPE"
                 if errorStr:
                     if skipInvalidItems:
-                        logger.log("crateTool", "fromDict", errorStr, eventType=errorType)
+                        botState.logger.log("crateTool", "fromDict", errorStr, eventType=errorType)
                     else:
                         raise ValueError(errorStr)
                 else:
                     itemPool.append(gameItem.spawnItem(itemDict))
         else:
-            logger.log("crateTool", "fromDict", "fromDict-ing a crateTool with no itemPool.")
+            botState.logger.log("crateTool", "fromDict", "fromDict-ing a crateTool with no itemPool.")
 
-        return CrateTool(itemPool, name=crateDict["name"] if "name" in crateDict else "",
-            value=crateDict["value"] if "value" in crateDict else 0,
-            wiki=crateDict["wiki"] if "wiki" in crateDict else "",
-            manufacturer=crateDict["manufacturer"] if "manufacturer" in crateDict else "",
-            icon=crateDict["icon"] if "icon" in crateDict else "",
-            emoji=lib.emojis.BasedEmoji.fromDict(crateDict["emoji"]) if "emoji" in crateDict else lib.emojis.BasedEmoji.EMPTY,
-            techLevel=crateDict["techLevel"] if "techLevel" in crateDict else -1,
-            builtIn=crateDict["builtIn"] if "builtIn" in crateDict else False)
+        return CrateTool(itemPool, name=crateToSpawn["name"] if "name" in crateToSpawn else "",
+            value=crateToSpawn["value"] if "value" in crateToSpawn else 0,
+            wiki=crateToSpawn["wiki"] if "wiki" in crateToSpawn else "",
+            manufacturer=crateToSpawn["manufacturer"] if "manufacturer" in crateToSpawn else "",
+            icon=crateToSpawn["icon"] if "icon" in crateToSpawn else "",
+            emoji=lib.emojis.BasedEmoji.fromDict(crateToSpawn["emoji"]) \
+                if "emoji" in crateToSpawn else lib.emojis.BasedEmoji.EMPTY,
+            techLevel=crateToSpawn["techLevel"] if "techLevel" in crateToSpawn else -1,
+            builtIn=crateToSpawn["builtIn"] if "builtIn" in crateToSpawn else False,
+            crateType=crateToSpawn["crateType"] if "crateType" in crateToSpawn else "",
+            typeNum=crateToSpawn["typeNum"] if "typeNum" in crateToSpawn else 0)
+

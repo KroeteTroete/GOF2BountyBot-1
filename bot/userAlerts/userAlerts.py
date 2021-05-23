@@ -208,17 +208,6 @@ class UA_Shop_Refresh(GuildRoleUserAlert):
         super(UA_Shop_Refresh, self).__init__()
 
 
-class UA_Bounties(GuildRoleUserAlert):
-    """Alert a guild's members when a new bounty spawns, using a role.
-    """
-
-    def __init__(self, state):
-        """
-        :param state: Ignored
-        """
-        super(UA_Bounties, self).__init__()
-
-
 class UA_Duels_Challenge_Incoming_New(StateUserAlert):
     """Alert a user, independant of guild, when a user challenges them to a duel.
     """
@@ -275,9 +264,7 @@ class UA_System_Misc(GuildRoleUserAlert):
 
 
 # Translate UA ID strings into types
-userAlertsIDsTypes = {  "bounties_new": UA_Bounties,
-
-                        "shop_refresh": UA_Shop_Refresh,
+userAlertsIDsTypes = {  "shop_refresh": UA_Shop_Refresh,
 
                         "duels_challenge_incoming_new": UA_Duels_Challenge_Incoming_New,
                         "duels_challenge_incoming_cancel": UA_Duels_Challenge_Incoming_Cancel,
@@ -287,9 +274,7 @@ userAlertsIDsTypes = {  "bounties_new": UA_Bounties,
                         "system_misc": UA_System_Misc}
 
 # Translate UA types into ID strings
-userAlertsTypesIDs = {  UA_Bounties: "bounties_new",
-
-                        UA_Shop_Refresh: "shop_refresh",
+userAlertsTypesIDs = {  UA_Shop_Refresh: "shop_refresh",
 
                         UA_Duels_Challenge_Incoming_New: "duels_challenge_incoming_new",
                         UA_Duels_Challenge_Incoming_Cancel: "duels_challenge_incoming_cancel",
@@ -299,9 +284,7 @@ userAlertsTypesIDs = {  UA_Bounties: "bounties_new",
                         UA_System_Misc: "system_misc"}
 
 # Translate UA types into user-friendly alert name strings
-userAlertsTypesNames = {UA_Bounties: "new bounties",
-
-                        UA_Shop_Refresh: "new shop stock",
+userAlertsTypesNames = {UA_Shop_Refresh: "new shop stock",
 
                         UA_Duels_Challenge_Incoming_New: "new duel challenges",
                         UA_Duels_Challenge_Incoming_Cancel: "cancelled duel challenges",
@@ -334,10 +317,7 @@ def getAlertIDFromHeirarchicalAliases(alertName : Union[str, List[str]]) -> List
     if type(alertName) != list:
         alertName = alertName.split(" ")
 
-    if alertName[0] in ["bounty", "bounties"]:
-        return ["bounties_new"]
-
-    elif alertName[0] in ["duel", "duels", "fight", "fights"]:
+    if alertName[0] in ["duel", "duels", "fight", "fights"]:
         if len(alertName) < 2:
             return ["ERR", ":x: Please provide the type of duel notification you would like. E.g: `duels new`"]
         if alertName[1] in ["new", "challenge", "me", "incoming"]:

@@ -9,7 +9,7 @@ defaultEmojis = {
     "longProcess": UninitializedBasedEmoji("⏳"),
     # When a user message prompts a DM to be sent, this emoji will be added to the message reactions.
     "dmSent": UninitializedBasedEmoji("📬"),
-    "cancel": UninitializedBasedEmoji("🇽"),
+    "cancel": UninitializedBasedEmoji("🚫"),
     "submit": UninitializedBasedEmoji("✅"),
     "spiral": UninitializedBasedEmoji("🌀"),
     "error": UninitializedBasedEmoji("❓"),
@@ -33,7 +33,13 @@ defaultEmojis = {
 
     # Default emoji to assign to bbCrates containing shipSkinTools
     # "skinCrate": UninitializedBasedEmoji(723709178736017419)
-    "skinCrate": UninitializedBasedEmoji("🥞")
+    "skinCrate": UninitializedBasedEmoji("🥞"),
+    # "defaultCrate": UninitializedBasedEmoji(723709178736017419)
+    "defaultCrate": UninitializedBasedEmoji("🥞"),
+    
+    # Emoji sent with new bounty listings
+    # "newBounty": UninitializedBasedEmoji(723709178589347921)
+    "newBounty": UninitializedBasedEmoji("🥞")
 }
 
 timeouts = {
@@ -54,7 +60,9 @@ timeouts = {
     # Default amount of time reaction menus should be active for
     "roleMenuExpiry": {"days": 1},
     "duelChallengeMenuExpiry": {"hours": 2},
-    "pollMenuExpiry": {"minutes": 5}
+    "pollMenuExpiry": {"minutes": 5},
+
+    "guildActivityDecay": {"hours": 1}
 }
 
 paths = {
@@ -96,7 +104,7 @@ maxCommandsPerHelpPage = 5
 #                           "dev_misc")
 
 includedCommandModules = (  "usr_misc", "usr_homeguilds", "usr_gof2-info", "usr_bounties", "usr_loadout", "usr_economy",
-                            "admn_channels", "admn_misc",
+                            "usr_kaamo", "admn_channels", "admn_misc",
                             "dev_misc", "dev_channels", "dev_bounties", "dev_items", "dev_skins")
 
 # Default prefix for commands
@@ -116,6 +124,8 @@ maxRoleMenusPerGuild = 10
 toolUseConfirmTimeoutSeconds = 60
 # Amount of time to allow for response to the cmd_transfer confirmation menu
 homeGuildTransferConfirmTimeoutSeconds = 60
+# Amount of time to allow for response to the cmd_prestige confirmation menu
+prestigeConfirmTimeoutSeconds = 60
 
 
 
@@ -149,9 +159,7 @@ accessLevelTitles = ["pilot", "captain", "commander", "officer"]
 
 ##### USERS #####
 
-userAlertsIDsDefaults = {   "bounties_new": False,
-
-                            "shop_refresh": False,
+userAlertsIDsDefaults = {   "shop_refresh": False,
 
                             "duels_challenge_incoming_new": True,
                             "duels_challenge_incoming_cancel": False,
@@ -173,8 +181,22 @@ itemSpawnRateResDP = 3
 minTechLevel = 1
 maxTechLevel = 10
 
+# Division name: range of tech levels for bounties and players
+bountyDivisions = {"1": (0, 3),
+                    "2": (4, 7),
+                    "3": (8, 10)}
+
 # Price ranges by which ships should be ranked into tech levels. 0th index = tech level 1
 shipMaxPriceTechLevels = [50000, 100000, 200000, 500000, 1000000, 2000000, 5000000, 7000000, 7500000, 999999999]
+
+
+
+##### USER LEVELING #####
+
+
+# Apply a multiplier to all rewards gained from a bounty. bounty hunter xp is thus a measure of
+# total earnings from bounty hunting.
+bountyRewardToXPGainMult = 0.1
 
 
 
@@ -199,22 +221,26 @@ numWeaponRanks = 10
 numModuleRanks = 7
 numTurretRanks = 3
 
-# The default number of items shops should generate every shopRefreshStockPeriod
-shopRefreshShips = 5
-shopRefreshWeapons = 5
-shopRefreshModules = 5
-shopRefreshTurrets = 2
+# The default number of items shops should generate every timeouts.shopRefresh
+shopDefaultShipsNum = 5
+shopDefaultWeaponsNum = 5
+shopDefaultModulesNum = 5
+shopDefaultTurretsNum = 2
+shopDefaultToolsNum = 0
 
 # bbTurret is the only item that has a probability not to be spawned.
 # This metric indicates the percentage chance of turrets being stocked on a given refresh
 turretSpawnProbability = 45
 
+# The number of items users may store in their Kaamo Club.
+kaamoMaxCapacity = 70
+
 
 
 ##### BOUNTIES #####
 
-# Maximum number of bounties that may simulatneously be available, per fection
-maxBountiesPerFaction = 5
+# Maximum number of bounties that may simultaneously be available per division
+maxBountiesPerDivision = 5
 
 # The maximum number of bounties a player is allowed to win each day
 maxDailyBountyWins = 10
@@ -250,6 +276,45 @@ closeBountyThreshold = 4
 bbcNoBountiesMsg = "```css\n[ NO ACTIVE BOUNTIES ]\n\nThere are currently no active bounty listings.\n" \
                     + "Please check back later, or use [ $notify bounties ] to be pinged when new ones become available!\n```"
 
+# The percentage of a criminal's ship value to award to the winner
+shipValueRewardPercentage = 0.01
+
+# The probability of a criminal equipping a turret, should their ship have space for one
+criminalEquipTurretChance = 30
+
+# The maximum number of levels a criminal's gear may be above their difficulty rating
+criminalMaxGearUpgrade = 1
+
+# The maximum total-value a player may have before being disallowed from hunting a tech-level of bounty. 0th index = tech level 1
+# I.e, to hunt level 1 bounties, a player must be worth no more than bountyTLMaxPlayerValues[0] credits.
+bountyTLMaxPlayerValues = [50000, 75000, 100000, 200000, 450000, 600000, 800000, 1000000, 2000000, 3000000, 999999999]
+
+level0CrimLoadout = {"name": "Betty", "builtIn":True,
+                    "weapons":[{"name": "Nirai Impulse EX 1", "builtIn": True}],
+                    "modules":[{"name": "Telta Quickscan", "builtIn": True}, {"name": "ZMI Optistore", "builtIn": True},
+                                {"name": "IMT Extract 2.7", "builtIn": True}]}
+
+# The multiplier applied each day to each guild's player activity for each tech level
+guildActivityDecayRate = 2/3
+
+# The lowest rating a guild can achieve for player activitivity at a certain tech level
+minGuildActivity = 1
+
+# Amount to raise the guild's activity temperature by for each player contributing to a bounty
+activityTempPerPlayer = 1
+
+# The RGB colours to make by default for each bounty alert role, ordered by tech level ascending
+defaultBountyAlertRoleColours = ((89, 39, 12),
+                                (99, 48, 12),
+                                (118, 63, 12),
+                                (138, 79, 12),
+                                (157, 94, 11),
+                                (177, 111, 10),
+                                (197, 126, 10),
+                                (221, 146, 10),
+                                (240, 161, 9),
+                                (255, 174, 8))
+
 
 
 ##### SKINS #####
@@ -279,6 +344,8 @@ defaultShipSkinToolIcon = "https://cdn.discordapp.com/attachments/70068354410374
 # The maximum number of rendering threads that may be dispatched simultaneously
 maxConcurrentRenders = 1
 
+defaultCrateIcon = "https://cdn.discordapp.com/attachments/700683544103747594/723472359113359410/secure_container.png" 
+
 
 
 ##### ITEMS #####
@@ -298,27 +365,30 @@ maxItemsPerHangarPageIndividual = 10
 validItemNames = ["ship", "weapon", "module", "turret", "all", "tool"]
 
 # the max number of each module type that can be equipped on a ship.
-maxModuleTypeEquips = {     "bbArmourModule": 1,
-                            "bbBoosterModule": 1,
-                            "bbCabinModule": -1,
-                            "bbCloakModule": 1,
-                            "bbCompressorModule": -1,
-                            "bbGammaShieldModule": 1,
-                            "bbMiningDrillModule": 1,
-                            "bbRepairBeamModule": 1,
-                            "bbRepairBotModule": 1,
-                            "bbScannerModule": 1,
-                            "bbShieldModule": 1,
-                            "bbSpectralFilterModule": 1,
-                            "bbThrusterModule": 1,
-                            "bbTractorBeamModule": 1,
-                            "bbTransfusionBeamModule": 1,
-                            "bbWeaponModModule": 1,
-                            "bbJumpDriveModule": 0,
-                            "bbEmergencySystemModule": 1,
-                            "bbSignatureModule": 1,
-                            "bbShieldInjectorModule": 1,
-                            "bbTimeExtenderModule": 1}
+maxModuleTypeEquips = {     "ArmourModule": 1,
+                            "BoosterModule": 1,
+                            "CabinModule": -1,
+                            "CloakModule": 1,
+                            "CompressorModule": -1,
+                            "GammaShieldModule": 1,
+                            "MiningDrillModule": 1,
+                            "RepairBeamModule": 1,
+                            "RepairBotModule": 1,
+                            "ScannerModule": 1,
+                            "ShieldModule": 1,
+                            "SpectralFilterModule": 1,
+                            "ThrusterModule": 1,
+                            "TractorBeamModule": 1,
+                            "TransfusionBeamModule": 1,
+                            "WeaponModModule": 1,
+                            "JumpDriveModule": 0,
+                            "EmergencySystemModule": 1,
+                            "SignatureModule": 1,
+                            "ShieldInjectorModule": 1,
+                            "TimeExtenderModule": 1}
+
+# valid types of crateItem that are in the game. Each will be associated with a zero-indexed (crateNum) list of crate objects
+crateTypes = ("levelUp", "special")
 
 
 

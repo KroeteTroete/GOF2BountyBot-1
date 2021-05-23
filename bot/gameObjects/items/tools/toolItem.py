@@ -68,6 +68,4 @@ class ToolItem(gameItem.GameItem):
         :return: The default gameItem toDict implementation, with an added 'type' field
         :rtype: dict
         """
-        data = super().toDict(**kwargs)
-        data["itemType"] = "toolItem"
-        return data
+        return super().toDict(**kwargs)

@@ -71,6 +71,7 @@ class BasedEmoji(serializable.Serializable):
     :vartype EMPTY: BasedEmoji
     """
     EMPTY = None
+    __hash__ = serializable.Serializable.__hash__
 
     def __init__(self, id: int = -1, unicode: str = "", rejectInvalid: bool = False):
         """
@@ -125,16 +126,6 @@ class BasedEmoji(serializable.Serializable):
         :rtype: str
         """
         return "<BasedEmoji-" + ("id" if self.isID else "unicode") + ":" + (str(self.id) if self.isID else self.unicode) + ">"
-
-
-    def __hash__(self) -> int:
-        """Calculate a hash of this emoji, based on its repr string.
-        Two BasedEmoji objects representing the same emoji will have the same repr and hash.
-
-        :return: A hash of this emoji
-        :rtype: int
-        """
-        return hash(repr(self))
 
 
     def __eq__(self, other: BasedEmoji) -> bool:
@@ -237,8 +228,6 @@ class BasedEmoji(serializable.Serializable):
         s may also be a BasedEmoji (returns s), a dictionary-serialized BasedEmoji (returns BasedEmoji.fromDict(s)), or
         only an ID of a discord custom emoji (may be either str or int)
 
-        If
-
         :param str s: A string containing only one of: A unicode emoji, a discord custom emoji, or
                         the ID of a discord custom emoji.
         :param bool rejectInvalid: When true, an exception is guaranteed to raise if an invalid emoji is requested,
@@ -259,7 +248,7 @@ class BasedEmoji(serializable.Serializable):
         elif stringTyping.isInt(s):
             return BasedEmoji(id=int(s), rejectInvalid=rejectInvalid)
         else:
-            raise TypeError("Expected s of type str, dict or BasedEmoji, got " + type(s).__name__)
+            raise TypeError("Expected s of type str, dict or BasedEmoji, got " + type(s).__name__ + ": " + str(s))
 
 
     @classmethod
