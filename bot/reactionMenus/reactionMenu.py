@@ -234,7 +234,8 @@ class ReactionMenu(serializable.Serializable):
     The options in your options dictionary do not have to be of the same type - each option could have completely
     different behaviour. The only consideration you may need to make when creating such an object is whether or
     not you wish for it to be saveable - in which case, you should extend ReactionMenu into a new module,
-    providing a custom toDict method and fromDict function.
+    providing a custom toDict method and fromDict function, and then register your class as saveable with
+    the @saveableMenu decorator.
 
     :var msg: the message where this menu is embedded
     :vartype msg: discord.Message
@@ -662,6 +663,7 @@ def isSaveableMenuClass(cls: type) -> bool:
     """
     return issubclass(cls, ReactionMenu) and cls in saveableNameMenuTypes
 
+
 def isSaveableMenuInstance(o: ReactionMenu) -> bool:
     """Decide if o is an instance of a saveable reaction menu class.
 
@@ -671,6 +673,7 @@ def isSaveableMenuInstance(o: ReactionMenu) -> bool:
     """
     return isinstance(o, ReactionMenu) and type(o) in saveableMenuTypeNames
 
+
 def isSaveableMenuTypeName(clsName: str) -> bool:
     """Decide if clsName is the name of a saveable reaction menu class.
 
@@ -679,6 +682,7 @@ def isSaveableMenuTypeName(clsName: str) -> bool:
     :rtype: bool
     """
     return clsName in saveableNameMenuTypes
+
 
 def saveableMenuClassFromName(clsName: str) -> type:
     """Retreive the saveable ReactionMenu subclass that as the given class name.

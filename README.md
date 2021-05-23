@@ -16,10 +16,20 @@ This repository is a work-in-progress port of [BountyBot](https://github.com/Tri
       src="https://img.shields.io/github/workflow/status/GOF2BountyBot/GOF2BountyBot/BASED"
       alt="GitHub Actions workflow status"
   /></a>
-  <a href="https://github.com/GOF2BountyBot/GOF2BountyBot/labels/bug"
+  <a href="https://github.com/GOF2BountyBot/GOF2BountyBot/projects/1?card_filter_query=label%3Abug"
     ><img
       src="https://img.shields.io/github/issues-search?color=eb4034&label=bugs&query=repo%3AGOF2BountyBot%2FGOF2BountyBot%20is%3Aopen%20label%3Abug"
       alt="GitHub open bug reports"
+  /></a>
+  <a href="https://github.com/GOF2BountyBot/GOF2BountyBot/projects/1?card_filter_query=label%3Agame%20balance"
+    ><img
+      src='https://img.shields.io/github/issues-search?color=46d2e8&label=balance%20issues&query=repo%3AGOF2BountyBot%2FGOF2BountyBot%20is%3Aopen%20label%3A"game+balance"'
+      alt="GitHub open game balance issues"
+  /></a>
+  <a href="https://github.com/GOF2BountyBot/GOF2BountyBot/projects/1?card_filter_query=label%3Aenhancement"
+    ><img
+      src="https://img.shields.io/github/issues-search?color=edd626&label=upcoming%20features&query=repo%3AGOF2BountyBot%2FGOF2BountyBot%20is%3Aopen%20label%3Aenhancement"
+      alt="GitHub open enhancement issues"
   /></a>
 </p>
 <p align="center">
@@ -58,4 +68,3 @@ At its base, `_render.py `implements calls to [blender](https://www.blender.org/
 
 ## userAlerts
 Defines the versitile `UABase` class, which can be used to assign boolean alert subscriptions to alert behaviour, to be called upon certain events. For example, a guild may define a `UA_Shop_Refresh` alert, corresponding to a role within the guild. Users may then subscribe to this alert, granting them the role. The shop refreshing `TimedTask` expiry function is directed to check for the existence of such an alert in guilds, and ping the alerting role.
-

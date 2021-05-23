@@ -1,5 +1,6 @@
 from ..reactionMenus import reactionMenu
 from .. import botState
+from ..reactionMenus import reactionMenu
 
 
 class ReactionMenuDB(dict):
@@ -29,7 +30,7 @@ async def fromDict(dbDict: dict) -> ReactionMenuDB:
     :rtype: ReactionMenuDB
     """
     newDB = ReactionMenuDB()
-    requiredAttrs = ("type", "guild", "channel")
+    requiredAttrs = ["type", "guild", "channel"]
 
     for msgID in dbDict:
         menuData = dbDict[msgID]
@@ -38,12 +39,12 @@ async def fromDict(dbDict: dict) -> ReactionMenuDB:
             if attr not in menuData:
                 botState.logger.log("reactionMenuDB", "fromDict",
                                     "Invalid menu dict (missing " + attr + "), ignoring and removing. " \
-                                    + " ".join(foundAttr + "=" + menuData[foundAttr] \
-                                                for foundAttr in requiredAttrs if foundAttr in menuData),
+                                        + " ".join(foundAttr + "=" + menuData[foundAttr] \
+                                            for foundAttr in requiredAttrs if foundAttr in menuData),
                                     category="reactionMenus", eventType="dictNo" + attr.capitalize)
 
-        menuDescriptor = menuData["type"] + "(" \
-                            + "/".join(str(id) for id in [menuData["guild"], menuData["channel"], msgID]) + ")"
+        menuDescriptor = menuData["type"] + "(" + "/".join(str(id) \
+                            for id in [menuData["guild"], menuData["channel"], msgID]) + ")"
 
         dcGuild = botState.client.get_guild(menuData["guild"])
         if dcGuild is None:
@@ -62,13 +63,21 @@ async def fromDict(dbDict: dict) -> ReactionMenuDB:
                                     "Unrecognised channel in menu dict, ignoring and removing: " + menuDescriptor,
                                     category="reactionMenus", eventType="unknChannel")
                 continue
-        
+
         msg = await menuChannel.fetch_message(menuData["msg"])
         if msg is None:
             botState.logger.log("reactionMenuDB", "fromDict",
                                 "Unrecognised message in menu dict, ignoring and removing: " + menuDescriptor,
                                 category="reactionMenus", eventType="unknMsg")
             continue
+        
+        if not reactionMenu.isSaveableMenuTypeName(menuData["type"]):
+            newDB[int(msgID)] = reactionMenu.saveableMenuClassFromName(menuData["type"]).fromDict(menuData, msg=msg)
+        else:
+            botState.logger.log("reactionMenuDB", "fromDict",
+                                "Attempted to fromDict a non-saveable menu type, ignoring and removing. msg #" + str(msgID) \
+                                    + ", type " + menuData["type"],
+                                category="reactionMenus", eventType="dictUnsaveable")
 
         if reactionMenu.isSaveableMenuTypeName(menuData["type"]):
             newDB[int(msgID)] = reactionMenu.saveableMenuClassFromName(menuData["type"]).fromDict(menuData, msg=msg)
