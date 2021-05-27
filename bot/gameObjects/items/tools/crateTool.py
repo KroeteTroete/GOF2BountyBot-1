@@ -97,7 +97,7 @@ class CrateTool(toolItem.ToolItem):
 
     @classmethod
     def fromDict(cls, crateDict, **kwargs):
-        skipInvalidItems = kwargs["skipInvalidItems"] if "skipInvalidItems" in kwargs else False
+        skipInvalidItems = kwargs.get("skipInvalidItems", False)
 
         itemPool = []
         if "itemPool" in crateDict:
@@ -121,11 +121,6 @@ class CrateTool(toolItem.ToolItem):
         else:
             logger.log("crateTool", "fromDict", "fromDict-ing a crateTool with no itemPool.")
 
-        return CrateTool(itemPool, name=crateDict["name"] if "name" in crateDict else "",
-            value=crateDict["value"] if "value" in crateDict else 0,
-            wiki=crateDict["wiki"] if "wiki" in crateDict else "",
-            manufacturer=crateDict["manufacturer"] if "manufacturer" in crateDict else "",
-            icon=crateDict["icon"] if "icon" in crateDict else "",
-            emoji=lib.emojis.BasedEmoji.fromDict(crateDict["emoji"]) if "emoji" in crateDict else lib.emojis.BasedEmoji.EMPTY,
-            techLevel=crateDict["techLevel"] if "techLevel" in crateDict else -1,
-            builtIn=crateDict["builtIn"] if "builtIn" in crateDict else False)
+        return CrateTool(**cls._makeDefaults(crateDict, itemPool=itemPool,
+                                            emoji=lib.emojis.BasedEmoji.fromDict(crateDict["emoji"]) \
+                                                    if "emoji" in crateDict else lib.emojis.BasedEmoji.EMPTY))
