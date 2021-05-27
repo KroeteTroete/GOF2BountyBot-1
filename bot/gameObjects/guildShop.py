@@ -513,5 +513,5 @@ class GuildShop(serializable.Serializable):
             turretsStock.addItem(TurretWeapon.fromDict(turretListingDict["item"]),
                                                                     quantity=turretListingDict["count"])
 
-        return GuildShop(cls._makeDefaults(shopDict, shipsStock=shipsStock, weaponsStock=weaponsStock,
-                                                    modulesStock=modulesStock, turretsStock=turretsStock))
+        return GuildShop(**cls._makeDefaults(shopDict, shipsStock=shipsStock, weaponsStock=weaponsStock,
+                                                modulesStock=modulesStock, turretsStock=turretsStock))
