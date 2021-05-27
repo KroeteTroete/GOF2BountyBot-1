@@ -133,4 +133,4 @@ class ShipSkin(serializable.Serializable):
     def fromDict(cls, skinDict, **kwargs):
         if skinDict["name"] in bbData.builtInShipSkins:
             return bbData.builtInShipSkins[skinDict["name"]]
-        return ShipSkin(**cls._makeDefaults(skinDict, shipRenders=skinDict["ships"]))
+        return ShipSkin(**cls._makeDefaults(skinDict, ignores=("ships","disabledRegions"), shipRenders=skinDict["ships"]))
