@@ -130,8 +130,8 @@ class ShipSkin(serializable.Serializable):
 
 
     @classmethod
-    def fromDict(cls, skinDict, **kwargs):
+    def fromDict(cls, skinDict: dict, **kwargs):
         if skinDict["name"] in bbData.builtInShipSkins:
             return bbData.builtInShipSkins[skinDict["name"]]
         return ShipSkin(skinDict["name"], skinDict["textureRegions"], skinDict["ships"], skinDict["path"],
-                        skinDict["designer"], skinDict["wiki"] if "wiki" in skinDict else "")
+                        skinDict["designer"], skinDict.get("wiki", ""))
