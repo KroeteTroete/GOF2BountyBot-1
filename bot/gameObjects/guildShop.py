@@ -8,7 +8,7 @@ from ..cfg import bbData, cfg
 from .items import moduleItemFactory, shipItem, gameItem
 from .items.weapons import primaryWeapon, turretWeapon
 from .items.modules import moduleItem
-from .inventories import inventory
+from .inventories.inventory import Inventory
 import random
 from ..botState import logger
 from ..lib import gameMaths
@@ -42,8 +42,8 @@ class GuildShop(serializable.Serializable):
 
     def __init__(self, maxShips : int = cfg.shopRefreshShips, maxModules : int = cfg.shopRefreshModules,
             maxWeapons : int = cfg.shopRefreshWeapons, maxTurrets : int = cfg.shopRefreshTurrets,
-            shipsStock : inventory.Inventory = None, weaponsStock : inventory.Inventory = None,
-            modulesStock : inventory.Inventory = None, turretsStock : inventory.Inventory = None,
+            shipsStock : Inventory = None, weaponsStock : Inventory = None,
+            modulesStock : Inventory = None, turretsStock : Inventory = None,
             currentTechLevel : int = cfg.minTechLevel, noRefresh : bool = False):
         """
         :param int maxShips: The maximum number of ships generated on every stock refresh. (Default cfg.shopRefreshShips)
@@ -66,14 +66,10 @@ class GuildShop(serializable.Serializable):
         self.maxTurrets = maxTurrets
         self.currentTechLevel = currentTechLevel
 
-        if shipsStock is None:
-            self.shipsStock = inventory.Inventory()
-        if weaponsStock is None:
-            self.weaponsStock = inventory.Inventory()
-        if modulesStock is None:
-            self.modulesStock = inventory.Inventory()
-        if turretsStock is None:
-            self.turretsStock = inventory.Inventory()
+        self.shipsStock = shipsStock or Inventory()
+        self.weaponsStock = weaponsStock or Inventory()
+        self.modulesStock = modulesStock or Inventory()
+        self.turretsStock = turretsStock or Inventory()
 
         if not noRefresh and self.isEmpty():
             self.refreshStock()
@@ -131,7 +127,7 @@ class GuildShop(serializable.Serializable):
                 self.turretsStock.addItem(random.choice(bbData.turretObjsByTL[itemTL - 1]))
 
 
-    def getStockByName(self, item : str) -> inventory.Inventory:
+    def getStockByName(self, item : str) -> Inventory:
         """Get the inventory containing all current stock of the named type.
         This object is mutable and can alter the stock of the shop.
 
@@ -497,20 +493,20 @@ class GuildShop(serializable.Serializable):
         :return: A new guildShop object as described by shopDict
         :rtype: guildShop
         """
-        shipsStock = inventory.Inventory()
+        shipsStock = Inventory()
         for shipListingDict in shopDict["shipsStock"]:
             shipsStock.addItem(shipItem.Ship.fromDict(shipListingDict["item"]), quantity=shipListingDict["count"])
 
-        weaponsStock = inventory.Inventory()
+        weaponsStock = Inventory()
         for weaponListingDict in shopDict["weaponsStock"]:
             weaponsStock.addItem(primaryWeapon.PrimaryWeapon.fromDict(weaponListingDict["item"]),
                                                                         quantity=weaponListingDict["count"])
 
-        modulesStock = inventory.Inventory()
+        modulesStock = Inventory()
         for moduleListingDict in shopDict["modulesStock"]:
             modulesStock.addItem(moduleItemFactory.fromDict(moduleListingDict["item"]), quantity=moduleListingDict["count"])
 
-        turretsStock = inventory.Inventory()
+        turretsStock = Inventory()
         for turretListingDict in shopDict["turretsStock"]:
             turretsStock.addItem(turretWeapon.TurretWeapon.fromDict(turretListingDict["item"]),
                                                                     quantity=turretListingDict["count"])
