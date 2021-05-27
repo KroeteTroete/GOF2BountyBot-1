@@ -46,5 +46,5 @@ class Serializable(ABC):
         newArgs.update(overrides)
         for argName in ignores:
             if argName in newArgs:
-                newArgs.pop
+                del newArgs[argName]
         return newArgs
