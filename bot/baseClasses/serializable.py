@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod, abstractclassmethod
 import inspect
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 
 def get_default_args(func):
     # https://stackoverflow.com/a/12627202
@@ -38,10 +38,13 @@ class Serializable(ABC):
 
     
     @classmethod
-    def _makeDefaults(cls, args : Dict[str, Any] = {}, **overrides):
+    def _makeDefaults(cls, args : Dict[str, Any] = {}, ignores : Tuple[str] = (), **overrides):
         if cls._defaults is None:
             cls._defaults = get_default_args(cls.__init__)
         newArgs = cls._defaults.copy()
         newArgs.update(args)
         newArgs.update(overrides)
+        for argName in ignores:
+            if argName in newArgs:
+                newArgs.pop
         return newArgs
