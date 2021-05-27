@@ -12,6 +12,7 @@ from ..shipUpgrade import ShipUpgrade
 from .. import shipSkin
 from ...cfg import cfg, bbData
 from ... import lib
+from ...lib.emojis import BasedEmoji
 
 
 @spawnableItem
@@ -63,7 +64,7 @@ class Ship(GameItem):
                     value : int = 0, aliases : List[str] = [], weapons : List[PrimaryWeapon] = [],
                     modules : List[moduleItem.ModuleItem] = [], turrets : List[TurretWeapon] = [],
                     wiki : str = "", upgradesApplied : List[ShipUpgrade] = [], nickname : str = "",
-                    icon : str = "", emoji : lib.emojis.BasedEmoji = lib.emojis.BasedEmoji.EMPTY, techLevel : int = -1,
+                    icon : str = "", emoji : BasedEmoji = BasedEmoji.EMPTY, techLevel : int = -1,
                     shopSpawnRate : float = 0, builtIn : bool = False, skin : str = ""):
         """
         :param str name: A name to uniquely identify this model of ship.
@@ -91,7 +92,7 @@ class Ship(GameItem):
         :param str wiki: A web page that is displayed as the wiki page for this ship. (Default "")
         :param str manufacturer: The name of the manufacturer of this ship (Default "")
         :param str icon: A URL pointing to an image to use for this ship's icon (Default "")
-        :param lib.emojis.BasedEmoji emoji: The emoji to use for this ship's small icon (Default lib.emojis.BasedEmoji.EMPTY)
+        :param BasedEmoji emoji: The emoji to use for this ship's small icon (Default BasedEmoji.EMPTY)
         :param int techLevel: A rating from 1 to 10 of this ship's technical advancement. Used as a rough and arbitrary
                                 measure for its effectiveness compared to other ships. (Default -1)
         :param bool builtIn: Whether this is a BountyBot standard ship (loaded in from bbData) or a custom spawned
@@ -857,60 +858,23 @@ class Ship(GameItem):
             builtInTurrets = [TurretWeapon.fromDict(d) for d in builtInDict.get("turrets", [])]
             builtInShipUpgrades = [ShipUpgrade.fromDict(d) for d in builtInDict.get("shipUpgrades", [])]
 
-            newShip = Ship(builtInDict["name"], builtInDict["maxPrimaries"], builtInDict["maxTurrets"],
-                        builtInDict["maxModules"],
-                        manufacturer=shipDict["manufacturer"] if "manufacturer" in shipDict else builtInDict["manufacturer"] \
-                                        if "manufacturer" in builtInDict else "",
-                        armour=shipDict["armour"] if "armour" in shipDict else builtInDict["armour"] \
-                                        if "armour" in builtInDict else 0,
-                        cargo=shipDict["cargo"] if "cargo" in shipDict else builtInDict["cargo"]
-                                        if "cargo" in builtInDict else 0,
-                        maxSecondaries=shipDict["maxSecondaries"] \
-                                        if "maxSecondaries" in shipDict else builtInDict["maxSecondaries"]
-                                        if "maxSecondaries" in builtInDict else 0,
-                        handling=shipDict["handling"] if "handling" in shipDict else builtInDict["handling"]
-                                        if "handling" in builtInDict else 0,
-                        value=shipDict["value"] if "value" in shipDict else builtInDict["value"]
-                                        if "value" in builtInDict else 0,
-                        aliases=shipDict["aliases"] if "aliases" in shipDict else builtInDict["aliases"]
-                                        if "aliases" in builtInDict else [],
-                        weapons=weapons if "weapons" in shipDict else builtInWeapons,
-                        modules=modules if "modules" in shipDict else builtInModules,
-                        turrets=turrets if "turrets" in shipDict else builtInTurrets,
-                        wiki=shipDict["wiki"] if "wiki" in shipDict else builtInDict["wiki"] if "wiki" in builtInDict else "",
-                        upgradesApplied=shipUpgrades if "shipUpgrades" in shipDict else builtInShipUpgrades,
-                        nickname=shipDict["nickname"] if "nickname" in shipDict else (builtInDict["nickname"]
-                                        if "nickname" in builtInDict else ""),
-                        icon=shipDict["icon"] if "icon" in shipDict else builtInDict["icon"]
-                                        if "icon" in builtInDict else bbData.rocketIcon,
-                        emoji=lib.emojis.BasedEmoji.fromStr(shipDict["emoji"]) \
-                                        if "emoji" in shipDict else lib.emojis.BasedEmoji.fromStr(builtInDict["emoji"])
-                                        if "emoji" in builtInDict else lib.emojis.BasedEmoji.EMPTY,
-                        techLevel=shipDict["techLevel"] if "techLevel" in shipDict else builtInDict["techLevel"]
-                                        if "techLevel" in builtInDict else -1,
-                        shopSpawnRate=shipDict["shopSpawnRate"] \
-                                        if "shopSpawnRate" in shipDict else builtInDict["shopSpawnRate"]
-                                        if "shopSpawnRate" in builtInDict else 0,
-                        builtIn=True,
-                        skin=shipDict["skin"] if "skin" in shipDict else builtInDict["skin"] if "skin" in builtInDict else "")
+            shipArgs = {k: shipDict.get(k, builtInDict[k]) \
+                        for k in cls._makeDefaults() if k in shipDict or k in builtInDict}
+            emojiStr = shipDict.get("emoji", builtInDict.get("emoji", False))
+
+            newShip = Ship(**cls._makeDefaults(shipDict,
+                                                weapons=weapons if "weapons" in shipDict else builtInWeapons,
+                                                modules=modules if "modules" in shipDict else builtInModules,
+                                                turrets=turrets if "turrets" in shipDict else builtInTurrets,
+                                                upgradesApplied=shipUpgrades if "shipUpgrades" in shipDict \
+                                                                else builtInShipUpgrades,
+                                                emoji=BasedEmoji.fromStr(emojiStr) if emojiStr else BasedEmoji.EMPTY,
+                                                builtIn=True,
+                                                **shipArgs))
             return newShip
 
         else:
-            return Ship(shipDict["name"], shipDict["maxPrimaries"], shipDict["maxTurrets"], shipDict["maxModules"],
-                            manufacturer=shipDict["manufacturer"] if "manufacturer" in shipDict else "",
-                            armour=shipDict["armour"] if "armour" in shipDict else 0,
-                            cargo=shipDict["cargo"] if "cargo" in shipDict else 0,
-                            maxSecondaries=shipDict["maxSecondaries"] if "maxSecondaries" in shipDict else 0,
-                            handling=shipDict["handling"] if "handling" in shipDict else 0,
-                            value=shipDict["value"] if "value" in shipDict else 0,
-                            aliases=shipDict["aliases"] if "aliases" in shipDict else [],
-                            weapons=weapons, modules=modules, turrets=turrets,
-                            wiki=shipDict["wiki"] if "wiki" in shipDict else "0",
-                            upgradesApplied=shipUpgrades,
-                            nickname=shipDict["nickname"] if "nickname" in shipDict else "",
-                            icon=shipDict["icon"] if "icon" in shipDict else bbData.rocketIcon,
-                            emoji=lib.emojis.BasedEmoji.fromStr(shipDict["emoji"])
-                                    if "emoji" in shipDict else lib.emojis.BasedEmoji.EMPTY,
-                            techLevel=shipDict["techLevel"] if "techLevel" in shipDict else -1,
-                            shopSpawnRate=shipDict["shopSpawnRate"] if "shopSpawnRate" in shipDict else 0,
-                            builtIn=False)
+            return Ship(**cls._makeDefaults(shipDict, weapons=weapons, modules=modules, turrets=turrets,
+                                            upgradesApplied=shipUpgrades, builtIn=False,
+                                            emoji=BasedEmoji.fromStr(shipDict["emoji"])
+                                                    if "emoji" in shipDict else BasedEmoji.EMPTY))
