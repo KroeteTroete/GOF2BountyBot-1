@@ -224,4 +224,4 @@ class ShipUpgrade(serializable.Serializable):
         if upgradeDict["builtIn"]:
             return bbData.builtInUpgradeObjs[upgradeDict["name"]]
         else:
-            return ShipUpgrade(**cls._makeDefaults(upgradeDict), builtIn=False)
+            return ShipUpgrade(**cls._makeDefaults(upgradeDict, builtIn=False))

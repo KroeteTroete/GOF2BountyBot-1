@@ -8,8 +8,7 @@ from .gameItem import GameItem, spawnableItem
 from . import moduleItemFactory
 from .weapons.primaryWeapon import PrimaryWeapon
 from .weapons.turretWeapon import TurretWeapon
-from ..shipUpgrade import ShipUpgrade
-from .. import shipSkin
+from .. import shipSkin, shipUpgrade
 from ...cfg import cfg, bbData
 from ... import lib
 from ...lib.emojis import BasedEmoji
@@ -63,7 +62,7 @@ class Ship(GameItem):
                     cargo : int = 0, maxSecondaries : int = 0, handling : int = 0,
                     value : int = 0, aliases : List[str] = [], weapons : List[PrimaryWeapon] = [],
                     modules : List[moduleItem.ModuleItem] = [], turrets : List[TurretWeapon] = [],
-                    wiki : str = "", upgradesApplied : List[ShipUpgrade] = [], nickname : str = "",
+                    wiki : str = "", upgradesApplied : List[shipUpgrade.ShipUpgrade] = [], nickname : str = "",
                     icon : str = "", emoji : BasedEmoji = BasedEmoji.EMPTY, techLevel : int = -1,
                     shopSpawnRate : float = 0, builtIn : bool = False, skin : str = ""):
         """
@@ -590,7 +589,7 @@ class Ship(GameItem):
         return total
 
 
-    def applyUpgrade(self, upgrade : ShipUpgrade):
+    def applyUpgrade(self, upgrade : shipUpgrade.ShipUpgrade):
         """Apply the given ship upgrade, locking it and its stats into the ship.
         Ship upgrades cannot be removed.
 
@@ -848,7 +847,7 @@ class Ship(GameItem):
         weapons = [PrimaryWeapon.fromDict(d) for d in shipDict.get("weapons", [])]
         modules = [moduleItemFactory.fromDict(d) for d in shipDict.get("modules", [])]
         turrets = [TurretWeapon.fromDict(d) for d in shipDict.get("turrets", [])]
-        shipUpgrades = [ShipUpgrade.fromDict(d) for d in shipDict.get("shipUpgrades", [])]
+        shipUpgrades = [shipUpgrade.ShipUpgrade.fromDict(d) for d in shipDict.get("shipUpgrades", [])]
 
         if shipDict["builtIn"]:
             builtInDict = bbData.builtInShipData[shipDict["name"]]
@@ -856,7 +855,7 @@ class Ship(GameItem):
             builtInWeapons = [PrimaryWeapon.fromDict(d) for d in builtInDict.get("weapons", [])]
             builtInModules = [moduleItemFactory.fromDict(d) for d in builtInDict.get("modules", [])]
             builtInTurrets = [TurretWeapon.fromDict(d) for d in builtInDict.get("turrets", [])]
-            builtInShipUpgrades = [ShipUpgrade.fromDict(d) for d in builtInDict.get("shipUpgrades", [])]
+            builtInShipUpgrades = [shipUpgrade.ShipUpgrade.fromDict(d) for d in builtInDict.get("shipUpgrades", [])]
 
             shipArgs = {k: shipDict.get(k, builtInDict[k]) \
                         for k in cls._makeDefaults() if k in shipDict or k in builtInDict}
