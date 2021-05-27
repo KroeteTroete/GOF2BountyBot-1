@@ -1,4 +1,5 @@
-from . import toolItem, shipSkinTool, crateTool
+from . import toolItem, shipSkinTool
+from .crateTool import CrateTool
 from .. import shipItem, moduleItemFactory
 from ..weapons import primaryWeapon, turretWeapon
 from .... import lib
@@ -18,14 +19,9 @@ def crateFromDict(crateDict):
         else:
             itemPool.append(itemConstructors[itemDict["type"]](itemDict))
 
-    return crateTool.CrateTool(itemPool, name=crateDict["name"] if "name" in crateDict else "",
-        value=crateDict["value"] if "value" in crateDict else 0,
-        wiki=crateDict["wiki"] if "wiki" in crateDict else "",
-        manufacturer=crateDict["manufacturer"] if "manufacturer" in crateDict else "",
-        icon=crateDict["icon"] if "icon" in crateDict else "",
-        emoji=lib.emojis.BasedEmoji.fromDict(crateDict["emoji"]) if "emoji" in crateDict else lib.emojis.BasedEmoji.EMPTY,
-        techLevel=crateDict["techLevel"] if "techLevel" in crateDict else -1,
-        builtIn=crateDict["builtIn"] if "builtIn" in crateDict else False)
+    return CrateTool(CrateTool._makeDefaults(CrateTool, crateDict, itemPool=itemPool,
+                                                emoji=lib.emojis.BasedEmoji.fromDict(crateDict["emoji"]) \
+                                                    if "emoji" in crateDict else lib.emojis.BasedEmoji.EMPTY))
 
 
 def fromDict(toolDict : dict) -> toolItem.ToolItem:
