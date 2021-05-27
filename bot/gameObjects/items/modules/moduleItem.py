@@ -148,22 +148,6 @@ class ModuleItem(GameItem):
         :return: A new moduleItem object as described in moduleDict
         :rtype: moduleItem
         """
-        return ModuleItem(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
-                        armour=moduleDict["armour"] if "armour" in moduleDict else 0,
-                        armourMultiplier=moduleDict["armourMultiplier"] if "armourMultiplier" in moduleDict else 1,
-                        shield=moduleDict["shield"] if "shield" in moduleDict else 0,
-                        shieldMultiplier=moduleDict["shieldMultiplier"] if "shieldMultiplier" in moduleDict else 1,
-                        dps=moduleDict["dps"] if "dps" in moduleDict else 0,
-                        dpsMultiplier=moduleDict["dpsMultiplier"] if "dpsMultiplier" in moduleDict else 1,
-                        cargo=moduleDict["cargo"] if "cargo" in moduleDict else 0,
-                        cargoMultiplier=moduleDict["cargoMultiplier"] if "cargoMultiplier" in moduleDict else 1,
-                        handling=moduleDict["handling"] if "handling" in moduleDict else 0,
-                        handlingMultiplier=moduleDict["handlingMultiplier"] if "handlingMultiplier" in moduleDict else 1,
-                        value=moduleDict["value"] if "value" in moduleDict else 0,
-                        wiki=moduleDict["wiki"] if "wiki" in moduleDict else "",
-                        manufacturer=moduleDict["manufacturer"] if "manufacturer" in moduleDict else "",
-                        icon=moduleDict["icon"] if "icon" in moduleDict else bbData.rocketIcon,
-                        emoji=lib.emojis.BasedEmoji.fromStr(moduleDict["emoji"]) if "emoji" in moduleDict else \
-                                lib.emojis.BasedEmoji.EMPTY,
-                        techLevel=moduleDict["techLevel"] if "techLevel" in moduleDict else -1,
-                        builtIn=moduleDict["builtIn"] if "builtIn" in moduleDict else False)
+        return ModuleItem(**cls._makeDefaults(moduleDict,
+                                                emoji=lib.emojis.BasedEmoji.fromStr(moduleDict["emoji"]) \
+                                                        if "emoji" in moduleDict else lib.emojis.BasedEmoji.EMPTY))
