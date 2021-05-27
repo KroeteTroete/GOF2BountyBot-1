@@ -152,8 +152,10 @@ class ShipSkinTool(toolItem.ToolItem):
         :param bool saveType: When true, include the string name of the object type in the output.
         """
         data = super().toDict(**kwargs)
-        data["name"] = self.skin.name
-        data["skin"] = self.skin.toDict(**kwargs)
+        if self.builtIn:
+            data["name"] = self.skin.name
+        else:
+            data["skin"] = self.skin.toDict(**kwargs)
         return data
         # raise RuntimeError("Attempted to save a non-builtIn shipSkinTool")
 
@@ -168,8 +170,7 @@ class ShipSkinTool(toolItem.ToolItem):
         :rtype: shipSkinTool
         """
         if toolDict["builtIn"]:
-            skin = bbData.builtInShipSkins[toolDict["name"]]
-            return bbData.builtInToolObjs[lib.stringTyping.shipSkinNameToToolName(skin.name)]
+            return bbData.builtInToolObjs[lib.stringTyping.shipSkinNameToToolName(toolDict["name"])]
         else:
             skin = ShipSkin.fromDict(toolDict["skin"])
             return ShipSkinTool(skin, value=gameMaths.shipSkinValueForTL(skin.averageTL), builtIn=False)
