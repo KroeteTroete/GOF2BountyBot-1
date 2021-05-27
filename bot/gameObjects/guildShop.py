@@ -5,8 +5,10 @@ if TYPE_CHECKING:
     from ..users import basedUser
 
 from ..cfg import bbData, cfg
-from .items import moduleItemFactory, shipItem, gameItem
-from .items.weapons import primaryWeapon, turretWeapon
+from .items.shipItem import Ship
+from .items.weapons.primaryWeapon import PrimaryWeapon
+from .items.weapons.turretWeapon import TurretWeapon
+from .items import moduleItemFactory, gameItem
 from .items.modules import moduleItem
 from .inventories.inventory import Inventory
 import random
@@ -108,7 +110,7 @@ class GuildShop(serializable.Serializable):
         for i in range(self.maxShips):
             tlShipKeys = bbData.shipKeysByTL[gameMaths.pickRandomItemTL(self.currentTechLevel) - 1]
             if len(tlShipKeys) != 0:
-                self.shipsStock.addItem(shipItem.Ship.fromDict(bbData.builtInShipData[random.choice(tlShipKeys)]))
+                self.shipsStock.addItem(Ship.fromDict(bbData.builtInShipData[random.choice(tlShipKeys)]))
 
         for i in range(self.maxModules):
             itemTL = gameMaths.pickRandomItemTL(self.currentTechLevel)
@@ -176,12 +178,12 @@ class GuildShop(serializable.Serializable):
         return self.userCanAffordItemObj(user, self.shipsStock[index].item)
 
 
-    def amountCanAffordShipObj(self, amount : int, ship : shipItem.Ship) -> bool:
+    def amountCanAffordShipObj(self, amount : int, ship : Ship) -> bool:
         """Decide whether amount of credits is enough to buy a ship from the shop's stock.
         This is used for checking whether a user would be able to afford a ship, if they sold their active one.
 
         :param int amount: The amount of credits to check against the ship's value
-        :param shipItem ship: ship object whose value to check against credits
+        :param Ship ship: ship object whose value to check against credits
         :return: True if amount is at least as much as ship's value, false otherwise
         :rtype: bool
         """
@@ -210,12 +212,12 @@ class GuildShop(serializable.Serializable):
         self.userBuyShipObj(user, self.shipsStock[index].item)
 
 
-    def userBuyShipObj(self, user : basedUser.BasedUser, requestedShip : shipItem.Ship):
+    def userBuyShipObj(self, user : basedUser.BasedUser, requestedShip : Ship):
         """Sell the given ship to the given user,
         removing the appropriate balance of credits fromt the user and adding the item into the user's inventory.
 
         :param basedUser user: The user attempting to buy the ship
-        :param shipItem requestedWeapon: The ship to sell to user
+        :param Ship requestedWeapon: The ship to sell to user
         :raise RuntimeError: If user cannot afford to buy requestedWeapon
         """
         if self.userCanAffordItemObj(user, requestedShip):
@@ -227,12 +229,12 @@ class GuildShop(serializable.Serializable):
                                 + " but can't afford it: " + str(user.credits) + " < " + str(requestedShip.getValue()))
 
 
-    def userSellShipObj(self, user : basedUser.BasedUser, ship : shipItem.Ship):
+    def userSellShipObj(self, user : basedUser.BasedUser, ship : Ship):
         """Buy the given ship from the given user,
         adding the appropriate credits to their balance and adding the ship to the shop stock.
 
         :param basedUser user: The user to buy ship from
-        :param shipItem weapon: The ship to buy from user
+        :param Ship weapon: The ship to buy from user
         """
         user.credits += ship.getValue()
         self.shipsStock.addItem(ship)
@@ -273,12 +275,12 @@ class GuildShop(serializable.Serializable):
         self.userBuyWeaponObj(user, self.weaponsStock[index].item)
 
 
-    def userBuyWeaponObj(self, user : basedUser.BasedUser, requestedWeapon : primaryWeapon.PrimaryWeapon):
+    def userBuyWeaponObj(self, user : basedUser.BasedUser, requestedWeapon : PrimaryWeapon):
         """Sell the given weapon to the given user,
         removing the appropriate balance of credits fromt the user and adding the item into the user's inventory.
 
         :param basedUser user: The user attempting to buy the weapon
-        :param primaryWeapon requestedWeapon: The weapon to sell to user
+        :param PrimaryWeapon requestedWeapon: The weapon to sell to user
         :raise RuntimeError: If user cannot afford to buy requestedWeapon
         """
         if self.userCanAffordItemObj(user, requestedWeapon):
@@ -290,12 +292,12 @@ class GuildShop(serializable.Serializable):
                                 + " but can't afford it: " + str(user.credits) + " < " + str(requestedWeapon.getValue()))
 
 
-    def userSellWeaponObj(self, user : basedUser.BasedUser, weapon : primaryWeapon.PrimaryWeapon):
+    def userSellWeaponObj(self, user : basedUser.BasedUser, weapon : PrimaryWeapon):
         """Buy the given weapon from the given user,
         adding the appropriate credits to their balance and adding the weapon to the shop stock.
 
         :param basedUser user: The user to buy weapon from
-        :param primaryWeapon weapon: The weapon to buy from user
+        :param PrimaryWeapon weapon: The weapon to buy from user
         """
         user.credits += weapon.getValue()
         self.weaponsStock.addItem(weapon)
@@ -399,12 +401,12 @@ class GuildShop(serializable.Serializable):
         self.userBuyTurretObj(user, self.turretsStock[index].item)
 
 
-    def userBuyTurretObj(self, user : basedUser.BasedUser, requestedTurret : turretWeapon.TurretWeapon):
+    def userBuyTurretObj(self, user : basedUser.BasedUser, requestedTurret : TurretWeapon):
         """Sell the given turret to the given user,
         removing the appropriate balance of credits fromt the user and adding the item into the user's inventory.
 
         :param basedUser user: The user attempting to buy the turret
-        :param turretWeapon requestedTurret: The turret to sell to user
+        :param TurretWeapon requestedTurret: The turret to sell to user
         :raise RuntimeError: If user cannot afford to buy requestedTurret
         """
         if self.userCanAffordItemObj(user, requestedTurret):
@@ -416,12 +418,12 @@ class GuildShop(serializable.Serializable):
                                 + " but can't afford it: " + str(user.credits) + " < " + str(requestedTurret.getValue()))
 
 
-    def userSellTurretObj(self, user : basedUser.BasedUser, turret : turretWeapon.TurretWeapon):
+    def userSellTurretObj(self, user : basedUser.BasedUser, turret : TurretWeapon):
         """Buy the given turret from the given user,
         adding the appropriate credits to their balance and adding the turret to the shop stock.
 
         :param basedUser user: The user to buy turret from
-        :param turretWeapon turret: The turret to buy from user
+        :param TurretWeapon turret: The turret to buy from user
         """
         user.credits += turret.getValue()
         self.turretsStock.addItem(turret)
@@ -481,8 +483,8 @@ class GuildShop(serializable.Serializable):
                                                 + "' - not found in items dict", category="shop", eventType="UNKWN_KEY")
 
         return {"maxShips": self.maxShips, "maxWeapons": self.maxWeapons, "maxModules": self.maxModules,
-                    "currentTechLevel": self.currentTechLevel, "shipsStock": shipsStockDict, "weaponsStock": weaponsStockDict,
-                    "modulesStock": modulesStockDict, "turretsStock": turretsStockDict}
+                "currentTechLevel": self.currentTechLevel, "shipsStock": shipsStockDict, "weaponsStock": weaponsStockDict,
+                "modulesStock": modulesStockDict, "turretsStock": turretsStockDict}
 
 
     @classmethod
@@ -495,11 +497,11 @@ class GuildShop(serializable.Serializable):
         """
         shipsStock = Inventory()
         for shipListingDict in shopDict["shipsStock"]:
-            shipsStock.addItem(shipItem.Ship.fromDict(shipListingDict["item"]), quantity=shipListingDict["count"])
+            shipsStock.addItem(Ship.fromDict(shipListingDict["item"]), quantity=shipListingDict["count"])
 
         weaponsStock = Inventory()
         for weaponListingDict in shopDict["weaponsStock"]:
-            weaponsStock.addItem(primaryWeapon.PrimaryWeapon.fromDict(weaponListingDict["item"]),
+            weaponsStock.addItem(PrimaryWeapon.fromDict(weaponListingDict["item"]),
                                                                         quantity=weaponListingDict["count"])
 
         modulesStock = Inventory()
@@ -508,9 +510,8 @@ class GuildShop(serializable.Serializable):
 
         turretsStock = Inventory()
         for turretListingDict in shopDict["turretsStock"]:
-            turretsStock.addItem(turretWeapon.TurretWeapon.fromDict(turretListingDict["item"]),
+            turretsStock.addItem(TurretWeapon.fromDict(turretListingDict["item"]),
                                                                     quantity=turretListingDict["count"])
 
-        return GuildShop(currentTechLevel=shopDict["currentTechLevel"] if "currentTechLevel" in shopDict else 1,
-                        shipsStock=shipsStock, weaponsStock=weaponsStock,
-                        modulesStock=modulesStock, turretsStock=turretsStock)
+        return GuildShop(cls._makeDefaults(shopDict, shipsStock=shipsStock, weaponsStock=weaponsStock,
+                                                    modulesStock=modulesStock, turretsStock=turretsStock))
