@@ -42,10 +42,8 @@ class GuildShop(serializable.Serializable):
 
     def __init__(self, maxShips : int = cfg.shopRefreshShips, maxModules : int = cfg.shopRefreshModules,
             maxWeapons : int = cfg.shopRefreshWeapons, maxTurrets : int = cfg.shopRefreshTurrets,
-            shipsStock : inventory.Inventory = inventory.Inventory(),
-            weaponsStock : inventory.Inventory = inventory.Inventory(),
-            modulesStock : inventory.Inventory = inventory.Inventory(),
-            turretsStock : inventory.Inventory = inventory.Inventory(),
+            shipsStock : inventory.Inventory = None, weaponsStock : inventory.Inventory = None,
+            modulesStock : inventory.Inventory = None, turretsStock : inventory.Inventory = None,
             currentTechLevel : int = cfg.minTechLevel, noRefresh : bool = False):
         """
         :param int maxShips: The maximum number of ships generated on every stock refresh. (Default cfg.shopRefreshShips)
@@ -68,25 +66,25 @@ class GuildShop(serializable.Serializable):
         self.maxTurrets = maxTurrets
         self.currentTechLevel = currentTechLevel
 
-        # TODO: Somewhere, stocks are getting passed in and shared amongst all shops. Fix this. Temporary inventory clear here
-        #       to make sure each shop gets its own inventory objects.
-        self.shipsStock = inventory.Inventory()
-        self.weaponsStock = inventory.Inventory()
-        self.modulesStock = inventory.Inventory()
-        self.turretsStock = inventory.Inventory()
+        if shipsStock is None:
+            self.shipsStock = inventory.Inventory()
+        if weaponsStock is None:
+            self.weaponsStock = inventory.Inventory()
+        if modulesStock is None:
+            self.modulesStock = inventory.Inventory()
+        if turretsStock is None:
+            self.turretsStock = inventory.Inventory()
 
-        if (not noRefresh) and shipsStock.isEmpty() and weaponsStock.isEmpty() and \
-                modulesStock.isEmpty() and turretsStock.isEmpty():
+        if not noRefresh and self.isEmpty():
             self.refreshStock()
-        else:
-            for itemListing in shipsStock.items.values():
-                self.shipsStock.addItem(itemListing.item, itemListing.count)
-            for itemListing in weaponsStock.items.values():
-                self.weaponsStock.addItem(itemListing.item, itemListing.count)
-            for itemListing in modulesStock.items.values():
-                self.modulesStock.addItem(itemListing.item, itemListing.count)
-            for itemListing in turretsStock.items.values():
-                self.turretsStock.addItem(itemListing.item, itemListing.count)
+
+
+    def isEmpty(self) -> bool:
+        """Check if all of the shop's inventories are empty.
+
+        :return: True if the shop has no items, False if it has at least one
+        """
+        return all(stock.isEmpty for stock in (self.shipsStock, self.weaponsStock, self.modulesStock, self.turretsStock))
 
 
     def refreshStock(self, level : int = -1):
