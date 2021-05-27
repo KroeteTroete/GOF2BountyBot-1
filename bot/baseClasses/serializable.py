@@ -42,9 +42,13 @@ class Serializable(ABC):
         if cls._defaults is None:
             cls._defaults = get_default_args(cls.__init__)
         newArgs = cls._defaults.copy()
-        newArgs.update(args)
+        if ignores:
+            workingArgs = args.copy()
+            for argName in ignores:
+                if argName in workingArgs:
+                    del workingArgs[argName]
+            newArgs.update(workingArgs)
+        else:
+            newArgs.update(args)
         newArgs.update(overrides)
-        for argName in ignores:
-            if argName in newArgs:
-                del newArgs[argName]
         return newArgs
