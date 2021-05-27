@@ -31,7 +31,7 @@ class Criminal(aliasable.Aliasable):
     """
 
     def __init__(self, name : str, faction : str, icon : str, builtIn : bool = False,
-            isPlayer : bool = False, aliases : List[str] = [], wiki : str = "", ship : bool = None):
+            isPlayer : bool = False, aliases : List[str] = [], wiki : str = "", ship : shipItem.Ship = None):
         """
         :param str name: The name of the criminal
         :param str faction: the faction that this criminal is wanted by
@@ -143,11 +143,6 @@ class Criminal(aliasable.Aliasable):
         :return: The requested criminal object reference
         :rtype: criminal
         """
-        builtIn = kwargs["builtIn"] if "builtIn" in kwargs else False
-        if "builtIn" in crimDict:
-            if crimDict["builtIn"]:
-                return bbData.builtInCriminalObjs[crimDict["name"]]
-            return Criminal(crimDict["name"], crimDict["faction"], crimDict["icon"], isPlayer=crimDict["isPlayer"],
-                            aliases=crimDict["aliases"], wiki=crimDict["wiki"], builtIn=crimDict["builtIn"] or builtIn)
-        return Criminal(crimDict["name"], crimDict["faction"], crimDict["icon"], isPlayer=crimDict["isPlayer"],
-                        aliases=crimDict["aliases"], wiki=crimDict["wiki"], builtIn=builtIn)
+        if kwargs.get("builtIn", False) or crimDict.get("builtIn", False):
+            return bbData.builtInCriminalObjs[crimDict["name"]]
+        return Criminal(**cls._makeDefaults(crimDict))
