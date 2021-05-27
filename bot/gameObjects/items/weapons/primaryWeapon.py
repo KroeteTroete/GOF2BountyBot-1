@@ -21,6 +21,6 @@ class PrimaryWeapon(Weapon):
         if weaponDict.get("builtIn", False):
             return bbData.builtInWeaponObjs[weaponDict["name"]]
         else:
-            return PrimaryWeapon(cls._makeDefaults(weaponDict,
+            return PrimaryWeapon(**cls._makeDefaults(weaponDict,
                                 emoji=lib.emojis.BasedEmoji.fromStr(weaponDict["emoji"]) \
                                         if "emoji" in weaponDict else lib.emojis.BasedEmoji.EMPTY))
