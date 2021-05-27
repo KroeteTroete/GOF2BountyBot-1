@@ -18,13 +18,9 @@ class PrimaryWeapon(Weapon):
         :return: A new primaryWeapon object as described in weaponDict
         :rtype: primaryWeapon
         """
-        if weaponDict["builtIn"]:
+        if weaponDict.get("builtIn", False):
             return bbData.builtInWeaponObjs[weaponDict["name"]]
         else:
-            return PrimaryWeapon(weaponDict["name"], weaponDict["aliases"], dps=weaponDict["dps"], value=weaponDict["value"],
-                                    wiki=weaponDict["wiki"] if "wiki" in weaponDict else "",
-                                    manufacturer=weaponDict["manufacturer"] if "manufacturer" in weaponDict else "",
-                                    icon=weaponDict["icon"] if "icon" in weaponDict else bbData.rocketIcon,
-                                    emoji=lib.emojis.BasedEmoji.fromStr(weaponDict["emoji"]) if "emoji" in weaponDict else \
-                                            lib.emojis.BasedEmoji.EMPTY,
-                                    techLevel=weaponDict["techLevel"] if "techLevel" in weaponDict else -1, builtIn=False)
+            return PrimaryWeapon(cls._makeDefaults(weaponDict,
+                                emoji=lib.emojis.BasedEmoji.fromStr(weaponDict["emoji"]) \
+                                        if "emoji" in weaponDict else lib.emojis.BasedEmoji.EMPTY))
