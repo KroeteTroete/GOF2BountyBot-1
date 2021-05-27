@@ -848,6 +848,8 @@ class Ship(GameItem):
         modules = [moduleItemFactory.fromDict(d) for d in shipDict.get("modules", [])]
         turrets = [TurretWeapon.fromDict(d) for d in shipDict.get("turrets", [])]
         shipUpgrades = [shipUpgrade.ShipUpgrade.fromDict(d) for d in shipDict.get("shipUpgrades", [])]
+        ignoredData = ("model","compatibleSkins", "normSpec", "numSecondaries", \
+                        "saveDue", "skinnable", "textureRegions", "path")
 
         if shipDict["builtIn"]:
             builtInDict = bbData.builtInShipData[shipDict["name"]]
@@ -861,7 +863,7 @@ class Ship(GameItem):
                         for k in cls._makeDefaults() if k in shipDict or k in builtInDict}
             emojiStr = shipDict.get("emoji", builtInDict.get("emoji", False))
 
-            newShip = Ship(**cls._makeDefaults(shipDict,
+            newShip = Ship(**cls._makeDefaults(shipDict, ignoredData,
                                                 weapons=weapons if "weapons" in shipDict else builtInWeapons,
                                                 modules=modules if "modules" in shipDict else builtInModules,
                                                 turrets=turrets if "turrets" in shipDict else builtInTurrets,
@@ -873,7 +875,8 @@ class Ship(GameItem):
             return newShip
 
         else:
-            return Ship(**cls._makeDefaults(shipDict, weapons=weapons, modules=modules, turrets=turrets,
+            return Ship(**cls._makeDefaults(shipDict, ignoredData,
+                                            weapons=weapons, modules=modules, turrets=turrets,
                                             upgradesApplied=shipUpgrades, builtIn=False,
                                             emoji=BasedEmoji.fromStr(shipDict["emoji"])
                                                     if "emoji" in shipDict else BasedEmoji.EMPTY))
