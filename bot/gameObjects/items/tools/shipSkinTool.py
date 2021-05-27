@@ -1,8 +1,9 @@
 from __future__ import annotations
 from . import toolItem
 from .... import lib
+from ....lib import gameMaths
 from ....cfg import cfg, bbData
-from ... import shipSkin
+from ...shipSkin import ShipSkin
 from ..shipItem import Ship
 from discord import Message
 from .... import botState
@@ -17,7 +18,7 @@ class ShipSkinTool(toolItem.ToolItem):
     The manufacturer is set to the skin designer.
     This tool is single use. If a calling user is given, the tool is removed from that user's inventory after use.
     """
-    def __init__(self, skin : shipSkin, value : int = 0, wiki : str = "", icon : str = cfg.defaultShipSkinToolIcon,
+    def __init__(self, skin : ShipSkin, value : int = 0, wiki : str = "", icon : str = cfg.defaultShipSkinToolIcon,
             emoji : lib.emojis.BasedEmoji = None, techLevel : int = -1, builtIn : bool = False):
         """
         :param shipSkin shipSkin: The skin that this tool applies.
@@ -162,12 +163,13 @@ class ShipSkinTool(toolItem.ToolItem):
         """Construct a shipSkinTool from its dictionary-serialized representation.
 
         :param dict toolDict: A dictionary containing all information needed to construct the required shipSkinTool.
-                                Critically, a name, type, and builtIn specifier.
+                                Critically, a name and builtIn specifier.
         :return: A new shipSkinTool object as described in toolDict
         :rtype: shipSkinTool
         """
-        skin = bbData.builtInShipSkins[toolDict["name"]] if toolDict["builtIn"] else \
-                    shipSkin.ShipSkin.fromDict(toolDict["skin"])
         if toolDict["builtIn"]:
+            skin = bbData.builtInShipSkins[toolDict["name"]]
             return bbData.builtInToolObjs[lib.stringTyping.shipSkinNameToToolName(skin.name)]
-        return ShipSkinTool(skin, value=lib.gameMaths.shipSkinValueForTL(skin.averageTL), builtIn=False)
+        else:
+            skin = ShipSkin.fromDict(toolDict["skin"])
+            return ShipSkinTool(skin, value=gameMaths.shipSkinValueForTL(skin.averageTL), builtIn=False)
