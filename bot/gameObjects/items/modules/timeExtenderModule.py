@@ -69,17 +69,9 @@ class TimeExtenderModule(moduleItem.ModuleItem):
         :return: The new module object as described in moduleDict
         :rtype: dict
         """
-        if "builtIn" in moduleDict and moduleDict["builtIn"]:
+        if moduleDict.get("builtIn", False):
             return bbData.builtInModuleObjs[moduleDict["name"]]
 
-        return TimeExtenderModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
-                                effect=moduleDict["effect"] if "effect" in moduleDict else 1,
-                                duration=moduleDict["duration"] if "duration" in moduleDict else 0,
-                                value=moduleDict["value"] if "value" in moduleDict else 0,
-                                wiki=moduleDict["wiki"] if "wiki" in moduleDict else "",
-                                manufacturer=moduleDict["manufacturer"] if "manufacturer" in moduleDict else "",
-                                icon=moduleDict["icon"] if "icon" in moduleDict else bbData.rocketIcon,
-                                emoji=lib.emojis.BasedEmoji.fromStr(moduleDict["emoji"]) if "emoji" in moduleDict else \
-                                        lib.emojis.BasedEmoji.EMPTY,
-                                techLevel=moduleDict["techLevel"] if "techLevel" in moduleDict else -1,
-                                builtIn=moduleDict["builtIn"] if "builtIn" in moduleDict else False)
+        return TimeExtenderModule(**cls._makeDefaults(moduleDict, ignores=("type",),
+                                                emoji=lib.emojis.BasedEmoji.fromStr(moduleDict["emoji"]) \
+                                                        if "emoji" in moduleDict else lib.emojis.BasedEmoji.EMPTY))

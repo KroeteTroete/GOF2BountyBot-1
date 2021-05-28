@@ -266,7 +266,6 @@ def loadAllGameObjects():
                 (bbData.builtInUpgradeData, bbData.builtInUpgradeObjs,  shipUpgrade.ShipUpgrade.fromDict),
                 (bbData.builtInTurretData,  bbData.builtInTurretObjs,   turretWeapon.TurretWeapon.fromDict),
                 (bbData.builtInModuleData,  bbData.builtInModuleObjs,   moduleItemFactory.fromDict),
-                (bbData.builtInToolData,    bbData.builtInToolObjs,     toolItemFactory.fromDict),
                 (bbData.builtInShipSkinsData,bbData.builtInShipSkins,   shipSkin.ShipSkin.fromDict)):
         _loadGameObjects(dataDB, objsDB, deserializer)
 
@@ -287,6 +286,9 @@ def loadAllGameObjects():
                         ("turretObjsByTL", bbData.builtInTurretObjs)):
         setattr(bbData, db, _sortGameObjects(objsDB))
         _makeItemSpawnRates(objsDB)
+
+    # Crates can contain any other item, so need to be loaded after all other items
+    _loadGameObjects(bbData.builtInToolData, bbData.builtInToolObjs, toolItemFactory.fromDict)
 
     # Fetch bounty names and longest bounty name
     for criminalName in bbData.builtInCriminalData:

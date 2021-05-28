@@ -790,21 +790,9 @@ class BasedUser(serializable.Serializable):
             for toolListingDict in userDict["inactiveTools"]:
                 inactiveTools.addItem(toolItemFactory.fromDict(toolListingDict["item"]), quantity=toolListingDict["count"])
 
-        return BasedUser(userID, credits=userDict["credits"], lifetimeCredits=userDict["lifetimeCredits"],
-                        bountyCooldownEnd=userDict["bountyCooldownEnd"], systemsChecked=userDict["systemsChecked"],
-                        bountyWins=userDict["bountyWins"], activeShip=activeShip, inactiveShips=inactiveShips,
-                        inactiveModules=inactiveModules, inactiveWeapons=inactiveWeapons, inactiveTurrets=inactiveTurrets,
-                        inactiveTools=inactiveTools,
-                        lastSeenGuildId=userDict["lastSeenGuildId"] if "lastSeenGuildId" in userDict else -1,
-                        duelWins=userDict["duelWins"] if "duelWins" in userDict else 0,
-                        duelLosses=userDict["duelLosses"] if "duelLosses" in userDict else 0,
-                        duelCreditsWins=userDict["duelCreditsWins"] if "duelCreditsWins" in userDict else 0,
-                        duelCreditsLosses=userDict["duelCreditsLosses"] if "duelCreditsLosses" in userDict else 0,
-                        alerts=userDict["alerts"] if "alerts" in userDict else {},
-                        bountyWinsToday=userDict["bountyWinsToday"] if "bountyWinsToday" in userDict else 0,
-                        dailyBountyWinsReset=datetime.utcfromtimestamp(userDict["dailyBountyWinsReset"]) \
-                            if "dailyBountyWinsReset" in userDict else datetime.utcnow(),
-                        pollOwned=userDict["pollOwned"] if "pollOwned" in userDict else False,
-                        homeGuildID=userDict["homeGuildID"] if "homeGuildID" in userDict else -1,
-                        guildTransferCooldownEnd=datetime.utcfromtimestamp(userDict["guildTransferCooldownEnd"]) \
-                            if "guildTransferCooldownEnd" in userDict else datetime.utcnow())
+        return BasedUser(**cls._makeDefaults(userDict, id=userID, activeShip=activeShip, inactiveShips=inactiveShips,
+                                                inactiveModules=inactiveModules, inactiveWeapons=inactiveWeapons,
+                                                inactiveTurrets=inactiveTurrets, inactiveTools=inactiveTools,
+                                                **{k: datetime.utcfromtimestamp(userDict[k]) \
+                                                    for k in ("dailyBountyWinsReset", "guildTransferCooldownEnd") \
+                                                    if k in userDict}))

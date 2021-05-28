@@ -224,20 +224,4 @@ class ShipUpgrade(serializable.Serializable):
         if upgradeDict["builtIn"]:
             return bbData.builtInUpgradeObjs[upgradeDict["name"]]
         else:
-            return ShipUpgrade(upgradeDict["name"], upgradeDict["shipToUpgradeValueMult"],
-                                    armour=upgradeDict.get("armour", 0.0),
-                                    armourMultiplier=upgradeDict.get("armourMultiplier", 1.0),
-                                    cargo=upgradeDict.get("cargo", 0),
-                                    cargoMultiplier=upgradeDict.get("cargoMultiplier", 1.0),
-                                    maxSecondaries=upgradeDict.get("maxSecondaries", 0),
-                                    maxSecondariesMultiplier=upgradeDict.get("maxSecondariesMultiplier", 1.0),
-                                    handling=upgradeDict.get("handling", 0),
-                                    handlingMultiplier=upgradeDict.get("handlingMultiplier", 1.0),
-                                    maxPrimaries=upgradeDict.get("maxPrimaries", 0),
-                                    maxPrimariesMultiplier=upgradeDict.get("maxPrimariesMultiplier", 1.0),
-                                    maxTurrets=upgradeDict.get("maxTurrets", 0),
-                                    maxTurretsMultiplier=upgradeDict.get("maxTurretsMultiplier", 1.0),
-                                    maxModules=upgradeDict.get("maxModules", 0),
-                                    maxModulesMultiplier=upgradeDict.get("maxModulesMultiplier", 1.0),
-                                    vendor=upgradeDict.get("vendor", ""),
-                                    builtIn=False)
+            return ShipUpgrade(**cls._makeDefaults(upgradeDict, builtIn=False))

@@ -221,7 +221,7 @@ class ReactionPollMenu(reactionMenu.ReactionMenu):
         :return: A new ReactionPollMenu object as described in rmDict
         :rtype: ReactionPollMenu
         """
-        if "msg" in kwargs:
+        if "msg" not in kwargs:
             raise NameError("Required kwarg not given: msg")
         msg = kwargs["msg"]
 
@@ -240,19 +240,13 @@ class ReactionPollMenu(reactionMenu.ReactionMenu):
             owner = botState.usersDB.getUser(rmDict["owningBBUser"])
         else:
             owner = None
+        
+        menuColour = Colour.from_rgb(rmDict["col"][0], rmDict["col"][1], rmDict["col"][2]) \
+                        if "col" in rmDict else Colour.blue()
 
-        return ReactionPollMenu(msg, options, timeoutTT,
-                                multipleChoice=rmDict["multipleChoice"] if "multipleChoice" in rmDict else False,
-                                titleTxt=rmDict["titleTxt"] if "titleTxt" in rmDict else "",
-                                desc=rmDict["desc"] if "desc" in rmDict else "",
-                                col=Colour.from_rgb(rmDict["col"][0], rmDict["col"][1],
-                                rmDict["col"][2]) if "col" in rmDict else Colour.blue(),
-                                footerTxt=rmDict["footerTxt"] if "footerTxt" in rmDict else "",
-                                img=rmDict["img"] if "img" in rmDict else "",
-                                thumb=rmDict["thumb"] if "thumb" in rmDict else "",
-                                icon=rmDict["icon"] if "icon" in rmDict else "",
-                                authorName=rmDict["authorName"] if "authorName" in rmDict else "",
-                                targetMember=msg.guild.get_member(rmDict["targetMember"]) \
-                                                if "targetMember" in rmDict else None,
-                                targetRole=msg.guild.get_role(rmDict["targetRole"]) if "targetRole" in rmDict else None,
-                                owningBBUser=owner)
+        return ReactionPollMenu(**cls._makeDefaults(rmDict, msg=msg, pollOptions=options, timeout=timeoutTT,
+                                                    col=menuColour, owningBBUser=owner,
+                                                    targetMember=msg.guild.get_member(rmDict["targetMember"]) \
+                                                                    if "targetMember" in rmDict else None,
+                                                    targetRole=msg.guild.get_role(rmDict["targetRole"]) \
+                                                                    if "targetRole" in rmDict else None))

@@ -667,8 +667,7 @@ class BasedGuild(serializable.Serializable):
         if "guildID" not in kwargs:
             raise NameError("Required kwarg missing: guildID")
         guildID = kwargs["guildID"]
-
-        dbReload = kwargs["dbReload"] if "dbReload" in kwargs else False
+        dbReload = kwargs.get("dbReload", False)
 
         dcGuild = botState.client.get_guild(guildID)
         if dcGuild is None:
@@ -682,7 +681,6 @@ class BasedGuild(serializable.Serializable):
             playChannel = dcGuild.get_channel(guildDict["playChannel"])
         else:
             playChannel = None
-
 
         if "bountiesDisabled" in guildDict and guildDict["bountiesDisabled"]:
             bountiesDB = None
@@ -705,11 +703,6 @@ class BasedGuild(serializable.Serializable):
                 shop = guildShop.GuildShop()
         
 
-        return BasedGuild(guildID, dcGuild, bountiesDB, announceChannel=announceChannel, playChannel=playChannel,
-                            shop=shop, bountyBoardChannel=bbc,
-                            shopDisabled=guildDict["shopDisabled"] if "shopDisabled" in guildDict else False,
-                            alertRoles=guildDict["alertRoles"] if "alertRoles" in guildDict else {},
-                            ownedRoleMenus=guildDict["ownedRoleMenus"] if "ownedRoleMenus" in guildDict else 0,
-                            bountiesDisabled=guildDict["bountiesDisabled"] if "bountiesDisabled" in guildDict else False,
-                            commandPrefix=guildDict["commandPrefix"] if "commandPrefix" in guildDict else \
-                                            cfg.defaultCommandPrefix)
+        return BasedGuild(**cls._makeDefaults(guildDict, id=guildID, dcGuild=dcGuild, bounties=bountiesDB,
+                                                announceChannel=announceChannel, playChannel=playChannel,
+                                                shop=shop, bountyBoardChannel=bbc))
