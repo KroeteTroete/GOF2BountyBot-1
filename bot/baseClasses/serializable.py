@@ -1,8 +1,20 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod, abstractclassmethod
+import inspect
+from typing import Dict, Any, Tuple
+
+def get_default_args(func):
+    # https://stackoverflow.com/a/12627202
+    signature = inspect.signature(func)
+    return {
+        k: v.default
+        for k, v in signature.parameters.items()
+        if v.default is not inspect.Parameter.empty
+    }
 
 
 class Serializable(ABC):
+    _defaults = None
 
     @abstractmethod
     def toDict(self, **kwargs) -> dict:
@@ -32,3 +44,19 @@ class Serializable(ABC):
         :rtype: int
         """
         return hash(repr(self))
+    
+    @classmethod
+    def _makeDefaults(cls, args : Dict[str, Any] = {}, ignores : Tuple[str] = (), **overrides):
+        if cls._defaults is None:
+            cls._defaults = get_default_args(cls.__init__)
+        newArgs = cls._defaults.copy()
+        if ignores:
+            workingArgs = args.copy()
+            for argName in ignores:
+                if argName in workingArgs:
+                    del workingArgs[argName]
+            newArgs.update(workingArgs)
+        else:
+            newArgs.update(args)
+        newArgs.update(overrides)
+        return newArgs

@@ -38,31 +38,31 @@ class BountyDB(serializable.Serializable):
         :param List[str] factions: list of unique faction names useable in this db's bounties
         :param BasedGuild owningBasedGuild: The guild that owns this bountyDB
         """
-        self.divisions: Dict[range, BountyDivision] = None
-        self.owningBasedGuild = owningBasedGuild
-        self.activityMonitor = activityMonitor or guildActivity.ActivityMonitor()
-
-        bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelaySeconds,
-                                "fixed-routeScale": self.getRouteScaledBountyDelayFixed,
-                                "random-routeScale": self.getRouteScaledBountyDelayRandom,
-                                "random-routeScale-tempScale": self.getRouteTempScaledBountyDelayRandom}
-
-        bountyDelayGeneratorArgs = {"random": cfg.newBountyDelayRandomRange,
-                                    "fixed-routeScale": cfg.newBountyFixedDelta,
-                                    "random-routeScale": cfg.newBountyDelayRandomRange,
-                                    "random-routeScale-tempScale": cfg.newBountyDelayRandomRange}
-
-        self.maxBounties: List[int] = [1] * guildActivity._numTLs
-        self.newBountyTTs: List[TimedTask] = [None] * guildActivity._numTLs
-        self.latestBounties: List[bounty.Bounty] = [None] * guildActivity._numTLs
-
-        for tl in guildActivity._tlsRange:
-            # linear temperature-maxBounty scaling
-            self.maxBounties[tl] = min(int(self.activityMonitor.temperatures[tl]), cfg.maxBountiesPerFaction)
-
         if not dummy:
+            self.divisions: Dict[range, BountyDivision] = None
+            self.owningBasedGuild = owningBasedGuild
+            self.activityMonitor = activityMonitor or guildActivity.ActivityMonitor()
+
+            bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelaySeconds,
+                                    "fixed-routeScale": self.getRouteScaledBountyDelayFixed,
+                                    "random-routeScale": self.getRouteScaledBountyDelayRandom,
+                                    "random-routeScale-tempScale": self.getRouteTempScaledBountyDelayRandom}
+
+            bountyDelayGeneratorArgs = {"random": cfg.newBountyDelayRandomRange,
+                                        "fixed-routeScale": cfg.newBountyFixedDelta,
+                                        "random-routeScale": cfg.newBountyDelayRandomRange,
+                                        "random-routeScale-tempScale": cfg.newBountyDelayRandomRange}
+
+            self.maxBounties: List[int] = [1] * guildActivity._numTLs
+            self.newBountyTTs: List[TimedTask] = [None] * guildActivity._numTLs
+            self.latestBounties: List[bounty.Bounty] = [None] * guildActivity._numTLs
+
+            for tl in guildActivity._tlsRange:
+                # linear temperature-maxBounty scaling
+                self.maxBounties[tl] = min(int(self.activityMonitor.temperatures[tl]), cfg.maxBountiesPerFaction)
+                
             if cfg.newBountyDelayType == "fixed":
-                self.newBountyTTs = [TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.newBountyFixedDelta),
+                self.newBountyTTs = [TimedTask(expiryDelta=timedelta(**cfg.newBountyFixedDelta),
                                                 autoReschedule=True, expiryFunction=owningBasedGuild.spawnAndAnnounceBounty,
                                                 expiryFunctionArgs={"newBounty": None,
                                                                     "newConfig": BountyConfig(techLevel=tl)}) \
@@ -89,7 +89,7 @@ class BountyDB(serializable.Serializable):
     def getRouteScaledBountyDelayFixed(self, data: List[Dict[str, int], int]) -> timedelta:
         """New bounty delay generator, scaling a fixed delay by the length of the presently spawned bounty.
 
-        :param dict baseDelayDict: A lib.timeUtil.timeDeltaFromDict-compliant dictionary describing the amount of time to wait
+        :param dict baseDelayDict: A timedelta-compliant dictionary describing the amount of time to wait
                                     after a bounty is spawned with route length 1
         :return: A datetime.timedelta indicating the time to wait before spawning a new bounty
         :rtype: datetime.timedelta
@@ -97,7 +97,7 @@ class BountyDB(serializable.Serializable):
         baseDelayDict, tl = data
         timeScale = cfg.fallbackRouteScale if self.latestBounties[tl] is None else \
                     len(self.latestBounties[tl].route)
-        delay = lib.timeUtil.timeDeltaFromDict(baseDelayDict) * timeScale * cfg.newBountyDelayRouteScaleCoefficient
+        delay = timedelta(**baseDelayDict) * timeScale * cfg.newBountyDelayRouteScaleCoefficient
         botState.logger.log("Main", "routeScaleBntyDelayFixed",
                             "New bounty delay generated, " \
                                 + ("no latest criminal." if self.latestBounties[tl] is None else \
@@ -540,28 +540,29 @@ class BountyDB(serializable.Serializable):
         :return: The new bountyDB object
         :rtype: bountyDB
         """
-        dbReload = kwargs["dbReload"] if "dbReload" in kwargs else False
+        dbReload = kwargs.get("dbReload", False)
         if "owningBasedGuild" not in kwargs:
             raise ValueError("missing required kwarg: owningBasedGuild")
 
-        escapedBountiesData = bountyDBDict["escaped"] if "escaped" in bountyDBDict \
-                                else {fac: AliasableDict() for fac in bbData.factions}
-        activeBountiesData = bountyDBDict["active"] if "active" in bountyDBDict \
-                                else {fac: AliasableDict() for fac in bbData.factions}
+        escapedBountiesData = bountyDBDict.get("escaped", {})
+        activeBountiesData = bountyDBDict.get("active", {})
 
         activity = guildActivity.ActivityMonitor.fromDict(bountyDBDict["activity"]) \
                     if "activity" in bountyDBDict else guildActivity.ActivityMonitor()
 
         # Instanciate a new bountyDB
-        newDB = BountyDB(activeBountiesData.keys(), kwargs["owningBasedGuild"], activityMonitor=activity)
+        newDB = BountyDB(kwargs["owningBasedGuild"], activityMonitor=activity)
+
         # Iterate over all factions in the DB
-        for fac in activeBountiesData.keys():
+        for fac in activeBountiesData.values():
             # Convert each serialised bounty into a bounty object
-            for bountyDict in activeBountiesData[fac]:
+            for bountyDict in fac:
                 newDB.addBounty(bounty.Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB))
+
         # Iterate over all factions in the DB
-        for fac in escapedBountiesData.keys():
+        for fac in escapedBountiesData.values():
             # Convert each serialised bounty into a bounty object
-            for bountyDict in escapedBountiesData[fac]:
+            for bountyDict in fac:
                 newDB.addEscapedBounty(bounty.Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB))
+
         return newDB

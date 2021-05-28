@@ -164,7 +164,7 @@ class BasedEmoji(serializable.Serializable):
         :return: A new BasedEmoji object as described in emojiDict
         :rtype: BasedEmoji
         """
-        rejectInvalid = kwargs["rejectInvalid"] if "rejectInvalid" in kwargs else False
+        rejectInvalid = kwargs.get("rejectInvalid", False)
 
         if type(emojiDict) == BasedEmoji:
             return emojiDict

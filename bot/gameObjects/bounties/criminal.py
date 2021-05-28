@@ -78,11 +78,6 @@ class Criminal(aliasable.Aliasable):
         :return: The requested criminal object reference
         :rtype: criminal
         """
-        builtIn = (kwargs["builtIn"] if "builtIn" in kwargs else False) or \
-                    (crimDict["builtIn"] if "builtIn" in crimDict else False)
-
-        if builtIn:
+        if kwargs.get("builtIn", False) or crimDict.get("builtIn", False):
             return bbData.builtInCriminalObjs[crimDict["name"]]
-        else:
-            return Criminal(crimDict["name"], crimDict["faction"], crimDict["icon"], isPlayer=crimDict["isPlayer"],
-                            aliases=crimDict["aliases"], wiki=crimDict["wiki"], builtIn=builtIn)
+        return Criminal(**cls._makeDefaults(crimDict))

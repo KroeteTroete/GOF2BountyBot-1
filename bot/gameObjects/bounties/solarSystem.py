@@ -112,6 +112,4 @@ class SolarSystem(aliasable.Aliasable):
         :return: The requested System object
         :rtype: System
         """
-        return SolarSystem(sysDict["name"], sysDict["faction"], sysDict["neighbours"], sysDict["security"],
-                            sysDict["coordinates"], aliases=sysDict["aliases"] if "aliases" in sysDict else [],
-                            wiki=sysDict["wiki"] if "wiki" in sysDict else "")
+        return SolarSystem(**cls._makeDefaults(sysDict))

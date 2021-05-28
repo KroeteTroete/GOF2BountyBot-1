@@ -69,17 +69,9 @@ class MiningDrillModule(moduleItem.ModuleItem):
         :return: The new module object as described in moduleDict
         :rtype: dict
         """
-        if "builtIn" in moduleDict and moduleDict["builtIn"]:
+        if moduleDict.get("builtIn", False):
             return bbData.builtInModuleObjs[moduleDict["name"]]
 
-        return MiningDrillModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
-                                oreYield=moduleDict["oreYield"] if "oreYield" in moduleDict else 1,
-                                handling=moduleDict["handling"] if "handling" in moduleDict else 0,
-                                value=moduleDict["value"] if "value" in moduleDict else 0,
-                                wiki=moduleDict["wiki"] if "wiki" in moduleDict else "",
-                                manufacturer=moduleDict["manufacturer"] if "manufacturer" in moduleDict else "",
-                                icon=moduleDict["icon"] if "icon" in moduleDict else bbData.rocketIcon,
-                                emoji=lib.emojis.BasedEmoji.fromStr(moduleDict["emoji"]) if "emoji" in moduleDict else \
-                                        lib.emojis.BasedEmoji.EMPTY,
-                                techLevel=moduleDict["techLevel"] if "techLevel" in moduleDict else -1,
-                                builtIn=moduleDict["builtIn"] if "builtIn" in moduleDict else False)
+        return MiningDrillModule(**cls._makeDefaults(moduleDict, ignores=("type",),
+                                                emoji=lib.emojis.BasedEmoji.fromStr(moduleDict["emoji"]) \
+                                                        if "emoji" in moduleDict else lib.emojis.BasedEmoji.EMPTY))

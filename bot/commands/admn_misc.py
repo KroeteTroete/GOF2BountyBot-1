@@ -2,6 +2,7 @@ import discord
 import os
 import asyncio
 import time
+from datetime import timedelta
 
 from . import commandsDB as botCommands
 from . import util_help
@@ -443,7 +444,7 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
     menuMsg = await message.channel.send("‎")
 
     if timeoutExists:
-        timeoutDelta = lib.timeUtil.timeDeltaFromDict(cfg.timeouts.roleMenuExpiry if timeoutDict == {} else timeoutDict)
+        timeoutDelta = timedelta(**cfg.timeouts.roleMenuExpiry if timeoutDict == {} else timeoutDict)
         timeoutTT = timedTask.TimedTask(expiryDelta=timeoutDelta, expiryFunction=reactionRolePicker.markExpiredRoleMenu,
                                         expiryFunctionArgs=menuMsg.id)
         botState.reactionMenusTTDB.scheduleTask(timeoutTT)

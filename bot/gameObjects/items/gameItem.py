@@ -112,11 +112,7 @@ class GameItem(aliasable.Aliasable):
                     If the item is builtIn, this is only its name.
         :rtype: dict
         """
-        if "saveType" in kwargs:
-            saveType = kwargs["saveType"]
-            del kwargs["saveType"]
-        else:
-            saveType = False
+        saveType = kwargs.pop("saveType") if "saveType" in kwargs else False
 
         if self.builtIn:
             data = {"name": self.name, "builtIn": True}

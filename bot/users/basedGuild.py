@@ -16,6 +16,7 @@ from ..cfg import cfg, bbData
 from ..scheduling.timedTask import TimedTask, DynamicRescheduleTask
 from ..gameObjects.bounties import bounty
 from ..baseClasses import serializable
+from . import guildActivity
 
 
 class BasedGuild(serializable.Serializable):
@@ -635,7 +636,7 @@ class BasedGuild(serializable.Serializable):
         if not self.bountiesDisabled:
             raise ValueError("Bounties are already enabled in this guild")
 
-        self.bountiesDB = bountyDB.BountyDB(bbData.bountyFactions)
+        self.bountiesDB = bountyDB.BountyDB(self, guildActivity.ActivityMonitor())
         self.bountiesDisabled = False
 
 
@@ -753,52 +754,41 @@ class BasedGuild(serializable.Serializable):
         if "guildID" not in kwargs:
             raise NameError("Required kwarg missing: guildID")
         guildID = kwargs["guildID"]
-
-        dbReload = kwargs["dbReload"] if "dbReload" in kwargs else False
+        dbReload = kwargs.get("dbReload", False)
 
         dcGuild = botState.client.get_guild(guildID)
         if dcGuild is None:
             raise lib.exceptions.NoneDCGuildObj("Could not get guild object for id " + str(guildID))
 
-        if "announceChannel" in guildDict and guildDict["announceChannel"] != -1:
-            announceChannel = dcGuild.get_channel(guildDict["announceChannel"])
-        else:
-            announceChannel = None
-        if "playChannel" in guildDict and guildDict["playChannel"] != -1:
-            playChannel = dcGuild.get_channel(guildDict["playChannel"])
-        else:
-            playChannel = None
+        announceChannel = guildDict.get("announceChannel", -1)
+        announceChannel = dcGuild.get_channel(announceChannel) if announceChannel != -1 else None
+        playChannel = guildDict.get("playChannel", -1)
+        playChannel = dcGuild.get_channel(playChannel) if playChannel != -1 else None
 
+        bountiesDisabled = guildDict.get("bountiesDisabled", False)
 
-        if "bountiesDisabled" in guildDict and guildDict["bountiesDisabled"]:
+        if bountiesDisabled or not (bbcData := guildDict.get("bountyBoardChannel", None)):
             bbc = None
-        elif "bountyBoardChannel" in guildDict and guildDict["bountyBoardChannel"] != -1:
-            bbc = bountyBoardChannel.bountyBoardChannel.fromDict(guildDict["bountyBoardChannel"])
+        else:
+            bbc = bountyBoardChannel.bountyBoardChannel.fromDict(bbcData)
         
-        if "shopDisabled" in guildDict and guildDict["shopDisabled"]:
+        if not guildDict.get("shopDisabled", True):
             shop = None
         else:
             if "shop" in guildDict:
                 shop = guildShop.TechLeveledShop.fromDict(guildDict["shop"])
             else:
                 shop = guildShop.TechLeveledShop()
-        
-        # This will be replaced after guild instancing
-        tempBountiesDB = bountyDB.BountyDB(bbData.bountyFactions, owningBasedGuild=None, dummy=True)
-        newGuild = BasedGuild(guildID, dcGuild, tempBountiesDB, announceChannel=announceChannel, playChannel=playChannel,
-                            shop=shop, bountyBoardChannel=bbc, shopDisabled=shop is None,
-                            alertRoles=guildDict["alertRoles"] if "alertRoles" in guildDict else {},
-                            ownedRoleMenus=guildDict["ownedRoleMenus"] if "ownedRoleMenus" in guildDict else 0,
-                            bountiesDisabled=guildDict["bountiesDisabled"] if "bountiesDisabled" in guildDict else False,
-                            commandPrefix=guildDict["commandPrefix"] if "commandPrefix" in guildDict else \
-                                            cfg.defaultCommandPrefix,
-                            bountyAlertRoles=guildDict["bountyAlertRoles"] if "bountyAlertRoles" in guildDict else [])
 
-        if "bountiesDisabled" not in guildDict or not guildDict["bountiesDisabled"]:
+        newGuild =  BasedGuild(**cls._makeDefaults(guildDict, id=guildID, dcGuild=dcGuild, bounties=None,
+                                                    announceChannel=announceChannel, playChannel=playChannel,
+                                                    shop=shop, bountyBoardChannel=bbc, shopDisabled=shop is None))
+
+        if not bountiesDisabled:
             if "bountiesDB" in guildDict:
                 bountiesDB = bountyDB.BountyDB.fromDict(guildDict["bountiesDB"], dbReload=dbReload, owningBasedGuild=newGuild)
             else:
-                bountiesDB = bountyDB.BountyDB(bbData.bountyFactions, owningBasedGuild=newGuild)
+                bountiesDB = bountyDB.BountyDB(newGuild, guildActivity.ActivityMonitor())
             newGuild.bountiesDB = bountiesDB
 
         return newGuild

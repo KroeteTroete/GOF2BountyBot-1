@@ -1,6 +1,6 @@
 from bot.lib import gameMaths
 import discord
-from datetime import datetime
+from datetime import datetime, timedelta
 from aiohttp import client_exceptions
 import operator
 import traceback
@@ -632,7 +632,7 @@ async def cmd_poll(message : discord.Message, args : str, isDM : bool):
 
     menuMsg = await message.channel.send("‎")
 
-    timeoutDelta = lib.timeUtil.timeDeltaFromDict(cfg.timeouts.pollMenuExpiry if timeoutDict == {} else timeoutDict)
+    timeoutDelta = timedelta(**(timeoutDict or cfg.timeouts.pollMenuExpiry))
     timeoutTT = timedTask.TimedTask(expiryDelta=timeoutDelta, expiryFunction=reactionPollMenu.printAndExpirePollResults,
                                     expiryFunctionArgs=menuMsg.id)
     botState.reactionMenusTTDB.scheduleTask(timeoutTT)

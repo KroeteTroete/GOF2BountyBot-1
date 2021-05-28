@@ -15,7 +15,7 @@ from ..gameObjects.items.modules import moduleItem
 
 from ..gameObjects.inventories import inventory
 from ..userAlerts import userAlerts
-from datetime import datetime
+from datetime import datetime, timedelta
 from discord import Guild, Member
 from ..users import basedGuild
 from .. import lib, botState
@@ -756,7 +756,7 @@ class BasedUser(serializable.Serializable):
             raise NameError("This user is not a member of the given guild '" + newGuild.name + "#" + str(newGuild.id) + "'")
 
         self.homeGuildID = newGuild.id
-        self.guildTransferCooldownEnd = now + lib.timeUtil.timeDeltaFromDict(cfg.homeGuildTransferCooldown)
+        self.guildTransferCooldownEnd = now + timedelta(**cfg.homeGuildTransferCooldown)
 
 
     def getInventoryForItem(self, item):
@@ -841,23 +841,11 @@ class BasedUser(serializable.Serializable):
                                                     + "#" + str(menuID) + " stored in user #" + str(id),
                                                 category="reactionMenus", eventType="unknMenuID")
 
-
-        return BasedUser(userID, credits=userDict["credits"], lifetimeCredits=userDict["lifetimeCredits"],
-                        bountyCooldownEnd=userDict["bountyCooldownEnd"], systemsChecked=userDict["systemsChecked"],
-                        bountyWins=userDict["bountyWins"], activeShip=activeShip, inactiveShips=inactiveShips,
-                        inactiveModules=inactiveModules, inactiveWeapons=inactiveWeapons, inactiveTurrets=inactiveTurrets,
-                        inactiveTools=inactiveTools,
-                        lastSeenGuildId=userDict["lastSeenGuildId"] if "lastSeenGuildId" in userDict else -1,
-                        duelWins=userDict["duelWins"] if "duelWins" in userDict else 0,
-                        duelLosses=userDict["duelLosses"] if "duelLosses" in userDict else 0,
-                        duelCreditsWins=userDict["duelCreditsWins"] if "duelCreditsWins" in userDict else 0,
-                        duelCreditsLosses=userDict["duelCreditsLosses"] if "duelCreditsLosses" in userDict else 0,
-                        alerts=userDict["alerts"] if "alerts" in userDict else {},
-                        bountyWinsToday=userDict["bountyWinsToday"] if "bountyWinsToday" in userDict else 0,
-                        dailyBountyWinsReset=datetime.utcfromtimestamp(userDict["dailyBountyWinsReset"]) \
-                            if "dailyBountyWinsReset" in userDict else datetime.utcnow(),
-                        homeGuildID=userDict["homeGuildID"] if "homeGuildID" in userDict else -1,
-                        guildTransferCooldownEnd=datetime.utcfromtimestamp(userDict["guildTransferCooldownEnd"]) \
-                                                    if "guildTransferCooldownEnd" in userDict else datetime.utcnow(),
-                        bountyHuntingXP=bountyHuntingXP, kaamo=kaamo, loma=loma, ownedMenus=ownedMenus,
-                        prestiges=userDict["prestiges"] if "prestiges" in userDict else 0)
+        return BasedUser(**cls._makeDefaults(userDict, id=userID, activeShip=activeShip, inactiveShips=inactiveShips,
+                                                inactiveModules=inactiveModules, inactiveWeapons=inactiveWeapons,
+                                                inactiveTurrets=inactiveTurrets, inactiveTools=inactiveTools,
+                                                bountyHuntingXP=bountyHuntingXP, kaamo=kaamo, loma=loma,
+                                                ownedMenus=ownedMenus,
+                                                **{k: datetime.utcfromtimestamp(userDict[k]) \
+                                                    for k in ("dailyBountyWinsReset", "guildTransferCooldownEnd") \
+                                                    if k in userDict}))

@@ -8,10 +8,12 @@ from discord import Embed
 
 from .gameItem import GameItem, spawnableItem
 from . import moduleItemFactory
-from .weapons import primaryWeapon, turretWeapon
+from .weapons.primaryWeapon import PrimaryWeapon
+from .weapons.turretWeapon import TurretWeapon
 from .. import shipSkin, shipUpgrade
 from ...cfg import cfg, bbData
 from ... import lib
+from ...lib.emojis import BasedEmoji
 
 
 @spawnableItem
@@ -43,13 +45,13 @@ class Ship(GameItem):
     :vartype maxModules: int
     :var weapons: A list containing references to all primary weapon objects equipped by this ship. May contain duplicate
                     references to save on memory.
-    :vartype weapons: list[primaryWeapon]
+    :vartype weapons: list[PrimaryWeapon]
     :var modules: A list containing references to all module objects equipped by this ship. May contain duplicate references
                     to save on memory.
     :vartype modules: list[moduleItem]
     :var turrets: A list containing references to all turret objects equipped by this ship. May contain duplicate references
                     to save on memory.
-    :vartype turrets: list[turretWeapon]
+    :vartype turrets: list[TurretWeapon]
     :var upgradesApplied: A list containing references to all shipUpgrades objects applied to this ship. May contain
                     duplicate references to save on memory.
     :vartype upgradesApplied: list[shipUpgrade]
@@ -60,10 +62,10 @@ class Ship(GameItem):
     def __init__(self, name : str, maxPrimaries : int, maxTurrets : int,
                     maxModules : int, manufacturer : str = "", armour : int = 0,
                     cargo : int = 0, maxSecondaries : int = 0, handling : int = 0,
-                    value : int = 0, aliases : List[str] = [], weapons : List[primaryWeapon.PrimaryWeapon] = [],
-                    modules : List[moduleItem.ModuleItem] = [], turrets : List[turretWeapon.TurretWeapon] = [],
+                    value : int = 0, aliases : List[str] = [], weapons : List[PrimaryWeapon] = [],
+                    modules : List[moduleItem.ModuleItem] = [], turrets : List[TurretWeapon] = [],
                     wiki : str = "", upgradesApplied : List[shipUpgrade.ShipUpgrade] = [], nickname : str = "",
-                    icon : str = "", emoji : lib.emojis.BasedEmoji = lib.emojis.BasedEmoji.EMPTY, techLevel : int = -1,
+                    icon : str = "", emoji : BasedEmoji = BasedEmoji.EMPTY, techLevel : int = -1,
                     shopSpawnRate : float = 0, builtIn : bool = False, skin : str = ""):
         """
         :param str name: A name to uniquely identify this model of ship.
@@ -77,11 +79,11 @@ class Ship(GameItem):
         :param int maxPrimaries: The maximum number of primary weapons equippable on this ship
         :param int maxTurrets: The maximum number of turrets equippable on this ship
         :param int maxModules: The maximum number of modules equippable on this ship
-        :param list[primaryWeapon] weapons: A list containing references to all primary weapon objects equipped by this ship.
+        :param list[PrimaryWeapon] weapons: A list containing references to all primary weapon objects equipped by this ship.
                                             May contain duplicate references to save on memory. (Default [])
         :param list[moduleItem] modules: A list containing references to all module objects equipped by this ship.
                                             May contain duplicate references to save on memory. (Default [])
-        :param list[turretWeapon] turrets: A list containing references to all turret objects equipped by this ship.
+        :param list[TurretWeapon] turrets: A list containing references to all turret objects equipped by this ship.
                                             May contain duplicate references to save on memory. (Default [])
         :param list[shipUpgrade] upgradesApplied: A list containing references to all shipUpgrades objects applied to this
                                                     ship. May contain duplicate references to save on memory. (Default [])
@@ -91,7 +93,7 @@ class Ship(GameItem):
         :param str wiki: A web page that is displayed as the wiki page for this ship. (Default "")
         :param str manufacturer: The name of the manufacturer of this ship (Default "")
         :param str icon: A URL pointing to an image to use for this ship's icon (Default "")
-        :param lib.emojis.BasedEmoji emoji: The emoji to use for this ship's small icon (Default lib.emojis.BasedEmoji.EMPTY)
+        :param BasedEmoji emoji: The emoji to use for this ship's small icon (Default BasedEmoji.EMPTY)
         :param int techLevel: A rating from 1 to 10 of this ship's technical advancement. Used as a rough and arbitrary
                                 measure for its effectiveness compared to other ships. (Default -1)
         :param bool builtIn: Whether this is a BountyBot standard ship (loaded in from bbData) or a custom spawned
@@ -223,10 +225,10 @@ class Ship(GameItem):
         return self.getNumTurretsEquipped() > 0
 
 
-    def equipWeapon(self, weapon : primaryWeapon):
+    def equipWeapon(self, weapon : PrimaryWeapon):
         """Equip the given weapon onto the ship
 
-        :param primaryWeapon weapon: The weapon object to equip
+        :param PrimaryWeapon weapon: The weapon object to equip
         :raise OverflowError: If no weapon slots are available on the ship
         """
         if not self.canEquipMoreWeapons():
@@ -234,10 +236,10 @@ class Ship(GameItem):
         self.weapons.append(weapon)
 
 
-    def unequipWeaponObj(self, weapon : primaryWeapon):
+    def unequipWeaponObj(self, weapon : PrimaryWeapon):
         """Unequip the given weapon object reference from the ship
 
-        :param primaryWeapon weapon: The weapon object to unequip
+        :param PrimaryWeapon weapon: The weapon object to unequip
         """
         self.weapons.remove(weapon)
 
@@ -250,12 +252,12 @@ class Ship(GameItem):
         self.weapons.pop(index)
 
 
-    def getWeaponAtIndex(self, index : int) -> primaryWeapon:
+    def getWeaponAtIndex(self, index : int) -> PrimaryWeapon:
         """Fetch the weapon object equipped at the given index
 
         :param int index: The index of the weapon object to fetch
         :return: The weapon object equipped at the given index
-        :rtype: primaryWeapon
+        :rtype: PrimaryWeapon
         """
         return self.weapons[index]
 
@@ -319,10 +321,10 @@ class Ship(GameItem):
         return self.modules[index]
 
 
-    def equipTurret(self, turret : turretWeapon):
+    def equipTurret(self, turret : TurretWeapon):
         """Equip the given turret onto the ship
 
-        :param turretWeapon turret: The turret object to equip
+        :param TurretWeapon turret: The turret object to equip
         :raise OverflowError: If no turret slots are available on the ship
         """
         if not self.canEquipMoreTurrets():
@@ -330,10 +332,10 @@ class Ship(GameItem):
         self.turrets.append(turret)
 
 
-    def unequipTurretObj(self, turret : turretWeapon):
+    def unequipTurretObj(self, turret : TurretWeapon):
         """Unequip the given turret object reference from the ship
 
-        :param turretWeapon turret: The turret object to unequip
+        :param TurretWeapon turret: The turret object to unequip
         """
         self.turrets.remove(turret)
 
@@ -346,12 +348,12 @@ class Ship(GameItem):
         self.turrets.pop(index)
 
 
-    def getTurretAtIndex(self, index : int) -> turretWeapon:
+    def getTurretAtIndex(self, index : int) -> TurretWeapon:
         """Fetch the turret object equipped at the given index
 
         :param int index: The index of the turret object to fetch
         :return: The turret object equipped at the given index
-        :rtype: turretWeapon
+        :rtype: TurretWeapon
         """
         return self.turrets[index]
 
@@ -589,7 +591,7 @@ class Ship(GameItem):
         return total
 
 
-    def applyUpgrade(self, upgrade : shipUpgrade):
+    def applyUpgrade(self, upgrade : shipUpgrade.ShipUpgrade):
         """Apply the given ship upgrade, locking it and its stats into the ship.
         Ship upgrades cannot be removed.
 
@@ -665,13 +667,13 @@ class Ship(GameItem):
             other.equipTurret(self.turrets.pop(0))
 
 
-    def getActivesByName(self, item : str) -> Union[primaryWeapon.PrimaryWeapon, moduleItem.ModuleItem,
-                                                    turretWeapon.TurretWeapon]:
+    def getActivesByName(self, item : str) -> Union[PrimaryWeapon, moduleItem.ModuleItem,
+                                                    TurretWeapon]:
         """Return a requested array of equipped items, specified by string name.
 
         :param str item: one of weapon, module or turret.
         :return: An array of equipped items of the named typed.
-        :rtype: list[primaryWeapon or moduleItem or turretWeapon]
+        :rtype: list[PrimaryWeapon or moduleItem or TurretWeapon]
         :raise ValueError: If the requested item type is invalid
         :raise NotImplementedError: If a valid item type is requested, not just yet implemented (e.g commodity)
         """
@@ -863,103 +865,39 @@ class Ship(GameItem):
         :return: A new shipItem object as described in shipDict
         :rtype: shipItem
         """
-        weapons = []
-        if "weapons" in shipDict:
-            for weapon in shipDict["weapons"]:
-                weapons.append(primaryWeapon.PrimaryWeapon.fromDict(weapon))
-
-        modules = []
-        if "modules" in shipDict:
-            for module in shipDict["modules"]:
-                modules.append(moduleItemFactory.fromDict(module))
-
-        turrets = []
-        if "turrets" in shipDict:
-            for turret in shipDict["turrets"]:
-                turrets.append(turretWeapon.TurretWeapon.fromDict(turret))
-
-        shipUpgrades = []
-        if "shipUpgrades" in shipDict:
-            for currentUpgrade in shipDict["shipUpgrades"]:
-                shipUpgrades.append(shipUpgrade.ShipUpgrade.fromDict(currentUpgrade))
+        weapons = [PrimaryWeapon.fromDict(d) for d in shipDict.get("weapons", [])]
+        modules = [moduleItemFactory.fromDict(d) for d in shipDict.get("modules", [])]
+        turrets = [TurretWeapon.fromDict(d) for d in shipDict.get("turrets", [])]
+        shipUpgrades = [shipUpgrade.ShipUpgrade.fromDict(d) for d in shipDict.get("shipUpgrades", [])]
+        ignoredData = ("model","compatibleSkins", "normSpec", "numSecondaries", \
+                        "saveDue", "skinnable", "textureRegions", "path")
 
         if shipDict["builtIn"]:
             builtInDict = bbData.builtInShipData[shipDict["name"]]
 
-            builtInWeapons = []
-            if "weapons" in shipDict:
-                for weapon in shipDict["weapons"]:
-                    builtInWeapons.append(primaryWeapon.PrimaryWeapon.fromDict(weapon))
+            builtInWeapons = [PrimaryWeapon.fromDict(d) for d in builtInDict.get("weapons", [])]
+            builtInModules = [moduleItemFactory.fromDict(d) for d in builtInDict.get("modules", [])]
+            builtInTurrets = [TurretWeapon.fromDict(d) for d in builtInDict.get("turrets", [])]
+            builtInShipUpgrades = [shipUpgrade.ShipUpgrade.fromDict(d) for d in builtInDict.get("shipUpgrades", [])]
 
-            builtInModules = []
-            if "modules" in shipDict:
-                for module in shipDict["modules"]:
-                    builtInModules.append(moduleItemFactory.fromDict(module))
+            shipArgs = {k: shipDict.get(k, builtInDict[k]) \
+                        for k in cls._makeDefaults() if k in shipDict or k in builtInDict}
+            emojiStr = shipDict.get("emoji", builtInDict.get("emoji", False))
 
-            builtInTurrets = []
-            if "turrets" in shipDict:
-                for turret in shipDict["turrets"]:
-                    builtInTurrets.append(turretWeapon.TurretWeapon.fromDict(turret))
-
-            builtInShipUpgrades = []
-            if "shipUpgrades" in shipDict:
-                for currentUpgrade in shipDict["shipUpgrades"]:
-                    builtInShipUpgrades.append(shipUpgrade.ShipUpgrade.fromDict(currentUpgrade))
-
-            newShip = Ship(builtInDict["name"], builtInDict["maxPrimaries"], builtInDict["maxTurrets"],
-                        builtInDict["maxModules"],
-                        manufacturer=shipDict["manufacturer"] if "manufacturer" in shipDict else builtInDict["manufacturer"] \
-                                        if "manufacturer" in builtInDict else "",
-                        armour=shipDict["armour"] if "armour" in shipDict else builtInDict["armour"] \
-                                        if "armour" in builtInDict else 0,
-                        cargo=shipDict["cargo"] if "cargo" in shipDict else builtInDict["cargo"]
-                                        if "cargo" in builtInDict else 0,
-                        maxSecondaries=shipDict["maxSecondaries"] \
-                                        if "maxSecondaries" in shipDict else builtInDict["maxSecondaries"]
-                                        if "maxSecondaries" in builtInDict else 0,
-                        handling=shipDict["handling"] if "handling" in shipDict else builtInDict["handling"]
-                                        if "handling" in builtInDict else 0,
-                        value=shipDict["value"] if "value" in shipDict else builtInDict["value"]
-                                        if "value" in builtInDict else 0,
-                        aliases=shipDict["aliases"] if "aliases" in shipDict else builtInDict["aliases"]
-                                        if "aliases" in builtInDict else [],
-                        weapons=weapons if "weapons" in shipDict else builtInWeapons,
-                        modules=modules if "modules" in shipDict else builtInModules,
-                        turrets=turrets if "turrets" in shipDict else builtInTurrets,
-                        wiki=shipDict["wiki"] if "wiki" in shipDict else builtInDict["wiki"] if "wiki" in builtInDict else "",
-                        upgradesApplied=shipUpgrades if "shipUpgrades" in shipDict else builtInShipUpgrades,
-                        nickname=shipDict["nickname"] if "nickname" in shipDict else (builtInDict["nickname"]
-                                        if "nickname" in builtInDict else ""),
-                        icon=shipDict["icon"] if "icon" in shipDict else builtInDict["icon"]
-                                        if "icon" in builtInDict else bbData.rocketIcon,
-                        emoji=lib.emojis.BasedEmoji.fromStr(shipDict["emoji"]) \
-                                        if "emoji" in shipDict else lib.emojis.BasedEmoji.fromStr(builtInDict["emoji"])
-                                        if "emoji" in builtInDict else lib.emojis.BasedEmoji.EMPTY,
-                        techLevel=shipDict["techLevel"] if "techLevel" in shipDict else builtInDict["techLevel"]
-                                        if "techLevel" in builtInDict else -1,
-                        shopSpawnRate=shipDict["shopSpawnRate"] \
-                                        if "shopSpawnRate" in shipDict else builtInDict["shopSpawnRate"]
-                                        if "shopSpawnRate" in builtInDict else 0,
-                        builtIn=True,
-                        skin=shipDict["skin"] if "skin" in shipDict else builtInDict["skin"] if "skin" in builtInDict else "")
+            newShip = Ship(**cls._makeDefaults(shipDict, ignoredData,
+                                                weapons=weapons if "weapons" in shipDict else builtInWeapons,
+                                                modules=modules if "modules" in shipDict else builtInModules,
+                                                turrets=turrets if "turrets" in shipDict else builtInTurrets,
+                                                upgradesApplied=shipUpgrades if "shipUpgrades" in shipDict \
+                                                                else builtInShipUpgrades,
+                                                emoji=BasedEmoji.fromStr(emojiStr) if emojiStr else BasedEmoji.EMPTY,
+                                                builtIn=True,
+                                                **shipArgs))
             return newShip
 
         else:
-            return Ship(shipDict["name"], shipDict["maxPrimaries"], shipDict["maxTurrets"], shipDict["maxModules"],
-                            manufacturer=shipDict["manufacturer"] if "manufacturer" in shipDict else "",
-                            armour=shipDict["armour"] if "armour" in shipDict else 0,
-                            cargo=shipDict["cargo"] if "cargo" in shipDict else 0,
-                            maxSecondaries=shipDict["maxSecondaries"] if "maxSecondaries" in shipDict else 0,
-                            handling=shipDict["handling"] if "handling" in shipDict else 0,
-                            value=shipDict["value"] if "value" in shipDict else 0,
-                            aliases=shipDict["aliases"] if "aliases" in shipDict else [],
-                            weapons=weapons, modules=modules, turrets=turrets,
-                            wiki=shipDict["wiki"] if "wiki" in shipDict else "0",
-                            upgradesApplied=shipUpgrades,
-                            nickname=shipDict["nickname"] if "nickname" in shipDict else "",
-                            icon=shipDict["icon"] if "icon" in shipDict else bbData.rocketIcon,
-                            emoji=lib.emojis.BasedEmoji.fromStr(shipDict["emoji"])
-                                    if "emoji" in shipDict else lib.emojis.BasedEmoji.EMPTY,
-                            techLevel=shipDict["techLevel"] if "techLevel" in shipDict else -1,
-                            shopSpawnRate=shipDict["shopSpawnRate"] if "shopSpawnRate" in shipDict else 0,
-                            builtIn=False)
+            return Ship(**cls._makeDefaults(shipDict, ignoredData,
+                                            weapons=weapons, modules=modules, turrets=turrets,
+                                            upgradesApplied=shipUpgrades, builtIn=False,
+                                            emoji=BasedEmoji.fromStr(shipDict["emoji"])
+                                                    if "emoji" in shipDict else BasedEmoji.EMPTY))
