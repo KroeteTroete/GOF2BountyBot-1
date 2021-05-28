@@ -386,4 +386,4 @@ class bountyBoardChannel(serializable.Serializable):
         if BBCDict is None:
             return None
         return bountyBoardChannel(BBCDict["channel"], BBCDict["listings"],
-                                    BBCDict["noBountiesMsg"] if "noBountiesMsg" in BBCDict else -1)
+                                    BBCDict.get("noBountiesMsg", -1))
