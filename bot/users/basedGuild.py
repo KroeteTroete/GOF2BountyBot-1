@@ -673,16 +673,12 @@ class BasedGuild(serializable.Serializable):
         if dcGuild is None:
             raise lib.exceptions.NoneDCGuildObj("Could not get guild object for id " + str(guildID))
 
-        if "announceChannel" in guildDict and guildDict["announceChannel"] != -1:
-            announceChannel = dcGuild.get_channel(guildDict["announceChannel"])
-        else:
-            announceChannel = None
-        if "playChannel" in guildDict and guildDict["playChannel"] != -1:
-            playChannel = dcGuild.get_channel(guildDict["playChannel"])
-        else:
-            playChannel = None
+        announceChannel = guildDict.get("announceChannel", -1)
+        announceChannel = dcGuild.get_channel(announceChannel) if announceChannel != -1 else None
+        playChannel = guildDict.get("playChannel", -1)
+        playChannel = dcGuild.get_channel(playChannel) if playChannel != -1 else None
 
-        if "bountiesDisabled" in guildDict and guildDict["bountiesDisabled"]:
+        if guildDict.get("bountiesDisabled", False):
             bountiesDB = None
             bbc = None
         else:
@@ -691,10 +687,10 @@ class BasedGuild(serializable.Serializable):
             else:
                 bountiesDB = bountyDB.BountyDB(bbData.bountyFactions)
             
-            if "bountyBoardChannel" in guildDict and guildDict["bountyBoardChannel"] != -1:
+            if guildDict.get("bountyBoardChannel", -1) != -1:
                 bbc = bountyBoardChannel.bountyBoardChannel.fromDict(guildDict["bountyBoardChannel"])
         
-        if "shopDisabled" in guildDict and guildDict["shopDisabled"]:
+        if not guildDict.get("shopDisabled", True):
             shop = None
         else:
             if "shop" in guildDict:
