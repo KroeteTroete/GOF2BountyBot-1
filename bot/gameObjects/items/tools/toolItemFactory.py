@@ -19,7 +19,7 @@ def crateFromDict(crateDict):
         else:
             itemPool.append(itemConstructors[itemDict["type"]](itemDict))
 
-    return CrateTool(**CrateTool._makeDefaults(crateDict, crateDict, itemPool=itemPool,
+    return CrateTool(**CrateTool._makeDefaults(crateDict, itemPool=itemPool,
                                                 emoji=lib.emojis.BasedEmoji.fromDict(crateDict["emoji"]) \
                                                     if "emoji" in crateDict else lib.emojis.BasedEmoji.EMPTY))
 
