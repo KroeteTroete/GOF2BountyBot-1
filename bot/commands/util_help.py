@@ -1,4 +1,5 @@
 import discord
+from datetime import timedelta
 
 from . import commandsDB as botCommands
 from .. import botState, lib
@@ -34,7 +35,7 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
     elif args == "misc":
         args = "miscellaneous"
 
-    helpMenuTimeoutStr = lib.timeUtil.td_format_noYM(lib.timeUtil.timeDeltaFromDict(cfg.timeouts.helpMenu))
+    helpMenuTimeoutStr = lib.timeUtil.td_format_noYM(timedelta(**cfg.timeouts.helpMenu))
 
     try:
         if args == "":
@@ -46,8 +47,8 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
                 return
             owningUser.helpMenuOwned = True
             menuMsg = await sendChannel.send("‎")
-            helpTT = timedTask.TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(
-                cfg.timeouts.helpMenu), expiryFunction=expiryFunctions.expireHelpMenu, expiryFunctionArgs=menuMsg.id)
+            helpTT = timedTask.TimedTask(expiryDelta=timedelta(**cfg.timeouts.helpMenu),
+                                        expiryFunction=expiryFunctions.expireHelpMenu, expiryFunctionArgs=menuMsg.id)
             botState.taskScheduler.scheduleTask(helpTT)
             indexEmbed = lib.discordUtil.makeEmbed(titleTxt=cfg.userAccessLevels[userAccessLevel] + " Commands",
                                                     desc="Select " + cfg.defaultEmojis.next.sendable + " to go to page one.",
@@ -91,8 +92,8 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
                     return
                 owningUser.helpMenuOwned = True
                 menuMsg = await sendChannel.send("‎")
-                helpTT = timedTask.TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(
-                    cfg.timeouts.helpMenu), expiryFunction=expiryFunctions.expireHelpMenu, expiryFunctionArgs=menuMsg.id)
+                helpTT = timedTask.TimedTask(expiryDelta=timedelta(**cfg.timeouts.helpMenu),
+                                            expiryFunction=expiryFunctions.expireHelpMenu, expiryFunctionArgs=menuMsg.id)
                 botState.taskScheduler.scheduleTask(helpTT)
                 pages = {}
                 for helpEmbed in botCommands.helpSectionEmbeds[userAccessLevel][args]:

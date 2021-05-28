@@ -14,7 +14,7 @@ from ..gameObjects.items.modules import moduleItem
 from ..cfg import cfg
 from ..gameObjects.inventories import inventory
 from ..userAlerts import userAlerts
-from datetime import datetime
+from datetime import datetime, timedelta
 from discord import Guild, Member
 from ..users import basedGuild
 from .. import lib, botState
@@ -722,7 +722,7 @@ class BasedUser(serializable.Serializable):
             raise NameError("This user is not a member of the given guild '" + newGuild.name + "#" + str(newGuild.id) + "'")
 
         self.homeGuildID = newGuild.id
-        self.guildTransferCooldownEnd = now + lib.timeUtil.timeDeltaFromDict(cfg.homeGuildTransferCooldown)
+        self.guildTransferCooldownEnd = now + timedelta(**cfg.homeGuildTransferCooldown)
 
 
     def getInventoryForItem(self, item):

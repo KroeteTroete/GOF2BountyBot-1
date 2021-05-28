@@ -119,7 +119,7 @@ class BasedGuild(serializable.Serializable):
             self.hasBountyBoardChannel = bountyBoardChannel is not None
 
             if cfg.newBountyDelayType == "fixed":
-                self.newBountyTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.newBountyFixedDelta),
+                self.newBountyTT = TimedTask(expiryDelta=timedelta(**cfg.newBountyFixedDelta),
                                                 autoReschedule=True, expiryFunction=self.spawnAndAnnounceRandomBounty)
             else:
                 try:
@@ -355,14 +355,14 @@ class BasedGuild(serializable.Serializable):
     def getRouteScaledBountyDelayFixed(self, baseDelayDict : Dict[str, int]) -> timedelta:
         """New bounty delay generator, scaling a fixed delay by the length of the presently spawned bounty.
 
-        :param dict baseDelayDict: A lib.timeUtil.timeDeltaFromDict-compliant dictionary describing the amount of time to wait
+        :param dict baseDelayDict: A timedelta-compliant dictionary describing the amount of time to wait
                                     after a bounty is spawned with route length 1
         :return: A datetime.timedelta indicating the time to wait before spawning a new bounty
         :rtype: datetime.timedelta
         """
         timeScale = cfg.fallbackRouteScale if self.bountiesDB.latestBounty is None else \
                     len(self.bountiesDB.latestBounty.route)
-        delay = lib.timeUtil.timeDeltaFromDict(baseDelayDict) * timeScale * cfg.newBountyDelayRouteScaleCoefficient
+        delay = timedelta(**baseDelayDict) * timeScale * cfg.newBountyDelayRouteScaleCoefficient
         botState.logger.log("Main", "routeScaleBntyDelayFixed",
                             "New bounty delay generated, " \
                                 + ("no latest criminal." if self.bountiesDB.latestBounty is None else \
@@ -541,7 +541,7 @@ class BasedGuild(serializable.Serializable):
                                     "random-routeScale": cfg.newBountyDelayRandomRange}
 
         if cfg.newBountyDelayType == "fixed":
-            self.newBountyTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.newBountyFixedDelta),
+            self.newBountyTT = TimedTask(expiryDelta=timedelta(**cfg.newBountyFixedDelta),
                                             autoReschedule=True, expiryFunction=self.spawnAndAnnounceRandomBounty)
         else:
             try:
