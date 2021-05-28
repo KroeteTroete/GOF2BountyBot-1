@@ -14,7 +14,7 @@ def fromDict(moduleDict):
     :return: The moduleItem object described in moduleDict
     :rtype: moduleItem
     """
-    if "builtIn" in moduleDict and moduleDict["builtIn"]:
+    if moduleDict.get("builtIn", False):
         return bbData.builtInModuleObjs[moduleDict["name"]]
     else:
         if "type" in moduleDict and moduleDict["type"] in typeConstructors:
