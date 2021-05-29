@@ -38,6 +38,8 @@ def getRandomDelay(minmaxDict: Dict[str, timedelta]) -> timedelta:
 
     :param minMaxDict: A dictionary with a "min" timedelta and a "max" timedelta as generation limits
     :type minMaxDict: Dict[str, timedelta]
+    :return: A timedelta randomly placed between the given min and max
+    :rtype: timedelta
     """
     return timedelta(seconds=random.randint(minmaxDict["min"].total_seconds(), minmaxDict["max"].total_seconds()))
 
