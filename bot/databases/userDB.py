@@ -1,5 +1,5 @@
 from __future__ import annotations
-from ..users.basedUser import BasedUser
+from ..users.basedUser import BasedUser, defaultUserDict
 from .. import lib
 from .. import botState
 import traceback
@@ -89,7 +89,7 @@ class UserDB(serializable.Serializable):
         if self.idExists(userID):
             raise KeyError("Attempted to add a user that is already in this UserDB")
         # Create and return a new user
-        newUser = BasedUser.fromDict(BasedUser.defaultUserDict, id=id)
+        newUser = BasedUser.fromDict(defaultUserDict, id=userID)
         self.users[userID] = newUser
         return newUser
 
