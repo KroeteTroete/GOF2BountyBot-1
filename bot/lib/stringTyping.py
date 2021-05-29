@@ -12,14 +12,12 @@ def isInt(x) -> bool:
 
     try:
         int(x)
-    except TypeError:
-        return False
-    except ValueError:
+    except (TypeError, ValueError):
         return False
     return True
 
 
-def isMention(mention: str) -> bool:
+def isMention(m: str) -> bool:
     """Decide whether the given string is a discord user mention,
     being either <@USERID> or <@!USERID> where USERID is an integer discord user id.
 
@@ -27,32 +25,30 @@ def isMention(mention: str) -> bool:
     :return: True if mention matches the formatting of a discord user mention, False otherwise
     :rtype: bool
     """
-    return mention.endswith(">") and ((mention.startswith("<@") and isInt(mention[2:-1])) or \
-                                        (mention.startswith("<@!") and isInt(mention[3:-1])))
+    return m.endswith(">") and ((m.startswith("<@") and isInt(m[2:-1])) or \
+                                (m.startswith("<@!") and isInt(m[3:-1])))
 
 
-def isRoleMention(mention: str) -> bool:
+def isRoleMention(m: str) -> bool:
     """Decide whether the given string is a discord role mention, being <@&ROLEID> where ROLEID is an integer discord role id.
 
     :param str mention: The string to check
     :return: True if mention matches the formatting of a discord role mention, False otherwise
     :rtype: bool
     """
-    return mention.endswith(">") and mention.startswith("<@&") and isInt(mention[3:-1])
+    return all(m.endswith(">"), m.startswith("<@&"), isInt(m[3:-1]))
 
 
-def commaSplitNum(num: str) -> str:
-    """Insert commas into every third position in a string.
-    For example: "3" -> "3", "30000" -> "30,000", and "561928301" -> "561,928,301"
+def commaSplitNum(num: int) -> str:
+    """Convert an number to a string with commas in every third position. Also accepts floats.
+    For example: 3 -> "3", 30000 -> "30,000", and 561928301 -> "561,928,301"
+    https://stackoverflow.com/a/10742904
 
-    :param str num: string to insert commas into. probably just containing digits
+    :param int num: string to insert commas into. probably just containing digits
     :return: num, but split with commas at every third digit
     :rtype: str
     """
-    outStr = num
-    for i in range(len(num), 0, -3):
-        outStr = outStr[0:i] + "," + outStr[i:]
-    return outStr[:-1]
+    return f"{num:,}"
 
 
 # string extensions for numbers, e.g 11th, 1st, 23rd...
@@ -61,12 +57,13 @@ numExtensions = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"]
 
 def getNumExtension(num: int) -> str:
     """Return the string extension for an integer, e.g 'th' or 'rd'.
+    https://stackoverflow.com/a/50992575
 
     :param int num: The integer to find the extension for
     :return: string containing a number extension from numExtensions
     :rtype: str
     """
-    return numExtensions[int(str(num)[-1])] if not (num > 10 and num < 20) else "th"
+    return "th" if 11 <= (num % 100) <= 13 else ("th", "st", "nd", "rd", "th")[min(num % 10, 4)]
 
 
 def shipSkinNameToToolName(skinName : str) -> str:
@@ -75,7 +72,7 @@ def shipSkinNameToToolName(skinName : str) -> str:
     :param str skinName: The name of the skin this tool name should reference
     :return: The name that should be given to a shipSkinTool that applies the named shipSkin
     """
-    return "Ship Skin: " + skinName
+    return f"Ship Skin: {skinName}"
 
 
 def formatAdditive(stat : Union[float, int]) -> str:
@@ -85,7 +82,7 @@ def formatAdditive(stat : Union[float, int]) -> str:
     :type stat: Union[float, int]
     :return: A sign symbol, followed by stat
     """
-    return ("+" if stat > 0 else "-") + str(stat)
+    return f"{'+' if stat > 0 else '-'}{stat}"
 
 
 def formatMultiplier(stat : float) -> str:
@@ -95,7 +92,4 @@ def formatMultiplier(stat : float) -> str:
     :type stat: float
     :return: A sign symbol, followed by stat, followed by a percentage sign.
     """
-    sign = "+" if stat >= 1 else "-"
-    if stat > 1:
-        return sign + str(round((stat - 1) * 100)) + "%"
-    return sign + str(round(stat * 100)) + "%"
+    return f"{'+' if stat >= 1 else '-'}{round((stat - (1 if stat > 1 else 0)) * 100)}%"

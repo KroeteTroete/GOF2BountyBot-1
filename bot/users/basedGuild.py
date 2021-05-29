@@ -699,6 +699,7 @@ class BasedGuild(serializable.Serializable):
                 shop = guildShop.GuildShop()
         
 
-        return BasedGuild(**cls._makeDefaults(guildDict, id=guildID, dcGuild=dcGuild, bounties=bountiesDB,
+        return BasedGuild(**cls._makeDefaults(guildDict, ("bountiesDB",),
+                                                id=guildID, dcGuild=dcGuild, bounties=bountiesDB,
                                                 announceChannel=announceChannel, playChannel=playChannel,
                                                 shop=shop, bountyBoardChannel=bbc))
