@@ -102,13 +102,15 @@ class BasedGuild(serializable.Serializable):
         self.bountiesDB = bounties
         self.bountiesDisabled = bountiesDisabled
 
-        bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelaySeconds,
+        bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelay,
                                 "fixed-routeScale": self.getRouteScaledBountyDelayFixed,
                                 "random-routeScale": self.getRouteScaledBountyDelayRandom}
 
-        bountyDelayGeneratorArgs = {"random": cfg.newBountyDelayRandomRange,
+        bountyDelayGeneratorArgs = {"random": {"min": cfg.timeouts.newBountyDelayRandomMin,
+                                                "max": cfg.timeouts.newBountyDelayRandomMax},
                                     "fixed-routeScale": cfg.newBountyFixedDelta,
-                                    "random-routeScale": cfg.newBountyDelayRandomRange}
+                                    "random-routeScale": {"min": cfg.timeouts.newBountyDelayRandomMin,
+                                                            "max": cfg.timeouts.newBountyDelayRandomMax}}
 
         if bountiesDisabled:
             self.newBountyTT = None
@@ -384,7 +386,7 @@ class BasedGuild(serializable.Serializable):
         """
         timeScale = cfg.fallbackRouteScale if self.bountiesDB.latestBounty is None else \
                     len(self.bountiesDB.latestBounty.route)
-        delay = lib.timeUtil.getRandomDelaySeconds({"min": baseDelayDict["min"] * timeScale \
+        delay = lib.timeUtil.getRandomDelay({"min": baseDelayDict["min"] * timeScale \
                                                         * cfg.newBountyDelayRouteScaleCoefficient,
                                                     "max": baseDelayDict["max"] * timeScale \
                                                         * cfg.newBountyDelayRouteScaleCoefficient})
@@ -532,13 +534,15 @@ class BasedGuild(serializable.Serializable):
 
         self.bountiesDB = bountyDB.BountyDB(bbData.bountyFactions)
 
-        bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelaySeconds,
+        bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelay,
                                 "fixed-routeScale": self.getRouteScaledBountyDelayFixed,
                                 "random-routeScale": self.getRouteScaledBountyDelayRandom}
 
-        bountyDelayGeneratorArgs = {"random": cfg.newBountyDelayRandomRange,
+        bountyDelayGeneratorArgs = {"random": {"min": cfg.timeouts.newBountyDelayRandomMin,
+                                                "max": cfg.timeouts.newBountyDelayRandomMax},
                                     "fixed-routeScale": cfg.newBountyFixedDelta,
-                                    "random-routeScale": cfg.newBountyDelayRandomRange}
+                                    "random-routeScale": {"min": cfg.timeouts.newBountyDelayRandomMin,
+                                                            "max": cfg.timeouts.newBountyDelayRandomMax}}
 
         if cfg.newBountyDelayType == "fixed":
             self.newBountyTT = TimedTask(expiryDelta=timedelta(**cfg.newBountyFixedDelta),
