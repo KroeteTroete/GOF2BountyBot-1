@@ -52,3 +52,10 @@ class Serializable(ABC):
             newArgs.update(args)
         newArgs.update(overrides)
         return newArgs
+
+    
+    @classmethod
+    def _allArgs(cls):
+        """Get a list of all argument names accepted by the class constructor.
+        """
+        return [str(i) for i in inspect.signature(cls).parameters]
