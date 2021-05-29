@@ -386,18 +386,18 @@ class BasedGuild(serializable.Serializable):
         """
         timeScale = cfg.fallbackRouteScale if self.bountiesDB.latestBounty is None else \
                     len(self.bountiesDB.latestBounty.route)
-        delay = lib.timeUtil.getRandomDelay({"min": timedelta(**baseDelayDict["min"]) * timeScale \
+        delay = lib.timeUtil.getRandomDelay({"min": baseDelayDict["min"] * timeScale \
                                                         * cfg.newBountyDelayRouteScaleCoefficient,
-                                                    "max": timedelta(**baseDelayDict["max"]) * timeScale \
+                                                    "max": baseDelayDict["max"] * timeScale \
                                                         * cfg.newBountyDelayRouteScaleCoefficient})
         botState.logger.log("Main", "routeScaleBntyDelayRand",
                             "New bounty delay generated, " \
                                 + ("no latest criminal." if self.bountiesDB.latestBounty is None else \
                                     ("latest criminal: '" + self.bountiesDB.latestBounty.criminal.name \
                                 + "'. Route Length " + str(len(self.bountiesDB.latestBounty.route)))) + "\nRange: " \
-                                + str((timedelta(**baseDelayDict["min"]) * timeScale * cfg.newBountyDelayRouteScaleCoefficient) / 60) \
+                                + str((baseDelayDict["min"] * timeScale * cfg.newBountyDelayRouteScaleCoefficient) / 60) \
                                 + "m - " \
-                                + str((timedelta(**baseDelayDict["max"]) * timeScale * cfg.newBountyDelayRouteScaleCoefficient) / 60) \
+                                + str((baseDelayDict["max"] * timeScale * cfg.newBountyDelayRouteScaleCoefficient) / 60) \
                                 + "m\nDelay picked: " + str(delay), category="newBounties",
                             eventType="NONE_BTY" if self.bountiesDB.latestBounty is None else "DELAY_GEN", noPrint=True)
         return delay
