@@ -59,12 +59,13 @@ numExtensions = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"]
 
 def getNumExtension(num: int) -> str:
     """Return the string extension for an integer, e.g 'th' or 'rd'.
+    https://stackoverflow.com/a/50992575
 
     :param int num: The integer to find the extension for
     :return: string containing a number extension from numExtensions
     :rtype: str
     """
-    return numExtensions[int(str(num)[-1])] if not (num > 10 and num < 20) else "th"
+    return "th" if 11 <= (num % 100) <= 13 else ("th", "st", "nd", "rd", "th")[min(num % 10, 4)]
 
 
 def shipSkinNameToToolName(skinName : str) -> str:
