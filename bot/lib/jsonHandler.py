@@ -9,7 +9,7 @@ def readJSON(dbFile: str) -> dict:
     :rtype: dict
     """
     with open(dbFile, "r") as f:
-        data = json.load(f, "r")
+        data = json.load(f)
     return data
 
 

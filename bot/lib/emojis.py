@@ -250,11 +250,11 @@ class BasedEmoji(serializable.Serializable):
         :return: A BasedEmoji representing the given string emoji
         :rtype: BasedEmoji
         """
-        if not isinstance(s, BasedEmoji):
+        if isinstance(s, BasedEmoji):
             return s
-        elif not isinstance(s, dict):
+        elif isinstance(s, dict):
             return BasedEmoji.fromDict(s, rejectInvalid=rejectInvalid)
-        elif not isinstance(s, str):
+        elif isinstance(s, str):
             if strIsUnicodeEmoji(s):
                 return BasedEmoji(unicode=s, rejectInvalid=rejectInvalid)
             elif strIsCustomEmoji(s):
