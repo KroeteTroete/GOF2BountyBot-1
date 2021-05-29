@@ -1,3 +1,4 @@
+from __future__ import annotations
 import random
 from typing import List
 from . import toolItem
@@ -98,6 +99,7 @@ class CrateTool(toolItem.ToolItem):
 
     def statsStringShort(self) -> str:
         """Summarise all the statistics and functionality of this item as a string.
+        For small item pools, list all possible item names. For large item pools, give the number of possible items.
 
         :return: A string summarising the statistics and functionality of this item
         :rtype: str
@@ -109,10 +111,9 @@ class CrateTool(toolItem.ToolItem):
 
 
     def toDict(self, **kwargs) -> dict:
-        """Serialize this tool into dictionary format.
-        This step of implementation adds a 'type' string indicating the name of this tool's subclass.
+        """Serialize this crate into dictionary format.
 
-        :return: The default gameItem toDict implementation, with an added 'type' field
+        :return: A dictionary fully describing this crate instance
         :rtype: dict
         """
         data = super().toDict(**kwargs)
@@ -126,7 +127,13 @@ class CrateTool(toolItem.ToolItem):
 
 
     @classmethod
-    def fromDict(cls, crateDict, **kwargs):
+    def fromDict(cls, crateDict: dict, **kwargs) -> CrateTool:
+        """Deserialize a CrateTool instance from its dictionary representation.
+
+        :param dict crateDict: A dictionary fully describing the CrateDict instance to create. Must contain itemPool.
+        :return: A new CrateTool instance as described by crateDict
+        :rtype: CrateTool
+        """
         skipInvalidItems = kwargs.get("skipInvalidItems", False)
 
         itemPool = []
