@@ -82,7 +82,7 @@ def formatAdditive(stat : Union[float, int]) -> str:
     :type stat: Union[float, int]
     :return: A sign symbol, followed by stat
     """
-    return ("+" if stat > 0 else "-") + str(stat)
+    return f"{'+' if stat > 0 else '-'}{stat}"
 
 
 def formatMultiplier(stat : float) -> str:
