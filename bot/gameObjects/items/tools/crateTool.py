@@ -1,36 +1,62 @@
+from __future__ import annotations
 import random
+from typing import List
 from . import toolItem
-from .... import lib
+from .... import lib, botState
 from discord import Message
 from ....cfg import cfg
 from .. import gameItem
-from ....botState import logger
 from ....reactionMenus.confirmationReactionMenu import InlineConfirmationMenu
+from ....users.basedUser import BasedUser
 
 
 @gameItem.spawnableItem
 class CrateTool(toolItem.ToolItem):
-    def __init__(self, itemPool, name : str = "", value : int = 0, wiki : str = "",
+    """A tool containing a pool of GameItems which, when used, gives the user a single random item from the pool.
+    Also automatically removes itself from the user's inventory upon use.
+
+    :var itemPool: List of potential items to win. May contain duplicates.
+    :vartype itemPool: List[gameItem.GameItem]
+    """
+    def __init__(self, itemPool: List[gameItem.GameItem], name : str = "", value : int = 0, wiki : str = "",
             manufacturer : str = "", icon : str = "", emoji : lib.emojis.BasedEmoji = lib.emojis.BasedEmoji.EMPTY,
             techLevel : int = -1, builtIn : bool = False):
+        """
+        :param List[gameItem.GameItem] itemPool: List of potential items to win. May contain duplicates.
+        :param str name: The name of the crate. Must be unique.
+        :param int value: The number of credits that this item can be bought/sold for at a shop. (Default 0)
+        :param str wiki: A web page that is displayed as the wiki page for this item. (Default "")
+        :param str manufacturer: The name of the manufacturer of this item (Default "")
+        :param str icon: A URL pointing to an image to use for this item's icon (Default "")
+        :param lib.emojis.BasedEmoji emoji: The emoji to use for this item's small icon (Default lib.emojis.BasedEmoji.EMPTY)
+        :param int techLevel: A rating from 1 to 10 of this item's technical advancement, generally for crates this isn't
+                                limited, e.g a measure of the rarity of the items, or of the items' TLs maybe (Default -1)
+        :param bool builtIn: Whether this is a BountyBot standard crate (loaded in from JSON) or a custom spawned
+                                item (Default False)
+        """
 
         super().__init__(name, [], value=value, wiki=wiki,
             manufacturer=manufacturer, icon=icon, emoji=emoji,
             techLevel=techLevel, builtIn=builtIn)
 
-        for item in itemPool:
-            if not gameItem.isSpawnableItemInstance(item):
-                raise RuntimeError("Attempted to create a crateTool with something other than a spawnableItem " \
-                                    + "in its itemPool.")
-        self.itemPool = itemPool
+        try:
+            item = next(i for i in itemPool if not gameItem.isSpawnableItemInstance(i))
+        except StopIteration:
+            self.itemPool = itemPool
+        else:
+            raise RuntimeError("Attempted to create a crateTool with something other than a spawnableItem " \
+                                + "in its itemPool: " + str(item))
 
 
     async def use(self, *args, **kwargs):
-        """This item's behaviour function. Intended to be very generic at this level of implementation.
+        """Behaviour function which adds a random item from the pool and adds it to the owner's inventory,
+        then removes the crate from their inventory. For use in a command, use userFriendlyUse
+
+        :param BasedUser callingBUser: The user who owns the crate
         """
         if "callingBUser" not in kwargs:
             raise NameError("Required kwarg not given: callingBUser")
-        if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedUser":
+        if not isinstance(kwargs["callingBUser"], BasedUser):
             raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received " \
                             + type(kwargs["callingBUser"]).__name__)
 
@@ -42,10 +68,12 @@ class CrateTool(toolItem.ToolItem):
 
     async def userFriendlyUse(self, message : Message, *args, **kwargs) -> str:
         """A version of self.use intended to be called by users, where exceptions are never thrown in the case of
-        user error, and results strings are always returned.
+        user error, and results strings to send in response are always returned.
+        First asks for user confirmation, then adds a random single item from the item pool to the user inventory,
+        and finally removes the crate from the user inventory.
 
         :param Message message: The discord message that triggered this tool use
-        :return: A user-friendly messge summarising the result of the tool use.
+        :return: A user-friendly message summarising the result of the tool use.
         :rtype: str
         """
         if "callingBUser" not in kwargs:
@@ -71,18 +99,21 @@ class CrateTool(toolItem.ToolItem):
 
     def statsStringShort(self) -> str:
         """Summarise all the statistics and functionality of this item as a string.
+        For small item pools, list all possible item names. For large item pools, give the number of possible items.
 
         :return: A string summarising the statistics and functionality of this item
         :rtype: str
         """
-        return "*" + str(len(self.itemPool)) + " possible items*"
+        if len(self.itemPool) > 9:
+            return "*" + str(len(self.itemPool)) + " possible items*"
+        else:
+            return "*" + " • ".join(i.name for i in self.itemPool) + "*"
 
 
     def toDict(self, **kwargs) -> dict:
-        """Serialize this tool into dictionary format.
-        This step of implementation adds a 'type' string indicating the name of this tool's subclass.
+        """Serialize this crate into dictionary format.
 
-        :return: The default gameItem toDict implementation, with an added 'type' field
+        :return: A dictionary fully describing this crate instance
         :rtype: dict
         """
         data = super().toDict(**kwargs)
@@ -96,7 +127,13 @@ class CrateTool(toolItem.ToolItem):
 
 
     @classmethod
-    def fromDict(cls, crateDict, **kwargs):
+    def fromDict(cls, crateDict: dict, **kwargs) -> CrateTool:
+        """Deserialize a CrateTool instance from its dictionary representation.
+
+        :param dict crateDict: A dictionary fully describing the CrateDict instance to create. Must contain itemPool.
+        :return: A new CrateTool instance as described by crateDict
+        :rtype: CrateTool
+        """
         skipInvalidItems = kwargs.get("skipInvalidItems", False)
 
         itemPool = []
@@ -113,14 +150,14 @@ class CrateTool(toolItem.ToolItem):
                     errorType = "BAD_TYPE"
                 if errorStr:
                     if skipInvalidItems:
-                        logger.log("crateTool", "fromDict", errorStr, eventType=errorType)
+                        botState.logger.log("crateTool", "fromDict", errorStr, eventType=errorType)
                     else:
                         raise ValueError(errorStr)
                 else:
                     itemPool.append(gameItem.spawnItem(itemDict))
         else:
-            logger.log("crateTool", "fromDict", "fromDict-ing a crateTool with no itemPool.")
+            botState.logger.log("crateTool", "fromDict", "fromDict-ing a crateTool with no itemPool.")
 
-        return CrateTool(**cls._makeDefaults(crateDict, itemPool=itemPool,
+        return CrateTool(**cls._makeDefaults(crateDict, ("type",), itemPool=itemPool,
                                             emoji=lib.emojis.BasedEmoji.fromDict(crateDict["emoji"]) \
                                                     if "emoji" in crateDict else lib.emojis.BasedEmoji.EMPTY))

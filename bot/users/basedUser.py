@@ -99,7 +99,7 @@ class BasedUser(serializable.Serializable):
     :vartype guildTransferCooldownEnd: datetime.datetime
     """
 
-    def __init__(self, id: int, credits : int = 0, lifetimeCredits : int = 0,
+    def __init__(self, userID: int, credits : int = 0, lifetimeCredits : int = 0,
                     bountyCooldownEnd : int = -1, systemsChecked : int = 0, bountyWins : int = 0, activeShip : bool = None,
                     inactiveShips : inventory.Inventory = inventory.TypeRestrictedInventory(shipItem.Ship),
                     inactiveModules : inventory.Inventory = inventory.TypeRestrictedInventory(moduleItem.ModuleItem),
@@ -149,10 +149,10 @@ class BasedUser(serializable.Serializable):
                                                             their homeGuildID.
         :raise TypeError: When given an argument of incorrect type
         """
-        if type(id) == float:
-            id = int(id)
-        elif type(id) != int:
-            raise TypeError("id must be int, given " + str(type(id)))
+        if type(userID) == float:
+            userID = int(userID)
+        elif type(userID) != int:
+            raise TypeError("id must be int, given " + str(type(userID)))
 
         if type(credits) == float:
             credits = int(credits)
@@ -184,7 +184,7 @@ class BasedUser(serializable.Serializable):
         if guildTransferCooldownEnd is None:
             guildTransferCooldownEnd = datetime.utcnow()
 
-        self.id = id
+        self.id = userID
         self.credits = credits
         self.lifetimeCredits = lifetimeCredits
         # TODO: Should probably change this to a datetime, like guildTransferCooldownEnd etc
@@ -790,7 +790,7 @@ class BasedUser(serializable.Serializable):
             for toolListingDict in userDict["inactiveTools"]:
                 inactiveTools.addItem(toolItemFactory.fromDict(toolListingDict["item"]), quantity=toolListingDict["count"])
 
-        return BasedUser(**cls._makeDefaults(userDict, id=userID, activeShip=activeShip, inactiveShips=inactiveShips,
+        return BasedUser(**cls._makeDefaults(userDict, userID=userID, activeShip=activeShip, inactiveShips=inactiveShips,
                                                 inactiveModules=inactiveModules, inactiveWeapons=inactiveWeapons,
                                                 inactiveTurrets=inactiveTurrets, inactiveTools=inactiveTools,
                                                 **{k: datetime.utcfromtimestamp(userDict[k]) \
