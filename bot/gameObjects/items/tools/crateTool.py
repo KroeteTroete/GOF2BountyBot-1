@@ -67,10 +67,12 @@ class CrateTool(toolItem.ToolItem):
 
     async def userFriendlyUse(self, message : Message, *args, **kwargs) -> str:
         """A version of self.use intended to be called by users, where exceptions are never thrown in the case of
-        user error, and results strings are always returned.
+        user error, and results strings to send in response are always returned.
+        First asks for user confirmation, then adds a random single item from the item pool to the user inventory,
+        and finally removes the crate from the user inventory.
 
         :param Message message: The discord message that triggered this tool use
-        :return: A user-friendly messge summarising the result of the tool use.
+        :return: A user-friendly message summarising the result of the tool use.
         :rtype: str
         """
         if "callingBUser" not in kwargs:

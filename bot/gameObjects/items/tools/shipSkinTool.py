@@ -80,7 +80,7 @@ class ShipSkinTool(toolItem.ToolItem):
         After use, the tool will be removed from callingBUser's inventory. To disable this, pass callingBUser as None.
 
         :param Message message: The discord message that triggered this tool use
-        :return: A user-friendly messge summarising the result of the tool use.
+        :return: A user-friendly message summarising the result of the tool use.
         :rtype: str
         """
         if "ship" not in kwargs:
