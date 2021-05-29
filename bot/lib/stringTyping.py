@@ -12,9 +12,7 @@ def isInt(x) -> bool:
 
     try:
         int(x)
-    except TypeError:
-        return False
-    except ValueError:
+    except (TypeError, ValueError):
         return False
     return True
 
@@ -74,7 +72,7 @@ def shipSkinNameToToolName(skinName : str) -> str:
     :param str skinName: The name of the skin this tool name should reference
     :return: The name that should be given to a shipSkinTool that applies the named shipSkin
     """
-    return "Ship Skin: " + skinName
+    return f"Ship Skin: {skinName}"
 
 
 def formatAdditive(stat : Union[float, int]) -> str:
