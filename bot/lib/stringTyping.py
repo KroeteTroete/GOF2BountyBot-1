@@ -19,7 +19,7 @@ def isInt(x) -> bool:
     return True
 
 
-def isMention(mention: str) -> bool:
+def isMention(m: str) -> bool:
     """Decide whether the given string is a discord user mention,
     being either <@USERID> or <@!USERID> where USERID is an integer discord user id.
 
@@ -27,32 +27,30 @@ def isMention(mention: str) -> bool:
     :return: True if mention matches the formatting of a discord user mention, False otherwise
     :rtype: bool
     """
-    return mention.endswith(">") and ((mention.startswith("<@") and isInt(mention[2:-1])) or \
-                                        (mention.startswith("<@!") and isInt(mention[3:-1])))
+    return m.endswith(">") and ((m.startswith("<@") and isInt(m[2:-1])) or \
+                                (m.startswith("<@!") and isInt(m[3:-1])))
 
 
-def isRoleMention(mention: str) -> bool:
+def isRoleMention(m: str) -> bool:
     """Decide whether the given string is a discord role mention, being <@&ROLEID> where ROLEID is an integer discord role id.
 
     :param str mention: The string to check
     :return: True if mention matches the formatting of a discord role mention, False otherwise
     :rtype: bool
     """
-    return mention.endswith(">") and mention.startswith("<@&") and isInt(mention[3:-1])
+    return all(m.endswith(">"), m.startswith("<@&"), isInt(m[3:-1]))
 
 
-def commaSplitNum(num: str) -> str:
-    """Insert commas into every third position in a string.
-    For example: "3" -> "3", "30000" -> "30,000", and "561928301" -> "561,928,301"
+def commaSplitNum(num: int) -> str:
+    """Convert an number to a string with commas in every third position. Also accepts floats.
+    For example: 3 -> "3", 30000 -> "30,000", and 561928301 -> "561,928,301"
+    https://stackoverflow.com/a/10742904
 
-    :param str num: string to insert commas into. probably just containing digits
+    :param int num: string to insert commas into. probably just containing digits
     :return: num, but split with commas at every third digit
     :rtype: str
     """
-    outStr = num
-    for i in range(len(num), 0, -3):
-        outStr = outStr[0:i] + "," + outStr[i:]
-    return outStr[:-1]
+    return f"{num:,}"
 
 
 # string extensions for numbers, e.g 11th, 1st, 23rd...
