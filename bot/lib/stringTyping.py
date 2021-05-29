@@ -9,7 +9,6 @@ def isInt(x) -> bool:
     :return: True if x is an integer or if x can be casted to integer. False otherwise
     :rtype: bool
     """
-
     try:
         int(x)
     except (TypeError, ValueError):
@@ -36,7 +35,7 @@ def isRoleMention(m: str) -> bool:
     :return: True if mention matches the formatting of a discord role mention, False otherwise
     :rtype: bool
     """
-    return all(m.endswith(">"), m.startswith("<@&"), isInt(m[3:-1]))
+    return all((m.endswith(">"), m.startswith("<@&"), isInt(m[3:-1])))
 
 
 def commaSplitNum(num: int) -> str:
