@@ -15,8 +15,10 @@ def makeMatrix(xDim : int, yDim : int) -> List[List[int]]:
     return [[0] * xDim for _ in range(yDim)]
 
 
+# cfg.itemSpawnRateResDP in terms of decimal digits, used 
 itemSpawnRateResDigits = math.pow(10, cfg.itemSpawnRateResDP)
 
+# Valid ranges of item tech levels
 numTechLevels = cfg.maxTechLevel - cfg.minTechLevel + 1
 techLevelRange = range(cfg.minTechLevel, cfg.maxTechLevel + 1)
 
@@ -80,10 +82,10 @@ def pickRandomShopTL() -> int:
     :rtype: int
     """
     tlChance = random.randint(1, itemSpawnRateResDigits) / itemSpawnRateResDigits
-    for shopTL in range(numTechLevels):
-        if cumulativeShopTLChance[shopTL] >= tlChance:
-            return shopTL + 1
-    return cfg.maxTechLevel
+    try:
+        return next(i + 1 for i, v in enumerate(cumulativeShopTLChance) if v >= tlChance)
+    except StopIteration:
+        return cfg.maxTechLevel
 
 
 def tl_u(x : int, t : int) -> float:
@@ -105,10 +107,10 @@ def pickRandomItemTL(shopTL : int) -> int:
     :rtype: int
     """
     tlChance = random.randint(1, itemSpawnRateResDigits) / itemSpawnRateResDigits
-    for itemTL in range(len(cumulativeItemTLSpawnChanceForShopTL[shopTL - 1])):
-        if cumulativeItemTLSpawnChanceForShopTL[shopTL - 1][itemTL] >= tlChance:
-            return itemTL + 1
-    return cfg.maxTechLevel
+    try:
+        return next(i + 1 for i, v in enumerate(cumulativeItemTLSpawnChanceForShopTL[shopTL - 1]) if v >= tlChance)
+    except StopIteration:
+        return cfg.maxTechLevel
 
 
 def shipSkinValueForTL(averageTL : int) -> int:
@@ -140,7 +142,6 @@ for shopTL in techLevelRange:
     # Sum probabilities to give cumulative scale
     cumulativeItemTLSpawnChanceForShopTL[shopTL - 1] = makeCumulative(tlSpawnRates)
 
-print("[gameMaths] Item rarities generated:")
 for shopTL in range(len(itemTLSpawnChanceForShopTL)):
     print("\t• shop TL" + str(shopTL + 1) + ": itemTL", end="")
     for itemTL in range(len((itemTLSpawnChanceForShopTL[shopTL]))):
