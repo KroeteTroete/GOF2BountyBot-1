@@ -106,11 +106,11 @@ class BasedGuild(serializable.Serializable):
                                 "fixed-routeScale": self.getRouteScaledBountyDelayFixed,
                                 "random-routeScale": self.getRouteScaledBountyDelayRandom}
 
-        bountyDelayGeneratorArgs = {"random": {"min": cfg.timeouts.newBountyDelayRandomMin,
-                                                "max": cfg.timeouts.newBountyDelayRandomMax},
+        bountyDelayGeneratorArgs = {"random": {"min": timedelta(**cfg.timeouts.newBountyDelayRandomMin),
+                                                "max": timedelta(**cfg.timeouts.newBountyDelayRandomMax)},
                                     "fixed-routeScale": cfg.newBountyFixedDelta,
-                                    "random-routeScale": {"min": cfg.timeouts.newBountyDelayRandomMin,
-                                                            "max": cfg.timeouts.newBountyDelayRandomMax}}
+                                    "random-routeScale": {"min": timedelta(**cfg.timeouts.newBountyDelayRandomMin),
+                                                            "max": timedelta(**cfg.timeouts.newBountyDelayRandomMax)}}
 
         if bountiesDisabled:
             self.newBountyTT = None
@@ -386,18 +386,18 @@ class BasedGuild(serializable.Serializable):
         """
         timeScale = cfg.fallbackRouteScale if self.bountiesDB.latestBounty is None else \
                     len(self.bountiesDB.latestBounty.route)
-        delay = lib.timeUtil.getRandomDelay({"min": baseDelayDict["min"] * timeScale \
+        delay = lib.timeUtil.getRandomDelay({"min": timedelta(**baseDelayDict["min"]) * timeScale \
                                                         * cfg.newBountyDelayRouteScaleCoefficient,
-                                                    "max": baseDelayDict["max"] * timeScale \
+                                                    "max": timedelta(**baseDelayDict["max"]) * timeScale \
                                                         * cfg.newBountyDelayRouteScaleCoefficient})
         botState.logger.log("Main", "routeScaleBntyDelayRand",
                             "New bounty delay generated, " \
                                 + ("no latest criminal." if self.bountiesDB.latestBounty is None else \
                                     ("latest criminal: '" + self.bountiesDB.latestBounty.criminal.name \
                                 + "'. Route Length " + str(len(self.bountiesDB.latestBounty.route)))) + "\nRange: " \
-                                + str((baseDelayDict["min"] * timeScale * cfg.newBountyDelayRouteScaleCoefficient) / 60) \
+                                + str((timedelta(**baseDelayDict["min"]) * timeScale * cfg.newBountyDelayRouteScaleCoefficient) / 60) \
                                 + "m - " \
-                                + str((baseDelayDict["max"] * timeScale * cfg.newBountyDelayRouteScaleCoefficient) / 60) \
+                                + str((timedelta(**baseDelayDict["max"]) * timeScale * cfg.newBountyDelayRouteScaleCoefficient) / 60) \
                                 + "m\nDelay picked: " + str(delay), category="newBounties",
                             eventType="NONE_BTY" if self.bountiesDB.latestBounty is None else "DELAY_GEN", noPrint=True)
         return delay
