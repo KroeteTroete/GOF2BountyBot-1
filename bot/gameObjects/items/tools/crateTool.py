@@ -1,11 +1,10 @@
 import random
 from typing import List
 from . import toolItem
-from .... import lib
+from .... import lib, botState
 from discord import Message
 from ....cfg import cfg
 from .. import gameItem
-from ....botState import logger
 from ....reactionMenus.confirmationReactionMenu import InlineConfirmationMenu
 from ....users.basedUser import BasedUser
 
@@ -44,9 +43,6 @@ class CrateTool(toolItem.ToolItem):
         except StopIteration:
             self.itemPool = itemPool
         else:
-            logger.log("CrateTool", "__init__",
-                        "Attempted to create a crateTool with something other than a spawnableItem in its itemPool: " \
-                            + str(item), eventType="WRONG_TYPE", noPrint=True)
             raise RuntimeError("Attempted to create a crateTool with something other than a spawnableItem " \
                                 + "in its itemPool: " + str(item))
 
@@ -59,7 +55,6 @@ class CrateTool(toolItem.ToolItem):
         """
         if "callingBUser" not in kwargs:
             raise NameError("Required kwarg not given: callingBUser")
-        # if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedUser":
         if not isinstance(kwargs["callingBUser"], BasedUser):
             raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received " \
                             + type(kwargs["callingBUser"]).__name__)
@@ -105,7 +100,10 @@ class CrateTool(toolItem.ToolItem):
         :return: A string summarising the statistics and functionality of this item
         :rtype: str
         """
-        return "*" + str(len(self.itemPool)) + " possible items*"
+        if len(self.itemPool) > 9:
+            return "*" + str(len(self.itemPool)) + " possible items*"
+        else:
+            return "*" + " • ".join(i.name for i in self.itemPool) + "*"
 
 
     def toDict(self, **kwargs) -> dict:
@@ -143,13 +141,13 @@ class CrateTool(toolItem.ToolItem):
                     errorType = "BAD_TYPE"
                 if errorStr:
                     if skipInvalidItems:
-                        logger.log("crateTool", "fromDict", errorStr, eventType=errorType)
+                        botState.logger.log("crateTool", "fromDict", errorStr, eventType=errorType)
                     else:
                         raise ValueError(errorStr)
                 else:
                     itemPool.append(gameItem.spawnItem(itemDict))
         else:
-            logger.log("crateTool", "fromDict", "fromDict-ing a crateTool with no itemPool.")
+            botState.logger.log("crateTool", "fromDict", "fromDict-ing a crateTool with no itemPool.")
 
         return CrateTool(**cls._makeDefaults(crateDict, ("type",), itemPool=itemPool,
                                             emoji=lib.emojis.BasedEmoji.fromDict(crateDict["emoji"]) \
