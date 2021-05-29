@@ -849,7 +849,8 @@ class Ship(GameItem):
         turrets = [TurretWeapon.fromDict(d) for d in shipDict.get("turrets", [])]
         shipUpgrades = [shipUpgrade.ShipUpgrade.fromDict(d) for d in shipDict.get("shipUpgrades", [])]
         ignoredData = ("model","compatibleSkins", "normSpec", "numSecondaries", \
-                        "saveDue", "skinnable", "textureRegions", "path")
+                        "saveDue", "skinnable", "textureRegions", "path",
+                        "weapons", "modules", "turrets", "shipUpgrades", "emoji", "builtIn")
 
         if shipDict["builtIn"]:
             builtInDict = bbData.builtInShipData[shipDict["name"]]
@@ -859,19 +860,21 @@ class Ship(GameItem):
             builtInTurrets = [TurretWeapon.fromDict(d) for d in builtInDict.get("turrets", [])]
             builtInShipUpgrades = [shipUpgrade.ShipUpgrade.fromDict(d) for d in builtInDict.get("shipUpgrades", [])]
 
-            shipArgs = {k: shipDict.get(k, builtInDict[k]) \
-                        for k in cls._makeDefaults() if k in shipDict or k in builtInDict}
+            shipArgs = builtInDict.copy()
+            shipArgs.update(shipDict)
+            for k in ignoredData:
+                if k in shipArgs:
+                    del shipArgs[k]
+
             emojiStr = shipDict.get("emoji", builtInDict.get("emoji", False))
 
-            newShip = Ship(**cls._makeDefaults(shipDict, ignoredData,
+            newShip = Ship(**cls._makeDefaults(shipArgs, ignoredData,
                                                 weapons=weapons if "weapons" in shipDict else builtInWeapons,
                                                 modules=modules if "modules" in shipDict else builtInModules,
                                                 turrets=turrets if "turrets" in shipDict else builtInTurrets,
                                                 upgradesApplied=shipUpgrades if "shipUpgrades" in shipDict \
                                                                 else builtInShipUpgrades,
-                                                emoji=BasedEmoji.fromStr(emojiStr) if emojiStr else BasedEmoji.EMPTY,
-                                                builtIn=True,
-                                                **shipArgs))
+                                                emoji=BasedEmoji.fromStr(emojiStr) if emojiStr else BasedEmoji.EMPTY))
             return newShip
 
         else:
