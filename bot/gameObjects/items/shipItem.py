@@ -849,8 +849,8 @@ class Ship(GameItem):
         turrets = [TurretWeapon.fromDict(d) for d in shipDict.get("turrets", [])]
         shipUpgrades = [shipUpgrade.ShipUpgrade.fromDict(d) for d in shipDict.get("shipUpgrades", [])]
         ignoredData = ("model","compatibleSkins", "normSpec", "numSecondaries", \
-                        "saveDue", "skinnable", "textureRegions", "path",
-                        "weapons", "modules", "turrets", "shipUpgrades", "emoji", "builtIn")
+                        "saveDue", "skinnable", "textureRegions", "path", "type",
+                        "weapons", "modules", "turrets", "shipUpgrades", "emoji")
 
         if shipDict["builtIn"]:
             builtInDict = bbData.builtInShipData[shipDict["name"]]
