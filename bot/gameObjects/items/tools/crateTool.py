@@ -59,7 +59,8 @@ class CrateTool(toolItem.ToolItem):
         """
         if "callingBUser" not in kwargs:
             raise NameError("Required kwarg not given: callingBUser")
-        if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedUser":
+        # if kwargs["callingBUser"] is not None and type(kwargs["callingBUser"]).__name__ != "BasedUser":
+        if not isinstance(kwargs["callingBUser"], BasedUser):
             raise TypeError("Required kwarg is of the wrong type. Expected BasedUser or None, received " \
                             + type(kwargs["callingBUser"]).__name__)
 
@@ -150,6 +151,6 @@ class CrateTool(toolItem.ToolItem):
         else:
             logger.log("crateTool", "fromDict", "fromDict-ing a crateTool with no itemPool.")
 
-        return CrateTool(**cls._makeDefaults(crateDict, itemPool=itemPool,
+        return CrateTool(**cls._makeDefaults(crateDict, ("type",), itemPool=itemPool,
                                             emoji=lib.emojis.BasedEmoji.fromDict(crateDict["emoji"]) \
                                                     if "emoji" in crateDict else lib.emojis.BasedEmoji.EMPTY))
