@@ -46,7 +46,7 @@ class BasedUser(serializable.Serializable):
     :vartype id: int
     :var credits: The amount of credits (currency) this user has
     :vartype credits: int
-    :var lifetimeBountyCreditsWon: The total amount of credits this user has earned through hunting bounties (TODO: rename)
+    :var lifetimeBountyCreditsWon: The total amount of credits this user has earned through hunting bounties
     :vartype lifetimeBountyCreditsWon: int
     :var bountyCooldownEnd: A utc timestamp representing when the user's cmd_check cooldown is due to expire
     :vartype bountyCooldownEnd: float
@@ -114,7 +114,7 @@ class BasedUser(serializable.Serializable):
         :param int id: The user's unique ID. The same as their unique discord ID.
         :param int credits: The amount of credits (currency) this user has (Default 0)
         :param int lifetimeBountyCreditsWon: The total amount of credits this user has earned through hunting bounties
-                                    (TODO: rename) (Default 0)
+                                            (Default 0)
         :param float bountyCooldownEnd: A utc timestamp representing when the user's cmd_check cooldown is due to expire
                                         (Default -1)
         :param int systemsChecked: The total number of space systems this user has checked (Default 0)
