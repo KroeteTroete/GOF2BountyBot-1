@@ -213,7 +213,7 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
             statsEmbed.add_field(name="‎", value="__Bounty Hunting__", inline=False)
             statsEmbed.add_field(name="Total systems checked:", value=str( userObj.systemsChecked), inline=True)
             statsEmbed.add_field(name="Total bounties won:", value=str( userObj.bountyWins), inline=True)
-            statsEmbed.add_field(name="Total credits earned from bounties:", value=str( userObj.lifetimeCredits), inline=True)
+            statsEmbed.add_field(name="Total credits earned from bounties:", value=str( userObj.lifetimeBountyCreditsWon), inline=True)
             statsEmbed.add_field(name="‎", value="__Dueling__", inline=False)
             statsEmbed.add_field(name="Duels won:", value=str( userObj.duelWins), inline=True)
             statsEmbed.add_field(name="Duels lost:", value=str( userObj.duelLosses), inline=True)

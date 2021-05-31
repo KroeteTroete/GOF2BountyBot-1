@@ -106,7 +106,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                         botState.usersDB.getUser(
                             userID).credits += rewards[userID]["reward"]
                         botState.usersDB.getUser(
-                            userID).lifetimeCredits += rewards[userID]["reward"]
+                            userID).lifetimeBountyCreditsWon += rewards[userID]["reward"]
                     # add this bounty to the list of bounties to be removed
                     toPop += [bounty]
                     # Announce the bounty has ben completed
