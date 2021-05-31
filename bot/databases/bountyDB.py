@@ -42,16 +42,19 @@ class BountyDB(serializable.Serializable):
             self.divisions: Dict[range, BountyDivision] = None
             self.owningBasedGuild = owningBasedGuild
             self.activityMonitor = activityMonitor or guildActivity.ActivityMonitor()
+            randRangeArgs = {"min": timedelta(**cfg.timeouts.newBountyDelayRandomMin),
+                            "max": timedelta(**cfg.timeouts.newBountyDelayRandomMax)}
 
-            bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelaySeconds,
+            bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelay,
                                     "fixed-routeScale": self.getRouteScaledBountyDelayFixed,
                                     "random-routeScale": self.getRouteScaledBountyDelayRandom,
                                     "random-routeScale-tempScale": self.getRouteTempScaledBountyDelayRandom}
 
-            bountyDelayGeneratorArgs = {"random": cfg.newBountyDelayRandomRange,
+            bountyDelayGeneratorArgs = {"random": {"min": timedelta(**cfg.timeouts.newBountyDelayRandomMin),
+                                                    "max": timedelta(**cfg.timeouts.newBountyDelayRandomMax)},
                                         "fixed-routeScale": cfg.newBountyFixedDelta,
-                                        "random-routeScale": cfg.newBountyDelayRandomRange,
-                                        "random-routeScale-tempScale": cfg.newBountyDelayRandomRange}
+                                        "random-routeScale": randRangeArgs,
+                                        "random-routeScale-tempScale": randRangeArgs}
 
             self.maxBounties: List[int] = [1] * guildActivity._numTLs
             self.newBountyTTs: List[TimedTask] = [None] * guildActivity._numTLs
@@ -59,7 +62,7 @@ class BountyDB(serializable.Serializable):
 
             for tl in guildActivity._tlsRange:
                 # linear temperature-maxBounty scaling
-                self.maxBounties[tl] = min(int(self.activityMonitor.temperatures[tl]), cfg.maxBountiesPerFaction)
+                self.maxBounties[tl] = min(int(self.activityMonitor.temperatures[tl]), cfg.maxBountiesPerDivision)
                 
             if cfg.newBountyDelayType == "fixed":
                 self.newBountyTTs = [TimedTask(expiryDelta=timedelta(**cfg.newBountyFixedDelta),
@@ -120,10 +123,10 @@ class BountyDB(serializable.Serializable):
         baseDelayDict, tl = data
         timeScale = cfg.fallbackRouteScale if self.latestBounties[tl] is None else \
                     len(self.latestBounties[tl].route)
-        delay = lib.timeUtil.getRandomDelaySeconds({"min": baseDelayDict["min"] * timeScale \
-                                                        * cfg.newBountyDelayRouteScaleCoefficient,
-                                                    "max": baseDelayDict["max"] * timeScale \
-                                                        * cfg.newBountyDelayRouteScaleCoefficient})
+        delay = lib.timeUtil.getRandomDelay({"min": baseDelayDict["min"] * timeScale \
+                                                * cfg.newBountyDelayRouteScaleCoefficient,
+                                            "max": baseDelayDict["max"] * timeScale \
+                                                * cfg.newBountyDelayRouteScaleCoefficient})
         botState.logger.log("Main", "routeScaleBntyDelayRand",
                             "New bounty delay generated, " \
                                 + ("no latest criminal." if self.latestBounties[tl] is None else \
@@ -337,7 +340,7 @@ class BountyDB(serializable.Serializable):
         :return: True if the requested faction has space for more bounties, False otherwise
         :rtype: bool
         """
-        return self.getFactionNumBounties(faction) < cfg.maxBountiesPerFaction
+        return self.getFactionNumBounties(faction) < cfg.maxBountiesPerDivision
 
 
     def canMakeBounty(self) -> bounty.Bounty:

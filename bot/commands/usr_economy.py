@@ -126,7 +126,7 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
                                         + (currentItem.emoji.sendable + " " if currentItem.hasEmoji else "") \
                                         + ((" `(" + str(currentItemCount) + ")` ") if currentItemCount > 1 else "") \
                                         + "**" + currentItem.name + "**",
-                                    value=lib.stringTyping.commaSplitNum(str(currentItem.value)) + " Credits\n" \
+                                    value=lib.stringTyping.commaSplitNum(currentItem.value) + " Credits\n" \
                                         + currentItem.statsStringShort(), inline=True)
 
     try:

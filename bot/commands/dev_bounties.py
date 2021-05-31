@@ -280,7 +280,7 @@ async def dev_cmd_set_temp(message : discord.Message, args : str, isDM : bool):
         await message.channel.send(":x: Incorrect temp, must be float '" + temp + "'")
     else:
         callingBBGuild.bountiesDB.activityMonitor.temperatures[tl] = temp
-        callingBBGuild.bountiesDB.maxBounties[tl] = min(int(temp), cfg.maxBountiesPerFaction)
+        callingBBGuild.bountiesDB.maxBounties[tl] = min(int(temp), cfg.maxBountiesPerDivision)
         await message.reply("Done!")
 
 botCommands.register("set-temp", dev_cmd_set_temp, 2, allowDM=False, helpSection="bounties", useDoc=True)
@@ -735,7 +735,7 @@ async def dev_cmd_decay_temps(message : discord.Message, args : str, isDM : bool
     else:
         callingBBGuild.bountiesDB.activityMonitor.decayTemps()
         callingBBGuild.bountiesDB.maxBounties = [min(int(callingBBGuild.bountiesDB.activityMonitor.temperatures[tl]),
-                                                cfg.maxBountiesPerFaction) for tl in guildActivity._tlsRange]
+                                                cfg.maxBountiesPerDivision) for tl in guildActivity._tlsRange]
         await message.reply("Activity temperatures decayed for " + message.guild.name + ".")
 
 botCommands.register("decay-temps", dev_cmd_decay_temps, 2, allowDM=False,
@@ -755,7 +755,7 @@ async def dev_cmd_reset_temps(message : discord.Message, args : str, isDM : bool
     else:
         callingBBGuild.bountiesDB.activityMonitor.temperatures = [cfg.minGuildActivity for _ in guildActivity._tlsRange]
         callingBBGuild.bountiesDB.maxBounties = [min(int(callingBBGuild.bountiesDB.activityMonitor.temperatures[tl]),
-                                                cfg.maxBountiesPerFaction) for tl in guildActivity._tlsRange]
+                                                cfg.maxBountiesPerDivision) for tl in guildActivity._tlsRange]
         await message.reply("Activity temperatures reset for " + message.guild.name + ".")
 
 botCommands.register("reset-temps", dev_cmd_reset_temps, 2, allowDM=False,

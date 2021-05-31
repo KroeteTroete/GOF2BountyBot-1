@@ -221,14 +221,14 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
         statsEmbed.add_field(name="XP until next level:",
                                 value=str(gameMaths.bountyHuntingXPForLevel(hunterLvl + 1) - userObj.bountyHuntingXP))
         statsEmbed.add_field(name="Prestiges:", value=str(userObj.prestiges))
-        statsEmbed.add_field(name="Total systems checked:", value=str( userObj.systemsChecked), inline=True)
-        statsEmbed.add_field(name="Total bounties won:", value=str( userObj.bountyWins), inline=True)
-        statsEmbed.add_field(name="Total credits earned from bounties:", value=str( userObj.lifetimeCredits), inline=True)
+        statsEmbed.add_field(name="Total systems checked:", value=str(userObj.systemsChecked), inline=True)
+        statsEmbed.add_field(name="Total bounties won:", value=str(userObj.bountyWins), inline=True)
+        statsEmbed.add_field(name="Total credits earned from bounties:", value=str(userObj.lifetimeBountyCreditsWon), inline=True)
         statsEmbed.add_field(name="‎", value="__Dueling__", inline=False)
-        statsEmbed.add_field(name="Duels won:", value=str( userObj.duelWins), inline=True)
-        statsEmbed.add_field(name="Duels lost:", value=str( userObj.duelLosses), inline=True)
-        statsEmbed.add_field(name="Total credits won:", value=str( userObj.duelCreditsWins), inline=True)
-        statsEmbed.add_field(name="Total credits lost:", value=str( userObj.duelCreditsLosses), inline=True)
+        statsEmbed.add_field(name="Duels won:", value=str(userObj.duelWins), inline=True)
+        statsEmbed.add_field(name="Duels lost:", value=str(userObj.duelLosses), inline=True)
+        statsEmbed.add_field(name="Total credits won:", value=str(userObj.duelCreditsWins), inline=True)
+        statsEmbed.add_field(name="Total credits lost:", value=str(userObj.duelCreditsLosses), inline=True)
 
     # send the stats embed
     await message.channel.send(embed=statsEmbed)

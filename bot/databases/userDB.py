@@ -1,5 +1,5 @@
 from __future__ import annotations
-from ..users import basedUser
+from ..users.basedUser import BasedUser, defaultUserDict
 from .. import lib
 from .. import botState
 import traceback
@@ -30,7 +30,7 @@ class UserDB(serializable.Serializable):
         return userID in self.users.keys()
 
 
-    def userExists(self, user: basedUser.BasedUser) -> bool:
+    def userExists(self, user: BasedUser) -> bool:
         """Check if a given BasedUser object is stored in the database.
         Currently only checks if a user with the same ID is stored in the database, not if the objects are the same.
 
@@ -75,7 +75,7 @@ class UserDB(serializable.Serializable):
         self.users[userID].resetUser()
 
 
-    def addID(self, userID: int) -> basedUser.BasedUser:
+    def addID(self, userID: int) -> BasedUser:
         """
         Create a new BasedUser object with the specified ID and add it to the database
 
@@ -89,12 +89,12 @@ class UserDB(serializable.Serializable):
         if self.idExists(userID):
             raise KeyError("Attempted to add a user that is already in this UserDB")
         # Create and return a new user
-        newUser = basedUser.BasedUser.fromDict(basedUser.defaultUserDict, id=userID)
+        newUser = BasedUser.fromDict(defaultUserDict, id=userID)
         self.users[userID] = newUser
         return newUser
 
 
-    def addUser(self, userObj: basedUser.BasedUser):
+    def addUser(self, userObj: BasedUser):
         """Store the given BasedUser object in the database
 
         :param BasedUser userObj: BasedUser to store
@@ -107,7 +107,7 @@ class UserDB(serializable.Serializable):
         self.users[userObj.id] = userObj
 
 
-    def getOrAddID(self, userID: int) -> basedUser.BasedUser:
+    def getOrAddID(self, userID: int) -> BasedUser:
         """If a BasedUser exists in the database with the requested ID, return it.
         If not, create and store a new BasedUser and return it.
 
@@ -131,7 +131,7 @@ class UserDB(serializable.Serializable):
         del self.users[userID]
 
 
-    def getUser(self, userID: int) -> basedUser.BasedUser:
+    def getUser(self, userID: int) -> BasedUser:
         """Fetch the BasedUser from the database with the given ID.
 
         :param int userID: integer discord ID for the user to fetch
@@ -142,7 +142,7 @@ class UserDB(serializable.Serializable):
         return self.users[userID]
 
 
-    def getUsers(self) -> List[basedUser.BasedUser]:
+    def getUsers(self) -> List[BasedUser]:
         """Get a list of all BasedUser objects stored in the database
 
         :return: list containing all BasedUser objects in the db
@@ -203,5 +203,5 @@ class UserDB(serializable.Serializable):
         for userID in userDBDict.keys():
             # Construct new BasedUsers for each ID in the database
             # JSON stores properties as strings, so ids must be converted to int first.
-            newDB.addUser(basedUser.BasedUser.fromDict(userDBDict[userID], id=int(userID)))
+            newDB.addUser(BasedUser.fromDict(userDBDict[userID], id=int(userID)))
         return newDB

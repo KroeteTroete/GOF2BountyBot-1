@@ -31,8 +31,8 @@ defaultShipLoadoutDict = {"name": "Betty", "builtIn": True,
                                         {"name": "IMT Extract 1.3", "builtIn": True}]}
 
 # Default attributes to give to new players
-defaultUserDict = {"bountyHuntingXP": gameMaths.bountyHuntingXPForLevel(1), "credits": 0, "bountyCooldownEnd": 0,
-                    "lifetimeCredits": 0, "systemsChecked": 0, "bountyWins": 0, "activeShip": defaultShipLoadoutDict,
+defaultUserDict = {"credits": 0, "bountyCooldownEnd": 0, "lifetimeBountyCreditsWon": 0, "systemsChecked": 0, "bountyWins": 0,
+                    "activeShip": defaultShipLoadoutDict, "bountyHuntingXP": gameMaths.bountyHuntingXPForLevel(1),
                     "inactiveWeapons": [{"item": {"name": "Nirai Impulse EX 1", "builtIn": True}, "count": 1}]}
 
 # Reference value manually added, not pre-calculated from defaultUserDict. This is not used in the game's code,
@@ -50,8 +50,8 @@ class BasedUser(serializable.Serializable):
     :vartype id: int
     :var credits: The amount of credits (currency) this user has
     :vartype credits: int
-    :var lifetimeCredits: The total amount of credits this user has earned through hunting bounties (TODO: rename)
-    :vartype lifetimeCredits: int
+    :var lifetimeBountyCreditsWon: The total amount of credits this user has earned through hunting bounties
+    :vartype lifetimeBountyCreditsWon: int
     :var bountyCooldownEnd: A utc timestamp representing when the user's cmd_check cooldown is due to expire
     :vartype bountyCooldownEnd: float
     :var systemsChecked: The total number of space systems this user has checked
@@ -104,9 +104,9 @@ class BasedUser(serializable.Serializable):
     :vartype ownedMenus: Dict[type, List[ReactionMenu]]
     """
 
-    def __init__(self, id: int, credits : int = 0, lifetimeCredits : int = 0,
+    def __init__(self, userID: int, credits : int = 0, lifetimeBountyCreditsWon : int = 0,
                     bountyHuntingXP : int = gameMaths.bountyHuntingXPForLevel(1), bountyCooldownEnd : int = -1,
-                    systemsChecked : int = 0, bountyWins : int = 0, activeShip : shipItem.Ship = None,
+                    systemsChecked : int = 0, bountyWins : int = 0, activeShip : bool = None,
                     inactiveShips : inventory.Inventory = inventory.TypeRestrictedInventory(shipItem.Ship),
                     inactiveModules : inventory.Inventory = inventory.TypeRestrictedInventory(moduleItem.ModuleItem),
                     inactiveWeapons : inventory.Inventory = inventory.TypeRestrictedInventory(primaryWeapon.PrimaryWeapon),
@@ -121,8 +121,8 @@ class BasedUser(serializable.Serializable):
         """
         :param int id: The user's unique ID. The same as their unique discord ID.
         :param int credits: The amount of credits (currency) this user has (Default 0)
-        :param int lifetimeCredits: The total amount of credits this user has earned through hunting bounties
-                                    (TODO: rename) (Default 0)
+        :param int lifetimeBountyCreditsWon: The total amount of credits this user has earned through hunting bounties
+                                            (Default 0)
         :param int bountyHuntingXP: The amount of XP this user has gained through bounty hunting (Default level 1)
         :param float bountyCooldownEnd: A utc timestamp representing when the user's cmd_check cooldown is due to expire
                                         (Default -1)
@@ -162,20 +162,20 @@ class BasedUser(serializable.Serializable):
         :param ownedMenus: Lists references to all menus that user owns, by type. (default {})
         :type ownedMenus: Dict[type, List[ReactionMenu]]
         """
-        if type(id) == float:
-            id = int(id)
-        elif type(id) != int:
-            raise TypeError("id must be int, given " + str(type(id)))
+        if type(userID) == float:
+            userID = int(userID)
+        elif type(userID) != int:
+            raise TypeError("id must be int, given " + str(type(userID)))
 
         if type(credits) == float:
             credits = int(credits)
         elif type(credits) != int:
             raise TypeError("credits must be int, given " + str(type(credits)))
 
-        if type(lifetimeCredits) == float:
-            lifetimeCredits = int(lifetimeCredits)
-        elif type(lifetimeCredits) != int:
-            raise TypeError("lifetimeCredits must be int, given " + str(type(lifetimeCredits)))
+        if type(lifetimeBountyCreditsWon) == float:
+            lifetimeBountyCreditsWon = int(lifetimeBountyCreditsWon)
+        elif type(lifetimeBountyCreditsWon) != int:
+            raise TypeError("lifetimeBountyCreditsWon must be int, given " + str(type(lifetimeBountyCreditsWon)))
 
         if type(bountyCooldownEnd) == int:
             bountyCooldownEnd = float(bountyCooldownEnd)
@@ -197,9 +197,9 @@ class BasedUser(serializable.Serializable):
         if guildTransferCooldownEnd is None:
             guildTransferCooldownEnd = datetime.utcnow()
 
-        self.id = id
+        self.id = userID
         self.credits = credits
-        self.lifetimeCredits = lifetimeCredits
+        self.lifetimeBountyCreditsWon = lifetimeBountyCreditsWon
         # TODO: Should probably change this to a datetime, like guildTransferCooldownEnd etc
         self.bountyCooldownEnd = bountyCooldownEnd
         self.systemsChecked = systemsChecked
@@ -271,7 +271,7 @@ class BasedUser(serializable.Serializable):
         """Reset the user's attributes back to their default values.
         """
         self.credits = 0
-        self.lifetimeCredits = 0
+        self.lifetimeBountyCreditsWon = 0
         self.bountyCooldownEnd = -1
         self.systemsChecked = 0
         self.bountyWins = 0
@@ -460,10 +460,10 @@ class BasedUser(serializable.Serializable):
         :return: A dictionary containing all information needed to recreate this user
         :rtype: dict
         """
-        data = {"credits":self.credits, "lifetimeCredits":self.lifetimeCredits,
-                "bountyCooldownEnd":self.bountyCooldownEnd, "systemsChecked":self.systemsChecked,
-                "bountyWins":self.bountyWins, "activeShip": self.activeShip.toDict(**kwargs),
-                "lastSeenGuildId":self.lastSeenGuildId, "duelWins": self.duelWins, "duelLosses": self.duelLosses,
+        data = {"credits": self.credits, "lifetimeBountyCreditsWon": self.lifetimeBountyCreditsWon,
+                "bountyCooldownEnd": self.bountyCooldownEnd, "systemsChecked": self.systemsChecked,
+                "bountyWins": self.bountyWins, "activeShip": self.activeShip.toDict(**kwargs),
+                "lastSeenGuildId": self.lastSeenGuildId, "duelWins": self.duelWins, "duelLosses": self.duelLosses,
                 "duelCreditsWins": self.duelCreditsWins, "bountyWinsToday": self.bountyWinsToday,
                 "dailyBountyWinsReset": self.dailyBountyWinsReset.timestamp(), "bountyHuntingXP": self.bountyHuntingXP,
                 "duelCreditsLosses": self.duelCreditsLosses, "homeGuildID": self.homeGuildID,
@@ -501,11 +501,11 @@ class BasedUser(serializable.Serializable):
     def userDump(self) -> str:
         """Get a string containing key information about the user.
 
-        :return: A string containing the user ID, credits, lifetimeCredits, bountyCooldownEnd, systemsChecked and bountyWins
+        :return: A string containing the user ID, credits, lifetimeBountyCreditsWon, bountyCooldownEnd, systemsChecked and bountyWins
         :rtype: str
         """
         data = "BasedUser #" + str(self.id) + ": "
-        for att in [self.credits, self.lifetimeCredits, self.bountyCooldownEnd, self.systemsChecked, self.bountyWins]:
+        for att in [self.credits, self.lifetimeBountyCreditsWon, self.bountyCooldownEnd, self.systemsChecked, self.bountyWins]:
             data += str(att) + "/"
         return data[:-1]
 
@@ -513,7 +513,7 @@ class BasedUser(serializable.Serializable):
     def getStatByName(self, stat : str) -> Union[int, float]:
         """Get a user attribute by its string name. This method is primarily used in leaderboard generation.
 
-        :param str stat: One of id, credits, lifetimeCredits, bountyCooldownEnd, systemsChecked, bountyWins or value
+        :param str stat: One of id, credits, lifetimeBountyCreditsWon, bountyCooldownEnd, systemsChecked, bountyWins or value
         :return: The requested user attribute
         :rtype: int or float
         :raise ValueError: When given an invalid stat name
@@ -522,8 +522,8 @@ class BasedUser(serializable.Serializable):
             return self.id
         elif stat == "credits":
             return self.credits
-        elif stat == "lifetimeCredits":
-            return self.lifetimeCredits
+        elif stat == "lifetimeBountyCreditsWon":
+            return self.lifetimeBountyCreditsWon
         elif stat == "bountyCooldownEnd":
             return self.bountyCooldownEnd
         elif stat == "systemsChecked":
@@ -815,10 +815,12 @@ class BasedUser(serializable.Serializable):
             bountyHuntingXP = userDict["bountyHuntingXP"]
         else:
             # Roughly predict bounty hunter XP from pre-bountyShips savedata directly from total credits earned from bounties
-            if "lifetimeCredits" not in userDict or userDict["lifetimeCredits"] == 0:
+            if "lifetimeBountyCreditsWon" not in userDict or userDict["lifetimeBountyCreditsWon"] == 0:
                 bountyHuntingXP = gameMaths.bountyHuntingXPForLevel(1)
             else:
-                int(userDict["lifetimeCredits"] * cfg.bountyRewardToXPGainMult)
+                int(userDict["lifetimeBountyCreditsWon"] * cfg.bountyRewardToXPGainMult)
+
+        lifetimeBountyCreditsWon = userDict.get("lifetimeBountyCreditsWon", userDict.get("lifetimeBountyCreditsWon"), 0)
 
         kaamo = kaamoShop.KaamoShop.fromDict(userDict["kaamo"]) if "kaamo" in userDict else None
         loma = kaamoShop.KaamoShop.fromDict(userDict["loma"]) if "loma" in userDict else None
@@ -841,11 +843,12 @@ class BasedUser(serializable.Serializable):
                                                     + "#" + str(menuID) + " stored in user #" + str(id),
                                                 category="reactionMenus", eventType="unknMenuID")
 
-        return BasedUser(**cls._makeDefaults(userDict, id=userID, activeShip=activeShip, inactiveShips=inactiveShips,
+        return BasedUser(**cls._makeDefaults(userDict, ("lifetimeBountyCreditsWon",),
+                                                userID=userID, activeShip=activeShip, inactiveShips=inactiveShips,
                                                 inactiveModules=inactiveModules, inactiveWeapons=inactiveWeapons,
                                                 inactiveTurrets=inactiveTurrets, inactiveTools=inactiveTools,
                                                 bountyHuntingXP=bountyHuntingXP, kaamo=kaamo, loma=loma,
-                                                ownedMenus=ownedMenus,
+                                                ownedMenus=ownedMenus, lifetimeBountyCreditsWon=lifetimeBountyCreditsWon,
                                                 **{k: datetime.utcfromtimestamp(userDict[k]) \
                                                     for k in ("dailyBountyWinsReset", "guildTransferCooldownEnd") \
                                                     if k in userDict}))

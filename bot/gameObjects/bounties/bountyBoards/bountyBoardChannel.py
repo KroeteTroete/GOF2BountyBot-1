@@ -23,7 +23,7 @@ def makeBountyEmbed(bounty : bounty.Bounty) -> Embed:
     embed.set_footer(text=bounty.faction.title(),
                         icon_url=bbData.factionIcons[bounty.faction] if bounty.faction in bbData.factionIcons else "")
     embed.set_thumbnail(url=bounty.criminal.icon)
-    embed.add_field(name="**Reward Pool:**", value=lib.stringTyping.commaSplitNum(str(bounty.reward)) + " Credits")
+    embed.add_field(name="**Reward Pool:**", value=lib.stringTyping.commaSplitNum(bounty.reward) + " Credits")
     embed.add_field(name="**Difficulty:**", value=str(bounty.techLevel))
     # embed = bounty.activeShip.fillLoadoutEmbed(embed, shipEmoji=True)
     embed.add_field(name="**See the culprit's loadout with:**", value="`loadout criminal " + bounty.criminal.name + "`")

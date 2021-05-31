@@ -262,7 +262,7 @@ async def cmd_info_ship(message : discord.Message, args : str, isDM : bool):
                                                 titleTxt=itemObj.name,
                                                 thumb=itemObj.icon if itemObj.hasIcon else bbData.rocketIcon)
         statsEmbed.add_field(name="Value:",
-                                value=lib.stringTyping.commaSplitNum(str(itemObj.getValue(shipUpgradesOnly=True))) \
+                                value=lib.stringTyping.commaSplitNum(itemObj.getValue(shipUpgradesOnly=True)) \
                                         + " Credits")
         statsEmbed.add_field(name="Armour:", value=str(itemObj.getArmour()))
         statsEmbed.add_field(name="Cargo:", value=str(itemObj.getCargo()))

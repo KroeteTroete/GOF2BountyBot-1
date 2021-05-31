@@ -149,7 +149,7 @@ class GuildDB(serializable.Serializable):
         """
         if not g.bountiesDisabled and g.bountiesDB.activityMonitor.isActive:
             g.bountiesDB.activityMonitor.decayTemps()
-            g.bountiesDB.maxBounties = [min(int(g.bountiesDB.activityMonitor.temperatures[tl]), cfg.maxBountiesPerFaction)
+            g.bountiesDB.maxBounties = [min(int(g.bountiesDB.activityMonitor.temperatures[tl]), cfg.maxBountiesPerDivision)
                                         for tl in guildActivity._tlsRange]
 
 

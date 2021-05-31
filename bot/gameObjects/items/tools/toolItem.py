@@ -43,7 +43,7 @@ class ToolItem(gameItem.GameItem):
         user error, and results strings are always returned.
 
         :param Message message: The discord message that triggered this tool use
-        :return: A user-friendly messge summarising the result of the tool use.
+        :return: A user-friendly message summarising the result of the tool use.
         :rtype: str
         """
         pass

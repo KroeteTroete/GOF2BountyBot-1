@@ -148,7 +148,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                         for userID in rewards:
                             currentBBUser = botState.usersDB.getUser(userID)
                             currentBBUser.credits += rewards[userID]["reward"]
-                            currentBBUser.lifetimeCredits += rewards[userID]["reward"]
+                            currentBBUser.lifetimeBountyCreditsWon += rewards[userID]["reward"]
                             currentDCUser = message.guild.get_member(currentBBUser.id)
 
                             oldLevel = gameMaths.calculateUserBountyHuntingLevel(currentBBUser.bountyHuntingXP)
@@ -190,7 +190,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                         numContributingUsers = len(set(rewards))
                         callingGuild.bountiesDB.maxBounties[bounty.techLevel] = \
                                             min(int(callingGuild.bountiesDB.activityMonitor.temperatures[bounty.techLevel]),
-                                                cfg.maxBountiesPerFaction)
+                                                cfg.maxBountiesPerDivision)
                         callingGuild.bountiesDB.activityMonitor.raiseTemp(bounty.techLevel,
                                                                             numContributingUsers * cfg.activityTempPerPlayer)
 

@@ -780,7 +780,8 @@ class BasedGuild(serializable.Serializable):
             else:
                 shop = guildShop.TechLeveledShop()
 
-        newGuild =  BasedGuild(**cls._makeDefaults(guildDict, id=guildID, dcGuild=dcGuild, bounties=None,
+        newGuild =  BasedGuild(**cls._makeDefaults(guildDict, ("bountiesDB",),
+                                                    id=guildID, dcGuild=dcGuild, bounties=None,
                                                     announceChannel=announceChannel, playChannel=playChannel,
                                                     shop=shop, bountyBoardChannel=bbc, shopDisabled=shop is None))
 

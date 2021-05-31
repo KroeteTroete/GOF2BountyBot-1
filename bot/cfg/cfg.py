@@ -62,7 +62,13 @@ timeouts = {
     "duelChallengeMenuExpiry": {"hours": 2},
     "pollMenuExpiry": {"minutes": 5},
 
-    "guildActivityDecay": {"hours": 1}
+    # The time between decrements to the guild activity temperatures of each tech level
+    "guildActivityDecay": {"hours": 1},
+
+    # when using random bounty delay generation, use these min and max points
+    # when using random-routeScale generation, use these min and max points for bounties of route length 1
+    "newBountyDelayRandomMin": {"minutes": 5},
+    "newBountyDelayRandomMax": {"minutes": 7}
 }
 
 paths = {
@@ -257,9 +263,6 @@ newBountyFixedDailyTime = {"hours": 18, "minutes": 40, "seconds": 0}
 newBountyFixedDelta = {"days": 0, "hours": 0, "minutes": 1, "seconds": 0}
 
 ### random delay config
-# when using random delay generation, use these min and max points
-# when using random-routeScale generation, use these min and max points for bounties of route length 1
-newBountyDelayRandomRange = {"min": 5 * 60, "max": 7 * 60}
 
 ### routeScale config
 newBountyDelayRouteScaleCoefficient = 1

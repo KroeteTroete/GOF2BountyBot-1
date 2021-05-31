@@ -8,10 +8,9 @@ def readJSON(dbFile: str) -> dict:
     :return: The contents of the requested json file, parsed into a python dictionary
     :rtype: dict
     """
-    f = open(dbFile, "r")
-    txt = f.read()
-    f.close()
-    return json.loads(txt)
+    with open(dbFile, "r") as f:
+        data = json.load(f)
+    return data
 
 
 def writeJSON(dbFile: str, db: dict, prettyPrint=False):
@@ -22,13 +21,11 @@ def writeJSON(dbFile: str, db: dict, prettyPrint=False):
     :param dict db: The json-serializable dictionary to write
     :param bool prettyPrint: When False, write minified JSON. When true, write JSON with basic pretty printing (indentation)
     """
-    if prettyPrint:
-        txt = json.dumps(db, indent=4, sort_keys=True)
-    else:
-        txt = json.dumps(db)
-    f = open(dbFile, "w")
-    txt = f.write(txt)
-    f.close()
+    with open(dbFile, "w") as f:
+        if prettyPrint:
+            json.dump(db, f, indent=4, sort_keys=True)
+        else:
+            json.dump(db, f)
 
 
 def saveDB(dbPath: str, db, **kwargs):

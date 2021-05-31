@@ -87,9 +87,9 @@ class BasedEmoji(serializable.Serializable):
             raise ValueError("At least one of id or unicode is required")
         elif id != -1 and unicode != "":
             raise ValueError("Can only accept one of id or unicode, not both")
-        if type(id) != int:
+        if not isinstance(id, int):
             raise TypeError("Given incorrect type for BasedEmoji ID: " + type(id).__name__)
-        if type(unicode) != str:
+        if not isinstance(unicode, str):
             raise TypeError("Given incorrect type for BasedEmoji unicode: " + type(unicode).__name__)
 
         self.id = id
@@ -136,7 +136,7 @@ class BasedEmoji(serializable.Serializable):
         :return: True of this emoji is semantically equal to the given emoji, False otherwise
         :rtype: bool
         """
-        return type(other) == BasedEmoji and self.sendable == other.sendable
+        return isinstance(other, BasedEmoji) and self.sendable == other.sendable
 
 
     def __str__(self) -> str:
@@ -166,7 +166,7 @@ class BasedEmoji(serializable.Serializable):
         """
         rejectInvalid = kwargs.get("rejectInvalid", False)
 
-        if type(emojiDict) == BasedEmoji:
+        if isinstance(emojiDict, BasedEmoji):
             return emojiDict
         if "id" in emojiDict:
             return BasedEmoji(id=emojiDict["id"], rejectInvalid=rejectInvalid)
@@ -185,7 +185,7 @@ class BasedEmoji(serializable.Serializable):
         :return: A BasedEmoji representing e
         :rtype: BasedEmoji
         """
-        if type(e) == BasedEmoji:
+        if isinstance(e, BasedEmoji):
             return e
         if e.is_unicode_emoji():
             return BasedEmoji(unicode=e.name, rejectInvalid=rejectInvalid)
@@ -206,16 +206,16 @@ class BasedEmoji(serializable.Serializable):
         :return: A BasedEmoji representing e
         :rtype: BasedEmoji
         """
-        if type(e) == BasedEmoji:
+        if isinstance(e, BasedEmoji):
             return e
-        if type(e) == str:
+        if isinstance(e, str):
             if strIsUnicodeEmoji(e):
                 return BasedEmoji(unicode=e, rejectInvalid=rejectInvalid)
             elif strIsCustomEmoji(e):
                 return BasedEmoji.fromStr(e, rejectInvalid=rejectInvalid)
             else:
                 raise ValueError("Given a string that does not match any emoji format: " + e)
-        if type(e) == PartialEmoji:
+        if isinstance(e, PartialEmoji):
             return BasedEmoji.fromPartial(e, rejectInvalid=rejectInvalid)
         else:
             return BasedEmoji(id=e.id, rejectInvalid=rejectInvalid)
@@ -232,21 +232,26 @@ class BasedEmoji(serializable.Serializable):
                         the ID of a discord custom emoji.
         :param bool rejectInvalid: When true, an exception is guaranteed to raise if an invalid emoji is requested,
                                     regardless of raiseUnknownEmojis (Default False)
+        :raise TypeError: When given something other than str, dict or BasedEmoji
         :raise exceptions.UnrecognisedCustomEmoji: When rejectInvalid=True is present in kwargs, and a custom emoji
                                                     is given that does not exist or the client cannot access.
+        :raise exceptions.UnrecognisedEmojiFormat: When given a string that does not match known emoji formats
         :return: A BasedEmoji representing the given string emoji
         :rtype: BasedEmoji
         """
-        if type(s) == BasedEmoji:
+        if isinstance(s, BasedEmoji):
             return s
-        if type(s) == dict:
+        elif isinstance(s, dict):
             return BasedEmoji.fromDict(s, rejectInvalid=rejectInvalid)
-        if strIsUnicodeEmoji(s):
-            return BasedEmoji(unicode=s, rejectInvalid=rejectInvalid)
-        elif strIsCustomEmoji(s):
-            return BasedEmoji(id=int(s[s[s.index(":") + 1:].index(":") + 3:-1]), rejectInvalid=rejectInvalid)
-        elif stringTyping.isInt(s):
-            return BasedEmoji(id=int(s), rejectInvalid=rejectInvalid)
+        elif isinstance(s, str):
+            if strIsUnicodeEmoji(s):
+                return BasedEmoji(unicode=s, rejectInvalid=rejectInvalid)
+            elif strIsCustomEmoji(s):
+                return BasedEmoji(id=int(s[s[s.index(":") + 1:].index(":") + 3:-1]), rejectInvalid=rejectInvalid)
+            elif stringTyping.isInt(s):
+                return BasedEmoji(id=int(s), rejectInvalid=rejectInvalid)
+            else:
+                raise exceptions.UnrecognisedEmojiFormat("does not match known emoji string formats", s)
         else:
             raise TypeError("Expected s of type str, dict or BasedEmoji, got " + type(s).__name__ + ": " + str(s))
 
