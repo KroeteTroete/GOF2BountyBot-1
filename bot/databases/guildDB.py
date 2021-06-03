@@ -109,8 +109,7 @@ class GuildDB(serializable.Serializable):
         if self.idExists(dcGuild.id):
             raise KeyError("Attempted to add a guild that already exists: " + id)
         # Create and return a BasedGuild for the requested ID
-        self.guilds[dcGuild.id] = basedGuild.BasedGuild(dcGuild.id, dcGuild, bountyDB.BountyDB(None, None,
-                                                                                                dummy=True))
+        self.guilds[dcGuild.id] = basedGuild.BasedGuild(dcGuild.id, dcGuild, bountyDB.BountyDB(None, dummy=True))
         self.guilds[dcGuild.id].bountiesDB = bountyDB.BountyDB(self.guilds[dcGuild.id])
         return self.guilds[dcGuild.id]
 

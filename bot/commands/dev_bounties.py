@@ -636,7 +636,7 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
 
         # special bounty generation for builtIn criminals
         if builtIn:
-            config = bountyConfig.BountyConfig(faction=newFaction, name=newName, route=newRoute,
+            config = bountyConfig.BountyConfig(faction=newFaction, route=newRoute,
                                                 start=newStart, end=newEnd, answer=newAnswer,
                                                 reward=newReward, endTime=newEndTime,
                                                 isPlayer=False, icon=newIcon, name=builtInCrimObj.name)
@@ -815,10 +815,9 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
                                             icon=str(requestedUser.avatar_url_as(size=64)),
                                             aliases=[lib.discordUtil.userTagOrDiscrim(newName)],
                                             techLevel=gameMaths.calculateUserBountyHuntingLevel(requestedUser.bountyHuntingXP),
-                                            faction=newFaction, name=newName, route=newRoute,
+                                            faction=newFaction, route=newRoute,
                                             start=newStart, end=newEnd, answer=newAnswer,
-                                            reward=newReward, endTime=newEndTime,
-                                            isPlayer=False, icon=newIcon, name=builtInCrimObj.name)
+                                            reward=newReward, endTime=newEndTime)
 
     if allGuilds:
         currentGuild: basedGuild.BasedGuild = None

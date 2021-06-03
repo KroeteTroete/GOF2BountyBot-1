@@ -329,6 +329,9 @@ class Bounty(serializable.Serializable):
                                 This currently toggles whether the passed bounty is checked for existence or not.
                                 (Default False)
         """
+        if type(data) != dict:
+            raise ValueError(str(data))
+
         owningDB = kwargs.get("owningDB", None)
         dbReload = kwargs.get("dbReload", False)
 
