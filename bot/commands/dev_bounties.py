@@ -652,7 +652,7 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
         spawnTasks = set()
         for currentGuild in botState.guildsDB.guilds.values():
             if not currentGuild.bountiesDisabled:
-                newBounty = bounty.Bounty(owningDB=currentGuild.bountiesDB, config=config.generate())
+                newBounty = bounty.Bounty(owningDB=currentGuild.bountiesDB, config=config.generate(currentGuild.bountiesDB))
                 currentGuild.bountiesDB.addBounty(newBounty)
                 spawnTasks.add(asyncio.create_task(currentGuild.announceNewBounty(newBounty)))
         if spawnTasks:
@@ -664,7 +664,7 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
                                         trace=traceback.format_exception(type(e), e, e.__traceback__))
         await message.channel.send(f"Criminal spawned into {len(spawnTasks)} guilds!")
     else:
-        newBounty = bounty.Bounty(owningDB=callingBBGuild.bountiesDB, config=config.generate())
+        newBounty = bounty.Bounty(owningDB=callingBBGuild.bountiesDB, config=config.generate(callingBBGuild.bountiesDB))
         callingBBGuild.bountiesDB.addBounty(newBounty)
         await callingBBGuild.announceNewBounty(newBounty)
         await message.channel.send(f"Criminal spawned!")
@@ -828,7 +828,7 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
                 if currentGuild.bountiesDB.bountyNameExists(f"<@{newName}>"):
                     await message.channel.send(f"Skipping guild: {currentGuild.dcGuild.name if currentGuild.dcGuild is not None else ''}#{currentGuild.id} - criminal with this name already exists")
                 else:
-                    newBounty = bounty.Bounty(owningDB=currentGuild.bountiesDB, config=config.generate())
+                    newBounty = bounty.Bounty(owningDB=currentGuild.bountiesDB, config=config.generate(currentGuild.bountiesDB))
                     currentGuild.bountiesDB.addBounty(newBounty)
                     spawnTasks.add(asyncio.create_task(currentGuild.announceNewBounty(newBounty)))
         if spawnTasks:
@@ -843,7 +843,7 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
         if callingBBGuild.bountiesDB.bountyNameExists(f"<@{newName}>"):
             await message.channel.send("A criminal with the same name already exists in that guild!")
         else:
-            newBounty = bounty.Bounty(owningDB=callingBBGuild.bountiesDB, config=config.generate())
+            newBounty = bounty.Bounty(owningDB=callingBBGuild.bountiesDB, config=config.generate(callingBBGuild.bountiesDB))
             callingBBGuild.bountiesDB.addBounty(newBounty)
             await callingBBGuild.announceNewBounty(newBounty)
             await message.channel.send(f"Criminal spawned!")
