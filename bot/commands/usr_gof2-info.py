@@ -832,6 +832,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
             try:
                 await shipRenderer.renderShip(str(message.id), shipData["path"], shipData["model"], skinPaths, disabledLayers,
                                                 cfg.skinRenderShowmeResolution[0], cfg.skinRenderShowmeResolution[1],
+                                                cfg.skinRenderShowmeSamples,
                                                 full=skin == "$ATTACHEDFILEFULL$")
             except shipRenderer.RenderFailed:
                 await message.channel.send(message.author.mention + "\n🥺 Render failed! The error has been logged, " \
