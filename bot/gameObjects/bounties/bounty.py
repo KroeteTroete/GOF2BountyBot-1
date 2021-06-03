@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Dict, Union, TYPE_CHECKING
 if TYPE_CHECKING:
     from ...databases.bountyDivision import BountyDivision
+    from ...databases.bountyDB import BountyDB
 
 from .bountyConfig import BountyConfig
 from ...cfg import bbData, cfg
@@ -43,7 +44,7 @@ class Bounty(serializable.Serializable):
     """
 
     def __init__(self, criminalObj : criminal.Criminal = None, config : BountyConfig = None,
-                    division : BountyDivision = None, dbReload : bool = False):
+                    division : BountyDivision = None, dbReload : bool = False, owningDB : BountyDB = None):
         """
         :param criminalObj: The criminal to be wanted. Give None to randomly generate a criminal. (Default None)
         :type criminalObj: criminal or None
@@ -101,7 +102,7 @@ class Bounty(serializable.Serializable):
         self.route = config.route
         self.reward = config.reward
         self.rewardPerSys = config.rewardPerSys
-        self.checked = config.checked
+        self.checked = config.checked.copy()
         self.answer = config.answer
 
         self.techLevel = config.techLevel

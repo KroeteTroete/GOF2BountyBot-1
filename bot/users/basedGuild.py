@@ -9,7 +9,7 @@ import traceback
 
 from .. import botState, lib
 from ..gameObjects import guildShop
-from ..databases import bountyDB
+from ..databases.bountyDB import BountyDB
 from ..gameObjects.bounties.bountyBoards import bountyBoardChannel
 from ..userAlerts import userAlerts
 from ..cfg import cfg, bbData
@@ -44,7 +44,7 @@ class BasedGuild(serializable.Serializable):
     :var ownedRoleMenus: The number of ReactionRolePickers present in this guild
     :vartype ownedRoleMenus: int
     :var bounties: This guild's active bounties
-    :vartype bounties: bountyDB.bountyDB
+    :vartype bounties: BountyDB
     :var bountiesDisabled: Whether or not to disable this guild's bountyDB and bounty spawning
     :vartype bountiesDisabled: bool
     :var shopDisabled: Whether or not to disable this guild's guildShop and shop refreshing
@@ -57,7 +57,7 @@ class BasedGuild(serializable.Serializable):
     :vartype hasBountyAlertRoles: bool
     """
 
-    def __init__(self, id: int, dcGuild: Guild, bounties: bountyDB.BountyDB, commandPrefix: str = cfg.defaultCommandPrefix,
+    def __init__(self, id: int, dcGuild: Guild, bounties: BountyDB, commandPrefix: str = cfg.defaultCommandPrefix,
             announceChannel : channel.TextChannel = None, playChannel : channel.TextChannel = None,
             shop : guildShop.TechLeveledShop = None, bountyBoardChannel : bountyBoardChannel.bountyBoardChannel = None,
             alertRoles : Dict[str, int] = {}, ownedRoleMenus : int = 0, bountiesDisabled : bool = False,
@@ -65,7 +65,7 @@ class BasedGuild(serializable.Serializable):
         """
         :param int id: The ID of the guild, directly corresponding to a discord guild's ID.
         :param discord.Guild dcGuild: This guild's corresponding discord.Guild object
-        :param bountyDB.bountyDB bounties: This guild's active bounties
+        :param BountyDB bounties: This guild's active bounties
         :param discord.channel announceChannel: The discord.channel object for this guild's announcements chanel.
                                                 None when no announce channel is set for this guild.
         :param discord.channel playChannel: The discord.channel object for this guild's bounty playing chanel.
@@ -636,7 +636,7 @@ class BasedGuild(serializable.Serializable):
         if not self.bountiesDisabled:
             raise ValueError("Bounties are already enabled in this guild")
 
-        self.bountiesDB = bountyDB.BountyDB(self, guildActivity.ActivityMonitor())
+        self.bountiesDB = BountyDB(self)
         self.bountiesDisabled = False
 
 
@@ -780,16 +780,16 @@ class BasedGuild(serializable.Serializable):
             else:
                 shop = guildShop.TechLeveledShop()
 
-        newGuild =  BasedGuild(**cls._makeDefaults(guildDict, ("bountiesDB",),
+        newGuild = BasedGuild(**cls._makeDefaults(guildDict, ("bountiesDB",),
                                                     id=guildID, dcGuild=dcGuild, bounties=None,
                                                     announceChannel=announceChannel, playChannel=playChannel,
                                                     shop=shop, bountyBoardChannel=bbc, shopDisabled=shop is None))
 
         if not bountiesDisabled:
             if "bountiesDB" in guildDict:
-                bountiesDB = bountyDB.BountyDB.fromDict(guildDict["bountiesDB"], dbReload=dbReload, owningBasedGuild=newGuild)
+                bountiesDB = BountyDB.fromDict(guildDict["bountiesDB"], dbReload=dbReload, owningBasedGuild=newGuild)
             else:
-                bountiesDB = bountyDB.BountyDB(newGuild, guildActivity.ActivityMonitor())
+                bountiesDB = BountyDB(newGuild)
             newGuild.bountiesDB = bountiesDB
 
         return newGuild

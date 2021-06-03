@@ -111,8 +111,7 @@ class GuildDB(serializable.Serializable):
         # Create and return a BasedGuild for the requested ID
         self.guilds[dcGuild.id] = basedGuild.BasedGuild(dcGuild.id, dcGuild, bountyDB.BountyDB(None, None,
                                                                                                 dummy=True))
-        self.guilds[dcGuild.id].bountiesDB = bountyDB.BountyDB(self.guilds[dcGuild.id],
-                                                                guildActivity.ActivityMonitor())
+        self.guilds[dcGuild.id].bountiesDB = bountyDB.BountyDB(self.guilds[dcGuild.id])
         return self.guilds[dcGuild.id]
 
 
@@ -147,10 +146,11 @@ class GuildDB(serializable.Serializable):
 
         :param BasedGuild g: The guild whose temperatures to decay
         """
-        if not g.bountiesDisabled and g.bountiesDB.activityMonitor.isActive:
-            g.bountiesDB.activityMonitor.decayTemps()
-            g.bountiesDB.maxBounties = [min(int(g.bountiesDB.activityMonitor.temperatures[tl]), cfg.maxBountiesPerDivision)
-                                        for tl in guildActivity._tlsRange]
+        if not g.bountiesDisabled:
+            for div in g.bountiesDB.divisions.values():
+                if div.isActive:
+                    div.decayTemp()
+                    div.maxBounties = min(int(div.temperature), cfg.maxBountiesPerDivision)
 
 
     def decayAllTemps(self):

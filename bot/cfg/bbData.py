@@ -5,6 +5,9 @@ from ..lib.emojis import UninitializedBasedEmoji
 factions = ["terran", "vossk", "midorian", "nivelian", "neutral"]
 # all factions useable in bounties
 bountyFactions = ["terran", "vossk", "midorian", "nivelian"]
+# Dicord emoji IDs for all factions
+bountyFactionEmojis = {"terran": 849316423800979528, "vossk": 849316423595720795,
+                        "midorian": 849316424270741504, "nivelian": 849316423808581703}
 
 # levels of security in SolarSystems (SolarSystem security is stored as an index in this list)
 securityLevels = ["secure", "average", "risky", "dangerous"]
