@@ -31,34 +31,20 @@ def td_format_noYM(td_object: timedelta) -> str:
     return ", ".join(strings)
 
 
-def timeDeltaFromDict(timeDict: dict) -> timedelta:
-    """Construct a datetime.timedelta from a dictionary,
-    transforming keys into keyword arguments for the timedelta constructor.
+def getRandomDelay(minmaxDict: Dict[str, timedelta]) -> timedelta:
+    """Generate a random timedelta between the given minimum and maximum timedeltas, inclusive.
+    minMaxDict must contain keys "min" and "max" (case sensitive), with values of timedeltas representing
+    the minimium and maximum delays this function can generate (inclusive)
 
-    :param dict timeDict: dictionary containing measurements for each time interval. i.e weeks, days, hours, minutes,
-                            seconds, microseconds and milliseconds. all are optional and case sensitive.
-    :return: a timedelta with all of the attributes requested in the dictionary.
-    :rtype: datetime.timedelta
+    :param minMaxDict: A dictionary with a "min" timedelta and a "max" timedelta as generation limits
+    :type minMaxDict: Dict[str, timedelta]
+    :return: A timedelta randomly placed between the given min and max
+    :rtype: timedelta
     """
-    return timedelta(weeks=timeDict["weeks"] if "weeks" in timeDict else 0,
-                     days=timeDict["days"] if "days" in timeDict else 0,
-                     hours=timeDict["hours"] if "hours" in timeDict else 0,
-                     minutes=timeDict["minutes"] if "minutes" in timeDict else 0,
-                     seconds=timeDict["seconds"] if "seconds" in timeDict else 0,
-                     microseconds=timeDict["microseconds"] if "microseconds" in timeDict else 0,
-                     milliseconds=timeDict["milliseconds"] if "milliseconds" in timeDict else 0)
+    return timedelta(seconds=random.randint(minmaxDict["min"].total_seconds(), minmaxDict["max"].total_seconds()))
 
 
-# TODO: Convert to random across two dicts
-def getRandomDelaySeconds(minmaxDict : Dict[str, int]) -> timedelta:
-    """Generate a random timedelta between the given minimum and maximum number of seconds, inclusive.
-    minMaxDict must contain keys "min" and "max" (case sensitive), with values of integers representing
-    the minimium and maximum number of seconds this function can generate (inclusive)
-    """
-    return timedelta(seconds=random.randint(minmaxDict["min"], minmaxDict["max"]))
-
-
-def tomorrow(today: datetime = None) -> datetime:
+def tomorrow(today : datetime = None) -> datetime:
     """Make a new timestamp at 12am tomorrow. Or edit the provided one, to be one day later.
 
     :param datetime today: A timestamp whose day to increment by one, and all other time attributes to zero out (default now)

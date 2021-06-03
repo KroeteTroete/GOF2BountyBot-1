@@ -23,7 +23,7 @@ def makeBountyEmbed(bounty : bounty.Bounty) -> Embed:
                             bbData.factionColours["neutral"])
     embed.set_footer(text=bounty.faction.title())
     embed.set_thumbnail(url=bounty.criminal.icon)
-    embed.add_field(name="**Reward:**", value=lib.stringTyping.commaSplitNum(str(bounty.reward)) + " Credits")
+    embed.add_field(name="**Reward:**", value=lib.stringTyping.commaSplitNum(bounty.reward) + " Credits")
     routeStr = ""
     for system in bounty.route:
         if bounty.systemChecked(system):
@@ -386,4 +386,4 @@ class bountyBoardChannel(serializable.Serializable):
         if BBCDict is None:
             return None
         return bountyBoardChannel(BBCDict["channel"], BBCDict["listings"],
-                                    BBCDict["noBountiesMsg"] if "noBountiesMsg" in BBCDict else -1)
+                                    BBCDict.get("noBountiesMsg", -1))

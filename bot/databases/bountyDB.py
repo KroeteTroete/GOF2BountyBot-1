@@ -357,10 +357,10 @@ class BountyDB(serializable.Serializable):
         :return: The new bountyDB object
         :rtype: bountyDB
         """
-        dbReload = kwargs["dbReload"] if "dbReload" in kwargs else False
+        dbReload = kwargs.get("dbReload", False)
 
-        escapedBountiesData = bountyDBDict["escaped"] if "escaped" in bountyDBDict else {}
-        activeBountiesData = bountyDBDict["active"] if "active" in bountyDBDict else {}
+        escapedBountiesData = bountyDBDict.get("escaped", {})
+        activeBountiesData = bountyDBDict.get("active", {})
 
         # Instanciate a new bountyDB
         newDB = BountyDB(activeBountiesData.keys())

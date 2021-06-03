@@ -79,19 +79,9 @@ class ScannerModule(moduleItem.ModuleItem):
         :return: The new module object as described in moduleDict
         :rtype: dict
         """
-        if "builtIn" in moduleDict and moduleDict["builtIn"]:
+        if moduleDict.get("builtIn", False):
             return bbData.builtInModuleObjs[moduleDict["name"]]
 
-        return ScannerModule(moduleDict["name"], moduleDict["aliases"] if "aliases" in moduleDict else [],
-                                timeToLock=moduleDict["timeToLock"] if "timeToLock" in moduleDict else 0,
-                                showClassAAsteroids=moduleDict["showClassAAsteroids"] if "showClassAAsteroids" in moduleDict \
-                                                        else False,
-                                showCargo=moduleDict["showCargo"] if "showCargo" in moduleDict else 0,
-                                value=moduleDict["value"] if "value" in moduleDict else 0,
-                                wiki=moduleDict["wiki"] if "wiki" in moduleDict else "",
-                                manufacturer=moduleDict["manufacturer"] if "manufacturer" in moduleDict else "",
-                                icon=moduleDict["icon"] if "icon" in moduleDict else bbData.rocketIcon,
-                                emoji=lib.emojis.BasedEmoji.fromStr(moduleDict["emoji"]) if "emoji" in moduleDict else \
-                                        lib.emojis.BasedEmoji.EMPTY,
-                                techLevel=moduleDict["techLevel"] if "techLevel" in moduleDict else -1,
-                                builtIn=moduleDict["builtIn"] if "builtIn" in moduleDict else False)
+        return ScannerModule(**cls._makeDefaults(moduleDict, ignores=("type",),
+                                                emoji=lib.emojis.BasedEmoji.fromStr(moduleDict["emoji"]) \
+                                                        if "emoji" in moduleDict else lib.emojis.BasedEmoji.EMPTY))

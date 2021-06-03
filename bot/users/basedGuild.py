@@ -102,13 +102,15 @@ class BasedGuild(serializable.Serializable):
         self.bountiesDB = bounties
         self.bountiesDisabled = bountiesDisabled
 
-        bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelaySeconds,
+        bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelay,
                                 "fixed-routeScale": self.getRouteScaledBountyDelayFixed,
                                 "random-routeScale": self.getRouteScaledBountyDelayRandom}
 
-        bountyDelayGeneratorArgs = {"random": cfg.newBountyDelayRandomRange,
+        bountyDelayGeneratorArgs = {"random": {"min": timedelta(**cfg.timeouts.newBountyDelayRandomMin),
+                                                "max": timedelta(**cfg.timeouts.newBountyDelayRandomMax)},
                                     "fixed-routeScale": cfg.newBountyFixedDelta,
-                                    "random-routeScale": cfg.newBountyDelayRandomRange}
+                                    "random-routeScale": {"min": timedelta(**cfg.timeouts.newBountyDelayRandomMin),
+                                                            "max": timedelta(**cfg.timeouts.newBountyDelayRandomMax)}}
 
         if bountiesDisabled:
             self.newBountyTT = None
@@ -119,7 +121,7 @@ class BasedGuild(serializable.Serializable):
             self.hasBountyBoardChannel = bountyBoardChannel is not None
 
             if cfg.newBountyDelayType == "fixed":
-                self.newBountyTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.newBountyFixedDelta),
+                self.newBountyTT = TimedTask(expiryDelta=timedelta(**cfg.newBountyFixedDelta),
                                                 autoReschedule=True, expiryFunction=self.spawnAndAnnounceRandomBounty)
             else:
                 try:
@@ -355,14 +357,14 @@ class BasedGuild(serializable.Serializable):
     def getRouteScaledBountyDelayFixed(self, baseDelayDict : Dict[str, int]) -> timedelta:
         """New bounty delay generator, scaling a fixed delay by the length of the presently spawned bounty.
 
-        :param dict baseDelayDict: A lib.timeUtil.timeDeltaFromDict-compliant dictionary describing the amount of time to wait
+        :param dict baseDelayDict: A timedelta-compliant dictionary describing the amount of time to wait
                                     after a bounty is spawned with route length 1
         :return: A datetime.timedelta indicating the time to wait before spawning a new bounty
         :rtype: datetime.timedelta
         """
         timeScale = cfg.fallbackRouteScale if self.bountiesDB.latestBounty is None else \
                     len(self.bountiesDB.latestBounty.route)
-        delay = lib.timeUtil.timeDeltaFromDict(baseDelayDict) * timeScale * cfg.newBountyDelayRouteScaleCoefficient
+        delay = timedelta(**baseDelayDict) * timeScale * cfg.newBountyDelayRouteScaleCoefficient
         botState.logger.log("Main", "routeScaleBntyDelayFixed",
                             "New bounty delay generated, " \
                                 + ("no latest criminal." if self.bountiesDB.latestBounty is None else \
@@ -384,7 +386,7 @@ class BasedGuild(serializable.Serializable):
         """
         timeScale = cfg.fallbackRouteScale if self.bountiesDB.latestBounty is None else \
                     len(self.bountiesDB.latestBounty.route)
-        delay = lib.timeUtil.getRandomDelaySeconds({"min": baseDelayDict["min"] * timeScale \
+        delay = lib.timeUtil.getRandomDelay({"min": baseDelayDict["min"] * timeScale \
                                                         * cfg.newBountyDelayRouteScaleCoefficient,
                                                     "max": baseDelayDict["max"] * timeScale \
                                                         * cfg.newBountyDelayRouteScaleCoefficient})
@@ -532,16 +534,18 @@ class BasedGuild(serializable.Serializable):
 
         self.bountiesDB = bountyDB.BountyDB(bbData.bountyFactions)
 
-        bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelaySeconds,
+        bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelay,
                                 "fixed-routeScale": self.getRouteScaledBountyDelayFixed,
                                 "random-routeScale": self.getRouteScaledBountyDelayRandom}
 
-        bountyDelayGeneratorArgs = {"random": cfg.newBountyDelayRandomRange,
+        bountyDelayGeneratorArgs = {"random": {"min": cfg.timeouts.newBountyDelayRandomMin,
+                                                "max": cfg.timeouts.newBountyDelayRandomMax},
                                     "fixed-routeScale": cfg.newBountyFixedDelta,
-                                    "random-routeScale": cfg.newBountyDelayRandomRange}
+                                    "random-routeScale": {"min": cfg.timeouts.newBountyDelayRandomMin,
+                                                            "max": cfg.timeouts.newBountyDelayRandomMax}}
 
         if cfg.newBountyDelayType == "fixed":
-            self.newBountyTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.newBountyFixedDelta),
+            self.newBountyTT = TimedTask(expiryDelta=timedelta(**cfg.newBountyFixedDelta),
                                             autoReschedule=True, expiryFunction=self.spawnAndAnnounceRandomBounty)
         else:
             try:
@@ -667,24 +671,18 @@ class BasedGuild(serializable.Serializable):
         if "guildID" not in kwargs:
             raise NameError("Required kwarg missing: guildID")
         guildID = kwargs["guildID"]
-
-        dbReload = kwargs["dbReload"] if "dbReload" in kwargs else False
+        dbReload = kwargs.get("dbReload", False)
 
         dcGuild = botState.client.get_guild(guildID)
         if dcGuild is None:
             raise lib.exceptions.NoneDCGuildObj("Could not get guild object for id " + str(guildID))
 
-        if "announceChannel" in guildDict and guildDict["announceChannel"] != -1:
-            announceChannel = dcGuild.get_channel(guildDict["announceChannel"])
-        else:
-            announceChannel = None
-        if "playChannel" in guildDict and guildDict["playChannel"] != -1:
-            playChannel = dcGuild.get_channel(guildDict["playChannel"])
-        else:
-            playChannel = None
+        announceChannel = guildDict.get("announceChannel", -1)
+        announceChannel = dcGuild.get_channel(announceChannel) if announceChannel != -1 else None
+        playChannel = guildDict.get("playChannel", -1)
+        playChannel = dcGuild.get_channel(playChannel) if playChannel != -1 else None
 
-
-        if "bountiesDisabled" in guildDict and guildDict["bountiesDisabled"]:
+        if guildDict.get("bountiesDisabled", False):
             bountiesDB = None
             bbc = None
         else:
@@ -693,10 +691,10 @@ class BasedGuild(serializable.Serializable):
             else:
                 bountiesDB = bountyDB.BountyDB(bbData.bountyFactions)
             
-            if "bountyBoardChannel" in guildDict and guildDict["bountyBoardChannel"] != -1:
+            if guildDict.get("bountyBoardChannel", -1) != -1:
                 bbc = bountyBoardChannel.bountyBoardChannel.fromDict(guildDict["bountyBoardChannel"])
         
-        if "shopDisabled" in guildDict and guildDict["shopDisabled"]:
+        if not guildDict.get("shopDisabled", True):
             shop = None
         else:
             if "shop" in guildDict:
@@ -705,11 +703,7 @@ class BasedGuild(serializable.Serializable):
                 shop = guildShop.GuildShop()
         
 
-        return BasedGuild(guildID, dcGuild, bountiesDB, announceChannel=announceChannel, playChannel=playChannel,
-                            shop=shop, bountyBoardChannel=bbc,
-                            shopDisabled=guildDict["shopDisabled"] if "shopDisabled" in guildDict else False,
-                            alertRoles=guildDict["alertRoles"] if "alertRoles" in guildDict else {},
-                            ownedRoleMenus=guildDict["ownedRoleMenus"] if "ownedRoleMenus" in guildDict else 0,
-                            bountiesDisabled=guildDict["bountiesDisabled"] if "bountiesDisabled" in guildDict else False,
-                            commandPrefix=guildDict["commandPrefix"] if "commandPrefix" in guildDict else \
-                                            cfg.defaultCommandPrefix)
+        return BasedGuild(**cls._makeDefaults(guildDict, ("bountiesDB",),
+                                                id=guildID, dcGuild=dcGuild, bounties=bountiesDB,
+                                                announceChannel=announceChannel, playChannel=playChannel,
+                                                shop=shop, bountyBoardChannel=bbc))

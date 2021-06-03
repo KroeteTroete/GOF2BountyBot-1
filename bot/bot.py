@@ -11,7 +11,7 @@ from discord.ext.commands import Bot as ClientBaseClass
 
 # Util imports
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import traceback
 import asyncio
@@ -450,7 +450,7 @@ async def on_ready():
     botState.newBountiesTTDB = TimedTaskHeap()
     botState.duelRequestTTDB = TimedTaskHeap()
 
-    shopRefreshDelta = lib.timeUtil.timeDeltaFromDict(cfg.timeouts.shopRefresh)
+    shopRefreshDelta = timedelta(**cfg.timeouts.shopRefresh)
     botState.shopRefreshTT = TimedTask(expiryDelta=shopRefreshDelta,
                                         autoReschedule=True,
                                         expiryFunction=refreshAndAnnounceAllShopStocks)
@@ -458,10 +458,10 @@ async def on_ready():
     botState.taskScheduler.scheduleTask(botState.shopRefreshTT)
 
     # Schedule database saving
-    botState.dbSaveTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.timeouts.dataSaveFrequency),
+    botState.dbSaveTT = TimedTask(expiryDelta=timedelta(**cfg.timeouts.dataSaveFrequency),
                                     autoReschedule=True, expiryFunction=botState.client.saveAllDBs)
     # Schedule BASED updates checking
-    botState.updatesCheckTT = TimedTask(expiryDelta=lib.timeUtil.timeDeltaFromDict(cfg.timeouts.BASED_updateCheckFrequency),
+    botState.updatesCheckTT = TimedTask(expiryDelta=timedelta(**cfg.timeouts.BASED_updateCheckFrequency),
                                         autoReschedule=True, expiryFunction=checkForUpdates)
 
     botState.taskScheduler.scheduleTask(botState.dbSaveTT)

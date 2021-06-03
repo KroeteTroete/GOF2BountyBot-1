@@ -1,5 +1,5 @@
 import discord
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from . import commandsDB as botCommands
 from .. import botState, lib
@@ -26,7 +26,7 @@ async def cmd_transfer(message : discord.Message, args : str, isDM : bool):
                                     + lib.timeUtil.td_format_noYM(timeLeft) + " left)")
     else:
         confirmMsg = await message.channel.send("Move your home server to '" + message.guild.name + "'?")
-        cooldownTime = lib.timeUtil.timeDeltaFromDict(cfg.homeGuildTransferCooldown)
+        cooldownTime = timedelta(**cfg.homeGuildTransferCooldown)
         confirmation = await InlineConfirmationMenu(confirmMsg, message.author, cfg.toolUseConfirmTimeoutSeconds,
                                                     desc="This command's cooldown is " \
                                                         + lib.timeUtil.td_format_noYM(cooldownTime) + ".").doMenu()

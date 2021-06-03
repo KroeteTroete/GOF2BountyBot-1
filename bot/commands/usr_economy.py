@@ -125,7 +125,7 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
                                     + (currentItem.emoji.sendable + " " if currentItem.hasEmoji else "") \
                                     + ((" `(" + str(currentItemCount) + ")` ") if currentItemCount > 1 else "") + "**" \
                                     + currentItem.getNameAndNick() + "**",
-                                value=lib.stringTyping.commaSplitNum(str(currentItem.getValue())) + " Credits\n" \
+                                value=lib.stringTyping.commaSplitNum(currentItem.getValue()) + " Credits\n" \
                                     + currentItem.statsStringShort(), inline=True)
 
     if item in ["all", "weapon"]:
@@ -168,7 +168,7 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
                                     + (currentItem.emoji.sendable + " " if currentItem.hasEmoji else "") \
                                     + ((" `(" + str(currentItemCount) + ")` ") if currentItemCount > 1 else "") \
                                     + "**" + currentItem.name + "**",
-                                    value=lib.stringTyping.commaSplitNum(str(currentItem.value)) + " Credits\n" \
+                                    value=lib.stringTyping.commaSplitNum(currentItem.value) + " Credits\n" \
                                         + currentItem.statsStringShort(), inline=True)
 
     if item in ["all", "module"]:
@@ -209,7 +209,7 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
             shopEmbed.add_field(name=str(moduleNum) + ". " \
                                     + (currentItem.emoji.sendable + " " if currentItem.hasEmoji else "") \
                                     + ((" `(" + str(currentItemCount) + ")` ") if currentItemCount > 1 else "") + "**" \
-                                    + currentItem.name + "**", value=lib.stringTyping.commaSplitNum(str(currentItem.value)) \
+                                    + currentItem.name + "**", value=lib.stringTyping.commaSplitNum(currentItem.value) \
                                     + " Credits\n" + currentItem.statsStringShort(), inline=True)
 
     if item in ["all", "turret"]:
@@ -250,7 +250,7 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
             shopEmbed.add_field(name=str(turretNum) + ". " \
                                 + (currentItem.emoji.sendable + " " if currentItem.hasEmoji else "") \
                                 + ((" `(" + str(currentItemCount) + ")` ") if currentItemCount > 1 else "") + "**" \
-                                + currentItem.name + "**", value=lib.stringTyping.commaSplitNum(str(currentItem.value)) \
+                                + currentItem.name + "**", value=lib.stringTyping.commaSplitNum(currentItem.value) \
                                 + " Credits\n" + currentItem.statsStringShort(), inline=True)
 
     try:
