@@ -659,9 +659,9 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
         for currentGuild in botState.guildsDB.guilds.values():
             if not currentGuild.bountiesDisabled and currentGuild.bountiesDB.canMakeBounty():
                 if newTL == -1:
-                    div = random.choice(currentGuild.bountiesDB.divisions.values())
+                    div = random.choice(list(currentGuild.bountiesDB.divisions.values()))
                     while div.isFull():
-                        div = random.choice(currentGuild.bountiesDB.divisions.values())
+                        div = random.choice(list(currentGuild.bountiesDB.divisions.values()))
                 else:
                     div = currentGuild.bountiesDB.divisionForLevel(newTL)
                 if div.isFull():
@@ -680,15 +680,15 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
         await message.channel.send(f"Criminal spawned into {len(spawnTasks)} guilds!")
     else:
         if newTL == -1:
-            div = random.choice(callingBBGuild.bountiesDB.divisions.values())
+            div = random.choice(list(callingBBGuild.bountiesDB.divisions.values()))
             while div.isFull():
-                div = random.choice(callingBBGuild.bountiesDB.divisions.values())
+                div = random.choice(list(callingBBGuild.bountiesDB.divisions.values()))
         else:
             div = callingBBGuild.bountiesDB.divisionForLevel(newTL)
         if div.isFull():
             await message.reply(f"The {nameForDivision(div)} division is full in that guild!")
         else:
-            newBounty = callingBBGuild.Bounty(division=div, config=config.generate(div))
+            newBounty = bounty.Bounty(division=div, config=config.generate(div))
             callingBBGuild.bountiesDB.addBounty(newBounty)
             await callingBBGuild.announceNewBounty(newBounty)
             await message.channel.send(f"Criminal spawned!")

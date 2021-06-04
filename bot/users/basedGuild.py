@@ -556,9 +556,9 @@ class BasedGuild(serializable.Serializable):
             elif config.techLevel != -1:
                 div = self.bountiesDB.divisionForLevel(config.techLevel)
             else:
-                div: "bountyDivision.BountyDivision" = random.choice(self.bountiesDB.divisions.values())
+                div: "bountyDivision.BountyDivision" = random.choice(list(self.bountiesDB.divisions.values()))
                 while div.isFull():
-                    div = random.choice(self.bountiesDB.divisions.values())
+                    div = random.choice(list(self.bountiesDB.divisions.values()))
                 config.techLevel = div.pickNewTL()
 
             if newBounty is None:

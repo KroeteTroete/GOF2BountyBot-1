@@ -50,7 +50,7 @@ class BountyDB(serializable.Serializable):
         if not dummy:
             self.divisions: Dict[range, BountyDivision] = {}
             for minLevel, maxLevel in cfg.bountyDivisions.values():
-                self.divisions[range(minLevel, maxLevel+1)] = BountyDivision(owningBasedGuild, minLevel, maxLevel)
+                self.divisions[range(minLevel, maxLevel+1)] = BountyDivision(self, minLevel, maxLevel)
             self.orderedDivs: List[BountyDivision] = []
             self.owningBasedGuild = owningBasedGuild
 
