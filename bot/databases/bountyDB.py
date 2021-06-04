@@ -154,7 +154,7 @@ class BountyDB(serializable.Serializable):
         # If the criminal's level is known
         if level is not None:
             try:
-                return self.divisionForLevel(level).escapedBountyes[level][crim]
+                return self.divisionForLevel(level).escapedBounties[level][crim]
             except KeyError:
                 pass
 
@@ -163,7 +163,7 @@ class BountyDB(serializable.Serializable):
             for div in self.divisions.values():
                 for tl in range(div.minLevel, div.maxLevel + 1):
                     try:
-                        return div.escapedBountyes[tl][crim]
+                        return div.escapedBounties[tl][crim]
                     except KeyError:
                         pass
         
@@ -214,14 +214,14 @@ class BountyDB(serializable.Serializable):
         """
         # If the criminal's level is known
         if level is not None:
-            return self.divisionForLevel(level).escapedBountyes[level].getValueForKeyNamed(name)
+            return self.divisionForLevel(level).escapedBounties[level].getValueForKeyNamed(name)
 
         # If the criminal's level is not known, search all levels
         else:
             for div in self.divisions.values():
                 for tl in range(div.minLevel, div.maxLevel + 1):
                     try:
-                        return div.escapedBountyes[tl].getValueForKeyNamed(name)
+                        return div.escapedBounties[tl].getValueForKeyNamed(name)
                     except KeyError:
                         pass
         
