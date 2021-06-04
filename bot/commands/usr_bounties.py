@@ -94,119 +94,125 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
         userLevel = gameMaths.calculateUserBountyHuntingLevel(requestedBBUser.bountyHuntingXP)
         # list of completed bounties to remove from the bounties database
         toPop = []
+        toEscape = []
         btyDivision = callingGuild.bountiesDB.divisionForLevel(userLevel)
         sightedCriminalsStr = ""
 
-        for bounty in btyDivision:
-            # Check the passed system in current bounty
-            checkResult = bounty.check(requestedSystem, message.author.id)
-            # If current bounty resides in the requested system
-            if checkResult == 3:
-                duelResults = duelRequest.fightShips(requestedBBUser.activeShip, bounty.activeShip,
-                                                        cfg.duelVariancePercent)
-                statsEmbed = lib.discordUtil.makeEmbed(authorName="**Duel Stats**")
-                statsEmbed.add_field(name="DPS (" + str(cfg.duelVariancePercent * 100) + "% RNG)",
-                                        value=message.author.mention + ": " \
-                                            + str(round(duelResults["ship1"]["DPS"]["varied"], 2)) + "\n" \
-                                            + bounty.criminal.name + ": " \
-                                            + str(round(duelResults["ship2"]["DPS"]["varied"], 2)))
-                statsEmbed.add_field(name="Health (" + str(cfg.duelVariancePercent * 100) + "% RNG)",
-                                        value=message.author.mention + ": " \
-                                            + str(round(duelResults["ship1"]["health"]["varied"])) + "\n" \
-                                            + bounty.criminal.name + ": " \
-                                            + str(round(duelResults["ship2"]["health"]["varied"], 2)))
-                statsEmbed.add_field(name="Time To Kill",
-                                        value=message.author.mention + ": " \
-                                            + (str(round(duelResults["ship1"]["TTK"], 2)) \
-                                                if duelResults["ship1"]["TTK"] != -1 else "inf.") + "s\n" \
-                                            + bounty.criminal.name + ": " \
-                                            + (str(round(duelResults["ship2"]["TTK"], 2)) \
-                                                if duelResults["ship2"]["TTK"] != -1 else "inf.") + "s")
+        for tlBounties in btyDivision.bounties.values():
+            for bounty in tlBounties.values():
+                # Check the passed system in current bounty
+                checkResult = bounty.check(requestedSystem, message.author.id)
+                # If current bounty resides in the requested system
+                if checkResult == 3:
+                    duelResults = duelRequest.fightShips(requestedBBUser.activeShip, bounty.activeShip,
+                                                            cfg.duelVariancePercent)
+                    statsEmbed = lib.discordUtil.makeEmbed(authorName="**Duel Stats**")
+                    statsEmbed.add_field(name="DPS (" + str(cfg.duelVariancePercent * 100) + "% RNG)",
+                                            value=message.author.mention + ": " \
+                                                + str(round(duelResults["ship1"]["DPS"]["varied"], 2)) + "\n" \
+                                                + bounty.criminal.name + ": " \
+                                                + str(round(duelResults["ship2"]["DPS"]["varied"], 2)))
+                    statsEmbed.add_field(name="Health (" + str(cfg.duelVariancePercent * 100) + "% RNG)",
+                                            value=message.author.mention + ": " \
+                                                + str(round(duelResults["ship1"]["health"]["varied"])) + "\n" \
+                                                + bounty.criminal.name + ": " \
+                                                + str(round(duelResults["ship2"]["health"]["varied"], 2)))
+                    statsEmbed.add_field(name="Time To Kill",
+                                            value=message.author.mention + ": " \
+                                                + (str(round(duelResults["ship1"]["TTK"], 2)) \
+                                                    if duelResults["ship1"]["TTK"] != -1 else "inf.") + "s\n" \
+                                                + bounty.criminal.name + ": " \
+                                                + (str(round(duelResults["ship2"]["TTK"], 2)) \
+                                                    if duelResults["ship2"]["TTK"] != -1 else "inf.") + "s")
 
-                if duelResults["winningShip"] is not requestedBBUser.activeShip:
-                    bounty.escape()
-                    bountyLost = True
-                    await message.channel.send(bounty.criminal.name + " got away! ", embed=statsEmbed)
+                    if duelResults["winningShip"] is not requestedBBUser.activeShip:
+                        toEscape.append(bounty)
+                        # bounty.escape()
+                        bountyLost = True
+                        await message.channel.send(bounty.criminal.name + " got away! ", embed=statsEmbed)
 
-                else:
-                    bountyWon = True
-                    requestedBBUser.bountyWinsToday += 1
-                    if not dailyBountiesMaxReached and requestedBBUser.bountyWinsToday >= cfg.maxDailyBountyWins:
-                        requestedBBUser.dailyBountyWinsReset = lib.timeUtil.tomorrow()
-                        dailyBountiesMaxReached = True
+                    else:
+                        bountyWon = True
+                        requestedBBUser.bountyWinsToday += 1
+                        if not dailyBountiesMaxReached and requestedBBUser.bountyWinsToday >= cfg.maxDailyBountyWins:
+                            requestedBBUser.dailyBountyWinsReset = lib.timeUtil.tomorrow()
+                            dailyBountiesMaxReached = True
 
-                    # reward all contributing users
-                    rewards = bounty.calcRewards()
-                    levelUpMsg = ""
-                    for userID in rewards:
-                        currentBBUser = botState.usersDB.getUser(userID)
-                        currentBBUser.credits += rewards[userID]["reward"]
-                        currentBBUser.lifetimeBountyCreditsWon += rewards[userID]["reward"]
-                        currentDCUser = message.guild.get_member(currentBBUser.id)
+                        # reward all contributing users
+                        rewards = bounty.calcRewards()
+                        levelUpMsg = ""
+                        for userID in rewards:
+                            currentBBUser = botState.usersDB.getUser(userID)
+                            currentBBUser.credits += rewards[userID]["reward"]
+                            currentBBUser.lifetimeBountyCreditsWon += rewards[userID]["reward"]
+                            currentDCUser = message.guild.get_member(currentBBUser.id)
 
-                        oldLevel = gameMaths.calculateUserBountyHuntingLevel(currentBBUser.bountyHuntingXP)
-                        currentBBUser.bountyHuntingXP += rewards[userID]["xp"]
+                            oldLevel = gameMaths.calculateUserBountyHuntingLevel(currentBBUser.bountyHuntingXP)
+                            currentBBUser.bountyHuntingXP += rewards[userID]["xp"]
 
-                        newLevel = gameMaths.calculateUserBountyHuntingLevel(currentBBUser.bountyHuntingXP)
-                        if newLevel > oldLevel:
-                            levelUpCrate = bbData.builtInCrateObjs["levelUp"][newLevel]
-                            currentBBUser.inactiveTools.addItem(levelUpCrate)
-                            levelUpMsg += "\n:arrow_up: **Level Up!**\n" \
-                                            + lib.discordUtil.userOrMemberName(currentDCUser, message.guild) \
-                                            + " reached **Bounty Hunter Level " + str(newLevel) \
-                                            + "!** :partying_face:\n" + "You got a **" + levelUpCrate.name + "**."
-                            
-                            if callingGuild.hasBountyAlertRoles:
-                                oldRole = message.guild.get_role(callingGuild.bountyAlertRoleIDForTL(oldLevel))
-                                if oldRole is None:
-                                    await message.channel.send(":woozy_face: I can't find the new bounty alerts role " \
-                                                                + "for tech level " + str(oldLevel) \
-                                                                + "! Did it get deleted?")
-                                                                
-                                elif oldRole in message.author.roles:
-                                    newRole = message.guild.get_role(callingGuild.bountyAlertRoleIDForTL(newLevel))
-                                    if newRole is None:
-                                        await message.channel.send(":woozy_face: I can't find the new bounty alerts " \
-                                                                    +"role for tech level " + str(newLevel) \
+                            newLevel = gameMaths.calculateUserBountyHuntingLevel(currentBBUser.bountyHuntingXP)
+                            if newLevel > oldLevel:
+                                levelUpCrate = bbData.builtInCrateObjs["levelUp"][newLevel]
+                                currentBBUser.inactiveTools.addItem(levelUpCrate)
+                                levelUpMsg += "\n:arrow_up: **Level Up!**\n" \
+                                                + lib.discordUtil.userOrMemberName(currentDCUser, message.guild) \
+                                                + " reached **Bounty Hunter Level " + str(newLevel) \
+                                                + "!** :partying_face:\n" + "You got a **" + levelUpCrate.name + "**."
+                                
+                                if callingGuild.hasBountyAlertRoles:
+                                    oldRole = message.guild.get_role(callingGuild.bountyAlertRoleIDForTL(oldLevel))
+                                    if oldRole is None:
+                                        await message.channel.send(":woozy_face: I can't find the new bounty alerts role " \
+                                                                    + "for tech level " + str(oldLevel) \
                                                                     + "! Did it get deleted?")
-                                    
-                                    await callingGuild.levelUpSwapRoles(currentDCUser, message.channel, oldRole, newRole)
+                                                                    
+                                    elif oldRole in message.author.roles:
+                                        newRole = message.guild.get_role(callingGuild.bountyAlertRoleIDForTL(newLevel))
+                                        if newRole is None:
+                                            await message.channel.send(":woozy_face: I can't find the new bounty alerts " \
+                                                                        +"role for tech level " + str(newLevel) \
+                                                                        + "! Did it get deleted?")
+                                        
+                                        await callingGuild.levelUpSwapRoles(currentDCUser, message.channel, oldRole, newRole)
 
-                    if levelUpMsg != "":
-                        await message.channel.send(levelUpMsg)
+                        if levelUpMsg != "":
+                            await message.channel.send(levelUpMsg)
 
-                    # Announce the bounty has been completed
-                    await callingGuild.announceBountyWon(bounty, rewards, message.author)
-                    await message.channel.send("__Duel Statistics__",embed=statsEmbed)
+                        # Announce the bounty has been completed
+                        await callingGuild.announceBountyWon(bounty, rewards, message.author)
+                        await message.channel.send("__Duel Statistics__",embed=statsEmbed)
 
-                    # Raise guild's activity temperature for this bounty's tl
-                    numContributingUsers = len(set(rewards))
-                    btyDivision.maxBounties = min(btyDivision.temperature, cfg.maxBountiesPerDivision)
-                    btyDivision.raiseTemp(numContributingUsers * cfg.activityTempPerPlayer)
+                        # Raise guild's activity temperature for this bounty's tl
+                        numContributingUsers = len(set(rewards))
+                        btyDivision.maxBounties = min(btyDivision.temperature, cfg.maxBountiesPerDivision)
+                        btyDivision.raiseTemp(numContributingUsers * cfg.activityTempPerPlayer)
 
-                    # criminal ship unequip is delayed until now rather than handled in bounty.check
-                    # to allow for duel info printing.
-                    # this could instead be replaced by bounty.check returning the ShipFight info.
-                    bounty.clearShip()
+                        # criminal ship unequip is delayed until now rather than handled in bounty.check
+                        # to allow for duel info printing.
+                        # this could instead be replaced by bounty.check returning the ShipFight info.
+                        bounty.clearShip()
 
-                # add this bounty to the list of bounties to be removed
-                toPop += [bounty]
+                        # add this bounty to the list of bounties to be removed
+                        toPop.append(bounty)
 
-            # Update routes in this division containing the checked system
-            if checkResult in [2, 3]:
-                systemInBountyRoute = True
-                await callingGuild.updateBountyBoardChannel(bounty, bountyComplete=checkResult == 3)
-                # Check if any bounties are close to the requested system in their route, defined by cfg.closeBountyThreshold
-                if checkResult == 2 and \
-                        abs(bounty.route.index(bounty.answer) - bounty.route.index(requestedSystem)) < cfg.closeBountyThreshold:
-                    # Print any close bounty names
-                    sightedCriminalsStr += "\n**       **• Local security forces spotted **" \
-                                            + lib.discordUtil.criminalNameOrDiscrim(bounty.criminal) \
-                                            + "** here recently."
+                # Update routes in this division containing the checked system
+                if checkResult in [2, 3]:
+                    systemInBountyRoute = True
+                    await callingGuild.updateBountyBoardChannel(bounty, bountyComplete=checkResult == 3)
+                    # Check if any bounties are close to the requested system in their route, defined by cfg.closeBountyThreshold
+                    if checkResult == 2 and \
+                            abs(bounty.route.index(bounty.answer) - bounty.route.index(requestedSystem)) < cfg.closeBountyThreshold:
+                        # Print any close bounty names
+                        sightedCriminalsStr += "\n**       **• Local security forces spotted **" \
+                                                + lib.discordUtil.criminalNameOrDiscrim(bounty.criminal) \
+                                                + "** here recently."
 
         # remove all completed bounties
         for bounty in toPop:
-            btyDivision.removeBountyObj(bounty)
+            btyDivision.owningDB.removeBountyObj(bounty)
+        # remove all escaped bounties
+        for bounty in toEscape:
+            bounty.escape()
 
         # If a bounty was won, print a congratulatory message
         if bountyWon:
