@@ -5,9 +5,7 @@ from random import randint
 import asyncio
 import traceback
 
-from ..gameObjects.bounties.bounty import Bounty
 from ..gameObjects.bounties.criminal import Criminal
-from ..gameObjects.bounties.bountyConfig import BountyConfig
 from typing import List
 from ..baseClasses import serializable
 from ..baseClasses.aliasableDict import AliasableDict
@@ -108,7 +106,7 @@ class BountyDB(serializable.Serializable):
                                             eventType=type(e).__name__, trace=traceback.format_exception(type(e), e, e.__traceback__))
 
 
-    def getBountyByCrim(self, crim : Criminal, level : int = None) -> Bounty:
+    def getBountyByCrim(self, crim : Criminal, level : int = None) -> bounty.Bounty:
         """Get the bounty object for a given criminal name object
         This process is much more efficient when given the difficulty level of the criminal's bounty.
 
@@ -140,7 +138,7 @@ class BountyDB(serializable.Serializable):
         raise KeyError(f"No bounty found for criminal: '{crim.name}'" + ("" if level is None else f" and level: {level}"))
 
 
-    def getEscapedBountyByCrim(self, crim : Criminal, level : int = None) -> Bounty:
+    def getEscapedBountyByCrim(self, crim : Criminal, level : int = None) -> bounty.Bounty:
         """Get the escaped bounty object for a given criminal object.
         This process is much more efficient when given the difficulty level of the criminal's bounty.
 
@@ -172,7 +170,7 @@ class BountyDB(serializable.Serializable):
         raise KeyError(f"No escaped bounty found for criminal: '{crim.name}'" + ("" if level is None else f" and level: {level}"))
 
 
-    def getBounty(self, name : str, level : int = None) -> Bounty:
+    def getBounty(self, name : str, level : int = None) -> bounty.Bounty:
         """Get the bounty object for a given criminal name or alias.
         This process is much more efficient when given the difficulty level of the criminal's bounty.
 
@@ -201,7 +199,7 @@ class BountyDB(serializable.Serializable):
         raise KeyError("No bounty found for name: '" + name + ("'" if level is None else "' and level: " + str(level)))
 
 
-    def getEscapedBounty(self, name : str, level : int = None) -> Bounty:
+    def getEscapedBounty(self, name : str, level : int = None) -> bounty.Bounty:
         """Get the escaped bounty object for a given criminal name or alias.
         This process is much more efficient when given the difficulty level of the criminal's bounty.
 
@@ -241,7 +239,7 @@ class BountyDB(serializable.Serializable):
         return sum(div.getNumBounties(includeEscaped=includeEscaped) for div in self.divisions)
 
 
-    def canMakeBounty(self) -> Bounty:
+    def canMakeBounty(self) -> bounty.Bounty:
         """Check whether this DB has space for more bounties
 
         :return: True if at least one division is not at capacity, False if all divisions' bounties are full
@@ -288,7 +286,7 @@ class BountyDB(serializable.Serializable):
         return div in self.divisions.values()
 
 
-    def bountyObjExists(self, bounty : Bounty) -> bool:
+    def bountyObjExists(self, bounty : bounty.Bounty) -> bool:
         """Check whether a given bounty object exists in the DB.
         Existence is checked for the bounty's criminal, at the given techLevel
 
@@ -310,7 +308,7 @@ class BountyDB(serializable.Serializable):
         return any(div.criminalObjExists(crim) for div in self.divisions.values())
 
 
-    def addBounty(self, bounty : Bounty):
+    def addBounty(self, bounty : bounty.Bounty):
         """Add a given bounty object to the database.
         Bounties cannot be added if the division for its level does not have space for more bounties.
         Bounties cannot be added if a bounty already exists for the same criminal in this DB.
@@ -348,7 +346,7 @@ class BountyDB(serializable.Serializable):
         return any(div.escapedCriminalExists(crim) for div in self.divisions.values())
 
 
-    def addEscapedBounty(self, bounty : Bounty):
+    def addEscapedBounty(self, bounty : bounty.Bounty):
         """Add a given bounty object to the escaped bounties database.
         Bounties cannot be added if the object or name already exists in the database.
 
@@ -391,7 +389,7 @@ class BountyDB(serializable.Serializable):
             del self.divisionForLevel(bounty.techLevel).escapedBounties[bounty.techLevel][bounty.criminal]
 
 
-    def removeBountyObj(self, bounty : Bounty):
+    def removeBountyObj(self, bounty : bounty.Bounty):
         """Remove a given bounty object from the database.
 
         :param Bounty bounty: the bounty object to remove from the database
@@ -468,9 +466,9 @@ class BountyDB(serializable.Serializable):
                     newDB.divisionForName(divName).temperature = bountyDBDict["temperatures"][divName]
 
         for bountyDict in activeBountiesData:
-            newDB.addBounty(Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB))
+            newDB.addBounty(bounty.Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB))
         for bountyDict in escapedBountiesData:
             # Adding escaped bounties to DB is done during Bounty.fromDict
-            Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB)
+            bounty.Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB)
 
         return newDB

@@ -44,7 +44,7 @@ class Bounty(serializable.Serializable):
     """
 
     def __init__(self, criminalObj : criminal.Criminal = None, config : BountyConfig = None,
-                    division : BountyDivision = None, dbReload : bool = False, owningDB : BountyDB = None):
+                    division : BountyDivision = None, dbReload : bool = False):
         """
         :param criminalObj: The criminal to be wanted. Give None to randomly generate a criminal. (Default None)
         :type criminalObj: criminal or None
@@ -57,7 +57,7 @@ class Bounty(serializable.Serializable):
                                 (Default False)
         :raise ValueError: When dbReload is False but owningDB is not given
         """
-        if not dbReload and owningDB is None:
+        if not dbReload and division is None:
             raise ValueError("Bounty constructor: No bounty database given")
         makeFresh = criminalObj is None
         self.activeShip = None
@@ -72,7 +72,7 @@ class Bounty(serializable.Serializable):
                                         name=criminalObj.name)
 
         if not config.generated:
-            config.generate(owningDB, noCriminal=makeFresh, forceKeepChecked=dbReload, forceNoDBCheck=dbReload)
+            config.generate(division, noCriminal=makeFresh, forceKeepChecked=dbReload, forceNoDBCheck=dbReload)
 
         if makeFresh:
             if config.builtIn:
@@ -107,7 +107,7 @@ class Bounty(serializable.Serializable):
 
         self.techLevel = config.techLevel
         self.respawnTT: TimedTask = None
-        self.owningDB = owningDB
+        self.division = division
 
 
     def clearShip(self):
@@ -254,7 +254,7 @@ class Bounty(serializable.Serializable):
             self.respawnTT = respawnTT
 
         botState.taskScheduler.scheduleTask(self.respawnTT)
-        self.owningDB.addEscapedBounty(self, len(self.route))
+        self.division.owningDB.addEscapedBounty(self, len(self.route))
 
 
     async def _respawn(self):
@@ -264,8 +264,8 @@ class Bounty(serializable.Serializable):
         respawnArgs = {"newBounty": self,
                         "newConfig": BountyConfig(faction=self.criminal.faction,
                                                                 techLevel=self.techLevel)}
-        await self.owningDB.owningBasedGuild.spawnAndAnnounceBounty(respawnArgs)
-        self.owningDB.removeEscapedCriminal(self.criminal)
+        await self.division.owningDB.owningBasedGuild.spawnAndAnnounceBounty(respawnArgs)
+        self.division.owningDB.removeEscapedCriminal(self.criminal)
         self.respawnTT = None
 
 
@@ -321,7 +321,7 @@ class Bounty(serializable.Serializable):
 
 
     @classmethod
-    def fromDict(cls, data : dict, **kwargs) -> Bounty:
+    def fromDict(cls, data : dict, owningDB: BountyDB = None, dbReload: bool = False, **kwargs) -> Bounty:
         """Factory function constructing a new bounty from a dictionary serialized description - the opposite of bounty.toDict
 
         :param dict bounty: Dictionary containing all information needed to construct the desired bounty
@@ -331,9 +331,8 @@ class Bounty(serializable.Serializable):
         """
         if type(data) != dict:
             raise ValueError(str(data))
-
-        owningDB = kwargs.get("owningDB", None)
-        dbReload = kwargs.get("dbReload", False)
+        if owningDB is None:
+            raise ValueError("missing required argument: owningDB")
 
         if "activeShip" in data:
             activeShip = Ship.fromDict(data["activeShip"])
@@ -345,7 +344,8 @@ class Bounty(serializable.Serializable):
         elif activeShip is not None:
             techLevel = activeShip.techLevel
         else:
-            techLevel = -1
+            raise ValueError(f"Missing required data: Bounty tech level. Data: {str(data)}")
+            # techLevel = -1
 
         newCfg = BountyConfig(faction=data["faction"], route=data["route"],
                                 answer=data["answer"], checked=data["checked"], reward=data["reward"],
@@ -353,7 +353,7 @@ class Bounty(serializable.Serializable):
                                 rewardPerSys=data["rewardPerSys"], activeShip=activeShip,
                                 techLevel=techLevel)
                                             
-        newBounty = Bounty(dbReload=dbReload, config=newCfg, owningDB=owningDB,
+        newBounty = Bounty(dbReload=dbReload, config=newCfg, division=owningDB.divisionForLevel(techLevel),
                             criminalObj=criminal.Criminal.fromDict(data["criminal"]))
         
         if data.get("isEscaped", False):

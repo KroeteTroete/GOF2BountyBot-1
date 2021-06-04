@@ -6,6 +6,7 @@ from datetime import timedelta
 import asyncio
 from aiohttp import client_exceptions
 import traceback
+import random
 
 from .. import botState, lib
 from ..gameObjects import guildShop
@@ -14,9 +15,10 @@ from ..gameObjects.bounties.bountyBoards import bountyBoardChannel
 from ..userAlerts import userAlerts
 from ..cfg import cfg, bbData
 from ..scheduling.timedTask import TimedTask, DynamicRescheduleTask
-from ..gameObjects.bounties import bounty
+from ..gameObjects.bounties import bounty, bountyConfig
 from ..baseClasses import serializable
 from . import guildActivity
+from ..databases import bountyDivision
 
 
 class BasedGuild(serializable.Serializable):
@@ -544,18 +546,31 @@ class BasedGuild(serializable.Serializable):
             return
         # ensure a new bounty can be created
         if self.bountiesDB.canMakeBounty():
-            newBounty = newBountyData["newBounty"]
+            newBounty: bounty.Bounty = newBountyData["newBounty"]
+            config: bountyConfig.BountyConfig = newBountyData["newConfig"].copy() if "newConfig" in newBountyData else bountyConfig.BountyConfig()
+
+            if newBounty is not None:
+                div = newBounty.division
+                if config.techLevel == -1:
+                    config.techLevel = newBounty.techLevel
+            elif config.techLevel != -1:
+                div = self.bountiesDB.divisionForLevel(config.techLevel)
+            else:
+                div: "bountyDivision.BountyDivision" = random.choice(self.bountiesDB.divisions.values())
+                while div.isFull():
+                    div = random.choice(self.bountiesDB.divisions.values())
+                config.techLevel = div.pickNewTL()
+
             if newBounty is None:
-                newBounty = bounty.Bounty(owningDB=self.bountiesDB,
-                                            config=newBountyData["newConfig"].copy() if "newConfig" in newBountyData else None)
+                newBounty = bounty.Bounty(division=div, config=config)
             else:
                 if self.bountiesDB.escapedCriminalExists(newBounty.criminal):
                     self.bountiesDB.removeEscapedCriminal(newBounty.criminal)
 
-                if "newConfig" in newBountyData and newBountyData["newConfig"] is not None:
-                    newConfig = newBountyData["newConfig"].copy()
+                if config is not None:
+                    newConfig = config.copy()
                     if not newConfig.generated:
-                        newConfig.generate(self.bountiesDB)
+                        newConfig.generate(div)
                     newBounty.route = newConfig.route
                     newBounty.start = newConfig.start
                     newBounty.end = newConfig.end

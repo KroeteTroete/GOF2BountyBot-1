@@ -167,6 +167,23 @@ class BountyDivision(Serializable):
         :rtype: int
         """
         return cfg.maxBountiesPerDivision if self.isActive else 1
+
+
+    def pickNewTL(self) -> int:
+        """Pick a tech level for a new bounty.
+        In ascending order, if a tech level has no bounties, it is returned.
+        If all tech levels have at least one bounty, a level is picked at random.
+
+        :return: A tech level to be spawned into this division
+        :rtype: int
+        :raise OverflowError: When the division has no more space for bounties
+        """
+        if self.isFull():
+            raise OverflowError("Attempted to spawn a new bounty when the DB is currently full")
+        try:
+            return next(l for l in range(self.minLevel, self.maxLevel + 1) if not self.bounties[l])
+        except StopIteration:
+            return random.randint(self.minLevel, self.maxLevel)
         
 
     async def spawnNewBounty(self) -> Bounty:
@@ -178,15 +195,9 @@ class BountyDivision(Serializable):
         :rtype: Bounty
         :raise OverflowError: If the division is currently full
         """
-        if self.getNumBounties(includeEscaped=True) >= self.maxBounties():
-            raise OverflowError("Attempted to spawn a new bounty when the DB is currently full")
+        level = self.pickNewTL()
 
-        try:
-            level = next(l for l in range(self.minLevel, self.maxLevel + 1) if not self.bounties[l])
-        except StopIteration:
-            level = random.randint(self.minLevel, self.maxLevel)
-
-        newBounty = Bounty(config=BountyConfig(techLevel=level).generate(owningDB=self.owningDB))
+        newBounty = Bounty(division=self, config=BountyConfig(techLevel=level).generate(self))
         self.bounties[level][newBounty.criminal] = newBounty
 
         await self.owningDB.owningBasedGuild.announceNewBounty(newBounty)
@@ -210,7 +221,7 @@ class BountyDivision(Serializable):
                                 + bounty.criminal.name + " (" + str(bounty.techLevel) + ")")
 
         del self.escapedBounties[bounty.techLevel][bounty.criminal]
-        bounty.__init__(config=bounty.makeRespawnConfig().generate(owningDB=self.owningDB))
+        bounty.__init__(config=bounty.makeRespawnConfig().generate(self))
         self.bounties[bounty.techLevel][bounty.criminal] = bounty
 
         await self.owningDB.owningBasedGuild.announceNewBounty(bounty)
@@ -389,13 +400,15 @@ class BountyDivision(Serializable):
         :return: A BountyDivision object as specified by the attributes in data
         :rtype: BountyDivision
         """
+        if type(owningDB) != BountyDB:
+            raise ValueError(f"Expected type BountyDB for kwarg owningDB but received {type(owningDB.__name__)}")
         crims = set()
 
         bounties = {l: AliasableDict() for l in range(data["minLevel"], data["maxLevel"] + 1)}
         if "bounties" in data:
             for l in data["bounties"]:
                 for bty in data["bounties"][l]:
-                    newBounty = Bounty.fromDict(bty, **kwargs)
+                    newBounty = Bounty.fromDict(bty, owningDB=owningDB, **kwargs)
                     if newBounty.criminal in crims:
                         botState.logger.log("BountyDivision", "fromDict",
                                             f"2 listings for the same criminal found: {bty.criminal.name}. Ignoring one." \
@@ -408,7 +421,7 @@ class BountyDivision(Serializable):
         if "escapedBounties" in data:
             for l in data["escapedBounties"]:
                 for bty in data["escapedBounties"][l]:
-                    newBounty = Bounty.fromDict(bty, **kwargs)
+                    newBounty = Bounty.fromDict(bty, owningDB=owningDB, **kwargs)
                     if newBounty.criminal in crims:
                         botState.logger.log("BountyDivision", "fromDict",
                                             f"2 listings for the same criminal found: {bty.criminal.name}. Ignoring one." \

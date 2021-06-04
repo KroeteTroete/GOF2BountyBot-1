@@ -2,6 +2,7 @@ import discord
 from datetime import datetime
 import asyncio
 import traceback
+import random
 
 from . import commandsDB as botCommands
 from .. import botState, lib
@@ -536,17 +537,22 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
                             + "that guild" if callingBBGuild.dcGuild is None else callingBBGuild.dcGuild.name \
                             + "!")
         return
+    if not allGuilds and not callingBBGuild.bountiesDB.canMakeBounty():
+        await message.reply(":x: No space for bounties in this guild!")
 
     # if no args were given, generate a completely random bounty
     if args == "":
+        newTL = -1
         config = bountyConfig.BountyConfig()
         # newBounty = bounty.Bounty(owningDB=callingBBGuild.bountiesDB)
     # if only one argument was given, use it as a TL
     elif len(argsSplit) == 2:
-        config = bountyConfig.BountyConfig(techLevel=int(argsSplit[1]))
+        newTL = int(argsSplit[1])
+        config = bountyConfig.BountyConfig(techLevel=newTL)
     # if two are given, assume TL and faction name
     elif len(argsSplit) == 3:
-        config = bountyConfig.BountyConfig(techLevel=int(argsSplit[1].rstrip(" ")), faction=argsSplit[2])
+        newTL = int(argsSplit[1].rstrip(" "))
+        config = bountyConfig.BountyConfig(techLevel=newTL, faction=argsSplit[2])
     elif len(argsSplit) != 11:
         await message.reply("Incorrect number of arguments. Formats:\n" \
                             + "- +`<TL>``\n" \
@@ -639,22 +645,31 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
             config = bountyConfig.BountyConfig(faction=newFaction, route=newRoute,
                                                 start=newStart, end=newEnd, answer=newAnswer,
                                                 reward=newReward, endTime=newEndTime,
-                                                isPlayer=False, icon=newIcon, name=builtInCrimObj.name)
+                                                isPlayer=False, icon=newIcon, name=builtInCrimObj.name, techLevel=newTL)
         # normal bounty generation for custom criminals
         else:
             config = bountyConfig.BountyConfig(faction=newFaction, name=newName, route=newRoute,
                                                 start=newStart, end=newEnd, answer=newAnswer,
                                                 reward=newReward, endTime=newEndTime,
-                                                isPlayer=False, icon=newIcon)
+                                                isPlayer=False, icon=newIcon, techLevel=newTL)
 
     if allGuilds:
         currentGuild: basedGuild.BasedGuild = None
         spawnTasks = set()
         for currentGuild in botState.guildsDB.guilds.values():
-            if not currentGuild.bountiesDisabled:
-                newBounty = bounty.Bounty(owningDB=currentGuild.bountiesDB, config=config.generate(currentGuild.bountiesDB))
-                currentGuild.bountiesDB.addBounty(newBounty)
-                spawnTasks.add(asyncio.create_task(currentGuild.announceNewBounty(newBounty)))
+            if not currentGuild.bountiesDisabled and currentGuild.bountiesDB.canMakeBounty():
+                if newTL == -1:
+                    div = random.choice(currentGuild.bountiesDB.divisions.values())
+                    while div.isFull():
+                        div = random.choice(currentGuild.bountiesDB.divisions.values())
+                else:
+                    div = currentGuild.bountiesDB.divisionForLevel(newTL)
+                if div.isFull():
+                    await message.reply(f"The {nameForDivision(div)} division is full in guild {currentGuild.dcGuild.name if currentGuild.dcGuild is not None else ''}#{currentGuild.id}, skipping this guild")
+                else:
+                    newBounty = bounty.Bounty(division=div, config=config.generate(div))
+                    currentGuild.bountiesDB.addBounty(newBounty)
+                    spawnTasks.add(asyncio.create_task(currentGuild.announceNewBounty(newBounty)))
         if spawnTasks:
             await asyncio.wait(spawnTasks)
             for t in spawnTasks:
@@ -664,10 +679,19 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
                                         trace=traceback.format_exception(type(e), e, e.__traceback__))
         await message.channel.send(f"Criminal spawned into {len(spawnTasks)} guilds!")
     else:
-        newBounty = bounty.Bounty(owningDB=callingBBGuild.bountiesDB, config=config.generate(callingBBGuild.bountiesDB))
-        callingBBGuild.bountiesDB.addBounty(newBounty)
-        await callingBBGuild.announceNewBounty(newBounty)
-        await message.channel.send(f"Criminal spawned!")
+        if newTL == -1:
+            div = random.choice(callingBBGuild.bountiesDB.divisions.values())
+            while div.isFull():
+                div = random.choice(callingBBGuild.bountiesDB.divisions.values())
+        else:
+            div = callingBBGuild.bountiesDB.divisionForLevel(newTL)
+        if div.isFull():
+            await message.reply(f"The {nameForDivision(div)} division is full in that guild!")
+        else:
+            newBounty = callingBBGuild.Bounty(division=div, config=config.generate(div))
+            callingBBGuild.bountiesDB.addBounty(newBounty)
+            await callingBBGuild.announceNewBounty(newBounty)
+            await message.channel.send(f"Criminal spawned!")
 
 
 botCommands.register("make-bounty", dev_cmd_make_bounty, 2, forceKeepArgsCasing=True, allowDM=True, helpSection="bounties",
@@ -732,11 +756,12 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
         if requestedUser is None:
             await message.channel.send(":x: Player not found!")
             return
+        newTL = gameMaths.calculateUserBountyHuntingLevel(requestedUser.bountyHuntingXP)
         # create a new bounty at random for the specified user
         config = bountyConfig.BountyConfig(name="<@" + str(newName) + ">", isPlayer=True,
                                             icon=str(requestedUser.avatar_url_as(size=64)),
                                             aliases=[lib.discordUtil.userTagOrDiscrim(newName)],
-                                            techLevel=gameMaths.calculateUserBountyHuntingLevel(requestedUser.bountyHuntingXP),
+                                            techLevel=newTL,
                                             faction=argsSplit[1] if len(argsSplit) == 2 else "")
 
     elif len(argsSplit) != 9:
@@ -745,6 +770,7 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
                             + "- +`<player>` +`<faction>`\n" \
                             + "- +`<player>` +`<faction>` +`<route>` +`<start>` " \
                                 + "+`<end>` +`<answer>` +`<reward>` +`<endtime>` +`<icon>`")
+        return
 
     # if all args were given, generate a completely custom bounty
     # 9 args plus account for empty string at the start of the split = split of 10 elements
@@ -811,10 +837,12 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
         if newIcon == "auto":
             newIcon = "" if not builtIn else builtInCrimObj.icon
 
+        newTL = gameMaths.calculateUserBountyHuntingLevel(requestedUser.bountyHuntingXP)
+
         config = bountyConfig.BountyConfig(name="<@" + str(newName) + ">", isPlayer=True,
                                             icon=str(requestedUser.avatar_url_as(size=64)),
                                             aliases=[lib.discordUtil.userTagOrDiscrim(newName)],
-                                            techLevel=gameMaths.calculateUserBountyHuntingLevel(requestedUser.bountyHuntingXP),
+                                            techLevel=newTL,
                                             faction=newFaction, route=newRoute,
                                             start=newStart, end=newEnd, answer=newAnswer,
                                             reward=newReward, endTime=newEndTime)
@@ -828,9 +856,13 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
                 if currentGuild.bountiesDB.bountyNameExists(f"<@{newName}>"):
                     await message.channel.send(f"Skipping guild: {currentGuild.dcGuild.name if currentGuild.dcGuild is not None else ''}#{currentGuild.id} - criminal with this name already exists")
                 else:
-                    newBounty = bounty.Bounty(owningDB=currentGuild.bountiesDB, config=config.generate(currentGuild.bountiesDB))
-                    currentGuild.bountiesDB.addBounty(newBounty)
-                    spawnTasks.add(asyncio.create_task(currentGuild.announceNewBounty(newBounty)))
+                    div = currentGuild.bountiesDB.divisionForLevel(newTL)
+                    if div.isFull():
+                        await message.reply(f"The {nameForDivision(div)} division is full in guild {currentGuild.dcGuild.name if currentGuild.dcGuild is not None else ''}#{currentGuild.id}, skipping this guild")
+                    else:
+                        newBounty = bounty.Bounty(division=div, config=config.generate(div))
+                        currentGuild.bountiesDB.addBounty(newBounty)
+                        spawnTasks.add(asyncio.create_task(currentGuild.announceNewBounty(newBounty)))
         if spawnTasks:
             await asyncio.wait(spawnTasks)
             for t in spawnTasks:
@@ -843,10 +875,14 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
         if callingBBGuild.bountiesDB.bountyNameExists(f"<@{newName}>"):
             await message.channel.send("A criminal with the same name already exists in that guild!")
         else:
-            newBounty = bounty.Bounty(owningDB=callingBBGuild.bountiesDB, config=config.generate(callingBBGuild.bountiesDB))
-            callingBBGuild.bountiesDB.addBounty(newBounty)
-            await callingBBGuild.announceNewBounty(newBounty)
-            await message.channel.send(f"Criminal spawned!")
+            div = callingBBGuild.bountiesDB.divisionForLevel(newTL)
+            if div.isFull():
+                await message.reply(f"The {nameForDivision(div)} division is full in that guild!")
+            else:
+                newBounty = bounty.Bounty(division=div, config=config.generate(div))
+                callingBBGuild.bountiesDB.addBounty(newBounty)
+                await callingBBGuild.announceNewBounty(newBounty)
+                await message.channel.send(f"Criminal spawned!")
 
 
 botCommands.register("make-player-bounty", dev_cmd_make_player_bounty, 2, forceKeepArgsCasing=True, allowDM=True,

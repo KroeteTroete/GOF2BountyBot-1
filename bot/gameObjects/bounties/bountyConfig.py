@@ -1,8 +1,7 @@
 # Typing imports
-from __future__ import annotations
+from __future__ import annotations, division
 from typing import TYPE_CHECKING, List, Dict, Tuple, Any
 if TYPE_CHECKING:
-    from ...databases import bountyDB
     from ..items import shipItem
 
 import random
@@ -15,6 +14,7 @@ from ...lib import gameMaths
 from ..items.modules import armourModule, shieldModule, moduleItem
 from ..items import shipItem
 from ..items.weapons import primaryWeapon, turretWeapon
+from ...databases import bountyDivision, bountyDB
 
 
 def findItemTL(center: int, minTL: int, maxTL: int, upperBound: int, validator: FunctionType, **kwargs) -> int:
@@ -245,7 +245,7 @@ class BountyConfig:
         self.techLevel = techLevel
 
 
-    def generate(self, owningDB : bountyDB.BountyDB, noCriminal : bool = True, forceKeepChecked : bool = False,
+    def generate(self, division : bountyDivision.BountyDivision, noCriminal : bool = True, forceKeepChecked : bool = False,
                     forceNoDBCheck : bool = False) -> BountyConfig:
         """Validate all given config data, and randomly generate missing data.
 
@@ -263,43 +263,38 @@ class BountyConfig:
         :raise ValueError: When requesting an invalid faction, or when requesting an invalid reward amount
         :raise IndexError: When no space is available for a new bounty
         :raise KeyError: When the requested criminal name already exists in a bounty or when requesting an unknown system name
+        :raise OverflowError: When attempting to spawn a bounty into a full division
         """
         doDBCheck = not forceNoDBCheck
+        if doDBCheck and division.isFull():
+            raise OverflowError("The given division is full: " + bountyDB.nameForDivision(division))
+            
         if noCriminal:
             if self.name in bbData.bountyNames:
                 self.builtIn = True
             else:
                 if self.faction == "":
                     self.faction = random.choice(bbData.bountyFactions)
-                    while doDBCheck and not owningDB.factionCanMakeBounty(self.faction):
-                        self.faction = random.choice(bbData.bountyFactions)
 
                 else:
                     if self.faction not in bbData.bountyFactions:
                         raise ValueError("BOUCONF_CONS_INVFAC: Invalid faction requested '" + self.faction + "'")
-                    if doDBCheck and not owningDB.factionCanMakeBounty(self.faction):
-                        raise IndexError("BOUCONF_CONS_FACDBFULL: Attempted to generate new bounty config when " \
-                                            + "no slots are available for faction: '" + self.faction + "'")
 
                 if self.name == "":
                     self.builtIn = True
                     self.name = random.choice(bbData.bountyNames[self.faction])
-                    while doDBCheck and owningDB.bountyNameExists(self.name, noEscapedCrim=False):
+                    while doDBCheck and division.owningDB.bountyNameExists(self.name, noEscapedCrim=False):
                         self.name = random.choice(bbData.bountyNames[self.faction])
                 else:
-                    if doDBCheck and owningDB.bountyNameExists(self.name, noEscapedCrim=False):
+                    if doDBCheck and division.owningDB.bountyNameExists(self.name, noEscapedCrim=False):
                         raise KeyError("BountyConfig: attempted to create config for pre-existing bounty: " + self.name)
 
                     if self.icon == "":
                         self.icon = bbData.rocketIcon
 
-        else:
-            if doDBCheck and not owningDB.factionCanMakeBounty(self.faction):
-                raise IndexError("BOUCONF_CONS_FACDBFULL: Attempted to generate new bounty config when " \
-                                    + "no slots are available for faction: '" + self.faction + "'")
-
         if self.techLevel == -1:
-            self.techLevel = gameMaths.pickRandomCriminalTL()
+            self.techLevel = division.pickNewTL()
+            # self.techLevel = gameMaths.pickRandomCriminalTL()
 
         if self.route == []:
             if self.start == "":
