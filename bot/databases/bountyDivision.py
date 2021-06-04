@@ -146,7 +146,7 @@ class BountyDivision(Serializable):
         :return: True if the given criminal is found at any level in the division, False otherwise
         :rtype: bool
         """
-        return any((crim in tlBounties) for tlBounties in self.bounties.keys())
+        return any((crim in tlBounties) for tlBounties in self.bounties.values())
 
 
     def escapedCriminalExists(self, crim):
@@ -156,7 +156,7 @@ class BountyDivision(Serializable):
         :return: True if crim is in this division's escaped criminals record, False otherwise
         :rtype: bool
         """
-        return any((crim in tlBounties) for tlBounties in self.escapedBounties.keys())
+        return any((crim in tlBounties) for tlBounties in self.escapedBounties.values())
 
 
     def maxBounties(self) -> int:
