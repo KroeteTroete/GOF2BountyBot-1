@@ -332,7 +332,7 @@ class BountyDB(serializable.Serializable):
 
         # Add the bounty to the database
         div.bounties[bounty.techLevel][bounty.criminal] = bounty
-        if bounty.issueTime > div.latestBounty.issueTime:
+        if div.latestBounty is None or bounty.issueTime > div.latestBounty.issueTime:
             div.latestBounty = bounty
 
 
