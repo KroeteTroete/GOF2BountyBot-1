@@ -820,7 +820,7 @@ class BasedUser(serializable.Serializable):
             else:
                 int(userDict["lifetimeBountyCreditsWon"] * cfg.bountyRewardToXPGainMult)
 
-        lifetimeBountyCreditsWon = userDict.get("lifetimeBountyCreditsWon", userDict.get("lifetimeBountyCreditsWon"), 0)
+        lifetimeBountyCreditsWon = userDict.get("lifetimeBountyCreditsWon", userDict.get("lifetimeBountyCreditsWon", 0))
 
         kaamo = kaamoShop.KaamoShop.fromDict(userDict["kaamo"]) if "kaamo" in userDict else None
         loma = kaamoShop.KaamoShop.fromDict(userDict["loma"]) if "loma" in userDict else None
