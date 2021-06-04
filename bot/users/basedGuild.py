@@ -466,8 +466,9 @@ class BasedGuild(serializable.Serializable):
                                     When True, bounty listings will be removed rather than updated. (Default False)
         """
         if self.hasBountyBoardChannel:
-            if bountyComplete and self.bountyBoardChannel.hasMessageForBounty(bounty):
-                await self.removeBountyBoardChannelMessage(bounty)
+            if bountyComplete:
+                if self.bountyBoardChannel.hasMessageForBounty(bounty):
+                    await self.removeBountyBoardChannelMessage(bounty)
             else:
                 if not self.bountyBoardChannel.hasMessageForBounty(bounty):
                     await self.makeBountyBoardChannelMessage(bounty, "A new bounty is now available from **" \
@@ -564,6 +565,7 @@ class BasedGuild(serializable.Serializable):
             if newBounty is None:
                 newBounty = bounty.Bounty(division=div, config=config)
             else:
+                # If removed, uncomment this line from bounty._respawn
                 if self.bountiesDB.escapedCriminalExists(newBounty.criminal):
                     self.bountiesDB.removeEscapedCriminal(newBounty.criminal)
 

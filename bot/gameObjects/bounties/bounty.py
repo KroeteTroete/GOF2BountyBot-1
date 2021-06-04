@@ -267,7 +267,8 @@ class Bounty(serializable.Serializable):
                         "newConfig": BountyConfig(faction=self.criminal.faction,
                                                                 techLevel=self.techLevel)}
         await self.division.owningDB.owningBasedGuild.spawnAndAnnounceBounty(respawnArgs)
-        self.division.owningDB.removeEscapedCriminal(self.criminal)
+        # This is handled by spawnAndAnnounceBounty
+        # self.division.owningDB.removeEscapedCriminal(self.criminal)
         self.respawnTT = None
 
 
@@ -280,6 +281,7 @@ class Bounty(serializable.Serializable):
             raise ValueError("Attempted to cancelRespawn on a bounty that is not awaiting respawn: " + self.criminal.name)
         self.respawnTT.forceExpire(callExpiryFunc=False)
         self.respawnTT = None
+        self.division.owningDB.removeEscapedCriminal(self.criminal)
 
 
     def forceRespawn(self):
@@ -310,14 +312,13 @@ class Bounty(serializable.Serializable):
         """
         data = {"faction": self.faction, "route": self.route, "answer": self.answer, "checked": self.checked,
                 "reward": self.reward, "issueTime": self.issueTime, "endTime": self.endTime, "isEscaped": self.isEscaped(),
-                "criminal": self.criminal.toDict(**kwargs), "rewardPerSys": self.rewardPerSys}
+                "criminal": self.criminal.toDict(**kwargs), "rewardPerSys": self.rewardPerSys, "techLevel": self.techLevel}
         
         if self.isEscaped():
             data["respawnTime"] = self.respawnTT.expiryTime.timestamp()
 
         if self.hasShip:
             data["activeShip"] = self.activeShip.toDict()
-            data["techLevel"] = self.techLevel
 
         return data
 
@@ -361,7 +362,8 @@ class Bounty(serializable.Serializable):
         if data.get("isEscaped", False):
             if "respawnTime" not in data:
                 raise ValueError("Not given respawnTime for escaped criminal " + data["criminal"]["name"])
-            respawnTT = TimedTask(expiryTime=datetime.utcfromtimestamp(data["respawnTime"]), 
+            respawnTT = TimedTask(issueTime=datetime.utcfromtimestamp(data["issueTime"]),
+                                    expiryTime=datetime.utcfromtimestamp(data["respawnTime"]), 
                                     expiryFunction=newBounty._respawn,
                                     rescheduleOnExpiryFuncFailure=True)
             newBounty.escape(respawnTT=respawnTT)

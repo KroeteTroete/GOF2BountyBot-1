@@ -387,6 +387,7 @@ class BountyDB(serializable.Serializable):
             raise KeyError("Escaped criminal not found: " + crim.name)
         else:
             del self.divisionForLevel(bounty.techLevel).escapedBounties[bounty.techLevel][bounty.criminal]
+            # print(f"removed escaped criminal {bounty.criminal.name} from div {nameForDivision(self.divisionForLevel(bounty.techLevel))}, level {bounty.techLevel}")
 
 
     def removeBountyObj(self, bounty : bounty.Bounty):
@@ -428,7 +429,7 @@ class BountyDB(serializable.Serializable):
         """
         data = {"active": [], "escaped": [], "temperatures": {}}
         for div in self.divisions.values():
-            data["temperatures"][nameForDivision(div)] = div.temperature
+            data["temperatures"][div.minLevel] = div.temperature
             for tlBounties in div.bounties.values():
                 for bty in tlBounties.values():
                     data["active"].append(bty.toDict(**kwargs))
@@ -456,14 +457,12 @@ class BountyDB(serializable.Serializable):
         escapedBountiesData = bountyDBDict.get("escaped", [])
         activeBountiesData = bountyDBDict.get("active", [])
         temps = bountyDBDict.get("temperatures", {})
-        temps = {k: temps.get(k, cfg.minGuildActivity) for k in cfg.bountyDivisions}
 
         # Instanciate a new bountyDB
         newDB = BountyDB(owningBasedGuild)
 
-        if "temperatures" in bountyDBDict:
-            for divName in cfg.bountyDivisions:
-                    newDB.divisionForName(divName).temperature = bountyDBDict["temperatures"][divName]
+        for minLevel, divTemp in temps.items():
+            newDB.divisionForLevel(int(minLevel)).temperature = divTemp
 
         for bountyDict in activeBountiesData:
             newDB.addBounty(bounty.Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB))

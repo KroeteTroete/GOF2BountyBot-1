@@ -26,9 +26,10 @@ async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : b
     argsSplit = args.split(" ")
     if len(argsSplit) < 2:
         await message.reply(":x: Please specify a guild (ID, this or all) and division (name, tl or all)")
+        return
 
     guildStr = argsSplit[0]
-    divStr = args[len(guildStr):]
+    divStr = args[len(guildStr) + 1:]
 
     allGuilds = False
     if guildStr in ["this", "here"]:
@@ -264,9 +265,10 @@ async def dev_cmd_resetnewbountycool(message : discord.Message, args : str, isDM
     argsSplit = args.split(" ")
     if len(argsSplit) < 2:
         await message.reply(":x: Please specify a guild (ID, this or all) and division (name, tl or all)")
+        return
 
     guildStr = argsSplit[0]
-    divStr = args[len(guildStr):]
+    divStr = args[len(guildStr) + 1:]
 
     allGuilds = False
     if guildStr in ["this", "here"]:
@@ -328,13 +330,13 @@ async def dev_cmd_resetnewbountycool(message : discord.Message, args : str, isDM
             await message.channel.send(":ballot_box_with_check: All bounty cooldowns reset for '" \
                                         + callingBBGuild.dcGuild.name + "'")
         elif useTL:
-            div = await callingBBGuild.bountiesDB.divisionForLevel(tl)
-            div.resetNewBountyCool()
+            div = callingBBGuild.bountiesDB.divisionForLevel(tl)
+            await div.resetNewBountyCool()
             await message.channel.send(":ballot_box_with_check: Division " + nameForDivision(div).title() \
                                         + " bounty cooldown reset for '" + callingBBGuild.dcGuild.name + "'")
         else:
-            div = await callingBBGuild.bountiesDB.divisionForName(divStr)
-            div.resetNewBountyCool()
+            div = callingBBGuild.bountiesDB.divisionForName(divStr)
+            await div.resetNewBountyCool()
             await message.channel.send(":ballot_box_with_check: Division " + divStr.title() \
                                         + " bounty cooldown reset for '" + callingBBGuild.dcGuild.name + "'")
 
@@ -352,6 +354,7 @@ async def dev_cmd_set_temp(message : discord.Message, args : str, isDM : bool):
     argsSplit = args.split(" ")
     if len(argsSplit) < 3:
         await message.reply(":x: Please specify a guild (ID, this or all), new temperature, and division (name, tl or all).")
+        return
 
     guildStr = argsSplit[0]
     tempStr = argsSplit[1]
@@ -444,9 +447,10 @@ async def dev_cmd_canmakebounty(message : discord.Message, args : str, isDM : bo
     argsSplit = args.split(" ")
     if len(argsSplit) < 2:
         await message.reply(":x: Please specify a guild (ID, this or here) and division (name, tl or all)")
+        return
 
     guildStr = argsSplit[0]
-    divStr = args[len(guildStr):]
+    divStr = args[len(guildStr) + 1:]
 
     if guildStr in ["this", "here"]:
         callingBBGuild: basedGuild.BasedGuild = botState.guildsDB.getGuild(message.guild.id)
@@ -969,12 +973,13 @@ async def dev_cmd_measure_temps(message : discord.Message, args : str, isDM : bo
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
     if not args:
-        await message.reply(":x: Please specify a guild (ID, this or all) and division (name, tl or all)")
+        await message.reply(":x: Please specify a guild (ID, this or all)")
+        return
 
     if args in ["this", "here"]:
         callingBBGuild: basedGuild.BasedGuild = botState.guildsDB.getGuild(message.guild.id)
     elif not lib.stringTyping.isInt(args):
-        await message.reply(":x: Please provide a guild ID, 'here' or 'this' as your first argument.")
+        await message.reply(":x: Please provide a guild ID, 'here' or 'this' as your only argument.")
         return
     else:
         guildID = int(args)
@@ -990,8 +995,8 @@ async def dev_cmd_measure_temps(message : discord.Message, args : str, isDM : bo
 
     activityEmbed = lib.discordUtil.makeEmbed("Activity Temperatures", desc=message.guild.name, col=discord.Colour.random(),
                     thumb=message.guild.icon_url_as(size=64))
-    for tl in guildActivity._tlsRange:
-        activityEmbed.add_field(name="Level " + str(tl), value=callingBBGuild.bountiesDB.activityMonitor.temperatures[tl])
+    for div in callingBBGuild.bountiesDB.divisions.values():
+        activityEmbed.add_field(name=f"{nameForDivision(div).title()} Division", value=div.temperature)
     await message.author.send(embed=activityEmbed)
 
 botCommands.register("measure-temps", dev_cmd_measure_temps, 2, allowDM=False,
@@ -1008,9 +1013,10 @@ async def dev_cmd_decay_temps(message : discord.Message, args : str, isDM : bool
     argsSplit = args.split(" ")
     if len(argsSplit) < 2:
         await message.reply(":x: Please specify a guild (ID, this or all) and division (name, tl or all)")
+        return
 
     guildStr = argsSplit[0]
-    divStr = args[len(guildStr):]
+    divStr = args[len(guildStr) + 1:]
 
     allGuilds = False
     if guildStr in ["this", "here"]:
@@ -1093,9 +1099,10 @@ async def dev_cmd_reset_temps(message : discord.Message, args : str, isDM : bool
     argsSplit = args.split(" ")
     if len(argsSplit) < 2:
         await message.reply(":x: Please specify a guild (ID, this or all) and division (name, tl or all)")
+        return
 
     guildStr = argsSplit[0]
-    divStr = args[len(guildStr):]
+    divStr = args[len(guildStr) + 1:]
 
     allGuilds = False
     if guildStr in ["this", "here"]:
@@ -1179,9 +1186,10 @@ async def dev_cmd_current_delay(message : discord.Message, args : str, isDM : bo
     argsSplit = args.split(" ")
     if len(argsSplit) < 2:
         await message.reply(":x: Please specify a guild (ID, this or all) and division (name, tl or all)")
+        return
 
     guildStr = argsSplit[0]
-    divStr = args[len(guildStr):]
+    divStr = args[len(guildStr) + 1:]
 
     if guildStr in ["this", "here"]:
         callingBBGuild: basedGuild.BasedGuild = botState.guildsDB.getGuild(message.guild.id)
@@ -1246,9 +1254,10 @@ async def dev_cmd_current_max_bounties(message : discord.Message, args : str, is
     argsSplit = args.split(" ")
     if len(argsSplit) < 2:
         await message.reply(":x: Please specify a guild (ID, this or all) and division (name, tl or all)")
+        return
 
     guildStr = argsSplit[0]
-    divStr = args[len(guildStr):]
+    divStr = args[len(guildStr) + 1:]
 
     if guildStr in ["this", "here"]:
         callingBBGuild: basedGuild.BasedGuild = botState.guildsDB.getGuild(message.guild.id)

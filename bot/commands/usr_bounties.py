@@ -187,11 +187,6 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                         btyDivision.maxBounties = min(btyDivision.temperature, cfg.maxBountiesPerDivision)
                         btyDivision.raiseTemp(numContributingUsers * cfg.activityTempPerPlayer)
 
-                        # criminal ship unequip is delayed until now rather than handled in bounty.check
-                        # to allow for duel info printing.
-                        # this could instead be replaced by bounty.check returning the ShipFight info.
-                        bounty.clearShip()
-
                         # add this bounty to the list of bounties to be removed
                         toPop.append(bounty)
 
@@ -309,7 +304,7 @@ async def cmd_bounties(message: discord.Message, args: str, isDM: bool):
         return
     
     msgEmbed = discord.Embed(title=f"Active Bounties: {divName} Division",
-                                desc=f"Difficulty levels {division.minLevel} - {division.maxLevel} ~ Times given in UTC",
+                                description=f"Difficulty levels {division.minLevel} - {division.maxLevel} ~ Times given in UTC",
                                 colour=discord.Colour.random())
     msgEmbed.set_footer(icon_url=bbData.rocketIcon,
                         text="Track down criminals and win credits using " + callingGuild.commandPrefix + "route " \
@@ -318,7 +313,7 @@ async def cmd_bounties(message: discord.Message, args: str, isDM: bool):
     # Collect and print summaries of all active bounties
     for tl in division.bounties:
         if division.bounties[tl]:
-            msgEmbed.add_field(name=f"Level {tl}", value="​", inline=False)
+            msgEmbed.add_field(name="​", value=f"__Level {tl}__", inline=False)
             for crim, bounty in division.bounties[tl].items():
                 timeLeft = datetime.utcfromtimestamp(bounty.endTime) - datetime.utcnow()
                 if bounty.faction in bbData.bountyFactionEmojis:
