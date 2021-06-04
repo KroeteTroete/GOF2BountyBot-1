@@ -267,33 +267,35 @@ async def cmd_bounties(message: discord.Message, args: str, isDM: bool):
     division: BountyDivision = None
 
     if not args:
-        if callingUser := botState.usersDB.getUser(message.author.id):
+        try:
+            callingUser = botState.usersDB.getUser(message.author.id)
+        except KeyError:
+            division = callingGuild.bountiesDB.divisionForLevel(0)
+        else:
             userLevel = gameMaths.calculateUserBountyHuntingLevel(callingUser.bountyHuntingXP)
             division = callingGuild.bountiesDB.divisionForLevel(userLevel)
-        else:
-            division = callingGuild.bountiesDB.divisionForLevel(0)
     else:
         if lib.stringTyping.isInt(args):
             try:
-                division = callingGuild.bountiesDB.divisionForName(args)
-            except KeyError:
-                await message.reply(":x: Unknown division. You can either give a difficulty level (1-10), or a divion name:" \
-                                    + "\n" + ", ".join(i.title() for i in list(cfg.bountyDivisions.keys())[:-1]) + " or " \
-                                    + list(cfg.bountyDivisions.keys())[-1])
-            return
-        else:
-            try:
                 division = callingGuild.bountiesDB.divisionForLevel(int(args))
             except KeyError:
-                await message.reply(":x: Unknown division. You can either give a difficulty level (1-10), or a divion name:" \
-                                    + "\n" + ", ".join(i.title() for i in list(cfg.bountyDivisions.keys())[:-1]) + " or " \
+                await message.reply(":x: Unknown division. You can either give a difficulty level (1-10), or a division name: " \
+                                    + ", ".join(i.title() for i in list(cfg.bountyDivisions.keys())[:-1]) + " or " \
                                     + list(cfg.bountyDivisions.keys())[-1])
-            return
+                return
+        else:
+            try:
+                division = callingGuild.bountiesDB.divisionForName(args)
+            except KeyError:
+                await message.reply(":x: Unknown division. You can either give a difficulty level (1-10), or a division name: " \
+                                    + ", ".join(i.title() for i in list(cfg.bountyDivisions.keys())[:-1]) + " or " \
+                                    + list(cfg.bountyDivisions.keys())[-1])
+                return
 
     divName = nameForDivision(division).title()
 
-    if not division.getNumBounties():
-        await message.channel.send(":stopwatch: There are no " + divName + \
+    if division.isEmpty():
+        await message.channel.send(":stopwatch: There are no " + divName \
                                         + " division bounties active currently!\nYou have **" \
                                         + str(cfg.maxDailyBountyWins \
                                             - botState.usersDB.getOrAddID(message.author.id).bountyWinsToday) \
