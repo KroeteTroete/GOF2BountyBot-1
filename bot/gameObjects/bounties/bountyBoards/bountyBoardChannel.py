@@ -65,9 +65,8 @@ class bountyBoardChannel(serializable.Serializable):
     :vartype noBountiesMsgToBeLoaded: int
 
     Runtime atts: These are the attributes that contribute to the BBC's runtime functionality, unlike initialisation atts.
-    :var bountyMessages: A dictionary associating faction names with the bounty listings associated with that faction.
-                            Listings are stored as a dictionary of the listing's criminal to its discord.Message.
-    :vartype bountyMessages: dict[str, dict[criminal, Message]]
+    :var bountyMessages: A dictionary associating criminals to their listing discord.Messages.
+    :vartype bountyMessages: dict[criminal, Message]
     :var noBountiesMessage: Either a reference to a discord.message indicating that the BBC is empty,
                             or None if no empty board message exists
     :vartype noBountiesMessage: discord.message or None
@@ -199,20 +198,20 @@ class bountyBoardChannel(serializable.Serializable):
 
 
     def hasMessageForBounty(self, bounty : bounty.Bounty) -> bool:
-        """Decide whether this BBC stores a listing for the given bounty
+        """Decide whether this BBC stores a listing for the criminal wanted by the given bounty
 
-        :param Bounty bounty: The bounty to check for listing existence
-        :return: True if this BBC stores a listing for bounty, False otherwise
+        :param Bounty bounty: The bounty whose criminal to check for listing existence
+        :return: True if this BBC stores a listing for bounty's criminal, False otherwise
         :rtype: bool
         """
         return self.hasMessageForCriminal(bounty.criminal)
 
 
     def getMessageForBounty(self, bounty : bounty.Bounty) -> Message:
-        """Return the message acting as a listing for the given bounty
+        """Return the message acting as a listing for the given bounty's criminal
 
-        :param Bounty bounty: The bounty to fetch a listing for
-        :return: This BBC's message listing the given bounty
+        :param Bounty bounty: The bounty whose criminal to fetch a listing for
+        :return: This BBC's message listing the bounty for the given bounty's criminal
         :rtype: discord.Message
         """
         return self.bountyMessages[bounty.criminal]
