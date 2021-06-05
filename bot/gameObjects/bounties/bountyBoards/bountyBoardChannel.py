@@ -8,6 +8,7 @@ import asyncio
 from .. import bounty
 from typing import Dict, Union, List
 from ....baseClasses import serializable
+import traceback
 
 
 def makeBountyEmbed(bounty : bounty.Bounty) -> Embed:
@@ -88,38 +89,36 @@ class bountyBoardChannel(serializable.Serializable):
         self.channelIDToBeLoaded = channelIDToBeLoaded
         self.noBountiesMsgToBeLoaded = noBountiesMsgToBeLoaded
 
-        # dict of "faction": {criminal: int message ID}
-        self.bountyMessages = {}
+        # dict of {criminal: int message ID}
+        self.bountyMessages: Dict[criminal.Criminal: Message] = {}
         # discord message object to be filled when no bounties exist
         self.noBountiesMessage = None
         # discord channel object
         self.channel = None
 
 
-    async def init(self, client : Client, factions : List[str]):
+    async def init(self, client : Client):
         """Initialise the BBC's attributes to allow it to function.
         Initialisation is done here rather than in the constructor as initialisation can only be done asynchronously.
 
         :param discord.Client client: A logged in client instance used to fetch the BBC's message and channel instances
-        :param list[str] factions: A list of faction names with which bounties can be associated
         """
-        for fac in factions:
-            self.bountyMessages[fac] = {}
-
-        self.channel = client.get_channel(self.channelIDToBeLoaded)
+        self.channel = client.get_channel(self.channelIDToBeLoaded) or await client.fetch_channel(self.channelIDToBeLoaded)
+        if self.channel is None:
+            raise lib.exceptions.NoLongerExists(f"Failed to load requested channel: {self.channelIDToBeLoaded}")
 
         for id in self.messagesToBeLoaded:
             crim = criminal.Criminal.fromDict(self.messagesToBeLoaded[id])
 
             try:
                 msg = await self.channel.fetch_message(id)
-                self.bountyMessages[crim.faction][crim] = msg
+                self.bountyMessages[crim] = msg
             except HTTPException:
                 succeeded = False
                 for tryNum in range(cfg.httpErrRetries):
                     try:
                         msg = await self.channel.fetch_message(id)
-                        self.bountyMessages[crim.faction][crim] = msg
+                        self.bountyMessages[crim] = msg
                         succeeded = True
                     except HTTPException:
                         await asyncio.sleep(cfg.httpErrRetryDelaySeconds)
@@ -196,7 +195,7 @@ class bountyBoardChannel(serializable.Serializable):
         :return: True if this BBC stores a listing for criminal, False otherwise
         :rtype: bool
         """
-        return criminal in self.bountyMessages[criminal.faction]
+        return criminal in self.bountyMessages
 
 
     def hasMessageForBounty(self, bounty : bounty.Bounty) -> bool:
@@ -216,7 +215,7 @@ class bountyBoardChannel(serializable.Serializable):
         :return: This BBC's message listing the given bounty
         :rtype: discord.Message
         """
-        return self.bountyMessages[bounty.criminal.faction][bounty.criminal]
+        return self.bountyMessages[bounty.criminal]
 
 
     def isEmpty(self) -> bool:
@@ -225,10 +224,7 @@ class bountyBoardChannel(serializable.Serializable):
         :return: False if this BBC stores any bounty listings, True otherwise
         :rtype: bool
         """
-        for faction in self.bountyMessages:
-            if bool(self.bountyMessages[faction]):
-                return False
-        return True
+        return bool(self.bountyMessages)
 
 
     async def addBounty(self, bounty : bounty.Bounty, message : Message):
@@ -250,7 +246,7 @@ class bountyBoardChannel(serializable.Serializable):
             botState.logger.log("BBC", "addBty",
                         "Attempted to add a bounty to a bountyboardchannel, but the bounty is already listed: " \
                         + bounty.criminal.name, category='bountyBoards', eventType="LISTING_ADD-EXSTS")
-        self.bountyMessages[bounty.criminal.faction][bounty.criminal] = message
+        self.bountyMessages[bounty.criminal] = message
 
         if removeMsg:
             try:
@@ -291,9 +287,9 @@ class bountyBoardChannel(serializable.Serializable):
                                 "Attempted to remove a criminal from a bountyboardchannel, but the criminal is not listed: " \
                                     + criminal.name,
                                 category='bountyBoards', eventType="LISTING_REM-NO_EXST")
-        # listingMsg = await self.channel.fetch_message(self.bountyMessages[criminal.faction][criminal])
+        # listingMsg = await self.channel.fetch_message(self.bountyMessages[criminal])
         try:
-            await self.bountyMessages[criminal.faction][criminal].delete()
+            await self.bountyMessages[criminal].delete()
         except HTTPException:
             botState.logger.log("BountyBoardChannel", "removeCriminal",
                                 "HTTPException thrown when removing bounty listing message for criminal: " \
@@ -306,7 +302,7 @@ class bountyBoardChannel(serializable.Serializable):
             botState.logger.log("BountyBoardChannel", "removeCriminal",
                                 "Bounty listing message no longer exists, BBC entry removed: " + criminal.name,
                                 category='bountyBoards', eventType="RM_LISTING-NOT_FOUND")
-        del self.bountyMessages[criminal.faction][criminal]
+        del self.bountyMessages[criminal]
 
         if self.isEmpty():
             try:
@@ -361,16 +357,14 @@ class bountyBoardChannel(serializable.Serializable):
             botState.logger.log("BBC", "remBty", "Attempted to update a BBC message for a criminal that is not listed: " \
                         + bounty.criminal.name, category='bountyBoards', eventType="LISTING_UPD-NO_EXST")
 
-        content = self.bountyMessages[bounty.criminal.faction][bounty.criminal].content
+        content = self.bountyMessages[bounty.criminal].content
         try:
-            await self.bountyMessages[bounty.criminal.faction][bounty.criminal].edit(content=content,
-                                                                                        embed=makeBountyEmbed(bounty))
+            await self.bountyMessages[bounty.criminal].edit(content=content, embed=makeBountyEmbed(bounty))
         except HTTPException:
             succeeded = False
             for tryNum in range(cfg.httpErrRetries):
                 try:
-                    await self.bountyMessages[bounty.criminal.faction][bounty.criminal].edit(content=content,
-                                                                                                embed=makeBountyEmbed(bounty))
+                    await self.bountyMessages[bounty.criminal].edit(content=content, embed=makeBountyEmbed(bounty))
                     succeeded = True
                 except HTTPException:
                     await asyncio.sleep(cfg.httpErrRetryDelaySeconds)
@@ -391,11 +385,16 @@ class bountyBoardChannel(serializable.Serializable):
     async def clear(self):
         """Clear all bounty listings on the board.
         """
-        cleared = {}
-        for fac in self.bountyMessages:
-            cleared[fac] = [c for c in self.bountyMessages[fac]]
-            for criminal in cleared[fac]:
-                await self.removeCriminal(criminal)
+        clearTasks = set()
+        for criminal in self.bountyMessages.keys():
+            clearTasks.add(asyncio.create_task(self.removeCriminal(criminal)))
+        if clearTasks:
+            await asyncio.wait(clearTasks)
+            for t in clearTasks:
+                if e := t.exception():
+                    botState.logger.log("bountyBoardChannel", "clear", str(e), category="bountyBoards",
+                                        eventType=type(e).__name__,
+                                        trace=traceback.format_exception(type(e), e, e.__traceback__))
 
 
     def toDict(self, **kwargs) -> dict:
@@ -405,10 +404,7 @@ class bountyBoardChannel(serializable.Serializable):
         :rtype: dict
         """
         # dict of message id: criminal dict
-        listings = {}
-        for fac in self.bountyMessages:
-            for crim in self.bountyMessages[fac]:
-                listings[self.bountyMessages[fac][crim].id] = crim.toDict(**kwargs)
+        listings = {msg.id: crim.toDict(**kwargs) for crim, msg in self.bountyMessages.items()}
         return {"channel": self.channel.id, "listings": listings,
                 "noBountiesMsg": self.noBountiesMessage.id if self.noBountiesMessage is not None else -1}
 

@@ -391,8 +391,8 @@ class BasedGuild(serializable.Serializable):
             raise RuntimeError("Attempted to assign a bountyboard channel for guild " + str(self.id) \
                                 + " but one is already assigned")
         self.bountyBoardChannel = bountyBoardChannel.bountyBoardChannel(channel.id, {}, -1)
-        await self.bountyBoardChannel.init(client, factions)
         self.hasBountyBoardChannel = True
+        await self.bountyBoardChannel.init(client, factions)
 
 
     def removeBountyBoardChannel(self):

@@ -109,7 +109,14 @@ async def initializeBountyBoardChannels():
             if botState.client.get_channel(guild.bountyBoardChannel.channelIDToBeLoaded) is None:
                 guild.removeBountyBoardChannel()
             else:
-                await guild.bountyBoardChannel.init(botState.client, bbData.bountyFactions)
+                try:
+                    await guild.bountyBoardChannel.init(botState.client)
+                except lib.exceptions.NoLongerExists:
+                    botState.logger.log("main", "initializeBountyBoardChannels",
+                                        f"failed to load bountyboard channel {guild.bountyBoardChannel.channelIDToBeLoaded}" \
+                                            + f" for guild {guild.id}. Removing bountyboardchannel from guild.",
+                                        category="bountyBoards", eventType="UKWN_CHAN")
+                    guild.removeBountyBoardChannel()
 
 
 def inferUserPermissions(message: discord.Message) -> int:

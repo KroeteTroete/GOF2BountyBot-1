@@ -54,3 +54,9 @@ class InvalidGameObjectFolder(Exception):
         super().__init__("Invalid game object configuration folder (" + reason + "): " + filePath)
         self.filePath = filePath
         self.reason = reason
+
+
+class NoLongerExists(Exception):
+    """Raised when initializing a bountyboardchannel but couldnt find the channel to load
+    """
+    pass

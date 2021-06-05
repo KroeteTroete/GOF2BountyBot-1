@@ -1,7 +1,7 @@
 import discord
 
 from . import commandsDB as botCommands
-from .. import botState
+from .. import botState, lib
 from ..cfg import bbData
 
 botCommands.addHelpSection(1, "channels")
@@ -72,7 +72,14 @@ async def admin_cmd_set_bounty_board_channel(message : discord.Message, args : s
         await message.channel.send(":x: This server already has a bounty board channel! Use `" + guild.commandPrefix \
                                     + "remove-bounty-board-channel` to remove it.")
         return
-    await guild.addBountyBoardChannel(message.channel, botState.client, bbData.bountyFactions)
+    try:
+        await guild.addBountyBoardChannel(message.channel, botState.client, bbData.bountyFactions)
+    except lib.exceptions.NoLongerExists:
+        botState.logger.log("admn_channels", "admin_cmd_set_bounty_board_channel",
+                            f"failed to load bountyboard channel {guild.bountyBoardChannel.channelIDToBeLoaded}" \
+                                + f" for guild {guild.id}. Removing bountyboardchannel from guild.",
+                            category="bountyBoards", eventType="UKWN_CHAN")
+        guild.removeBountyBoardChannel()
     await message.channel.send(":ballot_box_with_check: Bounty board channel set!")
 
 botCommands.register("set-bounty-board-channel", admin_cmd_set_bounty_board_channel, 1, allowDM=False, helpSection="channels",
