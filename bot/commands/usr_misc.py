@@ -9,7 +9,7 @@ from . import commandsDB as botCommands
 from . import util_help
 from .. import lib, botState
 from ..cfg import cfg, bbData, versionInfo
-from ..users import basedUser
+from ..users import basedUser, basedGuild
 from ..reactionMenus import reactionMenu, reactionPollMenu
 from ..scheduling import timedTask
 from ..userAlerts import userAlerts
@@ -93,9 +93,9 @@ async def cmd_how_to_play(message : discord.Message, args : str, isDM : bool):
     try:
         newBountiesChannelStr = ""
         if not isDM:
-            requestedBBGuild = botState.guildsDB.addDcGuild(message.guild)
+            requestedBBGuild: basedGuild.BasedGuild = botState.guildsDB.addDcGuild(message.guild)
             if requestedBBGuild.hasBountyBoardChannels:
-                newBountiesChannelStr = " in <#" + str(requestedBBGuild.bountyBoardChannel.channel.id) + ">"
+                newBountiesChannelStr = " in " + requestedBBGuild.bountiesDB.divisionForLevel(0).bountyBoardChannel.channel.mention
             elif requestedBBGuild.hasAnnounceChannel:
                 newBountiesChannelStr = " in <#" + str(requestedBBGuild.getAnnounceChannel().id) + ">"
             prefix = requestedBBGuild.commandPrefix

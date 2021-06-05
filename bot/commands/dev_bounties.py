@@ -75,7 +75,8 @@ async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : b
                 if allDivs:
                     currentGuild.bountiesDB.clearAllBounties(includeEscaped=True)
                     if callingBBGuild.hasBountyBoardChannels:
-                        bbcClearTasks.add(asyncio.create_task(callingBBGuild.bountyBoardChannel.clear()))
+                        for div in callingBBGuild.bountiesDB.divisions.values():
+                            bbcClearTasks.add(asyncio.create_task(div.bountyBoardChannel.clear()))
                 elif useTL:
                     currentGuild.bountiesDB.divisionForLevel(tl).clear(includeEscaped=True)
                 else:
@@ -101,7 +102,7 @@ async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : b
 
         if callingBBGuild.hasBountyBoardChannels:
             bbcTasks = set()
-            bbc = callingBBGuild.bountyBoardChannel
+            bbc = div.bountyBoardChannel
             for tlBounties in div.bounties.values():
                 for bty in tlBounties:
                     if bbc.hasMessageForCriminal(bty.criminal):

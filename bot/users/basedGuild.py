@@ -386,9 +386,9 @@ class BasedGuild(serializable.Serializable):
         """
         if not self.hasBountyBoardChannels:
             raise ValueError("The requested BasedGuild has no bountyBoardChannel")
-        bountyListing = await self.bountyBoardChannel.channel.send(msg, embed=embed)
-        await self.bountyBoardChannel.addBounty(bounty, bountyListing)
-        await self.bountyBoardChannel.updateBountyMessage(bounty)
+        bountyListing = await bounty.division.bountyBoardChannel.channel.send(msg, embed=embed)
+        await bounty.division.bountyBoardChannel.addBounty(bounty, bountyListing)
+        await bounty.division.bountyBoardChannel.updateBountyMessage(bounty)
         return bountyListing
 
 
@@ -401,9 +401,9 @@ class BasedGuild(serializable.Serializable):
         """
         if not self.hasBountyBoardChannels:
             raise ValueError("The requested BasedGuild has no bountyBoardChannel")
-        if self.bountyBoardChannel.hasMessageForBounty(bounty):
+        if bounty.division.bountyBoardChannel.hasMessageForBounty(bounty):
             try:
-                await self.bountyBoardChannel.getMessageForBounty(bounty).delete()
+                await bounty.division.bountyBoardChannel.getMessageForBounty(bounty).delete()
             except HTTPException:
                 botState.logger.log("Main", "rmBBCMsg",
                                     "HTTPException thrown when removing bounty listing message for criminal: " \
@@ -416,7 +416,7 @@ class BasedGuild(serializable.Serializable):
                 botState.logger.log("Main", "rmBBCMsg",
                                     "Bounty listing message no longer exists, BBC entry removed: " + bounty.criminal.name,
                                     category='bountyBoards', eventType="RM_LISTING-NOT_FOUND")
-            await self.bountyBoardChannel.removeBounty(bounty)
+            await bounty.division.bountyBoardChannel.removeBounty(bounty)
         else:
             raise KeyError("The requested BasedGuild (" + str(self.id) \
                             + ") does not have a bountyBoardChannel listing for the given bounty: " + bounty.criminal.name)
@@ -431,14 +431,14 @@ class BasedGuild(serializable.Serializable):
         """
         if self.hasBountyBoardChannels:
             if bountyComplete:
-                if self.bountyBoardChannel.hasMessageForBounty(bounty):
+                if bounty.division.bountyBoardChannel.hasMessageForBounty(bounty):
                     await self.removeBountyBoardChannelMessage(bounty)
             else:
-                if not self.bountyBoardChannel.hasMessageForBounty(bounty):
+                if not bounty.division.bountyBoardChannel.hasMessageForBounty(bounty):
                     await self.makeBountyBoardChannelMessage(bounty, "A new bounty is now available from **" \
                                                                     + bounty.faction.title() + "** central command:")
                 else:
-                    await self.bountyBoardChannel.updateBountyMessage(bounty)
+                    await bounty.division.bountyBoardChannel.updateBountyMessage(bounty)
 
 
     async def announceNewBounty(self, newBounty : bounty.Bounty):
@@ -466,16 +466,16 @@ class BasedGuild(serializable.Serializable):
                 if newBounty.techLevel != 0 and self.hasBountyAlertRoles:
                     msg = "<@&" + str(self.bountyAlertRoleIDForTL(newBounty.techLevel)) + "> " + msg
                 # announce to the given channel
-                bountyListing = await self.bountyBoardChannel.channel.send(msg, embed=bountyEmbed)
-                await self.bountyBoardChannel.addBounty(newBounty, bountyListing)
-                await self.bountyBoardChannel.updateBountyMessage(newBounty)
+                bountyListing = await newBounty.division.bountyBoardChannel.channel.send(msg, embed=bountyEmbed)
+                await newBounty.division.bountyBoardChannel.addBounty(newBounty, bountyListing)
+                await newBounty.division.bountyBoardChannel.updateBountyMessage(newBounty)
                 return bountyListing
 
             except Forbidden:
                 botState.logger.log("BasedGuild", "anncBnty",
                                     "Failed to post BBCh listing to guild " + botState.client.get_guild(self.id).name + "#" \
-                                    + str(self.id) + " in channel " + self.bountyBoardChannel.channel.name + "#" \
-                                    + str(self.bountyBoardChannel.channel.id), category="bountyBoards",
+                                    + str(self.id) + " in channel " + newBounty.division.bountyBoardChannel.channel.name + "#" \
+                                    + str(newBounty.division.bountyBoardChannel.channel.id), category="bountyBoards",
                                     eventType="BBC_NW_FRBDN")
 
         # If the guild has an announceChannel
@@ -708,7 +708,6 @@ class BasedGuild(serializable.Serializable):
             data["commandPrefix"] = self.commandPrefix
 
         if not self.bountiesDisabled:
-            data["bountyBoardChannel"] = self.bountyBoardChannel.toDict(**kwargs) if self.hasBountyBoardChannels else None
             data["bountiesDB"] = self.bountiesDB.toDict(**kwargs)
 
         if not self.shopDisabled:
@@ -767,6 +766,6 @@ class BasedGuild(serializable.Serializable):
             else:
                 bountiesDB = BountyDB(newGuild)
             newGuild.bountiesDB = bountiesDB
-            newGuild.bountiesDisabled = next(newGuild.bountiesDB.divisions.values()).bountyBoardChannel is not None
+            newGuild.hasBountyBoardChannels = next(newGuild.bountiesDB.divisions.values()).bountyBoardChannel is not None
 
         return newGuild
