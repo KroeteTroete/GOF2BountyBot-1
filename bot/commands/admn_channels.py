@@ -68,7 +68,7 @@ async def admin_cmd_set_bounty_board_channel(message : discord.Message, args : s
     :param str args: ignored
     """
     guild = botState.guildsDB.getGuild(message.guild.id)
-    if guild.hasBountyBoardChannel:
+    if guild.hasBountyBoardChannels:
         await message.channel.send(":x: This server already has a bounty board channel! Use `" + guild.commandPrefix \
                                     + "remove-bounty-board-channel` to remove it.")
         return
@@ -98,7 +98,7 @@ async def admin_cmd_remove_bounty_board_channel(message : discord.Message, args 
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
     guild = botState.guildsDB.getGuild(message.guild.id)
-    if guild.hasBountyBoardChannel:
+    if guild.hasBountyBoardChannels:
         guild.removeBountyBoardChannel()
         await message.channel.send(":ballot_box_with_check: Bounty board channel removed!")
     else:

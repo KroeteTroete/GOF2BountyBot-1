@@ -105,7 +105,7 @@ def setHelpEmbedThumbnails():
 
 async def initializeBountyBoardChannels():
     for guild in botState.guildsDB.getGuilds():
-        if guild.hasBountyBoardChannel:
+        if guild.hasBountyBoardChannels:
             if botState.client.get_channel(guild.bountyBoardChannel.channelIDToBeLoaded) is None:
                 guild.removeBountyBoardChannel()
             else:

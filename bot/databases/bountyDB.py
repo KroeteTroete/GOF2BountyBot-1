@@ -5,6 +5,8 @@ from random import randint
 import asyncio
 import traceback
 
+from ..gameObjects.bounties.bountyBoards.bountyBoardChannel import BountyBoardChannel
+from ..gameObjects.bounties import bounty
 from ..gameObjects.bounties.criminal import Criminal
 from typing import List
 from ..baseClasses import serializable
@@ -14,7 +16,6 @@ from ..users import basedGuild, guildActivity
 from .. import lib, botState
 from ..scheduling.timedTask import TimedTask, DynamicRescheduleTask
 from .bountyDivision import BountyDivision
-from bot.gameObjects.bounties import bounty
 
 
 def nameForDivision(div: BountyDivision) -> str:
@@ -436,6 +437,9 @@ class BountyDB(serializable.Serializable):
             for tlBounties in div.escapedBounties.values():
                 for bty in tlBounties.values():
                     data["escaped"].append(bty.toDict(**kwargs))
+        
+        if next(self.divisions.values()).bountyBoardChannel is not None:
+            data["bountyBoardChannels"] = {div.minLevel: div.bountyBoardChannel.toDict(**kwargs) for div in self.divisions}
 
         return data
 
@@ -469,5 +473,9 @@ class BountyDB(serializable.Serializable):
         for bountyDict in escapedBountiesData:
             # Adding escaped bounties to DB is done during Bounty.fromDict
             bounty.Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB)
+
+        if "bountyBoardChannels" in bountyDBDict:
+            for minLevel, bbcDict in bountyDBDict["bountyBoardChannels"].items():
+                newDB.divisionForLevel(int(minLevel)).bountyBoardChannel = BountyBoardChannel.fromDict(bbcDict)
 
         return newDB

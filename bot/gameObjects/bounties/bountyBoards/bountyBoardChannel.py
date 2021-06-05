@@ -51,7 +51,7 @@ noBountiesEmbed = Embed(description='> Please check back later, or use the `noti
 noBountiesEmbed.set_author(name='No Bounties Available', icon_url=stopwatchIcon)
 
 
-class bountyBoardChannel(serializable.Serializable):
+class BountyBoardChannel(serializable.Serializable):
     """A channel which stores a continuously updating listing message for every active bounty.
 
     Initialisation atts: These attributes are used only when loading in the BBC from dictionary-serialised format.
@@ -409,7 +409,7 @@ class bountyBoardChannel(serializable.Serializable):
 
 
     @classmethod
-    def fromDict(cls, BBCDict : dict, **kwargs) -> bountyBoardChannel:
+    def fromDict(cls, BBCDict : dict, **kwargs) -> BountyBoardChannel:
         """Factory function constructing a new BBC from the information in the provided dictionary
         - the opposite of bountyBoardChannel.toDict
 
@@ -419,5 +419,5 @@ class bountyBoardChannel(serializable.Serializable):
         """
         if BBCDict is None:
             return None
-        return bountyBoardChannel(BBCDict["channel"], BBCDict["listings"],
+        return BountyBoardChannel(BBCDict["channel"], BBCDict["listings"],
                                     BBCDict.get("noBountiesMsg", -1))

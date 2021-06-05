@@ -11,7 +11,6 @@ import random
 from .. import botState, lib
 from ..gameObjects import guildShop
 from ..databases.bountyDB import BountyDB
-from ..gameObjects.bounties.bountyBoards import bountyBoardChannel
 from ..userAlerts import userAlerts
 from ..cfg import cfg, bbData
 from ..scheduling.timedTask import TimedTask, DynamicRescheduleTask
@@ -38,10 +37,7 @@ class BasedGuild(serializable.Serializable):
     :vartype shop: guildShop
     :var alertRoles: A dictionary of user alert IDs to guild role IDs.
     :vartype alertRoles: dict[str, int]
-    :var bountyBoardChannel: A bountyBoardChannel object implementing this guild's bounty board channel if it has one,
-                                None otherwise.
-    :vartype bountyBoardChannel: bountyBoardChannel
-    :var hasBountyBoardChannel: Whether this guild has a bounty board channel or not
+    :var hasBountyBoardChannels: Whether this guild has bounty board channels for each of its divisions or not
     :vartype hasBountyBoardChannel: bool
     :var ownedRoleMenus: The number of ReactionRolePickers present in this guild
     :vartype ownedRoleMenus: int
@@ -61,7 +57,7 @@ class BasedGuild(serializable.Serializable):
 
     def __init__(self, id: int, dcGuild: Guild, bounties: BountyDB, commandPrefix: str = cfg.defaultCommandPrefix,
             announceChannel : channel.TextChannel = None, playChannel : channel.TextChannel = None,
-            shop : guildShop.TechLeveledShop = None, bountyBoardChannel : bountyBoardChannel.bountyBoardChannel = None,
+            shop : guildShop.TechLeveledShop = None,
             alertRoles : Dict[str, int] = {}, ownedRoleMenus : int = 0, bountiesDisabled : bool = False,
             shopDisabled : bool = False, bountyAlertRoles : List[int] = []):
         """
@@ -74,8 +70,6 @@ class BasedGuild(serializable.Serializable):
                                             None when no bounty playing channel is set for this guild.
         :param guildShop shop: This guild's guildShop object
         :param dict[str, int] alertRoles: A dictionary of user alert IDs to guild role IDs.
-        :param BoardBoardChannel bountyBoardChannel: A bountyBoardChannel object implementing this guild's bounty board
-                                                        channel if it has one, None otherwise.
         :param int ownedRoleMenus: The number of ReactionRolePickers present in this guild
         :param bool bountiesDisabled: Whether or not to disable this guild's bountyDB and bounty spawning
         :param bool shopDisabled: Whether or not to disable this guild's guildShop and shop refreshing
@@ -119,13 +113,11 @@ class BasedGuild(serializable.Serializable):
         self.bountiesDisabled = bountiesDisabled
 
         if bountiesDisabled:
-            self.bountyBoardChannel = None
-            self.hasBountyBoardChannel = False
+            self.hasBountyBoardChannels = False
             self.hasBountyAlertRoles = False
             self.bountyAlertRoles = []
         else:
-            self.bountyBoardChannel = bountyBoardChannel
-            self.hasBountyBoardChannel = bountyBoardChannel is not None
+            self.hasBountyBoardChannels = self.bountiesDB.divisionForLevel(cfg.minTechLevel).bountyBoardChannel is not None
             self.hasBountyAlertRoles = bountyAlertRoles != []
             self.bountyAlertRoles = bountyAlertRoles
 
@@ -379,34 +371,6 @@ class BasedGuild(serializable.Serializable):
         raise KeyError("Unknown GuildRoleUserAlert ID: " + alertID)
 
 
-    async def addBountyBoardChannel(self, channel : channel.TextChannel, client : Client, factions : List[str]):
-        """Set this guild's bounty board channel.
-
-        :param discord.Channel channel: The channel where bounty listings should be posted
-        :param discord.Client client: A logged in client used to fetch the channel and any existing listings.
-        :param list[str] factions: A list of faction names with which bounty listings can be associated
-        :raise RuntimeError: If the guild already has an active bountyBoardChannel
-        """
-        if self.hasBountyBoardChannel:
-            raise RuntimeError("Attempted to assign a bountyboard channel for guild " + str(self.id) \
-                                + " but one is already assigned")
-        self.bountyBoardChannel = bountyBoardChannel.bountyBoardChannel(channel.id, {}, -1)
-        self.hasBountyBoardChannel = True
-        await self.bountyBoardChannel.init(client, factions)
-
-
-    def removeBountyBoardChannel(self):
-        """Deactivate this guild's bountyBoardChannel. This does not remove any active bounty listing messages.
-
-        :raise RuntimeError: If this guild does not have an active bountyBoardChannel.
-        """
-        if not self.hasBountyBoardChannel:
-            raise RuntimeError("Attempted to remove a bountyboard channel for guild " + str(self.id) \
-                                + " but none is assigned")
-        self.bountyBoardChannel = None
-        self.hasBountyBoardChannel = False
-
-
     async def makeBountyBoardChannelMessage(self, bounty : bounty.Bounty, msg : str = "", embed : Embed = None) -> Message:
         """Create a new bountyBoardChannel listing for the given bounty, in the given guild.
         guild must own a bountyBoardChannel.
@@ -420,7 +384,7 @@ class BasedGuild(serializable.Serializable):
         :rtype: discord.Message
         :raise ValueError: If guild does not own a bountyBoardChannel
         """
-        if not self.hasBountyBoardChannel:
+        if not self.hasBountyBoardChannels:
             raise ValueError("The requested BasedGuild has no bountyBoardChannel")
         bountyListing = await self.bountyBoardChannel.channel.send(msg, embed=embed)
         await self.bountyBoardChannel.addBounty(bounty, bountyListing)
@@ -435,7 +399,7 @@ class BasedGuild(serializable.Serializable):
         :raise ValueError: If guild does not own a BBC
         :raise KeyError: If the guild's BBC does not have a listing for bounty
         """
-        if not self.hasBountyBoardChannel:
+        if not self.hasBountyBoardChannels:
             raise ValueError("The requested BasedGuild has no bountyBoardChannel")
         if self.bountyBoardChannel.hasMessageForBounty(bounty):
             try:
@@ -465,7 +429,7 @@ class BasedGuild(serializable.Serializable):
         :param bool bountyComplete: Whether or not the bounty has now been completed.
                                     When True, bounty listings will be removed rather than updated. (Default False)
         """
-        if self.hasBountyBoardChannel:
+        if self.hasBountyBoardChannels:
             if bountyComplete:
                 if self.bountyBoardChannel.hasMessageForBounty(bounty):
                     await self.removeBountyBoardChannelMessage(bounty)
@@ -497,7 +461,7 @@ class BasedGuild(serializable.Serializable):
         # Create the announcement text
         msg = "A new bounty is now available from **" + newBounty.faction.title() + "** central command:"
 
-        if self.hasBountyBoardChannel:
+        if self.hasBountyBoardChannels:
             try:
                 if newBounty.techLevel != 0 and self.hasBountyAlertRoles:
                     msg = "<@&" + str(self.bountyAlertRoleIDForTL(newBounty.techLevel)) + "> " + msg
@@ -666,7 +630,7 @@ class BasedGuild(serializable.Serializable):
         if self.bountiesDisabled:
             raise ValueError("Bounties are already disabled in this guild")
 
-        if self.hasBountyBoardChannel:
+        if self.hasBountyBoardChannels:
             self.removeBountyBoardChannel()
         self.bountiesDisabled = True
         self.bountiesDB = None
@@ -744,7 +708,7 @@ class BasedGuild(serializable.Serializable):
             data["commandPrefix"] = self.commandPrefix
 
         if not self.bountiesDisabled:
-            data["bountyBoardChannel"] = self.bountyBoardChannel.toDict(**kwargs) if self.hasBountyBoardChannel else None
+            data["bountyBoardChannel"] = self.bountyBoardChannel.toDict(**kwargs) if self.hasBountyBoardChannels else None
             data["bountiesDB"] = self.bountiesDB.toDict(**kwargs)
 
         if not self.shopDisabled:
@@ -784,11 +748,6 @@ class BasedGuild(serializable.Serializable):
 
         bountiesDisabled = guildDict.get("bountiesDisabled", False)
 
-        if bountiesDisabled or not (bbcData := guildDict.get("bountyBoardChannel", None)):
-            bbc = None
-        else:
-            bbc = bountyBoardChannel.bountyBoardChannel.fromDict(bbcData)
-        
         if not guildDict.get("shopDisabled", True):
             shop = None
         else:
@@ -800,7 +759,7 @@ class BasedGuild(serializable.Serializable):
         newGuild = BasedGuild(**cls._makeDefaults(guildDict, ("bountiesDB",),
                                                     id=guildID, dcGuild=dcGuild, bounties=None,
                                                     announceChannel=announceChannel, playChannel=playChannel,
-                                                    shop=shop, bountyBoardChannel=bbc, shopDisabled=shop is None))
+                                                    shop=shop, shopDisabled=shop is None))
 
         if not bountiesDisabled:
             if "bountiesDB" in guildDict:
@@ -808,5 +767,6 @@ class BasedGuild(serializable.Serializable):
             else:
                 bountiesDB = BountyDB(newGuild)
             newGuild.bountiesDB = bountiesDB
+            newGuild.bountiesDisabled = next(newGuild.bountiesDB.divisions.values()).bountyBoardChannel is not None
 
         return newGuild

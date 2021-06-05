@@ -8,6 +8,7 @@ from ..baseClasses.aliasableDict import AliasableDict
 from ..gameObjects.bounties.bounty import Bounty
 from ..gameObjects.bounties.criminal import Criminal
 from ..gameObjects.bounties.bountyConfig import BountyConfig
+from ..gameObjects.bounties.bountyBoards.bountyBoardChannel import BountyBoardChannel
 from ..cfg import cfg, bbData
 from .. import botState, lib
 from ..scheduling.timedTask import TimedTask, DynamicRescheduleTask
@@ -15,6 +16,7 @@ from ..scheduling.timedTask import TimedTask, DynamicRescheduleTask
 from datetime import timedelta
 import random
 from typing import List
+from discord import TextChannel, Client
 
 
 class BountyDivision(Serializable):
@@ -39,17 +41,22 @@ class BountyDivision(Serializable):
     :vartype isActive: bool
     :var delayRandRange: A dictionary containing boundary timedeltas for use in random bounty delay generators
     :vartype delayRandRange: Dict[str, timedelta]
+    :var bountyBoardChannel: A BountyBoardChannel object implementing this division's bounty board channel if it has one,
+                                None otherwise.
+    :vartype bountyBoardChannel: BountyBoardChannel
     """
     delayRandRange = {"min": timedelta(**cfg.timeouts.newBountyDelayRandomMin),
                         "max": timedelta(**cfg.timeouts.newBountyDelayRandomMax)}
 
     def __init__(self, owningDB: "BountyDB", minLevel: int, maxLevel: int, temperature: int = cfg.minGuildActivity,
-                bounties: Dict[int, AliasableDict[Criminal, Bounty]] = None,
+                bounties: Dict[int, AliasableDict[Criminal, Bounty]] = None, bountyBoardChannel: BountyBoardChannel = None,
                 escapedBounties: Dict[int, AliasableDict[Criminal, Bounty]] = None) -> None:
         """
         :param BountyDB owningDB: The BountyDB that owns this division
         :param int minLevel: The lowest level of bounties available in this division
         :param int maxLevel: The highest level of bounties available in this division
+        :param BountyBoardChannel bountyBoardChannel: A BountyBoardChannel object implementing this division's bounty board
+                                                        channel if it has one, None otherwise. (Default None)
         """
         self.temperature = temperature
         self.isActive = False
@@ -57,6 +64,7 @@ class BountyDivision(Serializable):
         self.minLevel = minLevel
         self.maxLevel = maxLevel
         self.latestBounty: Bounty = None
+        self.bountyBoardChannel = bountyBoardChannel
         # Dictionary of tech level : dict of criminal : bounty
         if bounties is None:
             self.bounties: Dict[int, AliasableDict[Criminal, Bounty]] = {l: AliasableDict()
@@ -378,6 +386,31 @@ class BountyDivision(Serializable):
         """
         await self.newBountyTT.forceExpire(callExpiryFunc=True)
 
+    
+    async def addBountyBoardChannel(self, channel : TextChannel, client : Client):
+        """Set this division's bounty board channel.
+
+        :param discord.Channel channel: The channel where bounty listings should be posted
+        :param discord.Client client: A logged in client used to fetch the channel and any existing listings.
+        :raise RuntimeError: If the guild already has an active bountyBoardChannel
+        """
+        if self.bountyBoardChannel is not None:
+            raise RuntimeError(f"Attempted to assign a bountyboard channel for division {self.minLevel}-{self.maxLevel} " \
+                                + f"in guild {self.owningDB.owningBasedGuild.id} but one is already assigned")
+        self.bountyBoardChannel = BountyBoardChannel(channel.id, {}, -1)
+        await self.bountyBoardChannel.init(client)
+
+
+    def removeBountyBoardChannel(self):
+        """Deactivate this division's bountyBoardChannel. This does not remove any active bounty listing messages.
+
+        :raise RuntimeError: If this division does not have an active bountyBoardChannel.
+        """
+        if self.hasBountyBoardChannel is None:
+            raise RuntimeError(f"Attempted to remove a bountyboard channel from division {self.minLevel}-{self.maxLevel} " \
+                                + f"in guild {self.owningDB.owningBasedGuild.id} but none is assigned")
+        self.bountyBoardChannel = None
+
 
     def toDict(self, **kwargs) -> dict:
         """Serialize this division into dictionary format, to be recreated completely.
@@ -385,11 +418,14 @@ class BountyDivision(Serializable):
         :return: A dictionary containing all of the current bounties and the activity temperature
         :rtype: dict
         """
-        return {"temperature": self.temperature, "minLevel": self.minLevel, "maxLevel": self.maxLevel,
+        data = {"temperature": self.temperature, "minLevel": self.minLevel, "maxLevel": self.maxLevel,
                 "bounties": {l: [b.toDict(**kwargs) for b in self.bounties[l]]
                             for l in range(self.minLevel, self.maxLevel + 1) if self.bounties[l]},
                 "escapedBounties": {l: [b.toDict(**kwargs) for b in self.escapedBounties[l]]
                             for l in range(self.minLevel, self.maxLevel + 1) if self.escapedBounties[l]}}
+        if self.bountyBoardChannel is not None:
+            data["bountyBoardChannel"] = self.bountyBoardChannel.toDict(**kwargs)
+        return data
 
 
     @classmethod
@@ -429,6 +465,12 @@ class BountyDivision(Serializable):
                     else:
                         crims.add(newBounty.criminal)
                         escapedBounties[l][newBounty.criminal] = newBounty
+        
+        if "bountyBoardChannel" in data and data["bountyBoardChannel"] is not None:
+            bbc = BountyBoardChannel.fromDict(data["bountyBoardChannel"])
+        else:
+            bbc = None
 
         return BountyDivision(owningDB, data["minLevel"], data["maxLevel"],
-                                **cls._makeDefaults(data, bounties=bounties, escapedBounties=escapedBounties))
+                                **cls._makeDefaults(data, bounties=bounties, escapedBounties=escapedBounties,
+                                                    bountyBoardChannel=bbc))
