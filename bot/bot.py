@@ -24,7 +24,7 @@ import sys
 # BASED Imports
 
 from . import lib, botState, logging
-from .databases import guildDB, reactionMenuDB, userDB
+from .databases import guildDB, reactionMenuDB, userDB, bountyDB
 from .scheduling.timedTask import TimedTask
 from .scheduling.timedTaskHeap import TimedTaskHeap
 from bot.scheduling import timedTaskHeap
@@ -106,17 +106,15 @@ def setHelpEmbedThumbnails():
 async def initializeBountyBoardChannels():
     for guild in botState.guildsDB.getGuilds():
         if guild.hasBountyBoardChannels:
-            if botState.client.get_channel(guild.bountyBoardChannel.channelIDToBeLoaded) is None:
-                guild.removeBountyBoardChannel()
-            else:
+            for div in guild.bountiesDB.divisions.values():
                 try:
-                    await guild.bountyBoardChannel.init(botState.client)
+                    await div.bountyBoardChannel.init(botState.client)
                 except lib.exceptions.NoLongerExists:
                     botState.logger.log("main", "initializeBountyBoardChannels",
-                                        f"failed to load bountyboard channel {guild.bountyBoardChannel.channelIDToBeLoaded}" \
-                                            + f" for guild {guild.id}. Removing bountyboardchannel from guild.",
+                                        f"failed to load bountyboard channel {div.bountyBoardChannel.channelIDToBeLoaded}" \
+                                            + f" for guild {guild.id}, division {bountyDB.nameForDivision(div)}. Removing.",
                                         category="bountyBoards", eventType="UKWN_CHAN")
-                    guild.removeBountyBoardChannel()
+                    div.removeBountyBoardChannel()
 
 
 def inferUserPermissions(message: discord.Message) -> int:
