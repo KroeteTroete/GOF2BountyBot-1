@@ -91,7 +91,7 @@ async def admin_cmd_make_bounty_board_channels(message : discord.Message, args :
         for div in guild.bountiesDB.divisions.values():
             divChannel = await message.guild.create_text_channel(nameForDivision(div) + "-bounty-board", category=category,
                                                                     reason="admin requested creation of bountyboard channels")
-            div.addBountyBoardChannel(divChannel)
+            await div.addBountyBoardChannel(divChannel, botState.client)
     except (discord.Forbidden, discord.HTTPException, lib.exceptions.NoLongerExists):
         await message.channel.send(":woozy_face: Creation of a channel failed. " \
                                     + "Please make sure I've got permission to make channels, and try again.")

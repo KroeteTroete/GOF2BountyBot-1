@@ -117,7 +117,10 @@ class BasedGuild(serializable.Serializable):
             self.hasBountyAlertRoles = False
             self.bountyAlertRoles = []
         else:
-            self.hasBountyBoardChannels = self.bountiesDB.divisionForLevel(cfg.minTechLevel).bountyBoardChannel is not None
+            try:
+                self.hasBountyBoardChannels = self.bountiesDB.divisionForLevel(cfg.minTechLevel).bountyBoardChannel is not None
+            except AttributeError:
+                self.hasBountyBoardChannels = False
             self.hasBountyAlertRoles = bountyAlertRoles != []
             self.bountyAlertRoles = bountyAlertRoles
 
