@@ -404,7 +404,6 @@ async def dev_cmd_set_temp(message : discord.Message, args : str, isDM : bool):
     except ValueError:
         await message.channel.send(":x: Incorrect temp, must be float '" + tempStr + "'")
     else:
-        newMaxBounties = min(int(temp), cfg.maxBountiesPerDivision)
         if allGuilds:
             currentGuild: basedGuild.BasedGuild = None
             for currentGuild in botState.guildsDB.guilds.values():
@@ -412,29 +411,23 @@ async def dev_cmd_set_temp(message : discord.Message, args : str, isDM : bool):
                     if allDivs:
                         for div in currentGuild.bountiesDB.divisions.values():
                             div.temperature = temp
-                            div.maxBounties = newMaxBounties
                     elif useTL:
                         div = currentGuild.bountiesDB.divisionForLevel(divTL)
                         div.temperature = temp
-                        div.maxBounties = newMaxBounties
                     else:
                         div = currentGuild.bountiesDB.divisionForName(divStr)
                         div.temperature = temp
-                        div.maxBounties = newMaxBounties
             await message.reply(f"Temperatures set to {temp} for {'all divisions in' if allDivs else nameForDivision(div)} all guilds!")
         else:
             if allDivs:
                 for div in callingBBGuild.bountiesDB.divisions.values():
                     div.temperature = temp
-                    div.maxBounties = newMaxBounties
             elif useTL:
                 div = callingBBGuild.bountiesDB.divisionForLevel(divTL)
                 div.temperature = temp
-                div.maxBounties = newMaxBounties
             else:
                 div = callingBBGuild.bountiesDB.divisionForName(divStr)
                 div.temperature = temp
-                div.maxBounties = newMaxBounties
             await message.reply(f"Temperatures set to {temp} for {'all divisions in' if allDivs else nameForDivision(div)} the guild!")
 
 botCommands.register("set-temp", dev_cmd_set_temp, 2, allowDM=False, helpSection="bounties", useDoc=True)
@@ -1064,29 +1057,23 @@ async def dev_cmd_decay_temps(message : discord.Message, args : str, isDM : bool
                 if allDivs:
                     for div in currentGuild.bountiesDB.divisions.values():
                         div.decayTemp()
-                        div.maxBounties = min(int(div.temperature), cfg.maxBountiesPerDivision)
                 elif useTL:
                     div = currentGuild.bountiesDB.divisionForLevel(tl)
                     div.decayTemp()
-                    div.maxBounties = min(int(div.temperature), cfg.maxBountiesPerDivision)
                 else:
                     div = currentGuild.bountiesDB.divisionForName(divStr)
                     div.decayTemp()
-                    div.maxBounties = min(int(div.temperature), cfg.maxBountiesPerDivision)
         await message.reply("done!")
     else:
         if allDivs:
             for div in callingBBGuild.bountiesDB.divisions.values():
                 div.decayTemp()
-                div.maxBounties = min(int(div.temperature), cfg.maxBountiesPerDivision)
         elif useTL:
             div = callingBBGuild.bountiesDB.divisionForLevel(tl)
             div.decayTemp()
-            div.maxBounties = min(int(div.temperature), cfg.maxBountiesPerDivision)
         else:
             div = callingBBGuild.bountiesDB.divisionForName(divStr)
             div.decayTemp()
-            div.maxBounties = min(int(div.temperature), cfg.maxBountiesPerDivision)
         await message.reply("Activity temperatures decayed for guild.")
 
 botCommands.register("decay-temps", dev_cmd_decay_temps, 2, allowDM=False,
@@ -1150,29 +1137,23 @@ async def dev_cmd_reset_temps(message : discord.Message, args : str, isDM : bool
                 if allDivs:
                     for div in currentGuild.bountiesDB.divisions.values():
                         div.temperature = cfg.minGuildActivity
-                        div.maxBounties = min(int(div.temperature), cfg.maxBountiesPerDivision)
                 elif useTL:
                     div = currentGuild.bountiesDB.divisionForLevel(tl)
                     div.temperature = cfg.minGuildActivity
-                    div.maxBounties = min(int(div.temperature), cfg.maxBountiesPerDivision)
                 else:
                     div = currentGuild.bountiesDB.divisionForName(divStr)
                     div.temperature = cfg.minGuildActivity
-                    div.maxBounties = min(int(div.temperature), cfg.maxBountiesPerDivision)
         await message.reply("done!")
     else:
         if allDivs:
             for div in callingBBGuild.bountiesDB.divisions.values():
                 div.temperature = cfg.minGuildActivity
-                div.maxBounties = min(int(div.temperature), cfg.maxBountiesPerDivision)
         elif useTL:
             div = callingBBGuild.bountiesDB.divisionForLevel(tl)
             div.temperature = cfg.minGuildActivity
-            div.maxBounties = min(int(div.temperature), cfg.maxBountiesPerDivision)
         else:
             div = callingBBGuild.bountiesDB.divisionForName(divStr)
             div.temperature = cfg.minGuildActivity
-            div.maxBounties = min(int(div.temperature), cfg.maxBountiesPerDivision)
         await message.reply("Activity temperatures reset for guild.")
 
 botCommands.register("reset-temps", dev_cmd_reset_temps, 2, allowDM=False,
@@ -1300,14 +1281,14 @@ async def dev_cmd_current_max_bounties(message : discord.Message, args : str, is
                         col=discord.Colour.random(), thumb=message.guild.icon_url_as(size=64))
         for div in callingBBGuild.bountiesDB.divisions.values():
             activityEmbed.add_field(name=nameForDivision(div),
-                                    value=str(div.maxBounties))
+                                    value=str(div.maxBounties()))
         await message.author.send(embed=activityEmbed)
     else:
         if useTL:
             div = callingBBGuild.bountiesDB.divisionForLevel(tl)
         else:
             div = callingBBGuild.bountiesDB.divisionForName(divStr)
-        await message.author.send(str(div.maxBounties))
+        await message.author.send(str(div.maxBounties()))
 
 botCommands.register("current-max-bounties", dev_cmd_current_max_bounties, 2, allowDM=False,
                         helpSection="bounties", useDoc=True)

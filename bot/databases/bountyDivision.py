@@ -94,9 +94,6 @@ class BountyDivision(Serializable):
                                     "random-routeScale": self.delayRandRange,
                                     "random-routeScale-tempScale": self.delayRandRange}
 
-        # linear temperature-maxBounty scaling
-        self.maxBounties: min(int(self.temperature), cfg.maxBountiesPerDivision)
-
         if cfg.newBountyDelayType == "fixed":
             self.newBountyTT = TimedTask(expiryDelta=timedelta(**cfg.newBountyFixedDelta),
                                         expiryFunction=self.spawnNewBounty, autoReschedule=True,

@@ -184,7 +184,6 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
 
                         # Raise guild's activity temperature for this bounty's tl
                         numContributingUsers = len(set(rewards))
-                        btyDivision.maxBounties = min(btyDivision.temperature, cfg.maxBountiesPerDivision)
                         btyDivision.raiseTemp(numContributingUsers * cfg.activityTempPerPlayer)
 
                         # add this bounty to the list of bounties to be removed

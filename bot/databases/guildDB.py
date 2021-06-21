@@ -149,7 +149,6 @@ class GuildDB(serializable.Serializable):
             for div in g.bountiesDB.divisions.values():
                 if div.isActive:
                     div.decayTemp()
-                    div.maxBounties = min(int(div.temperature), cfg.maxBountiesPerDivision)
 
 
     def decayAllTemps(self):
