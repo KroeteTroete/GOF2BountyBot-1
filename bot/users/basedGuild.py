@@ -145,7 +145,7 @@ class BasedGuild(serializable.Serializable):
                                                     reason="Creating new bounty alert roles requested by BB command")
             self.bountyAlertRoles[tl-1] = newRole.id
         for tl in range(cfg.minTechLevel, cfg.maxTechLevel+1):
-            task = asyncio.ensure_future(makeTLRole(tl))
+            task = asyncio.create_task(makeTLRole(tl))
             roleMakers.add(task)
 
         await asyncio.wait(roleMakers)
@@ -181,7 +181,7 @@ class BasedGuild(serializable.Serializable):
             if tlRole is not None:
                 await tlRole.delete(reason="Removing new bounty alert roles requested by BB command")
         for tl in range(cfg.minTechLevel, cfg.maxTechLevel+1):
-            task = asyncio.ensure_future(removeTLRole(tl))
+            task = asyncio.create_task(removeTLRole(tl))
             roleRemovers.add(task)
         await asyncio.wait(roleRemovers)
         self.bountyAlertRoles = []

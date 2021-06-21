@@ -114,7 +114,7 @@ class TimedTaskHeap:
 def startSleeper(delay: int, loop: asyncio.AbstractEventLoop, result: bool = None) -> asyncio.Task:
     async def _start(delay, loop, result=None):
         coro = asyncio.sleep(delay, result=result, loop=loop)
-        task = asyncio.ensure_future(coro)
+        task = asyncio.create_task(coro)
         try:
             return await task
         except asyncio.CancelledError:
@@ -173,7 +173,7 @@ class AutoCheckingTimedTaskHeap(TimedTaskHeap):
             if len(self.tasksHeap) > 0:
                 sleepDelta = self.tasksHeap[0].expiryTime - datetime.utcnow()
                 coro = asyncio.sleep(sleepDelta.total_seconds(), loop=self.loop)
-                self.sleepTask = asyncio.ensure_future(coro)
+                self.sleepTask = asyncio.create_task(coro)
 
                 try:
                     await self.sleepTask
@@ -193,7 +193,7 @@ class AutoCheckingTimedTaskHeap(TimedTaskHeap):
         if self.active:
             raise RuntimeError("loop already active")
         self.active = True
-        self.checkingLoopFuture = asyncio.ensure_future(self._checkingLoop())
+        self.checkingLoopFuture = asyncio.create_task(self._checkingLoop())
 
 
     def stopTaskChecking(self):
