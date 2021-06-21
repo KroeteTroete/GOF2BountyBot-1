@@ -10,7 +10,7 @@ import os
 CWD = os.getcwd()
 
 
-botCommands.addHelpSection(2, "skins")
+botCommands.addHelpSection(3, "skins")
 
 
 async def dev_cmd_addSkin(message : discord.Message, args : str, isDM : bool):
@@ -73,7 +73,7 @@ async def dev_cmd_addSkin(message : discord.Message, args : str, isDM : bool):
     else:
         await message.channel.send(":x: Please provide a skin, prefaced by a `+`!")
 
-botCommands.register("addSkin", dev_cmd_addSkin, 2, helpSection="skins", useDoc=True)
+botCommands.register("addSkin", dev_cmd_addSkin, 3, helpSection="skins", useDoc=True)
 
 
 async def dev_cmd_delSkin(message : discord.Message, args : str, isDM : bool):
@@ -134,7 +134,7 @@ async def dev_cmd_delSkin(message : discord.Message, args : str, isDM : bool):
     else:
         await message.channel.send(":x: Please provide a skin, prefaced by a `+`!")
 
-botCommands.register("delSkin", dev_cmd_delSkin, 2, helpSection="skins", useDoc=True)
+botCommands.register("delSkin", dev_cmd_delSkin, 3, helpSection="skins", useDoc=True)
 
 
 async def dev_cmd_makeSkin(message : discord.Message, args : str, isDM : bool):
@@ -195,7 +195,7 @@ async def dev_cmd_makeSkin(message : discord.Message, args : str, isDM : bool):
     else:
         await message.channel.send(":x: Please provide a skin, prefaced by a `+`!")
 
-botCommands.register("makeSkin", dev_cmd_makeSkin, 2, helpSection="skins", useDoc=True)
+botCommands.register("makeSkin", dev_cmd_makeSkin, 3, helpSection="skins", useDoc=True)
 
 
 async def dev_cmd_applySkin(message : discord.Message, args : str, isDM : bool):
@@ -230,7 +230,7 @@ async def dev_cmd_applySkin(message : discord.Message, args : str, isDM : bool):
             activeShip.applySkin(bbData.builtInShipSkins[skin])
             await message.channel.send("Done!")
 
-botCommands.register("applySkin", dev_cmd_applySkin, 2, helpSection="skins", useDoc=True)
+botCommands.register("applySkin", dev_cmd_applySkin, 3, helpSection="skins", useDoc=True)
 
 
 async def dev_cmd_unapplySkin(message : discord.Message, args : str, isDM : bool):
@@ -252,7 +252,7 @@ async def dev_cmd_unapplySkin(message : discord.Message, args : str, isDM : bool
         activeShip.isSkinned = False
         await message.channel.send("Done!")
 
-botCommands.register("unApplySkin", dev_cmd_unapplySkin, 2, helpSection="skins", useDoc=True)
+botCommands.register("unApplySkin", dev_cmd_unapplySkin, 3, helpSection="skins", useDoc=True)
 
 
 async def dev_cmd_add_skin_to_all_ships(message : discord.Message, args : str, isDM : bool):
@@ -287,7 +287,7 @@ async def dev_cmd_add_skin_to_all_ships(message : discord.Message, args : str, i
     await lib.discordUtil.endLongProcess(message)
     await message.channel.send("Done!")
 
-botCommands.register("add-skin-to-all-ships", dev_cmd_add_skin_to_all_ships, 2, helpSection="skins", useDoc=True)
+botCommands.register("add-skin-to-all-ships", dev_cmd_add_skin_to_all_ships, 3, helpSection="skins", useDoc=True)
 
 
 async def dev_cmd_del_skin_from_all_ships(message : discord.Message, args : str, isDM : bool):
@@ -318,7 +318,7 @@ async def dev_cmd_del_skin_from_all_ships(message : discord.Message, args : str,
     await lib.discordUtil.endLongProcess(message)
     await message.channel.send("Done!")
 
-botCommands.register("del-skin-from-all-ships", dev_cmd_del_skin_from_all_ships, 2, helpSection="skins", useDoc=True)
+botCommands.register("del-skin-from-all-ships", dev_cmd_del_skin_from_all_ships, 3, helpSection="skins", useDoc=True)
 
 
 async def dev_cmd_show_incompatible_skin(message : discord.Message, args : str, isDM : bool):
@@ -391,7 +391,7 @@ async def dev_cmd_show_incompatible_skin(message : discord.Message, args : str, 
             await lib.discordUtil.endLongProcess(message)
 
 
-botCommands.register("show-incompatible-skin", dev_cmd_show_incompatible_skin, 2, helpSection="skins", useDoc=True)
+botCommands.register("show-incompatible-skin", dev_cmd_show_incompatible_skin, 3, helpSection="skins", useDoc=True)
 
 
 async def dev_cmd_try_all_skins(message : discord.Message, args : str, isDM : bool):
@@ -449,4 +449,4 @@ async def dev_cmd_try_all_skins(message : discord.Message, args : str, isDM : bo
 
     await message.channel.send("ALL SKINS SENT")
 
-botCommands.register("try-all-skins", dev_cmd_try_all_skins, 2, helpSection="skins", useDoc=True)
+botCommands.register("try-all-skins", dev_cmd_try_all_skins, 3, helpSection="skins", useDoc=True)

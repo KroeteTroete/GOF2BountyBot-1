@@ -6,7 +6,7 @@ from ..cfg import bbData, cfg
 from ..users.basedGuild import BasedGuild
 from ..databases.bountyDB import nameForDivision
 
-botCommands.addHelpSection(1, "channels")
+botCommands.addHelpSection(2, "channels")
 
 
 async def admin_cmd_set_announce_channel(message : discord.Message, args : str, isDM : bool):
@@ -30,7 +30,7 @@ async def admin_cmd_set_announce_channel(message : discord.Message, args : str, 
         requestedBBGuild.setAnnounceChannel(message.channel)
         await message.channel.send(":ballot_box_with_check: Announcements channel set!")
 
-botCommands.register("set-announce-channel", admin_cmd_set_announce_channel, 1, allowDM=False, helpSection="channels",
+botCommands.register("set-announce-channel", admin_cmd_set_announce_channel, 2, allowDM=False, helpSection="channels",
                     signatureStr="**set-announce-channel** *[off]*",
                     longHelp="Set the channel where BountyBot will send announcements (e.g new bounties)\n" \
                                 + "> Use `set-announce-channel off` to disable announcements.")
@@ -57,7 +57,7 @@ async def admin_cmd_set_play_channel(message : discord.Message, args : str, isDM
         requestedBBGuild.setPlayChannel(message.channel)
         await message.channel.send(":ballot_box_with_check: Bounty play channel set!")
 
-botCommands.register("set-play-channel", admin_cmd_set_play_channel, 1, allowDM=False, helpSection="channels",
+botCommands.register("set-play-channel", admin_cmd_set_play_channel, 2, allowDM=False, helpSection="channels",
                     signatureStr="**set-play-channel** *[off]*",
                     longHelp="Set the channel where BountyBot will send info about completed bounties\n" \
                         + "> Use `set-play-channel off` to disable completed bounty announcements.")
@@ -103,7 +103,7 @@ async def admin_cmd_make_bounty_board_channels(message : discord.Message, args :
                                     + ", ".join(div.bountyBoardChannel.channel.mention for div in guild.bountiesDB.divisions.values()))
         guild.hasBountyBoardChannels = True
 
-botCommands.register("make-bounty-board-channels", admin_cmd_make_bounty_board_channels, 1, allowDM=False,
+botCommands.register("make-bounty-board-channels", admin_cmd_make_bounty_board_channels, 2, allowDM=False,
                     helpSection="channels", signatureStr="**make-bounty-board-channels**",
                     longHelp=f"Create {len(cfg.bountyDivisions)} new channels, and activate them as *bountyboards*.\n" \
                                 + "BountyBoard channels show *all* information about active bounties, continuously update " \
@@ -129,6 +129,6 @@ async def admin_cmd_remove_bounty_board_channels(message : discord.Message, args
             div.removeBountyBoardChannel()
         await message.channel.send(":ballot_box_with_check: All bounty board channels disabled!")
 
-botCommands.register("disable-bounty-board-channels", admin_cmd_remove_bounty_board_channels, 1, allowDM=False,
+botCommands.register("disable-bounty-board-channels", admin_cmd_remove_bounty_board_channels, 2, allowDM=False,
                     helpSection="channels", signatureStr="**disable-bounty-board-channels**",
                     shortHelp="Send from any channel to disable the server's bountyboard channels, without deleting them.")

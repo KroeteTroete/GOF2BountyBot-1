@@ -12,7 +12,7 @@ from ..gameObjects.bounties import bounty, bountyConfig
 from ..users import guildActivity, basedGuild
 from ..databases.bountyDB import nameForDivision
 
-botCommands.addHelpSection(2, "bounties")
+botCommands.addHelpSection(3, "bounties")
 
 
 async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : bool):
@@ -122,7 +122,7 @@ async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : b
         await message.channel.send(":ballot_box_with_check: Active bounties cleared" + ((" for '" + callingBBGuild.dcGuild.name \
                                     + "'.") if callingBBGuild.dcGuild is not None else "."))
 
-botCommands.register("clear-bounties", dev_cmd_clear_bounties, 2, allowDM=True, helpSection="bounties", useDoc=True)
+botCommands.register("clear-bounties", dev_cmd_clear_bounties, 3, allowDM=True, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_get_cooldown(message : discord.Message, args : str, isDM : bool):
@@ -140,7 +140,7 @@ async def dev_cmd_get_cooldown(message : discord.Message, args : str, isDM : boo
     await message.channel.send(datetime.utcfromtimestamp(callingUser.bountyCooldownEnd).strftime("%Hh%Mm%Ss"))
     await message.channel.send(datetime.utcnow().strftime("%Hh%Mm%Ss"))
 
-botCommands.register("get-cool", dev_cmd_get_cooldown, 2, allowDM=True, helpSection="bounties", useDoc=True)
+botCommands.register("get-cool", dev_cmd_get_cooldown, 3, allowDM=True, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_reset_cooldown(message : discord.Message, args : str, isDM : bool):
@@ -160,7 +160,7 @@ async def dev_cmd_reset_cooldown(message : discord.Message, args : str, isDM : b
         botState.usersDB.getUser(int(args.lstrip("<@!").rstrip(">"))).bountyCooldownEnd = datetime.utcnow().timestamp()
     await message.channel.send("Done!")
 
-botCommands.register("reset-cool", dev_cmd_reset_cooldown, 2, allowDM=True, helpSection="bounties", useDoc=True)
+botCommands.register("reset-cool", dev_cmd_reset_cooldown, 3, allowDM=True, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_reset_daily_wins(message : discord.Message, args : str, isDM : bool):
@@ -182,7 +182,7 @@ async def dev_cmd_reset_daily_wins(message : discord.Message, args : str, isDM :
 
     await message.channel.send("Done!")
 
-botCommands.register("reset-daily-wins", dev_cmd_reset_daily_wins, 2, allowDM=True, helpSection="bounties", useDoc=True)
+botCommands.register("reset-daily-wins", dev_cmd_reset_daily_wins, 3, allowDM=True, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_setcheckcooldown(message : discord.Message, args : str, isDM : bool):
@@ -205,7 +205,7 @@ async def dev_cmd_setcheckcooldown(message : discord.Message, args : str, isDM :
     cfg.timeouts.checkCooldown["minutes"] = int(args)
     await message.channel.send("Done! *you still need to update the file though* " + message.author.mention)
 
-botCommands.register("setcheckcooldown", dev_cmd_setcheckcooldown, 2, allowDM=True, helpSection="bounties", useDoc=True)
+botCommands.register("setcheckcooldown", dev_cmd_setcheckcooldown, 3, allowDM=True, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_setbountyperiodm(message : discord.Message, args : str, isDM : bool):
@@ -230,7 +230,7 @@ async def dev_cmd_setbountyperiodm(message : discord.Message, args : str, isDM :
     botState.newBountyFixedDeltaChanged = True
     await message.channel.send("Done! *you still need to update the file though* " + message.author.mention)
 
-botCommands.register("setbountyperiodm", dev_cmd_setbountyperiodm, 2, allowDM=True, helpSection="bounties", useDoc=True)
+botCommands.register("setbountyperiodm", dev_cmd_setbountyperiodm, 3, allowDM=True, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_setbountyperiodh(message : discord.Message, args : str, isDM : bool):
@@ -255,7 +255,7 @@ async def dev_cmd_setbountyperiodh(message : discord.Message, args : str, isDM :
     cfg.newBountyFixedDelta["hours"] = int(args)
     await message.channel.send("Done! *you still need to update the file though* " + message.author.mention)
 
-botCommands.register("setbountyperiodh", dev_cmd_setbountyperiodh, 2, allowDM=True, helpSection="bounties", useDoc=True)
+botCommands.register("setbountyperiodh", dev_cmd_setbountyperiodh, 3, allowDM=True, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_resetnewbountycool(message : discord.Message, args : str, isDM : bool):
@@ -345,7 +345,7 @@ async def dev_cmd_resetnewbountycool(message : discord.Message, args : str, isDM
                                         + " bounty cooldown reset for '" + callingBBGuild.dcGuild.name + "'")
 
 
-botCommands.register("resetnewbountycool", dev_cmd_resetnewbountycool, 2, allowDM=True, helpSection="bounties", useDoc=True)
+botCommands.register("resetnewbountycool", dev_cmd_resetnewbountycool, 3, allowDM=True, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_set_temp(message : discord.Message, args : str, isDM : bool):
@@ -430,7 +430,7 @@ async def dev_cmd_set_temp(message : discord.Message, args : str, isDM : bool):
                 div.temperature = temp
             await message.reply(f"Temperatures set to {temp} for {'all divisions in' if allDivs else nameForDivision(div)} the guild!")
 
-botCommands.register("set-temp", dev_cmd_set_temp, 2, allowDM=False, helpSection="bounties", useDoc=True)
+botCommands.register("set-temp", dev_cmd_set_temp, 3, allowDM=False, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_canmakebounty(message : discord.Message, args : str, isDM : bool):
@@ -495,7 +495,7 @@ async def dev_cmd_canmakebounty(message : discord.Message, args : str, isDM : bo
 
     await message.reply(embed=msgEmbed)
 
-botCommands.register("canmakebounty", dev_cmd_canmakebounty, 2, allowDM=False, helpSection="bounties", useDoc=True)
+botCommands.register("canmakebounty", dev_cmd_canmakebounty, 3, allowDM=False, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool):
@@ -695,7 +695,7 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
             await message.channel.send(f"Criminal spawned!")
 
 
-botCommands.register("make-bounty", dev_cmd_make_bounty, 2, forceKeepArgsCasing=True, allowDM=True, helpSection="bounties",
+botCommands.register("make-bounty", dev_cmd_make_bounty, 3, forceKeepArgsCasing=True, allowDM=True, helpSection="bounties",
                     useDoc=True)
 
 
@@ -886,7 +886,7 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
                 await message.channel.send(f"Criminal spawned!")
 
 
-botCommands.register("make-player-bounty", dev_cmd_make_player_bounty, 2, forceKeepArgsCasing=True, allowDM=True,
+botCommands.register("make-player-bounty", dev_cmd_make_player_bounty, 3, forceKeepArgsCasing=True, allowDM=True,
                         helpSection="bounties", useDoc=True)
 
 
@@ -923,7 +923,7 @@ async def dev_cmd_set_bounty_xp(message : discord.Message, args : str, isDM : bo
     requestedBBUser.bountyHuntingXP = int(argsSplit[1])
     await message.channel.send("Done!")
 
-botCommands.register("set-bounty-xp", dev_cmd_set_bounty_xp, 2, allowDM=True, helpSection="bounties", useDoc=True)
+botCommands.register("set-bounty-xp", dev_cmd_set_bounty_xp, 3, allowDM=True, helpSection="bounties", useDoc=True)
 
 
 async def dev_cmd_set_bounty_level(message : discord.Message, args : str, isDM : bool):
@@ -959,7 +959,7 @@ async def dev_cmd_set_bounty_level(message : discord.Message, args : str, isDM :
     requestedBBUser.bountyHuntingXP = gameMaths.bountyHuntingXPForLevel(int(argsSplit[1]) + 1)
     await message.channel.send("Done!")
 
-botCommands.register("set-bounty-level", dev_cmd_set_bounty_level, 2, allowDM=True, helpSection="bounties", useDoc=True) 
+botCommands.register("set-bounty-level", dev_cmd_set_bounty_level, 3, allowDM=True, helpSection="bounties", useDoc=True) 
 
 
 async def dev_cmd_measure_temps(message : discord.Message, args : str, isDM : bool):
@@ -996,7 +996,7 @@ async def dev_cmd_measure_temps(message : discord.Message, args : str, isDM : bo
         activityEmbed.add_field(name=f"{nameForDivision(div).title()} Division", value=div.temperature)
     await message.author.send(embed=activityEmbed)
 
-botCommands.register("measure-temps", dev_cmd_measure_temps, 2, allowDM=False,
+botCommands.register("measure-temps", dev_cmd_measure_temps, 3, allowDM=False,
                         helpSection="bounties", useDoc=True)
 
 
@@ -1076,7 +1076,7 @@ async def dev_cmd_decay_temps(message : discord.Message, args : str, isDM : bool
             div.decayTemp()
         await message.reply("Activity temperatures decayed for guild.")
 
-botCommands.register("decay-temps", dev_cmd_decay_temps, 2, allowDM=False,
+botCommands.register("decay-temps", dev_cmd_decay_temps, 3, allowDM=False,
                         helpSection="bounties", useDoc=True)
 
 
@@ -1156,7 +1156,7 @@ async def dev_cmd_reset_temps(message : discord.Message, args : str, isDM : bool
             div.temperature = cfg.minGuildActivity
         await message.reply("Activity temperatures reset for guild.")
 
-botCommands.register("reset-temps", dev_cmd_reset_temps, 2, allowDM=False,
+botCommands.register("reset-temps", dev_cmd_reset_temps, 3, allowDM=False,
                         helpSection="bounties", useDoc=True)
 
 
@@ -1224,7 +1224,7 @@ async def dev_cmd_current_delay(message : discord.Message, args : str, isDM : bo
         await message.author.send(lib.timeUtil.td_format_noYM(div.newBountyTT.expiryDelta)
                                     + "\nExpiring " + div.newBountyTT.expiryTime.strftime("%B %d %H %M %S"))
 
-botCommands.register("current-delay", dev_cmd_current_delay, 2, allowDM=False,
+botCommands.register("current-delay", dev_cmd_current_delay, 3, allowDM=False,
                         helpSection="bounties", useDoc=True)
 
 
@@ -1290,5 +1290,5 @@ async def dev_cmd_current_max_bounties(message : discord.Message, args : str, is
             div = callingBBGuild.bountiesDB.divisionForName(divStr)
         await message.author.send(str(div.maxBounties()))
 
-botCommands.register("current-max-bounties", dev_cmd_current_max_bounties, 2, allowDM=False,
+botCommands.register("current-max-bounties", dev_cmd_current_max_bounties, 3, allowDM=False,
                         helpSection="bounties", useDoc=True)

@@ -130,7 +130,7 @@ async def admin_cmd_config(message : discord.Message, args : str, isDM : bool):
     else:
         await message.channel.send(":x: Unknown setting!")
 
-botCommands.register("config", admin_cmd_config, 1, signatureStr="**config <setting> <value>**",
+botCommands.register("config", admin_cmd_config, 2, signatureStr="**config <setting> <value>**",
                         shortHelp="Set various settings for how bountybot will function in this server.",
                         longHelp="Set various settings for how bountybot will function in this server. Currently, " \
                                     + "`setting` can be either 'bounties' or 'shop', and `value` can either " \
@@ -151,7 +151,7 @@ async def admin_cmd_del_reaction_menu(message : discord.Message, args : str, isD
     else:
         await message.channel.send(":x: Unrecognised reaction menu!")
 
-botCommands.register("del-reaction-menu", admin_cmd_del_reaction_menu, 1, signatureStr="**del-reaction-menu <id>**",
+botCommands.register("del-reaction-menu", admin_cmd_del_reaction_menu, 2, signatureStr="**del-reaction-menu <id>**",
                         longHelp="Remove the specified reaction menu. You can also just delete the message," \
                                     + " if you have permissions.\nTo get the ID of a reaction menu, enable discord's " \
                                     + "developer mode, right click on the menu, and click Copy ID.")
@@ -195,7 +195,7 @@ async def admin_cmd_set_notify_role(message : discord.Message, args : str, isDM 
         await message.channel.send(":white_check_mark: Role set for " + userAlerts.userAlertsTypesNames[alertType] \
                                     + " notifications!")
 
-botCommands.register("set-notify-role", admin_cmd_set_notify_role, 1,
+botCommands.register("set-notify-role", admin_cmd_set_notify_role, 2,
                         signatureStr="**set-notify-role <type>** *[alert]* **<role>**",
                         shortHelp="Set a role to ping when various events occur. For valid notification types, " \
                                     + "see `help notify`.", longHelp="Set a role to ping when various events occur. " \
@@ -227,7 +227,7 @@ async def admin_cmd_remove_notify_role(message : discord.Message, args : str, is
         await message.channel.send(":white_check_mark: Role pings disabled for " \
                                     + userAlerts.userAlertsTypesNames[alertType] + " notifications.")
 
-botCommands.register("remove-notify-role", admin_cmd_remove_notify_role, 1,
+botCommands.register("remove-notify-role", admin_cmd_remove_notify_role, 2,
                         signatureStr="**remove-notify-role <type>** *[alert]*",
                         shortHelp="Disable role pings for various events. For valid notification types, see `help notify`.",
                         longHelp="Disable role pings for various events. **<type>** and/or *[alert]* must specify a type of " \
@@ -253,7 +253,7 @@ async def admin_cmd_make_bounty_notify_roles(message : discord.Message, args : s
         await requestedBBGuild.makeBountyAlertRoles()
         await message.channel.send(":white_check_mark: New roles have been created for new bounties notifications!")
 
-botCommands.register("make-bounty-notify-roles", admin_cmd_make_bounty_notify_roles, 1,
+botCommands.register("make-bounty-notify-roles", admin_cmd_make_bounty_notify_roles, 2,
                         signatureStr="**make-bounty-notify-roles**",
                         shortHelp="Make 10 roles, one for each tech levle users can be, which the bot will ping when new " \
                                     + "bounties are spawned.",
@@ -280,7 +280,7 @@ async def admin_cmd_remove_bounty_notify_roles(message : discord.Message, args :
         await requestedBBGuild.deleteBountyAlertRoles()
         await message.channel.send(":white_check_mark: New bounties notifications have been disabled, and their roles removed!")
 
-botCommands.register("remove-bounty-notify-roles", admin_cmd_remove_bounty_notify_roles, 1,
+botCommands.register("remove-bounty-notify-roles", admin_cmd_remove_bounty_notify_roles, 2,
                         signatureStr="**remove-bounty-notify-roles**",
                         shortHelp="Disable new bounty notifications, and remove all new bounty alert roles from the server.")
 
@@ -457,7 +457,7 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
     await menu.updateMessage()
     botState.reactionMenusDB[menuMsg.id] = menu
 
-botCommands.register("make-role-menu", admin_cmd_make_role_menu, 1, forceKeepArgsCasing=True,
+botCommands.register("make-role-menu", admin_cmd_make_role_menu, 2, forceKeepArgsCasing=True,
                         signatureStr="**make-role-menu** *<title>*\n**<option1 emoji> <@option1 role>**\n" \
                                         + "...    ...\n*[kwargs]*",
                         shortHelp="Create a reaction role menu. Each option must be on its own new line, as an emoji, " \
@@ -678,13 +678,6 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
     return
 
 
-botCommands.register("showmehd", admin_cmd_showmeHD, 1, allowDM=False, signatureStr="**showmeHD <ship-name>** *[-full]*",
-                        shortHelp="Render your specified ship with the given skin, in full HD 1080p! " \
-                                    + "⚠ WARNING: THIS WILL TAKE A LONG TIME.",
-                        longHelp="You must attach a 2048x2048 jpg to your message. Render your specified ship with the " \
-                                    + "given skin, in full HD 1080p! ⚠ WARNING: THIS WILL TAKE A LONG TIME. Give `-full` " \
-                                    + "to disable autoskin and render exactly your provided image, " \
-                                    + "with no additional texturing.")
 botCommands.register("showmehd", admin_cmd_showmeHD, 2, allowDM=True, signatureStr="**showmeHD <ship-name>** *[-full]*",
                         shortHelp="Render your specified ship with the given skin, in full HD 1080p! " \
                                     + "⚠ WARNING: THIS WILL TAKE A LONG TIME.",

@@ -96,7 +96,7 @@ async def dev_cmd_broadcast(message : discord.Message, args : str, isDM : bool):
                 if guild.hasPlayChannel():
                     await guild.getPlayChannel().send(sendArgs)
 
-botCommands.register("broadcast", dev_cmd_broadcast, 2, forceKeepArgsCasing=True, allowDM=True, useDoc=True)
+botCommands.register("broadcast", dev_cmd_broadcast, 3, forceKeepArgsCasing=True, allowDM=True, useDoc=True)
 
 
 async def dev_cmd_reset_has_poll(message : discord.Message, args : str, isDM : bool):
@@ -115,7 +115,7 @@ async def dev_cmd_reset_has_poll(message : discord.Message, args : str, isDM : b
         botState.usersDB.getUser(int(args.lstrip("<@!").rstrip(">"))).pollOwned = False
     await message.channel.send("Done!")
 
-botCommands.register("reset-has-poll", dev_cmd_reset_has_poll, 2, allowDM=True, useDoc=True)
+botCommands.register("reset-has-poll", dev_cmd_reset_has_poll, 3, allowDM=True, useDoc=True)
 
 
 async def dev_cmd_bot_update(message: discord.Message, args: str, isDM: bool):
@@ -161,7 +161,7 @@ async def dev_cmd_setbalance(message : discord.Message, args : str, isDM : bool)
     requestedBBUser.credits = int(argsSplit[1])
     await message.channel.send("Done!")
 
-botCommands.register("setbalance", dev_cmd_setbalance, 2, allowDM=True, useDoc=True)
+botCommands.register("setbalance", dev_cmd_setbalance, 3, allowDM=True, useDoc=True)
 
 
 async def dev_cmd_reset_transfer_cool(message : discord.Message, args : str, isDM : bool):
@@ -181,4 +181,4 @@ async def dev_cmd_reset_transfer_cool(message : discord.Message, args : str, isD
     await message.channel.send("Done!")
 
 
-botCommands.register("reset-transfer-cool", dev_cmd_reset_transfer_cool, 2, allowDM=True, useDoc=True)
+botCommands.register("reset-transfer-cool", dev_cmd_reset_transfer_cool, 3, allowDM=True, useDoc=True)
