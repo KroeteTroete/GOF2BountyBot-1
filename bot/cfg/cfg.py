@@ -285,9 +285,6 @@ bbcNoBountiesMsg = "```css\n[ NO ACTIVE BOUNTIES ]\n\nThere are currently no act
 # The percentage of a criminal's ship value to award to the winner
 shipValueRewardPercentage = 0.01
 
-# The probability of a criminal equipping a turret, should their ship have space for one
-criminalEquipTurretChance = 30
-
 # The maximum number of levels a criminal's gear may be above their difficulty rating
 criminalMaxGearUpgrade = 1
 

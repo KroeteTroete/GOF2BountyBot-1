@@ -425,10 +425,9 @@ class BountyConfig:
                                             "unable to find any TLs containing turrets",
                                             eventType="NO_ITEMS", category="bountyConfig")
                     else:
-                        for _ in range(self.activeShip.maxTurrets):
-                            equipTurret = random.randint(1,100)
-                            if equipTurret <= cfg.criminalEquipTurretChance:
-                                self.activeShip.equipTurret(random.choice(bbData.turretObjsByTL[turretTL]))
+                        numTurrets = random.randint(max(1, self.activeShip.maxTurrets - 1), self.activeShip.maxTurrets)
+                        for _ in range(numTurrets):
+                            self.activeShip.equipTurret(random.choice(bbData.turretObjsByTL[turretTL]))
 
         if self.reward == -1:
             # self.reward = int(len(self.route) * cfg.bPointsToCreditsRatio \
