@@ -380,16 +380,16 @@ class BountyConfig:
                                                 eventType="NO_ITEMS", category="bountyConfig")
 
                     if weaponTL != -1:
-                        numTurrets = random.randint(max(1, self.activeShip.maxTurrets - 1), self.activeShip.maxTurrets)
-                        for _ in range(numTurrets):
-                            currentTurret = random.choice(bbData.weaponObjsByTL[weaponTL])
+                        numWeapons = random.randint(max(1, self.activeShip.maxWeapons - 1), self.activeShip.maxWeapons)
+                        for _ in range(numWeapons):
+                            currentWeapon = random.choice(bbData.weaponObjsByTL[weaponTL])
                             # The chosen weapon doesnt deal damage. If the TL has damage-dealing weapons,
                             # randomly choose whether or not to ensure a damage-dealing weapon is picked
-                            if dpsWeapons and not not currentTurret.dps \
+                            if dpsWeapons and not not currentWeapon.dps \
                                     and random.randint(0, 100) > cfg.criminalEquipDamagelessWeaponChance:
-                                while not currentTurret.dps:
-                                    currentTurret = random.choice(bbData.weaponObjsByTL[weaponTL])
-                            self.activeShip.equipTurret(currentTurret)
+                                while not currentWeapon.dps:
+                                    currentWeapon = random.choice(bbData.weaponObjsByTL[weaponTL])
+                            self.activeShip.equipWeapon(currentWeapon)
 
                 moduleTypesToEquip = {armourModule.ArmourModule: 0, shieldModule.ShieldModule: 0}
                 reservedSlots = 0
