@@ -438,7 +438,7 @@ class BountyDB(serializable.Serializable):
                 for bty in tlBounties.values():
                     data["escaped"].append(bty.toDict(**kwargs))
         
-        if next(self.divisions.values()).bountyBoardChannel is not None:
+        if next(i for i in self.divisions.values()).bountyBoardChannel is not None:
             data["bountyBoardChannels"] = {div.minLevel: div.bountyBoardChannel.toDict(**kwargs) for div in self.divisions}
 
         return data

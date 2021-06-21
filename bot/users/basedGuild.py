@@ -769,6 +769,7 @@ class BasedGuild(serializable.Serializable):
             else:
                 bountiesDB = BountyDB(newGuild)
             newGuild.bountiesDB = bountiesDB
-            newGuild.hasBountyBoardChannels = next(newGuild.bountiesDB.divisions.values()).bountyBoardChannel is not None
+            newGuild.hasBountyBoardChannels = next(i for i in newGuild.bountiesDB.divisions.values()).bountyBoardChannel \
+                                                is not None
 
         return newGuild
