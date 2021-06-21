@@ -101,7 +101,7 @@ def shipTLHasPrimaries(tl: int) -> bool:
     return False
 
 
-def tlDBHasType(index: int, db : List[List[Any]] = None, itemType : type = None) -> bool:
+def tlDBHasType(index: int, db : List[List[Any]] = None, itemType : type = object) -> bool:
     """Decide if db[index] contains an element of the given type.
 
     :param int index: The index of the sub-list in db to search for an element of the given type
@@ -416,18 +416,35 @@ class BountyConfig:
                                 moduleTypesToEquip[moduleType] -= 1
 
                 if self.activeShip.maxTurrets:
-                    
+                    # Attempt to find damage-dealing turrets first
                     turretTL = findItemTL(itemTL, cfg.minTechLevel - 1, cfg.maxTechLevel - 1, cfg.criminalMaxGearUpgrade,
-                                            tlDBHasType, db=bbData.turretObjsByTL, itemType=turretWeapon.TurretWeapon)
+                                            lambda i, db, itemType: tlDBHasType(i, db, itemType) \
+                                                                    and any(x.dps for x in db[i]),
+                                            db=bbData.turretObjsByTL, itemType=turretWeapon.TurretWeapon)
+                    dpsTurrets = turretTL != -1
+                    
+                    # Couldn't find a TL with damage dealing turrets
+                    if not dpsTurrets:
+                        # Try for TLs with non-damaging turrets
+                        turretTL = findItemTL(itemTL, cfg.minTechLevel - 1, cfg.maxTechLevel - 1, cfg.criminalMaxGearUpgrade,
+                                                tlDBHasType, db=bbData.turretObjsByTL, itemType=turretWeapon.TurretWeapon)
 
-                    if turretTL == -1:
-                        botState.logger.log("BountyConfig", "generate",
-                                            "unable to find any TLs containing turrets",
-                                            eventType="NO_ITEMS", category="bountyConfig")
-                    else:
+                        if turretTL == -1:
+                            botState.logger.log("BountyConfig", "generate",
+                                                "unable to find any TLs containing turrets",
+                                                eventType="NO_ITEMS", category="bountyConfig")
+
+                    if turretTL != -1:
                         numTurrets = random.randint(max(1, self.activeShip.maxTurrets - 1), self.activeShip.maxTurrets)
                         for _ in range(numTurrets):
-                            self.activeShip.equipTurret(random.choice(bbData.turretObjsByTL[turretTL]))
+                            currentTurret = random.choice(bbData.turretObjsByTL[turretTL])
+                            # The chosen turret doesnt deal damage. If the TL has damage-dealing turrets,
+                            # randomly choose whether or not to ensure a damage-dealing turret is picked
+                            if dpsTurrets and not not currentTurret.dps \
+                                    and random.randint(0, 100) > cfg.criminalEquipDamagelessWeaponChance:
+                                while not currentTurret.dps:
+                                    currentTurret = random.choice(bbData.turretObjsByTL[turretTL])
+                            self.activeShip.equipTurret(currentTurret)
 
         if self.reward == -1:
             # self.reward = int(len(self.route) * cfg.bPointsToCreditsRatio \
