@@ -95,26 +95,29 @@ async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : b
                                         else "The requested guild ") + " has bounties disabled.")
             return
 
-        if lib.stringTyping.isInt(divStr):
-            div = callingBBGuild.bountiesDB.divisionForLevel(tl)
+        if allDivs:
+            divs = callingBBGuild.bountiesDB.divisions.values()
+        elif lib.stringTyping.isInt(divStr):
+            divs = [callingBBGuild.bountiesDB.divisionForLevel(tl)]
         else:
-            div = callingBBGuild.bountiesDB.divisionForName(divStr)
+            divs = [callingBBGuild.bountiesDB.divisionForName(divStr)]
 
-        if callingBBGuild.hasBountyBoardChannels:
-            bbcTasks = set()
-            bbc = div.bountyBoardChannel
-            for tlBounties in div.bounties.values():
-                for bty in tlBounties:
-                    if bbc.hasMessageForCriminal(bty.criminal):
-                        bbcTasks.add(bbc.removeCriminal(bty.criminal))
-            if bbcTasks:
-                await asyncio.wait(bbcTasks)
-                for t in bbcTasks:
-                    if e := t.exception():
-                        botState.logger.log("dev_bounties", "dev_cmd_clear_bounties", str(e), category="bountiesDB",
-                                            eventType=type(e).__name__,
-                                            trace=traceback.format_exception(type(e), e, e.__traceback__))
-            div.clear(includeEscaped=True)
+        for div in divs:
+            if callingBBGuild.hasBountyBoardChannels:
+                bbcTasks = set()
+                bbc = div.bountyBoardChannel
+                for tlBounties in div.bounties.values():
+                    for bty in tlBounties:
+                        if bbc.hasMessageForCriminal(bty.criminal):
+                            bbcTasks.add(bbc.removeCriminal(bty.criminal))
+                if bbcTasks:
+                    await asyncio.wait(bbcTasks)
+                    for t in bbcTasks:
+                        if e := t.exception():
+                            botState.logger.log("dev_bounties", "dev_cmd_clear_bounties", str(e), category="bountiesDB",
+                                                eventType=type(e).__name__,
+                                                trace=traceback.format_exception(type(e), e, e.__traceback__))
+            await div.clear(includeEscaped=True)
 
         await message.channel.send(":ballot_box_with_check: Active bounties cleared" + ((" for '" + callingBBGuild.dcGuild.name \
                                     + "'.") if callingBBGuild.dcGuild is not None else "."))
