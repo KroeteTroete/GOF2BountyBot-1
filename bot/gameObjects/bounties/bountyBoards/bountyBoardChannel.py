@@ -137,7 +137,6 @@ class BountyBoardChannel(serializable.Serializable):
             self.noBountiesMessage = None
             if self.isEmpty():
                 try:
-                    # self.noBountiesMessage = await self.channel.send(cfg.bbcNoBountiesMsg)
                     self.noBountiesMessage = await self.channel.send(embed=noBountiesEmbed)
 
                 except HTTPException:
@@ -305,7 +304,6 @@ class BountyBoardChannel(serializable.Serializable):
 
         if self.isEmpty():
             try:
-                # self.noBountiesMessage = await self.channel.send(cfg.bbcNoBountiesMsg)
                 self.noBountiesMessage = await self.channel.send(embed=noBountiesEmbed)
 
             except HTTPException:
