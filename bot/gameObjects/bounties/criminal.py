@@ -4,7 +4,6 @@ from typing import List
 
 from ...cfg import bbData
 from ...baseClasses import aliasable
-from ..items import shipItem
 
 
 class Criminal(aliasable.Aliasable):
@@ -73,8 +72,7 @@ class Criminal(aliasable.Aliasable):
         or construct a new criminal object from the provided data.
 
         :param dict crimDict: A dictionary containing all data necessary to construct the desired criminal.
-                                If the criminal is builtIn, this need only be their name, "builtIn": True,
-                                and possibly the equipped ship.
+                                If the criminal is builtIn, this need only be their name and "builtIn": True.
         :return: The requested criminal object reference
         :rtype: criminal
         """
