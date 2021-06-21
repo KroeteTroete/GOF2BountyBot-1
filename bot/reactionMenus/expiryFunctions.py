@@ -74,8 +74,8 @@ async def markExpiredMenuAndRemoveOptions(menuID: int):
 
 async def expireHelpMenu(menuID: int):
     """Expire a reaction help menu, and mark it so in the discord message.
-    Reset the owning user's helpMenuOwned tracker.
+    Unregister the menu as owned by the owning user, allowing them to make more help menus.
     """
     menu = botState.reactionMenusDB[menuID]
-    menu.owningBasedUser.helpMenuOwned = False
+    menu.owningBasedUser.removeOwnedMenu("help", menu)
     await markExpiredMenuAndRemoveOptions(menuID)

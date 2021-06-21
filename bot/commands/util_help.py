@@ -40,12 +40,11 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
     try:
         if args == "":
             owningUser = botState.usersDB.getOrAddID(message.author.id)
-            if owningUser.helpMenuOwned:
+            if owningUser.hasMenuOfTypeID("help"):
                 await message.channel.send(":x: Please close your existing help menu before making a new one!\n" \
                                             + "In case you can't find it, help menus auto exire after **" \
                                             + helpMenuTimeoutStr + "**.")
                 return
-            owningUser.helpMenuOwned = True
             menuMsg = await sendChannel.send("‎")
             helpTT = timedTask.TimedTask(expiryDelta=timedelta(**cfg.timeouts.helpMenu),
                                         expiryFunction=expiryFunctions.expireHelpMenu, expiryFunctionArgs=menuMsg.id)
@@ -79,18 +78,18 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
                 menuMsg, pages, timeout=helpTT, targetMember=message.author, owningBasedUser=owningUser)
             await helpMenu.updateMessage()
             botState.reactionMenusDB[menuMsg.id] = helpMenu
+            owningUser.addOwnedMenu("help", helpMenu)
 
         elif args in botCommands.helpSectionEmbeds[userAccessLevel]:
             if len(botCommands.helpSectionEmbeds[userAccessLevel][args]) == 1:
                 await sendChannel.send(embed=botCommands.helpSectionEmbeds[userAccessLevel][args][0])
             else:
                 owningUser = botState.usersDB.getOrAddID(message.author.id)
-                if owningUser.helpMenuOwned:
+                if owningUser.hasMenuOfTypeID("help"):
                     await message.channel.send(":x: Please close your existing help menu before making a new one!\n" \
                                                 + "In case you can't find it, help menus auto exire after **" \
                                                 + helpMenuTimeoutStr + "**.")
                     return
-                owningUser.helpMenuOwned = True
                 menuMsg = await sendChannel.send("‎")
                 helpTT = timedTask.TimedTask(expiryDelta=timedelta(**cfg.timeouts.helpMenu),
                                             expiryFunction=expiryFunctions.expireHelpMenu, expiryFunctionArgs=menuMsg.id)
@@ -105,6 +104,7 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
                     menuMsg, pages, timeout=helpTT, targetMember=message.author, owningBasedUser=owningUser)
                 await helpMenu.updateMessage()
                 botState.reactionMenusDB[menuMsg.id] = helpMenu
+                owningUser.addOwnedMenu("help", helpMenu)
 
         elif args in botCommands.commands[userAccessLevel] and botCommands.commands[userAccessLevel][args].allowHelp:
             helpEmbed = lib.discordUtil.makeEmbed(titleTxt=cfg.userAccessLevels[userAccessLevel] + " Commands",

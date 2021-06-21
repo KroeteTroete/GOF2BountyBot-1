@@ -1,7 +1,7 @@
 # Typing imports
 from __future__ import annotations
 
-from typing import Union, TYPE_CHECKING, Dict, List
+from typing import Union, TYPE_CHECKING, Dict, List, MutableSet
 if TYPE_CHECKING:
     from ..gameObjects.battles import duelRequest
 
@@ -100,8 +100,8 @@ class BasedUser(serializable.Serializable):
     :vartype guildTransferCooldownEnd: datetime.datetime
     :var prestiges: The number of times the user has prestiged
     :vartype prestiges: int
-    :var ownedMenus: Lists references to all menus that user owns, by type.
-    :vartype ownedMenus: Dict[type, List[ReactionMenu]]
+    :var ownedMenus: Sets of references to all menus that user owns, by string type IDs.
+    :vartype ownedMenus: Dict[str, MutableSet[ReactionMenu]]
     """
 
     def __init__(self, userID: int, credits : int = 0, lifetimeBountyCreditsWon : int = 0,
@@ -117,7 +117,7 @@ class BasedUser(serializable.Serializable):
                     bountyWinsToday : int = 0, dailyBountyWinsReset : datetime = None,
                     homeGuildID : int = -1, guildTransferCooldownEnd : datetime = None, prestiges : int = 0,
                     kaamo : kaamoShop.KaamoShop = None, loma : lomaShop.LomaShop = None,
-                    ownedMenus : Dict[str, List[reactionMenu.ReactionMenu]] = {}):
+                    ownedMenus : Dict[str, MutableSet[reactionMenu.ReactionMenu]] = {}):
         """
         :param int id: The user's unique ID. The same as their unique discord ID.
         :param int credits: The amount of credits (currency) this user has (Default 0)
@@ -159,8 +159,8 @@ class BasedUser(serializable.Serializable):
         :param KaamoShop kaamo: The user's Kaamo Club storage, only accessible at bounty hunter level 10. To save memory, this is None until the user first uses it. (default None)
         :param LomaShop loma: A shop private to this user, selling special discountable items. To save memory, this is None until the user first uses it. (default None)
         :param int prestiges: The number of times the user has prestiged (default 0)
-        :param ownedMenus: Lists references to all menus that user owns, by type. (default {})
-        :type ownedMenus: Dict[type, List[ReactionMenu]]
+        :param ownedMenus: Sets of references to all menus that user owns, by string type IDs. (default {})
+        :type ownedMenus: Dict[str, MutableSet[ReactionMenu]]
         """
         if type(userID) == float:
             userID = int(userID)
@@ -492,7 +492,7 @@ class BasedUser(serializable.Serializable):
         if len(self.ownedMenus) > 0:
             data["ownedMenus"] = {}
             for menuTypeID in self.ownedMenus:
-                if len(self.ownedMenus[menuTypeID]):
+                if self.ownedMenus[menuTypeID]:
                     data["ownedMenus"][menuTypeID] = [menu.msg.id for menu in self.ownedMenus[menuTypeID]]
 
         return data
@@ -770,6 +770,45 @@ class BasedUser(serializable.Serializable):
             return self.inactiveTools
 
 
+    def hasMenuOfTypeID(self, menuTypeID: str) -> bool:
+        """Decide whether the user owns a menu of the given menu type.
+        The menu type is specified as a string type ID, e.g 'help'.
+
+        :param str menuTypeID: The ID of the menu type to look up
+        :return: True if the user has at least one menu with the given type ID, False otherwise
+        :rtype: bool
+        """
+        return menuTypeID in self.ownedMenus and self.ownedMenus[menuTypeID]
+
+
+    def addOwnedMenu(self, menuTypeID: str, menu: reactionMenu.ReactionMenu):
+        """Add the given menu as 'owned' by the user. This does not prevent claiming by other users.
+        The menu type is specified as a string type ID, e.g 'help'.
+
+        :param str menuTypeID: The ID of the menu type to register menu as
+        :param reactionMenu.ReactionMenu menu: The menu to register ownership for
+        """
+        if menuTypeID not in self.ownedMenus:
+            self.ownedMenus[menuTypeID] = set()
+        self.ownedMenus[menuTypeID].add(menu)
+
+
+    def removeOwnedMenu(self, menuTypeID: str, menu: reactionMenu.ReactionMenu):
+        """Remove the given menu as 'owned' by the user.
+        The menu type is specified as a string type ID, e.g 'help'.
+
+        :param str menuTypeID: The ID of the menu type to unregister menu as
+        :param reactionMenu.ReactionMenu menu: The menu to unregister ownership for
+        """
+        if menuTypeID not in self.ownedMenus:
+            raise KeyError(f"No menus owned with type ID '{menuTypeID}'")
+        if menu not in self.ownedMenus[menuTypeID]:
+            raise ValueError(f"{type(menu).__name_} #{menu.id} not registered to this user as '{menuTypeID}'")
+        self.ownedMenus[menuTypeID].remove(menu)
+        if not self.ownedMenus[menuTypeID]:
+            del self.ownedMenus[menuTypeID]
+
+
     def __str__(self) -> str:
         """Get a short string summary of this BasedUser. Currently only contains the user ID and home guild ID.
 
@@ -828,20 +867,15 @@ class BasedUser(serializable.Serializable):
         ownedMenus = {}
         if "ownedMenus" in userDict:
             for menuType in userDict["ownedMenus"]:
-                if not reactionMenu.isSaveableMenuTypeName(menuType):
-                    botState.logger.log("basedUser", "fromDict",
-                                        "Ignoring unrecognised reactionmenu type: " + menuType + "stored in user #" + str(id),
-                                        category="reactionMenus", eventType="unknMenuType")
-                else:
-                    ownedMenus[menuType] = []
-                    for menuID in userDict[menuType]:
-                        if menuID in botState.reactionMenusDB:
-                            ownedMenus[menuType].append(botState.reactionMenusDB[menuID])
-                        else:
-                            botState.logger.log("basedUser", "fromDict",
-                                                "Ignoring unrecognised reactionmenu id: " + menuType \
-                                                    + "#" + str(menuID) + " stored in user #" + str(id),
-                                                category="reactionMenus", eventType="unknMenuID")
+                ownedMenus[menuType] = []
+                for menuID in userDict[menuType]:
+                    if menuID in botState.reactionMenusDB:
+                        ownedMenus[menuType].append(botState.reactionMenusDB[menuID])
+                    else:
+                        botState.logger.log("basedUser", "fromDict",
+                                            "Ignoring unrecognised reactionmenu id: " + menuType \
+                                                + "#" + str(menuID) + " stored in user #" + str(id),
+                                            category="reactionMenus", eventType="unknMenuID")
 
         return BasedUser(**cls._makeDefaults(userDict, ("lifetimeBountyCreditsWon",),
                                                 userID=userID, activeShip=activeShip, inactiveShips=inactiveShips,

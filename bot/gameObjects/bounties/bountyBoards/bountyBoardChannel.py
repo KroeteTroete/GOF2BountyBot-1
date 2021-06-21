@@ -158,7 +158,7 @@ class BountyBoardChannel(serializable.Serializable):
                                 category='bountyBoards', eventType="NOBTYMSG_LOAD-FORBIDDENERR")
                     self.noBountiesMessage = None
 
-        else:
+        elif self.isEmpty():
             try:
                 self.noBountiesMessage = await self.channel.fetch_message(self.noBountiesMsgToBeLoaded)
             except HTTPException:
