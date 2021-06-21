@@ -168,7 +168,6 @@ class BasedGuild(serializable.Serializable):
         :raise Forbidden: If the bot does not have role deletion permissions
         :raise HTTPException: If deletion of any role failed
         """
-        print("REMOVING ROLES",self.bountyAlertRoles)
         if not self.hasBountyAlertRoles:
             raise ValueError("This guild does not have bounty alert roles")
         roleRemovers = set()
