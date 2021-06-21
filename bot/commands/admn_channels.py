@@ -101,6 +101,7 @@ async def admin_cmd_make_bounty_board_channels(message : discord.Message, args :
     else:
         await message.channel.send(":ballot_box_with_check: Bounty board channels created and activated:\n" \
                                     + ", ".join(div.bountyBoardChannel.channel.mention for div in guild.bountiesDB.divisions.values()))
+        guild.hasBountyBoardChannels = True
 
 botCommands.register("make-bounty-board-channels", admin_cmd_make_bounty_board_channels, 1, allowDM=False,
                     helpSection="channels", signatureStr="**make-bounty-board-channels**",

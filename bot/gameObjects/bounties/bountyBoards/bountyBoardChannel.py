@@ -223,7 +223,7 @@ class BountyBoardChannel(serializable.Serializable):
         :return: False if this BBC stores any bounty listings, True otherwise
         :rtype: bool
         """
-        return bool(self.bountyMessages)
+        return not bool(self.bountyMessages)
 
 
     async def addBounty(self, bounty : bounty.Bounty, message : Message):

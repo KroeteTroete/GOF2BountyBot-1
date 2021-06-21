@@ -106,10 +106,10 @@ async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : b
             if callingBBGuild.hasBountyBoardChannels:
                 bbcTasks = set()
                 bbc = div.bountyBoardChannel
-                for tlBounties in div.bounties.values():
-                    for bty in tlBounties:
-                        if bbc.hasMessageForCriminal(bty.criminal):
-                            bbcTasks.add(bbc.removeCriminal(bty.criminal))
+                for tlCriminals in div.bounties.values():
+                    for crim in tlCriminals:
+                        if bbc.hasMessageForCriminal(crim):
+                            bbcTasks.add(bbc.removeCriminal(crim))
                 if bbcTasks:
                     await asyncio.wait(bbcTasks)
                     for t in bbcTasks:

@@ -352,9 +352,9 @@ class BountyDivision(Serializable):
         :rtype: bool
         """
         if includeEscaped:
-            return not any(self.bounties.values()) or any(self.escapedBounties.values())
+            return not any(i for i in self.bounties.values()) or any(i for i in self.escapedBounties.values())
         else:
-            return not any(self.bounties.values())
+            return not any(i for i in self.bounties.values())
 
 
     def isFull(self, includeEscaped: bool = True) -> bool:
