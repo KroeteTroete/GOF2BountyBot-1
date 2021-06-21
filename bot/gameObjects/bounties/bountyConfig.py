@@ -380,7 +380,7 @@ class BountyConfig:
                                                 eventType="NO_ITEMS", category="bountyConfig")
 
                     if weaponTL != -1:
-                        numWeapons = random.randint(max(1, self.activeShip.maxWeapons - 1), self.activeShip.maxWeapons)
+                        numWeapons = random.randint(max(1, self.activeShip.maxPrimaries - 1), self.activeShip.maxPrimaries)
                         for _ in range(numWeapons):
                             currentWeapon = random.choice(bbData.weaponObjsByTL[weaponTL])
                             # The chosen weapon doesnt deal damage. If the TL has damage-dealing weapons,
