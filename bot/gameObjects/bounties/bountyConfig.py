@@ -361,23 +361,35 @@ class BountyConfig:
                 self.activeShip = shipItem.Ship.fromDict(bbData.builtInShipData[shipKey])
 
                 if shipWithPrimaryExists:
-                    # if self.techLevel < self.activeShip.maxPrimaries:
-                    #     numWeapons = random.randint(self.techLevel, self.activeShip.maxPrimaries)
-                    # else:
-                    #     numWeapons = self.activeShip.maxPrimaries
-
+                    # Attempt to find damage-dealing weapons first
                     weaponTL = findItemTL(itemTL, cfg.minTechLevel - 1, cfg.maxTechLevel - 1, cfg.criminalMaxGearUpgrade,
-                                            tlDBHasType, db=bbData.weaponObjsByTL, itemType=primaryWeapon.PrimaryWeapon)
-
-                    numWeapons = random.randint(max(1, self.activeShip.maxPrimaries - 1), self.activeShip.maxPrimaries)
+                                            lambda i, db, itemType: tlDBHasType(i, db, itemType) \
+                                                                    and any(x.dps for x in db[i]),
+                                            db=bbData.weaponObjsByTL, itemType=primaryWeapon.PrimaryWeapon)
+                    dpsWeapons = weaponTL != -1
                     
-                    if weaponTL == -1:
-                        botState.logger.log("BountyConfig", "generate",
-                                            "Unable to pick weapon(s) for criminal, as no weapons are in the game",
-                                            eventType="NO_ITEMS", category="bountyConfig")
-                    else:
-                        for _ in range(numWeapons):
-                            self.activeShip.equipWeapon(random.choice(bbData.weaponObjsByTL[weaponTL]))
+                    # Couldn't find a TL with damage dealing weapons
+                    if not dpsWeapons:
+                        # Try for TLs with non-damaging weapons
+                        weaponTL = findItemTL(itemTL, cfg.minTechLevel - 1, cfg.maxTechLevel - 1, cfg.criminalMaxGearUpgrade,
+                                                tlDBHasType, db=bbData.weaponObjsByTL, itemType=primaryWeapon.PrimaryWeapon)
+
+                        if weaponTL == -1:
+                            botState.logger.log("BountyConfig", "generate",
+                                                "unable to find any TLs containing weapons",
+                                                eventType="NO_ITEMS", category="bountyConfig")
+
+                    if weaponTL != -1:
+                        numTurrets = random.randint(max(1, self.activeShip.maxTurrets - 1), self.activeShip.maxTurrets)
+                        for _ in range(numTurrets):
+                            currentTurret = random.choice(bbData.weaponObjsByTL[weaponTL])
+                            # The chosen weapon doesnt deal damage. If the TL has damage-dealing weapons,
+                            # randomly choose whether or not to ensure a damage-dealing weapon is picked
+                            if dpsWeapons and not not currentTurret.dps \
+                                    and random.randint(0, 100) > cfg.criminalEquipDamagelessWeaponChance:
+                                while not currentTurret.dps:
+                                    currentTurret = random.choice(bbData.weaponObjsByTL[weaponTL])
+                            self.activeShip.equipTurret(currentTurret)
 
                 moduleTypesToEquip = {armourModule.ArmourModule: 0, shieldModule.ShieldModule: 0}
                 reservedSlots = 0
