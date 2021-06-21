@@ -70,8 +70,8 @@ def makeCumulative(nums : List[Union[int, float]]) -> List[Union[int, float]]:
     :return: nums, with each element added to the next iteratively.
     :rtype: List[Union[int, float]
     """
-    if len(nums) > 1:
-        return [nums[0]] + [truncItemSpawnResolution(nums[i] + nums[i - 1]) for i in range(1, len(nums))]
+    for i in range(1,len(nums)):
+        nums[i] = truncItemSpawnResolution(nums[i] + nums[i-1])
     return nums
 
 
@@ -130,7 +130,7 @@ for shopTL in techLevelRange:
 
 cumulativeShopTLChance = normalizeArray(cumulativeShopTLChance)
 # Sum probabilities to give cumulative scale
-cumulativeShopTLChance = makeCumulative(cumulativeShopTLChance)
+makeCumulative(cumulativeShopTLChance)
 
 # Loop through shop TLs
 for shopTL in techLevelRange:
@@ -221,7 +221,7 @@ for criminalTL in range(cfg.minTechLevel - 1, cfg.maxTechLevel + 1):
     cumulativeCriminalTLChance[criminalTL] = truncItemSpawnResolution(1 - math.exp((criminalTL - 10.5) / 5))
 
 cumulativeCriminalTLChance = normalizeArray(cumulativeCriminalTLChance)
-cumulativeCriminalTLChance = makeCumulative(cumulativeCriminalTLChance)
+makeCumulative(cumulativeCriminalTLChance)
 
 print("[gameMaths] Criminal difficulty spawn rates generated:")
 for criminalTL in range(cfg.minTechLevel - 1, cfg.maxTechLevel + 1):
