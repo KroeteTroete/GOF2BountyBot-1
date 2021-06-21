@@ -285,8 +285,8 @@ bbcNoBountiesMsg = "```css\n[ NO ACTIVE BOUNTIES ]\n\nThere are currently no act
 # The percentage of a criminal's ship value to award to the winner
 shipValueRewardPercentage = 0.01
 
-# The probability of a criminal equipping a turret or primary weapon that deals zero damage (e.g plasma collectors/EMPs)
-criminalEquipDamagelessWeaponChance = 30
+# The probability of a criminal equipping a turret or primary weapon that deals zero damage (e.g plasma collectors)
+criminalEquipDamagelessWeaponChance = 20
 
 # The maximum number of levels a criminal's gear may be above their difficulty rating
 criminalMaxGearUpgrade = 1
