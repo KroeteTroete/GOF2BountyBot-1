@@ -9,7 +9,7 @@ from .. import botState, lib
 from ..lib import gameMaths
 from ..cfg import cfg, bbData
 from ..gameObjects.bounties import bounty, bountyConfig
-from ..users import guildActivity, basedGuild
+from ..users import guildActivity, basedGuild, basedUser
 from ..databases.bountyDB import nameForDivision
 
 botCommands.addHelpSection(3, "bounties")
@@ -908,19 +908,42 @@ async def dev_cmd_set_bounty_xp(message : discord.Message, args : str, isDM : bo
         return
 
     # verify the requested user
-    requestedUser = botState.client.get_user(
-        int(argsSplit[0].lstrip("<@!").rstrip(">")))
+    requestedUser = botState.client.get_user(int(argsSplit[0].lstrip("<@!").rstrip(">")))
     if requestedUser is None:
         await message.channel.send(":x: invalid user!!")
         return
 
+    newXP = int(argsSplit[1])
+
+    requestedBBUser: basedUser.BasedUser = None
     if not botState.usersDB.idExists(requestedUser.id):
         requestedBBUser = botState.usersDB.addID(requestedUser.id)
     else:
         requestedBBUser = botState.usersDB.getUser(requestedUser.id)
 
+    # Handle bounty alert roles updates
+    if requestedBBUser.hasHomeGuild and botState.guildsDB.idExists(requestedBBUser.homeGuildID):
+        homeBGuild: basedGuild.BasedGuild = botState.guildsDB.getGuild(requestedBBUser.homeGuildID)
+        if homeBGuild.hasBountyAlertRoles:
+            tl = gameMaths.calculateUserBountyHuntingLevel(requestedBBUser.bountyHuntingXP)
+            oldDiv = homeBGuild.bountiesDB.divisionForLevel(tl)
+            oldRole = homeBGuild.dcGuild.get_role(oldDiv.alertRoleID)
+            if oldRole is None:
+                    await message.channel.send(f":woozy_face: I can't find the {nameForDivision(oldDiv).title()}" \
+                                                + " division bounty alerts role, did it get deleted?")
+            elif oldRole in requestedUser.roles:
+                newDiv = homeBGuild.bountiesDB.divisionForLevel(newXP)
+                newRole = homeBGuild.dcGuild.get_role(newDiv.alertRoleID)
+                if newRole is None:
+                    await message.channel.send(":woozy_face: I can't find the " \
+                                            + f"{nameForDivision(newDiv).title()} division's bounty alerts " \
+                                            + "role, did it get deleted?")
+                
+                if oldRole is not None or newRole is not None:
+                    await homeBGuild.levelUpSwapRoles(requestedUser, message.channel, oldRole, newRole)
+
     # update the balance
-    requestedBBUser.bountyHuntingXP = int(argsSplit[1])
+    requestedBBUser.bountyHuntingXP = newXP
     await message.channel.send("Done!")
 
 botCommands.register("set-bounty-xp", dev_cmd_set_bounty_xp, 3, allowDM=True, helpSection="bounties", useDoc=True)
