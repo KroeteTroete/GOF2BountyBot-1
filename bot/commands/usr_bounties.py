@@ -208,7 +208,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                     await callingGuild.updateBountyBoardChannel(bounty, bountyComplete=checkResult == 3)
                     # Check if any bounties are close to the requested system in their route, defined by cfg.closeBountyThreshold
                     if checkResult == 2 and \
-                            abs(bounty.route.index(bounty.answer) - bounty.route.index(requestedSystem)) < cfg.closeBountyThreshold:
+                            0 < bounty.route.index(bounty.answer) - bounty.route.index(requestedSystem) < cfg.closeBountyThreshold:
                         # Print any close bounty names
                         sightedCriminalsStr += "\n**       **• Local security forces spotted **" \
                                                 + lib.discordUtil.criminalNameOrDiscrim(bounty.criminal) \
