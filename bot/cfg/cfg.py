@@ -296,26 +296,19 @@ level0CrimLoadout = {"name": "Betty", "builtIn":True,
                     "modules":[{"name": "Telta Quickscan", "builtIn": True}, {"name": "ZMI Optistore", "builtIn": True},
                                 {"name": "IMT Extract 2.7", "builtIn": True}]}
 
-# The multiplier applied each day to each guild's player activity for each tech level
+# The multiplier applied each day to each guild's player activity for each division
 guildActivityDecayRate = 2/3
 
-# The lowest rating a guild can achieve for player activitivity at a certain tech level
+# The lowest rating a guild can achieve for player activitivity at a certain division
 minGuildActivity = 1
 
 # Amount to raise the guild's activity temperature by for each player contributing to a bounty
 activityTempPerPlayer = 1
 
-# The RGB colours to make by default for each bounty alert role, ordered by tech level ascending
-defaultBountyAlertRoleColours = ((89, 39, 12),
-                                (99, 48, 12),
-                                (118, 63, 12),
-                                (138, 79, 12),
-                                (157, 94, 11),
-                                (177, 111, 10),
-                                (197, 126, 10),
-                                (221, 146, 10),
-                                (240, 161, 9),
-                                (255, 174, 8))
+# The RGB colours to make by default for each bounty alert role
+defaultBountyAlertRoleColours = {"bronze": (89, 39, 12),
+                                "silver": (157, 94, 11),
+                                "gold": (255, 174, 8)}
 
 
 

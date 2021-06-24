@@ -385,14 +385,14 @@ async def cmd_notify(message : discord.Message, args : str, isDM : bool):
         guildMember = message.guild.get_member(message.author.id)
         if requestedBBGuild.hasBountyAlertRoles:
             tl = gameMaths.calculateUserBountyHuntingLevel(requestedBBUser.bountyHuntingXP)
-            tlRole = message.guild.get_role(requestedBBGuild.bountyAlertRoleIDForTL(tl))
+            tlRole = message.guild.get_role(requestedBBGuild.bountiesDB.divisionForLevel(tl).alertRoleID)
             if tlRole in guildMember.roles:
                 try:
                     await guildMember.remove_roles(tlRole,
                                                     reason="User unsubscribed from new bounties notifications via BB command")
                 except discord.Forbidden:
                     await message.channel.send(":woozy_face: I don't have permission to do that! Please ensure the " \
-                                                + "requested role is beneath the BountyBot role.")
+                                                + f"{tlRole.name} role is beneath the BountyBot role.")
                 except discord.HTTPException:
                     await message.channel.send(":woozy_face: Something went wrong! " \
                                                 + "Please contact an admin or try again later.")
@@ -415,7 +415,7 @@ async def cmd_notify(message : discord.Message, args : str, isDM : bool):
                                                     reason="User subscribed to new bounties notifications via BB command")
                 except discord.Forbidden:
                     await message.channel.send(":woozy_face: I don't have permission to do that! Please ensure the " \
-                                                + "requested role is beneath the BountyBot role.")
+                                                + f"{tlRole.name} role is beneath the BountyBot role.")
                 except discord.HTTPException:
                     await message.channel.send(":woozy_face: Something went wrong! " \
                                                 + "Please contact an admin or try again later.")

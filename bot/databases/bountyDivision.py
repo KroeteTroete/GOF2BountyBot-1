@@ -44,19 +44,23 @@ class BountyDivision(Serializable):
     :var bountyBoardChannel: A BountyBoardChannel object implementing this division's bounty board channel if it has one,
                                 None otherwise.
     :vartype bountyBoardChannel: BountyBoardChannel
+    :var alertRoleID: The ID of the role to ping when new bounties are spawned into this division. -1 if no role is set.
+    :vartype alertRoleID: int
     """
     delayRandRange = {"min": timedelta(**cfg.timeouts.newBountyDelayRandomMin),
                         "max": timedelta(**cfg.timeouts.newBountyDelayRandomMax)}
 
     def __init__(self, owningDB: "BountyDB", minLevel: int, maxLevel: int, temperature: int = cfg.minGuildActivity,
                 bounties: Dict[int, AliasableDict[Criminal, Bounty]] = None, bountyBoardChannel: BountyBoardChannel = None,
-                escapedBounties: Dict[int, AliasableDict[Criminal, Bounty]] = None) -> None:
+                escapedBounties: Dict[int, AliasableDict[Criminal, Bounty]] = None, alertRoleID: int = -1) -> None:
         """
         :param BountyDB owningDB: The BountyDB that owns this division
         :param int minLevel: The lowest level of bounties available in this division
         :param int maxLevel: The highest level of bounties available in this division
         :param BountyBoardChannel bountyBoardChannel: A BountyBoardChannel object implementing this division's bounty board
                                                         channel if it has one, None otherwise. (Default None)
+        :param int alertRole: The ID of the role to ping when new bounties are spawned into this division. -1 for no role.
+                                (Default -1)
         """
         self.temperature = temperature
         self.isActive = False
@@ -65,6 +69,7 @@ class BountyDivision(Serializable):
         self.maxLevel = maxLevel
         self.latestBounty: Bounty = None
         self.bountyBoardChannel = bountyBoardChannel
+        self.alertRoleID = alertRoleID
         # Dictionary of tech level : dict of criminal : bounty
         if bounties is None:
             self.bounties: Dict[int, AliasableDict[Criminal, Bounty]] = {l: AliasableDict()

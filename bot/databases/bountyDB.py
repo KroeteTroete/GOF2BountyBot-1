@@ -440,6 +440,9 @@ class BountyDB(serializable.Serializable):
         
         if next(i for i in self.divisions.values()).bountyBoardChannel is not None:
             data["bountyBoardChannels"] = {div.minLevel: div.bountyBoardChannel.toDict(**kwargs) for div in self.divisions.values()}
+        
+        if next(i for i in self.divisions.values()).alertRoleID != -1:
+            data["alertRoleIDs"] = {div.minLevel: div.alertRoleID for div in self.divisions.values()}
 
         return data
 
@@ -477,5 +480,9 @@ class BountyDB(serializable.Serializable):
         if "bountyBoardChannels" in bountyDBDict:
             for minLevel, bbcDict in bountyDBDict["bountyBoardChannels"].items():
                 newDB.divisionForLevel(int(minLevel)).bountyBoardChannel = BountyBoardChannel.fromDict(bbcDict)
+
+        if "alertRoleIDs" in bountyDBDict:
+            for minLevel, roleID in bountyDBDict["alertRoleIDs"].items():
+                newDB.divisionForLevel(int(minLevel)).alertRoleID = roleID
 
         return newDB
