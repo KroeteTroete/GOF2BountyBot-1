@@ -314,7 +314,9 @@ class KaamoShop(guildShop.GuildShop):
                 if currentItem in currentStock.items:
                     stockDict.append(currentStock.items[currentItem].toDict(**kwargs))
                 else:
-                    botState.logger.log("kaamoShop", "toDict", "Failed to save invalid " + invType + " key '" + str(currentItem) + "' - not found in items dict", category="shop", eventType="UNKWN_KEY")
+                    botState.logger.log("kaamoShop", "toDict",
+                                        f"Failed to save invalid {invType} key '{currentItem}' - not found in items dict",
+                                        category="shop", eventType="UNKWN_KEY")
 
             data[invType + "sStock"] = stockDict
 

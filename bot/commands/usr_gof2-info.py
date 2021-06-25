@@ -858,7 +858,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
             except shipRenderer.RenderFailed:
                 await message.channel.send(message.author.mention + "\n🥺 Render failed! The error has been logged, " \
                                             + "please try a different ship.")
-                botState.logger.log("Main", "cmd_showme_ship", "Ship render failed with args: '" + args + "'")
+                botState.logger.log("Main", "cmd_showme_ship", f"Ship render failed with args: '{args}'")
             else:
                 with open(renderPath, "rb") as f:
                     msgText = "u" + str(message.author.id) + "g" \

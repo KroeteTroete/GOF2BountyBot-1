@@ -464,14 +464,14 @@ async def cmd_notify(message : discord.Message, args : str, isDM : bool):
         except ValueError:
             await message.channel.send(":x: This server does not have a role for " \
                                         + userAlerts.userAlertsTypesNames[alertType] + " notifications. :robot:")
-        except client_exceptions.ClientOSError:
+        except client_exceptions.ClientOSError as e:
             await message.channel.send(":thinking: Whoops! A connection error occurred, and the error has been logged. " \
                                         + "Could you try that again please?")
-            botState.logger.log("main", "cmd_notify", "aiohttp.client_exceptions.ClientOSError occurred when attempting to " \
-                                                        + "grant " + message.author.name + "#" + str(message.author.id) \
-                                                        + " alert " + alertID + "in guild " + message.guild.name + "#" \
-                                                        + str(message.guild.id) + ".", category="userAlerts",
-                                eventType="ClientOSError", trace=traceback.format_exc())
+            botState.logger.log("main", "cmd_notify", "ClientOSError occurred when attempting to grant " \
+                                                        + f"{message.author.name}#{str(message.author.id)}" \
+                                                        + f" alert {alertID} in guild {message.guild.name}#" \
+                                                        + str(message.guild.id) + ".",
+                                category="userAlerts", exception=e)
 
 botCommands.register("notify", cmd_notify, 0, allowDM=False, signatureStr="**notify <type>** *[alert]*",
                         longHelp="Subscribe to pings when events take place. Currently, **type** can be `bounties`, " \

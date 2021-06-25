@@ -390,8 +390,7 @@ class BountyBoardChannel(serializable.Serializable):
             for t in clearTasks:
                 if e := t.exception():
                     botState.logger.log("bountyBoardChannel", "clear", str(e), category="bountyBoards",
-                                        eventType=type(e).__name__,
-                                        trace=traceback.format_exception(type(e), e, e.__traceback__))
+                                        exception=e)
 
 
     def toDict(self, **kwargs) -> dict:

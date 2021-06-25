@@ -646,7 +646,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
     except shipRenderer.RenderFailed:
         await message.channel.send(message.author.mention \
                                     + "\n🥺 Render failed! The error has been logged, please try a different ship.")
-        botState.logger.log("Main", "admin_cmd_showmeHD", "HD ship render failed with args: '" + args + "'")
+        botState.logger.log("Main", "admin_cmd_showmeHD", f"HD ship render failed with args: '{args}'")
     else:
         with open(renderPath, "rb") as f:
             imageEmbedMsg = await botState.client.get_channel(cfg.showmeSkinRendersChannel).send("HD-u" \

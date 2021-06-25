@@ -592,8 +592,9 @@ async def on_message(message: discord.Message):
             await message.channel.send(":woozy_face: Uh oh, something went wrong! The error has been logged.\n" \
                                         + "This command probably won't work until we've looked into it.")
             # log the exception as misc
-            botState.logger.log("Main", "on_message", "An unexpected error occured when calling command '" \
-                                + command + "' with args '" + args + "': " + type(e).__name__, trace=traceback.format_exc())
+            botState.logger.log("Main", "on_message",
+                                f"An unexpected error occured when calling command '{command}' with args '{args}'",
+                                exception=e)
             print(traceback.format_exc())
             commandFound = True
 
