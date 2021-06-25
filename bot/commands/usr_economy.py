@@ -1,8 +1,11 @@
+import re
+from aiohttp.client import request
 import discord
 
 from . import commandsDB as botCommands
 from .. import botState, lib
 from ..cfg import cfg
+from ..users import basedGuild, basedUser
 
 
 botCommands.addHelpSection(0, "economy")
@@ -434,24 +437,45 @@ async def cmd_pay(message : discord.Message, args : str, isDM : bool):
         return
 
     if botState.usersDB.idExists(message.author.id):
-        sourceBBUser = botState.usersDB.getUser(message.author.id)
+        sourceBBUser: basedUser.BasedUser = botState.usersDB.getUser(message.author.id)
     else:
-        sourceBBUser = botState.usersDB.addID(message.author.id)
+        sourceBBUser: basedUser.BasedUser = botState.usersDB.addID(message.author.id)
 
     if not sourceBBUser.credits >= amount:
         await message.channel.send(":x: You don't have that many credits!")
         return
 
     if botState.usersDB.idExists(requestedUser.id):
-        targetBBUser = botState.usersDB.getUser(requestedUser.id)
+        targetBBUser: basedUser.BasedUser = botState.usersDB.getUser(requestedUser.id)
     else:
-        targetBBUser = botState.usersDB.addID(requestedUser.id)
+        targetBBUser: basedUser.BasedUser = botState.usersDB.addID(requestedUser.id)
+
+    homeGuild: discord.Guild = botState.client.get_guild(sourceBBUser.homeGuildID)
+
+    if not targetBBUser.hasHomeGuild() or not sourceBBUser.hasHomeGuild() or \
+            targetBBUser.homeGuildID != sourceBBUser.homeGuildID:
+        await message.channel.send(":x: You can only pay players whose home server is " \
+                                    + homeGuild.name + "!")
+        return
 
     sourceBBUser.credits -= amount
     targetBBUser.credits += amount
 
     await message.channel.send(":moneybag: You paid " + lib.discordUtil.userOrMemberName(requestedUser, message.guild) \
                                 + " **" + str(amount) + "** credits!")
+    
+    if message.guild.get_member(requestedUser.id) is None:
+        homeBGuild: basedGuild.BasedGuild = botState.guildsDB.getGuild(homeGuild.id)
+        if homeBGuild.hasPlayChannel():
+            await homeBGuild.getPlayChannel().send(f":moneybag: {message.author.mention} paid " \
+                                                    + f"{requestedUser.mention} **{amount}** credits!")
+        else:
+            try:
+                await requestedUser.send(f":moneybag: {message.author.mention} paid you **{amount}** credits!")
+            except (discord.Forbidden, discord.HTTPException, discord.NotFound) as e:
+                botState.logger.log("user_economy", "cmd_pay", "Exception thrown when attempting to DM pay announcement",
+                                    exception=e)
+        
 
 botCommands.register("pay", cmd_pay, 0, forceKeepArgsCasing=True, allowDM=True, helpSection="economy",
                         signatureStr="**pay <user> <amount>**",
