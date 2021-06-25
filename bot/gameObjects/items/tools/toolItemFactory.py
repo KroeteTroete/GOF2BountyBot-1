@@ -11,14 +11,15 @@ itemConstructors = {"Ship": shipItem.Ship.fromDict,
 
 
 def crateFromDict(crateDict):
-    if "itemPool" not in crateDict:
-        raise RuntimeError("Attempted to fromDict a crate with no itemPool field: " + str(crateDict))
+    if "crateType" not in crateDict and "itemPool" not in crateDict:
+        raise RuntimeError("Attempted to fromDict a non-builtIn crate with no itemPool field: " + str(crateDict))
     itemPool = []
-    for itemDict in crateDict["itemPool"]:
-        if "itemType" in itemDict:
-            itemPool.append(itemConstructors[itemDict["itemType"]](itemDict))
-        else:
-            itemPool.append(itemConstructors[itemDict["type"]](itemDict))
+    if "itemPool" in crateDict:
+        for itemDict in crateDict["itemPool"]:
+            if "itemType" in itemDict:
+                itemPool.append(itemConstructors[itemDict["itemType"]](itemDict))
+            else:
+                itemPool.append(itemConstructors[itemDict["type"]](itemDict))
 
     return CrateTool(**CrateTool._makeDefaults(crateDict, ("type",), itemPool=itemPool,
                                                 emoji=lib.emojis.BasedEmoji.fromDict(crateDict["emoji"]) \
