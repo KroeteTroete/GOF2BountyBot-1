@@ -9,7 +9,7 @@ def formatExceptionTrace(e: Exception) -> str:
     :return: The stack trace for e, formatted into a string
     :rtype: str
     """
-    traceback.format_exception(type(e), e, e.__traceback__)
+    return "".join(traceback.format_exception(type(e), e, e.__traceback__))
 
 
 class UnrecognisedCustomEmoji(Exception):
