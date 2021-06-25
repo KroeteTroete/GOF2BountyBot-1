@@ -205,6 +205,15 @@ shipMaxPriceTechLevels = [50000, 100000, 200000, 500000, 1000000, 2000000, 50000
 # total earnings from bounty hunting.
 bountyRewardToXPGainMult = 0.1
 
+# The image to display behind the XP bar during cmd_stats, for users of each division
+xpBarBackground = {"bronze": "xp-bar-background.jpg",
+                    "silver": "xp-bar-background.jpg",
+                    "gold": "xp-bar-background.jpg"}
+# The image to fill the XP bar with during cmd_stats, for users of each division
+xpBarFill = {"bronze": "xp-bar-fill.jpg",
+                    "silver": "xp-bar-fill.jpg",
+                    "gold": "xp-bar-fill.jpg"}
+
 
 
 ##### DUELS #####
