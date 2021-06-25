@@ -104,7 +104,7 @@ class BountyDB(serializable.Serializable):
                 for t in divTasks:
                     if e := t.exception():
                         botState.logger.log("bountyDB", "resetAllNewBountyTTs", str(e), category="bountiesDB",
-                                            eventType=type(e).__name__, trace=traceback.format_exception(type(e), e, e.__traceback__))
+                                            exception=e)
 
 
     def getBountyByCrim(self, crim : Criminal, level : int = None) -> bounty.Bounty:

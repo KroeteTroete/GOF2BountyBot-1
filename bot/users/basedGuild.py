@@ -223,36 +223,44 @@ class BasedGuild(serializable.Serializable):
             except Forbidden:
                 await channel.send(":woozy_face: I don't have permission to remove your old level role! Please ensure " \
                                     + "it is beneath the BountyBot role.")
-            except HTTPException:
-                await channel.send(":woozy_face: Something went wrong when removing your old level role!")
-            except client_exceptions.ClientOSError:
+            except HTTPException as e:
+                await channel.send(":woozy_face: Something went wrong when removing your old level role!\n" \
+                                    + "The error has been logged.")
+                botState.logger.log("main", "cmd_notify",
+                                    f"{type(e).__name__} occurred when attempting to remove new bounty role " \
+                                        + f"{oldRole.name}#{oldRole.id}  from user {dcUser.name}#{dcUser.id}" \
+                                        + f" in guild {self.dcGuild.name}#{self.id}.",
+                                    category="userAlerts", exception=e)
+            except client_exceptions.ClientOSError as e:
                 await channel.send(":thinking: Whoops! A connection error occurred when removing your old level role, " \
                                     + "the error has been logged.")
                 botState.logger.log("main", "cmd_notify",
-                                    "aiohttp.client_exceptions.ClientOSError occurred when attempting to remove new bounty " \
-                                        + "role " + oldRole.name + "#" + oldRole.id \
-                                        + " from user " + dcUser.name + "#" + str(dcUser.id) \
-                                        + " in guild " + self.dcGuild.name + "#" + str(self.id) + ".",
-                                    category="userAlerts",
-                                    eventType="ClientOSError", trace=traceback.format_exc())
+                                    f"{type(e).__name__} occurred when attempting to remove new bounty role " \
+                                        + f"{oldRole.name}#{oldRole.id}  from user {dcUser.name}#{dcUser.id}" \
+                                        + f" in guild {self.dcGuild.name}#{self.id}.",
+                                    category="userAlerts", exception=e)
         if newRole is not None:
             try:
                 await dcUser.add_roles(newRole, reason="User leveled up")
             except Forbidden:
                 await channel.send(":woozy_face: I don't have permission to grant your new level role! Please ensure " \
                                     + "it is beneath the BountyBot role.")
-            except HTTPException:
-                await channel.send(":woozy_face: Something went wrong when granting your new level role!")
+            except HTTPException as e:
+                await channel.send(":woozy_face: Something went wrong when granting your new level role!\n" \
+                                    + "The error has been logged.")
+                botState.logger.log("main", "cmd_notify",
+                                    f"{type(e).__name__} occurred when attempting to grant new bounty role " \
+                                        + f"{oldRole.name}#{oldRole.id}  from user {dcUser.name}#{dcUser.id}" \
+                                        + f" in guild {self.dcGuild.name}#{self.id}.",
+                                    category="userAlerts", exception=e)
             except client_exceptions.ClientOSError:
                 await channel.send(":thinking: Whoops! A connection error occurred when granting your new level role, " \
                                     + "the error has been logged.")
                 botState.logger.log("main", "cmd_notify",
-                                    "aiohttp.client_exceptions.ClientOSError occurred when attempting to grant new bounty " \
-                                        + "role " + newRole.name + "#" + newRole.id \
-                                        + " from user " + dcUser.name + "#" + str(dcUser.id) \
-                                        + " in guild " + self.dcGuild.name + "#" + str(self.id) + ".",
-                                    category="userAlerts",
-                                    eventType="ClientOSError", trace=traceback.format_exc())
+                                    f"{type(e).__name__} occurred when attempting to grant new bounty role " \
+                                        + f"{oldRole.name}#{oldRole.id}  from user {dcUser.name}#{dcUser.id}" \
+                                        + f" in guild {self.dcGuild.name}#{self.id}.",
+                                    category="userAlerts", exception=e)
 
 
     def getAnnounceChannel(self) -> channel.TextChannel:

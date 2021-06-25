@@ -86,8 +86,7 @@ async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : b
             for t in bbcClearTasks:
                 if e := t.exception():
                     botState.logger.log("dev_bounties", "dev_cmd_clear_bounties", str(e), category="bountiesDB",
-                                        eventType=type(e).__name__,
-                                        trace=traceback.format_exception(type(e), e, e.__traceback__))
+                                        exception=e)
         await message.channel.send(":ballot_box_with_check: Active bounties cleared for all guilds.")
     else:
         if callingBBGuild.bountiesDisabled:
@@ -115,8 +114,7 @@ async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : b
                     for t in bbcTasks:
                         if e := t.exception():
                             botState.logger.log("dev_bounties", "dev_cmd_clear_bounties", str(e), category="bountiesDB",
-                                                eventType=type(e).__name__,
-                                                trace=traceback.format_exception(type(e), e, e.__traceback__))
+                                                exception=e)
             await div.clear(includeEscaped=True)
 
         await message.channel.send(":ballot_box_with_check: Active bounties cleared" + ((" for '" + callingBBGuild.dcGuild.name \
@@ -325,8 +323,7 @@ async def dev_cmd_resetnewbountycool(message : discord.Message, args : str, isDM
             for t in cooldownTasks:
                 if e := t.exception():
                     botState.logger.log("dev_bounties", "dev_cmd_resetnewbountycool", str(e), category="bountiesDB",
-                                        eventType=type(e).__name__,
-                                        trace=traceback.format_exception(type(e), e, e.__traceback__))
+                                        exception=e)
         await message.channel.send(":ballot_box_with_check: All bounty cooldowns reset across all guilds!")
     else:
         if allDivs:
@@ -676,8 +673,7 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
             for t in spawnTasks:
                 if e := t.exception():
                     botState.logger.log("dev_bounties", "dev_cmd_make_bounty", str(e), category="bountiesDB",
-                                        eventType=type(e).__name__,
-                                        trace=traceback.format_exception(type(e), e, e.__traceback__))
+                                        exception=e)
         await message.channel.send(f"Criminal spawned into {len(spawnTasks)} guilds!")
     else:
         if newTL == -1:
@@ -869,8 +865,7 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
             for t in spawnTasks:
                 if e := t.exception():
                     botState.logger.log("dev_bounties", "dev_cmd_make_bounty", str(e), category="bountiesDB",
-                                        eventType=type(e).__name__,
-                                        trace=traceback.format_exception(type(e), e, e.__traceback__))
+                                        exception=e)
         await message.channel.send(f"Criminal spawned into {len(spawnTasks)} guilds!")
     else:
         if callingBBGuild.bountiesDB.bountyNameExists(f"<@{newName}>"):

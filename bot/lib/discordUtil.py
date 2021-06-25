@@ -49,7 +49,7 @@ def userOrMemberName(dcUser : User, dcGuild : Guild) -> str:
     """
     if dcUser is None:
         botState.logger.log("Main", "usrMmbrNme",
-                            "Null dcUser given", eventType="USR_NONE")
+                            "None dcUser given", eventType="USR_NONE")
         raise ValueError("Null dcUser given")
 
     if dcGuild is None:
