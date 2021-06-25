@@ -1,5 +1,5 @@
 from .aliasable import Aliasable
-from typing import Any
+from typing import Any, List, Dict
 
 
 class AliasableDict(dict):
@@ -33,6 +33,50 @@ class AliasableDict(dict):
         :raise TypeError: If name is not a str
         """
         return self[self.getKeyNamed(name)]
+
+
+    def getManyKeysNamed(self, names: List[str]) -> Dict[str, Aliasable]:
+        """Search the dictionary for a list of keys with the given names or aliases.
+        All names must match a key, no partial results are returned.
+
+        In the worst case, this is as efficient as executing one getKeyNamed search per name.
+        In the general case however, this is much more efficient as the search is performed over a single iteration.
+
+        :param List[str] name: A list of names or aliases to look up
+        :return: A mapping from provided search terms to keys registered in the dictionary, named/aliased as such
+        :rtype: Dict[str, Aliasable]
+        :raise KeyError: If no key in the dictionary could be found for at least one search term
+        :raise TypeError: If name is not a list of strings
+        """
+        for name in names:
+            if type(name) != str:
+                raise TypeError(f"Names must be str, but got type '{type(name).__name__}' for name '{name!s}'")
+        toFind = set(names)
+        results = {}
+        for k in self:
+            for name in toFind:
+                if k.isCalled(name):
+                    results[name] = k
+                    toFind.remove(name)
+        if toFind:
+            raise KeyError(f"Could not find keys with the following names: {', '.join(toFind)}")
+        return results
+
+
+    def getValuesForManyKeysNamed(self, name: List[str]) -> Dict[str, Any]:
+        """Search the dictionary for keys with the given names or aliases, and get the values paired with them.
+        All names must match a key, no partial results are returned.
+
+        In the worst case, this is as efficient as executing one getManyKeysNamed search per name.
+        In the general case however, this is much more efficient as the search is performed over a single iteration.
+
+        :param str name: The list of names or aliases to look up
+        :return: A mapping from search terms to values paired with registered keys that are named/aliased as such
+        :rtype: Dict[str, Any]
+        :raise KeyError: If no key in the dictionary could be found for at least one search term
+        :raise TypeError: If name is not a list of strings
+        """
+        return {n: self[k] for n, k in self.getManyKeysNamed().items()}
 
 
     def __setitem__(self, k: Aliasable, v: Any) -> None:
