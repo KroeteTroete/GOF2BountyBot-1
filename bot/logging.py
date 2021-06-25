@@ -146,7 +146,7 @@ class Logger:
         self.clearLogs()
 
 
-    def log(self, classStr: str, funcStr: str, event: str, category: str = "misc", eventType: str = "MISC_ERR",
+    def log(self, classStr: str, funcStr: str, event: str, category: str = "misc", eventType: str = None,
                 trace: str = "", exception: Exception = None, noPrintEvent: bool = False, noPrint: bool = False):
         """Log an event, queueing the log to be saved to a file.
 
@@ -173,10 +173,13 @@ class Logger:
         if exception is not None:
             if event == "":
                 event = str(exception)
-            if eventType == "":
+            if eventType is None:
                 eventType = type(exception).__name__
             if trace == "":
                 trace = formatExceptionTrace(exception)
+        
+        if eventType is None:
+            eventType = "MISC_ERR"
 
         now = datetime.utcnow()
         if noPrintEvent:
