@@ -369,8 +369,8 @@ async def cmd_notify(message : discord.Message, args : str, isDM : bool):
                         separated by a single space.
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
-    requestedBBUser = botState.usersDB.getOrAddID(message.author.id)
-    requestedBBGuild = botState.guildsDB.getGuild(message.guild.id)
+    requestedBBUser: basedUser.BasedUser = botState.usersDB.getOrAddID(message.author.id)
+    requestedBBGuild: basedGuild.BasedGuild = botState.guildsDB.getGuild(message.guild.id)
 
     if not message.guild.me.guild_permissions.manage_roles:
         await message.channel.send(":x: I do not have the 'Manage Roles' permission in this server! " \
@@ -385,14 +385,14 @@ async def cmd_notify(message : discord.Message, args : str, isDM : bool):
         guildMember = message.guild.get_member(message.author.id)
         if requestedBBGuild.hasBountyAlertRoles:
             tl = gameMaths.calculateUserBountyHuntingLevel(requestedBBUser.bountyHuntingXP)
-            tlRole = message.guild.get_role(requestedBBGuild.bountyAlertRoleIDForTL(tl))
+            tlRole = message.guild.get_role(requestedBBGuild.bountiesDB.divisionForLevel(tl).alertRoleID)
             if tlRole in guildMember.roles:
                 try:
                     await guildMember.remove_roles(tlRole,
                                                     reason="User unsubscribed from new bounties notifications via BB command")
                 except discord.Forbidden:
                     await message.channel.send(":woozy_face: I don't have permission to do that! Please ensure the " \
-                                                + "requested role is beneath the BountyBot role.")
+                                                + f"{tlRole.name} role is beneath the BountyBot role.")
                 except discord.HTTPException:
                     await message.channel.send(":woozy_face: Something went wrong! " \
                                                 + "Please contact an admin or try again later.")
@@ -410,12 +410,18 @@ async def cmd_notify(message : discord.Message, args : str, isDM : bool):
                 else:
                     await message.channel.send(":white_check_mark: You have unsubscribed from new bounties notifications.")
             else:
+                if not requestedBBUser.hasHomeGuild or requestedBBUser.homeGuildID != message.guild.id:
+                    await message.channel.send(":x: You can only enable new bounty alerts in your home guild!\n" \
+                                                + "For more information, please see " \
+                                                + f"`{requestedBBGuild.commandPrefix}help home`" \
+                                                + f" and `{requestedBBGuild.commandPrefix}help transfer`.")
+                    return
                 try:
                     await guildMember.add_roles(tlRole,
                                                     reason="User subscribed to new bounties notifications via BB command")
                 except discord.Forbidden:
                     await message.channel.send(":woozy_face: I don't have permission to do that! Please ensure the " \
-                                                + "requested role is beneath the BountyBot role.")
+                                                + f"{tlRole.name} role is beneath the BountyBot role.")
                 except discord.HTTPException:
                     await message.channel.send(":woozy_face: Something went wrong! " \
                                                 + "Please contact an admin or try again later.")

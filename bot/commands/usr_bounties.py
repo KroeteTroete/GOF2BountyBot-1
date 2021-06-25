@@ -7,7 +7,7 @@ from ..cfg import cfg, bbData
 from ..gameObjects.battles import duelRequest
 from ..scheduling import timedTask
 from ..reactionMenus import reactionDuelChallengeMenu, expiryFunctions, confirmationReactionMenu
-from ..users import basedUser
+from ..users import basedUser, basedGuild
 from ..gameObjects.items import shipItem
 from ..gameObjects.items.weapons import primaryWeapon
 from ..gameObjects.items.tools import crateTool
@@ -33,7 +33,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
     # Verify that this guild has bounties enabled
-    callingGuild = botState.guildsDB.getGuild(message.guild.id)
+    callingGuild: basedGuild.BasedGuild = botState.guildsDB.getGuild(message.guild.id)
     if callingGuild.bountiesDisabled:
         await message.channel.send(":x: This server does not have bounties enabled.")
         return
@@ -154,26 +154,39 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                             if newLevel > oldLevel:
                                 levelUpCrate = bbData.builtInCrateObjs["levelUp"][newLevel]
                                 currentBBUser.inactiveTools.addItem(levelUpCrate)
-                                levelUpMsg += "\n:arrow_up: **Level Up!**\n" \
-                                                + lib.discordUtil.userOrMemberName(currentDCUser, message.guild) \
-                                                + " reached **Bounty Hunter Level " + str(newLevel) \
-                                                + "!** :partying_face:\n" + "You got a **" + levelUpCrate.name + "**."
                                 
-                                if callingGuild.hasBountyAlertRoles:
-                                    oldRole = message.guild.get_role(callingGuild.bountyAlertRoleIDForTL(oldLevel))
-                                    if oldRole is None:
-                                        await message.channel.send(":woozy_face: I can't find the new bounty alerts role " \
-                                                                    + "for tech level " + str(oldLevel) \
-                                                                    + "! Did it get deleted?")
-                                                                    
-                                    elif oldRole in message.author.roles:
-                                        newRole = message.guild.get_role(callingGuild.bountyAlertRoleIDForTL(newLevel))
-                                        if newRole is None:
-                                            await message.channel.send(":woozy_face: I can't find the new bounty alerts " \
-                                                                        +"role for tech level " + str(newLevel) \
-                                                                        + "! Did it get deleted?")
+                                oldDiv = callingGuild.bountiesDB.divisionForLevel(oldLevel)
+                                newDiv = callingGuild.bountiesDB.divisionForLevel(newLevel)
+                                if oldDiv is newDiv:
+                                    levelUpMsg += "\n:arrow_up: **Level Up!**\n" \
+                                                + lib.discordUtil.userOrMemberName(currentDCUser, message.guild) \
+                                                + f" reached **Bounty Hunter Level {newLevel}!** :partying_face:\n" \
+                                                + f"You got a **{levelUpCrate.name}**."
+                                
+                                else:
+                                    oldDivName, newDivName = nameForDivision(oldDiv), nameForDivision(newDiv)
+                                    levelUpMsg += "\n:arrow_double_up: **New Division Reached!** :sparkles:\n" \
+                                                + lib.discordUtil.userOrMemberName(currentDCUser, message.guild) \
+                                                + f" hit **Bounty Hunter Level {newLevel}**, and reached the " \
+                                                + f"**{newDivName.title()} Division!** :partying_face:\n" \
+                                                + f"You got a **{levelUpCrate.name}**."
+                                
+                                    if callingGuild.hasBountyAlertRoles:
+                                        oldRole = message.guild.get_role(oldDiv.alertRoleID)
+                                        newRole = None
+                                        if oldRole is None:
+                                            await message.channel.send(f":woozy_face: I can't find the {oldDivName.title()}" \
+                                                                        + " division bounty alerts role, did it get deleted?")
+                                                                        
+                                        elif oldRole in message.author.roles:
+                                            newRole = message.guild.get_role(newDiv.alertRoleID)
+                                            if newRole is None:
+                                                await message.channel.send(":woozy_face: I can't find the " \
+                                                                        + f"{newDivName.title()} division's bounty alerts " \
+                                                                        + "role, did it get deleted?")
                                         
-                                        await callingGuild.levelUpSwapRoles(currentDCUser, message.channel, oldRole, newRole)
+                                        if oldRole is not None or newRole is not None:
+                                            await callingGuild.levelUpSwapRoles(currentDCUser, message.channel, oldRole, newRole)
 
                         if levelUpMsg != "":
                             await message.channel.send(levelUpMsg)
@@ -195,7 +208,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                     await callingGuild.updateBountyBoardChannel(bounty, bountyComplete=checkResult == 3)
                     # Check if any bounties are close to the requested system in their route, defined by cfg.closeBountyThreshold
                     if checkResult == 2 and \
-                            abs(bounty.route.index(bounty.answer) - bounty.route.index(requestedSystem)) < cfg.closeBountyThreshold:
+                            0 < bounty.route.index(bounty.answer) - bounty.route.index(requestedSystem) < cfg.closeBountyThreshold:
                         # Print any close bounty names
                         sightedCriminalsStr += "\n**       **• Local security forces spotted **" \
                                                 + lib.discordUtil.criminalNameOrDiscrim(bounty.criminal) \
