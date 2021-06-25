@@ -255,7 +255,7 @@ class BasedGuild(serializable.Serializable):
                                     eventType="ClientOSError", trace=traceback.format_exc())
 
 
-    def getAnnounceChannel(self) -> channel:
+    def getAnnounceChannel(self) -> channel.TextChannel:
         """Get the discord channel object of the guild's announcements channel.
 
         :return: the discord.channel of the guild's announcements channel
@@ -267,7 +267,7 @@ class BasedGuild(serializable.Serializable):
         return self.announceChannel
 
 
-    def getPlayChannel(self) -> channel:
+    def getPlayChannel(self) -> channel.TextChannel:
         """Get the discord channel object of the guild's bounty playing channel.
 
         :return: the discord channel object of the guild's bounty playing channel
