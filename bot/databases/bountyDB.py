@@ -32,6 +32,20 @@ def nameForDivision(div: BountyDivision) -> str:
         raise KeyError(f"The given division is non-standard, no name found: {div} range: {div.minLevel} - {div.maxLevel}")
 
 
+def divisionNameForLevel(tl: int) -> str:
+    """Get the name of the division which players and bounties of the given techlevel belong to.
+
+    :param int tl: The techlevel whose division name to find
+    :return: The name for divisions responsible for bounties of the given level
+    :rtype: str
+    :raise KeyError: When no division is found for bounties of the given level
+    """
+    try:
+        return next(name for name, tlBoundaries in cfg.bountyDivisions.items() if tlBoundaries[0] <= tl <= tlBoundaries[1])
+    except StopIteration:
+        raise KeyError(f"No division found for bounties of TL {tl}")
+
+
 class BountyDB(serializable.Serializable):
     """A database of Bounty.
     Bounty criminal names must be unique within the database.
