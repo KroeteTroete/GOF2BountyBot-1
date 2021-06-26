@@ -209,10 +209,19 @@ bountyRewardToXPGainMult = 0.1
 xpBarBackground = {"bronze": "xp-bar-background.jpg",
                     "silver": "xp-bar-background.jpg",
                     "gold": "xp-bar-background.jpg"}
+
 # The image to fill the XP bar with during cmd_stats, for users of each division
 xpBarFill = {"bronze": "xp-bar-fill.jpg",
-                    "silver": "xp-bar-fill.jpg",
-                    "gold": "xp-bar-fill.jpg"}
+            "silver": "xp-bar-fill.jpg",
+            "gold": "xp-bar-fill.jpg"}
+
+# The colour that appears behind the xp bar, for the unfilled region
+xpBarSilhouetteColour = (255, 255, 255, 10)
+
+# The width of the XP bar
+xpBarWidth = 350
+# The height of the XP bar
+xpBarHeight = 20
 
 
 
