@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 from aiohttp import client_exceptions
 import operator
 import traceback
+from io import BytesIO
+from PIL import Image
 
 from . import commandsDB as botCommands
 from . import util_help
@@ -13,6 +15,7 @@ from ..users import basedUser, basedGuild
 from ..reactionMenus import reactionMenu, reactionPollMenu
 from ..scheduling import timedTask
 from ..userAlerts import userAlerts
+from ..databases.bountyDB import divisionNameForLevel
 
 
 async def cmd_help(message: discord.Message, args: str, isDM: bool):
@@ -194,12 +197,14 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
                                             thumb=requestedUser.avatar_url_as(size=64))
     # If the requested user is not in the database, don't bother adding them just print zeroes
     if not botState.usersDB.idExists(requestedUser.id):
+        bountyXP = gameMaths.bountyHuntingXPForLevel(1)
+        nextXP = gameMaths.bountyHuntingXPForLevel(2)
+        levelProgress = 0
         statsEmbed.add_field(name="Credits balance:", value=0, inline=True)
         statsEmbed.add_field(name="Total value:", value=str(basedUser.defaultUserValue), inline=True)
         statsEmbed.add_field(name="‎", value="__Bounty Hunting__", inline=False)
         statsEmbed.add_field(name="Bounty Hunter Level:", value="1")
-        statsEmbed.add_field(name="XP until next level:",
-                                value=str(gameMaths.bountyHuntingXPForLevel(2) - gameMaths.bountyHuntingXPForLevel(1)))
+        statsEmbed.add_field(name="XP until next level:", value=str(nextXP - bountyXP))
         statsEmbed.add_field(name="Prestiges:", value="0")
         statsEmbed.add_field(name="Total systems checked:", value=0, inline=True)
         statsEmbed.add_field(name="Total bounties won:", value=0, inline=True)
@@ -213,25 +218,76 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
     # Otherwise, print the stats stored in the user's database entry
     else:
         userObj = botState.usersDB.getUser(requestedUser.id)
+        hunterLvl = gameMaths.calculateUserBountyHuntingLevel(userObj.bountyHuntingXP)
+        xpForLevel = gameMaths.bountyHuntingXPForLevel(hunterLvl)
+        nextXP = gameMaths.bountyHuntingXPForLevel(hunterLvl + 1)
+        levelProgress = (userObj.bountyHuntingXP - xpForLevel) / (nextXP - xpForLevel)
         statsEmbed.add_field(name="Credits balance:", value=str(userObj.credits), inline=True)
         statsEmbed.add_field(name="Total value:", value=str(userObj.getStatByName("value")), inline=True)
         statsEmbed.add_field(name="‎", value="__Bounty Hunting__", inline=False)
-        hunterLvl = gameMaths.calculateUserBountyHuntingLevel(userObj.bountyHuntingXP)
         statsEmbed.add_field(name="Bounty Hunter Level:", value=str(hunterLvl))
-        statsEmbed.add_field(name="XP until next level:",
-                                value=str(gameMaths.bountyHuntingXPForLevel(hunterLvl + 1) - userObj.bountyHuntingXP))
+        statsEmbed.add_field(name="XP until next level:", value=str(nextXP - userObj.bountyHuntingXP))
         statsEmbed.add_field(name="Prestiges:", value=str(userObj.prestiges))
         statsEmbed.add_field(name="Total systems checked:", value=str(userObj.systemsChecked), inline=True)
         statsEmbed.add_field(name="Total bounties won:", value=str(userObj.bountyWins), inline=True)
-        statsEmbed.add_field(name="Total credits earned from bounties:", value=str(userObj.lifetimeBountyCreditsWon), inline=True)
+        statsEmbed.add_field(name="Total credits earned from bounties:", value=str(userObj.lifetimeBountyCreditsWon),
+                                inline=True)
         statsEmbed.add_field(name="‎", value="__Dueling__", inline=False)
         statsEmbed.add_field(name="Duels won:", value=str(userObj.duelWins), inline=True)
         statsEmbed.add_field(name="Duels lost:", value=str(userObj.duelLosses), inline=True)
         statsEmbed.add_field(name="Total credits won:", value=str(userObj.duelCreditsWins), inline=True)
         statsEmbed.add_field(name="Total credits lost:", value=str(userObj.duelCreditsLosses), inline=True)
 
+    xpBarSil = lib.graphics.copyXPBarSilhouette()
+    xpBarMask = lib.graphics.progressBar(cfg.xpBarWidth, cfg.xpBarHeight, levelProgress)
+    xpBarFill = lib.graphics.copyXPBarFill(divisionNameForLevel(hunterLvl))
+
+    xpBarFill = xpBarFill.crop((xpBarFill.size[0]))
+    xpBarBack = lib.graphics.copyXPBarBackground(divisionNameForLevel(hunterLvl))
+
+    xpBarBack = xpBarBack.crop((xpBarBack.size[0]))
+    xpBarIO = None
+    xpBinary = None
+
+    def closeAll():
+        xpBarSil.close()
+        xpBarMask.close()
+        xpBarFill.close()
+        xpBarBack.close()
+        if xpBinary is not None:
+            xpBinary.close()
+        if xpBarIO is not None:
+            xpBarIO.close()
+
+    try:
+        xpBarBack = Image.composite(xpBarFill, xpBarBack, xpBarMask)
+    except ValueError as e:
+        botState.logger.log("usr_misc", "cmd_stats", "Received images of differing sizes when masking xp bar fill" \
+                            + f". Image sizes: xpBarFill {xpBarFill.size}, xpBar {xpBarBack.size}, xpBarMask {xpBarMask.size}",
+                            exception=e)
+        statsEmbed.set_footer(text="An unexpected error occurred when generating your XP progress bar. "\
+                                    + "The error has been logged.")
+        closeAll()
+    else:
+        try:
+            xpBarSil.paste(xpBarBack, (0, 0), xpBarBack)
+        except ValueError as e:
+            botState.logger.log("usr_misc", "cmd_stats", "Received images of differing sizes when combining xp bar layers" \
+                                + f". Image sizes: xpBarBack {xpBarSil.size}, xpBar {xpBarBack.size}", exception=e)
+            statsEmbed.set_footer(text="An unexpected error occurred when generating your XP progress bar. "\
+                                        + "The error has been logged.")
+            closeAll()
+        else:
+            xpBinary = BytesIO()
+            xpBarSil.save(xpBinary, "PNG")
+            xpBinary.seek(0)
+
+            xpBarIO = discord.File(xpBinary, filename="xpBar.png")
+            statsEmbed.set_image(url="attachment://xpBar.png")
+
     # send the stats embed
-    await message.channel.send(embed=statsEmbed)
+    await message.channel.send(file=xpBarIO, embed=statsEmbed)
+    closeAll()
 
 botCommands.register("stats", cmd_stats, 0, aliases=["profile"], forceKeepArgsCasing=True, allowDM=True,
                         signatureStr="**stats** *[user]*",
