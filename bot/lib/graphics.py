@@ -1,4 +1,28 @@
 from PIL import Image, ImageDraw
+from typing import Dict
+from ..cfg import cfg
+import atexit
+
+
+XP_BAR_SILHOUETTE: Image.Image = None
+XP_BAR_BACKGROUNDS: Dict[str, Image.Image] = {}
+XP_BAR_FILLS: Dict[str, Image.Image] = {}
+
+
+def closeAll():
+    """Close all active graphics. Should only be used for shutdown.
+    """
+    if XP_BAR_SILHOUETTE is not None:
+        XP_BAR_SILHOUETTE.close()
+    for im in XP_BAR_BACKGROUNDS.values():
+        im.close()
+    for im in XP_BAR_FILLS.values():
+        im.close()
+
+
+# Automatically close all images when the module is unimported
+atexit.register(closeAll)
+
 
 def progressBar(w: int, h: int, progress: float, mode: str = "1", bgColour: int = 0, barColour: int = 1) -> Image.Image:
     """Create a simple progress bar with a black background. Background fills the image, not limited to the bar shape.
@@ -25,3 +49,56 @@ def progressBar(w: int, h: int, progress: float, mode: str = "1", bgColour: int 
     return im
 
 
+def copyXPBarSilhouette() -> Image.Image:
+    """Get a copy of the image to place behind XP bars - the "silhouette".
+    The image is in "RGBA" mode, and has correct dimensions according to cfg.
+
+    :return: An image containing a full progress bar silhouette, to be pasted behind an XP progress bar.
+    :rtype: Image.Image
+    """
+    global XP_BAR_SILHOUETTE
+    if XP_BAR_SILHOUETTE is None:
+        XP_BAR_SILHOUETTE = progressBar(cfg.xpBarWidth, cfg.xpBarHeight, 1, "RGBA", 0, cfg.xpBarSilhouetteColour)
+    return XP_BAR_SILHOUETTE.copy()
+
+
+def copyXPBarFill(divName: str) -> Image.Image:
+    """Get a copy of the image to mask when filling an XP progress bar.
+    The image is in "RGBA" mode, and has correct dimensions according to cfg.
+
+    :param str divName: The name of the division whose image to fetch
+    :return: An image containing the file referenced in cfg for the named division, but scaled to the correct dimensions.
+    :rtype: Image.Image
+    """
+    global XP_BAR_FILLS
+    if XP_BAR_FILLS == {}:
+        pathsDone: Dict[str, Image.Image] = {}
+        for div, fillPath in cfg.xpBarFill.items():
+            if fillPath in pathsDone:
+                XP_BAR_FILLS[div] = pathsDone[fillPath]
+            else:
+                XP_BAR_FILLS[div] = Image.open(fillPath)
+                XP_BAR_FILLS[div] = XP_BAR_FILLS[div].resize((cfg.xpBarWidth, cfg.xpBarHeight))
+
+    return XP_BAR_FILLS[divName].copy()
+
+
+def copyXPBarBackground(divName: str) -> Image.Image:
+    """Get a copy of the image to place behind both the XP bar and the silhouette.
+    The image is in "RGBA" mode, and has correct dimensions according to cfg.
+
+    :param str divName: The name of the division whose image to fetch
+    :return: An image containing a full progress bar background, to be pasted behind an XP progress bar and silhouette.
+    :rtype: Image.Image
+    """
+    global XP_BAR_BACKGROUNDS
+    if XP_BAR_BACKGROUNDS == {}:
+        pathsDone: Dict[str, Image.Image] = {}
+        for div, fillPath in cfg.xpBarBackground.items():
+            if fillPath in pathsDone:
+                XP_BAR_BACKGROUNDS[div] = pathsDone[fillPath]
+            else:
+                XP_BAR_BACKGROUNDS[div] = Image.open(fillPath)
+                XP_BAR_BACKGROUNDS[div] = XP_BAR_BACKGROUNDS[div].resize((cfg.xpBarWidth, cfg.xpBarHeight))
+
+    return XP_BAR_BACKGROUNDS[divName].copy()
