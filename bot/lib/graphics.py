@@ -90,6 +90,7 @@ def copyXPBarSilhouette() -> Image.Image:
     """
     global XP_BAR_SILHOUETTE
     if XP_BAR_SILHOUETTE is None:
+        print("xpBarSilhouetteColour",cfg.xpBarSilhouetteColour)
         XP_BAR_SILHOUETTE = progressBar(cfg.xpBarWidth, cfg.xpBarHeight, 1, "RGBA", 0, cfg.xpBarSilhouetteColour)
     return XP_BAR_SILHOUETTE.copy()
 
