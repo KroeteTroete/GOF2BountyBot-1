@@ -5,7 +5,7 @@ from aiohttp import client_exceptions
 import operator
 import traceback
 from io import BytesIO
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 from . import commandsDB as botCommands
 from . import util_help
@@ -197,6 +197,7 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
                                             thumb=requestedUser.avatar_url_as(size=64))
     # If the requested user is not in the database, don't bother adding them just print zeroes
     if not botState.usersDB.idExists(requestedUser.id):
+        hunterLvl = 1
         bountyXP = gameMaths.bountyHuntingXPForLevel(1)
         nextXP = gameMaths.bountyHuntingXPForLevel(2)
         levelProgress = 0
@@ -218,6 +219,7 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
     # Otherwise, print the stats stored in the user's database entry
     else:
         userObj = botState.usersDB.getUser(requestedUser.id)
+        bountyXP = userObj.bountyHuntingXP
         hunterLvl = gameMaths.calculateUserBountyHuntingLevel(userObj.bountyHuntingXP)
         xpForLevel = gameMaths.bountyHuntingXPForLevel(hunterLvl)
         nextXP = gameMaths.bountyHuntingXPForLevel(hunterLvl + 1)
@@ -238,56 +240,111 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
         statsEmbed.add_field(name="Total credits won:", value=str(userObj.duelCreditsWins), inline=True)
         statsEmbed.add_field(name="Total credits lost:", value=str(userObj.duelCreditsLosses), inline=True)
 
+    if hunterLvl == 10:
+        levelProgress = 1
+
+    # Colour behind unfilled area of the xp bar
     xpBarSil = lib.graphics.copyXPBarSilhouette()
+    # Mask describing which parts of the bar should be filled
     xpBarMask = lib.graphics.progressBar(cfg.xpBarWidth, cfg.xpBarHeight, levelProgress)
+    # Image to mask with xpBarMask, filling the bar
     xpBarFill = lib.graphics.copyXPBarFill(divisionNameForLevel(hunterLvl))
+    # User profile background image
+    profileBackground = lib.graphics.copyUserProfileBackground()
 
-    xpBarFill = xpBarFill.crop((xpBarFill.size[0]))
-    xpBarBack = lib.graphics.copyXPBarBackground(divisionNameForLevel(hunterLvl))
-
-    xpBarBack = xpBarBack.crop((xpBarBack.size[0]))
-    xpBarIO = None
-    xpBinary = None
+    # Reader for the final image, to be given to discord
+    userProfileFile = None
+    # The final image, in binary mode, to be read by userProfileFile
+    userProfileBytes = None
+    # Tracker so that we don't accidentally closeAll twice
+    filesOpen = True
 
     def closeAll():
-        xpBarSil.close()
-        xpBarMask.close()
-        xpBarFill.close()
-        xpBarBack.close()
-        if xpBinary is not None:
-            xpBinary.close()
-        if xpBarIO is not None:
-            xpBarIO.close()
+        """Close all active images and readers in use for constructing the profile image
+        """
+        if filesOpen:
+            xpBarSil.close()
+            xpBarMask.close()
+            xpBarFill.close()
+            profileBackground.close()
+            if userProfileBytes is not None:
+                userProfileBytes.close()
+            if userProfileFile is not None:
+                userProfileFile.close()
 
-    try:
-        xpBarBack = Image.composite(xpBarFill, xpBarBack, xpBarMask)
-    except ValueError as e:
-        botState.logger.log("usr_misc", "cmd_stats", "Received images of differing sizes when masking xp bar fill" \
-                            + f". Image sizes: xpBarFill {xpBarFill.size}, xpBar {xpBarBack.size}, xpBarMask {xpBarMask.size}",
-                            exception=e)
+    # Before attempting to build XP bar, verify image sizes
+    # No need to check bar sizes, these are guaranteed by lib.graphics
+    # if xpBarSil.size != xpBarMask or xpBarSil.size != xpBarFill.size
+    # Ensure the XP bar fits within the profile background. Could fix this later with scaling if needed.
+    if xpBarSil.size[0] > profileBackground.size[0] or xpBarSil.size[1] > profileBackground.size[1]:
+        botState.logger.log("usr_misc", "cmd_stats", "XP Bar does not fit within user profile image. Image" \
+                            + f"sizes: xpBarSil {xpBarSil.size}, profileBackground {profileBackground.size}",
+                            eventType="XPBAR_DIM")
         statsEmbed.set_footer(text="An unexpected error occurred when generating your XP progress bar. "\
                                     + "The error has been logged.")
         closeAll()
+        filesOpen = False
     else:
         try:
-            xpBarSil.paste(xpBarBack, (0, 0), xpBarBack)
+            # Create the XP bar, by masking the fill image and placing it on top of the silhouette
+            xpBarFill = Image.composite(xpBarFill, xpBarSil, xpBarMask)
         except ValueError as e:
-            botState.logger.log("usr_misc", "cmd_stats", "Received images of differing sizes when combining xp bar layers" \
-                                + f". Image sizes: xpBarBack {xpBarSil.size}, xpBar {xpBarBack.size}", exception=e)
+            botState.logger.log("usr_misc", "cmd_stats", "Received images of differing sizes when masking xp bar fill. Image" \
+                                + f"sizes: xpBarFill {xpBarFill.size}, xpBarSil {xpBarSil.size}, xpBarMask {xpBarMask.size}",
+                                exception=e)
             statsEmbed.set_footer(text="An unexpected error occurred when generating your XP progress bar. "\
                                         + "The error has been logged.")
             closeAll()
+            filesOpen = False
         else:
-            xpBinary = BytesIO()
-            xpBarSil.save(xpBinary, "PNG")
-            xpBinary.seek(0)
+            # Apply progress bar outlines
+            xpBarFill = lib.graphics.applyProgressBarOutline(xpBarFill, 1, (0, 0, 0, 0), lineColour=cfg.xpBarOutlineColour,
+                                                    lineWidth=cfg.xpBarOutlineWidth)
+            # Calculate the coordinates to paste the bar onto the background at. This is currently bottom middle.
+            barPasteLocX = int(profileBackground.size[0] / 2) - int(xpBarFill.size[0] / 2)
+            barPasteLocY = profileBackground.size[1] - xpBarFill.size[1]
+            try:
+                profileBackground.paste(xpBarFill, (barPasteLocX, barPasteLocY), xpBarFill)
+            except ValueError as e:
+                botState.logger.log("usr_misc", "cmd_stats", "Received images of differing sizes when combining xp bar " \
+                                    + f"layers. Image sizes: xpBarFill {xpBarFill.size}, profileBackground " \
+                                    + str(profileBackground.size), exception=e)
+                statsEmbed.set_footer(text="An unexpected error occurred when generating your XP progress bar. "\
+                                            + "The error has been logged.")
+                closeAll()
+                filesOpen = False
+            else:
+                textDraw = ImageDraw.Draw(profileBackground)
+                # Load font
+                font = ImageFont.truetype(cfg.userProfileFont, cfg.userProfileFontSize)
+                # Add level and division
+                textDraw.text((0, 0), f"Level {hunterLvl} {divisionNameForLevel(hunterLvl).title()} Bounty Hunter",
+                                cfg.userProfileLevelColour, font=font)
+                # Build current XP string
+                currentXPStr = str(bountyXP) + "/"
+                # Calculate size of current XP string
+                currentXPStrSize = font.getsize(currentXPStr)
+                # Build next XP string
+                nextXPStr = str(nextXP) + "xp"
+                # Calculate size of next XP string
+                nextXPStrSize = font.getsize(nextXPStr)
+                # Draw next XP string to image
+                textDraw.text((cfg.userProfileImgWidth - nextXPStrSize[0], 0), nextXPStr,
+                                cfg.userProfileNextXPColour, font=font)
+                # Draw current XP string to image
+                textDraw.text((cfg.userProfileImgWidth - currentXPStrSize[0] - nextXPStrSize[0], 0), currentXPStr,
+                                cfg.userProfileXPColour, font=font)
+                userProfileBytes = BytesIO()
+                profileBackground.save(userProfileBytes, "PNG")
+                userProfileBytes.seek(0)
 
-            xpBarIO = discord.File(xpBinary, filename="xpBar.png")
-            statsEmbed.set_image(url="attachment://xpBar.png")
+                userProfileFile = discord.File(userProfileBytes, filename="userProfile.png")
+                statsEmbed.set_image(url="attachment://userProfile.png")
 
     # send the stats embed
-    await message.channel.send(file=xpBarIO, embed=statsEmbed)
+    await message.channel.send(file=userProfileFile, embed=statsEmbed)
     closeAll()
+    filesOpen = False
 
 botCommands.register("stats", cmd_stats, 0, aliases=["profile"], forceKeepArgsCasing=True, allowDM=True,
                         signatureStr="**stats** *[user]*",
