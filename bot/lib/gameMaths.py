@@ -171,7 +171,7 @@ def bountyHuntingXPForLevel(level):
 def calculateUserBountyHuntingLevel(xp):
     if xp <= 0:
         return 1
-    return max(1, int(BHLa * math.log10((xp + BHLc)/BHLb) + BHLd))
+    return min(cfg.maxTechLevel, max(1, int(BHLa * math.log10((xp + BHLc)/BHLb) + BHLd)))
 
 
 # def bountyHuntingXPForLevel(level):
