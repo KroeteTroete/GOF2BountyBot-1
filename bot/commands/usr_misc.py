@@ -259,6 +259,9 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
     # Tracker so that we don't accidentally closeAll twice
     filesOpen = True
 
+    xPad = int(profileBackground.size[0] * cfg.userProfileEdgePaddingX)
+    yPad = int(profileBackground.size[1] * cfg.userProfileEdgePaddingY)
+
     def closeAll():
         """Close all active images and readers in use for constructing the profile image
         """
@@ -302,7 +305,7 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
                                                     lineWidth=cfg.xpBarOutlineWidth)
             # Calculate the coordinates to paste the bar onto the background at. This is currently bottom middle.
             barPasteLocX = int(profileBackground.size[0] / 2) - int(xpBarFill.size[0] / 2)
-            barPasteLocY = profileBackground.size[1] - xpBarFill.size[1]
+            barPasteLocY = profileBackground.size[1] - xpBarFill.size[1] - yPad
             try:
                 profileBackground.paste(xpBarFill, (barPasteLocX, barPasteLocY), xpBarFill)
             except ValueError as e:
@@ -314,11 +317,11 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
                 closeAll()
                 filesOpen = False
             else:
-                textDraw = ImageDraw.Draw(profileBackground)
+                textDraw: ImageDraw.ImageDraw = ImageDraw.Draw(profileBackground)
                 # Load font
                 font = ImageFont.truetype(cfg.userProfileFont, cfg.userProfileFontSize)
                 # Add level and division
-                textDraw.text((0, 0), f"Level {hunterLvl} {divisionNameForLevel(hunterLvl).title()} Bounty Hunter",
+                textDraw.text((xPad, yPad), f"Level {hunterLvl} {divisionNameForLevel(hunterLvl).title()} Bounty Hunter",
                                 cfg.userProfileLevelColour, font=font)
                 # Build current XP string
                 currentXPStr = str(bountyXP) + "/"
@@ -329,10 +332,10 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
                 # Calculate size of next XP string
                 nextXPStrSize = font.getsize(nextXPStr)
                 # Draw next XP string to image
-                textDraw.text((cfg.userProfileImgWidth - nextXPStrSize[0], 0), nextXPStr,
+                textDraw.text((cfg.userProfileImgWidth - nextXPStrSize[0] - xPad, yPad), nextXPStr,
                                 cfg.userProfileNextXPColour, font=font)
                 # Draw current XP string to image
-                textDraw.text((cfg.userProfileImgWidth - currentXPStrSize[0] - nextXPStrSize[0], 0), currentXPStr,
+                textDraw.text((cfg.userProfileImgWidth - currentXPStrSize[0] - nextXPStrSize[0] - xPad, yPad), currentXPStr,
                                 cfg.userProfileXPColour, font=font)
                 userProfileBytes = BytesIO()
                 profileBackground.save(userProfileBytes, "PNG")
