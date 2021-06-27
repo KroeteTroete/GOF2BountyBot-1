@@ -56,7 +56,7 @@ class ShipSkin(serializable.Serializable):
         return data
 
 
-    def _save(self, **kwargs):
+    def _updateItemMETA(self, **kwargs):
         lib.jsonHandler.writeJSON(self.path + os.sep + "META.json", self.toDict(**kwargs), prettyPrint=True)
 
 
@@ -116,7 +116,7 @@ class ShipSkin(serializable.Serializable):
             shipData["compatibleSkins"].append(self.name.lower())
 
         _saveShip(ship)
-        self._save()
+        self._updateItemMETA()
 
 
     async def removeShip(self, ship, rendersChannel):
@@ -141,7 +141,7 @@ class ShipSkin(serializable.Serializable):
             del self.shipRenders[ship]
 
         _saveShip(ship)
-        self._save()
+        self._updateItemMETA()
 
 
     @classmethod
