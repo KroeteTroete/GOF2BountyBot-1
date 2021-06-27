@@ -1,5 +1,5 @@
 from PIL import Image, ImageDraw
-from typing import Dict
+from typing import Dict, Union, Tuple
 from ..cfg import cfg
 import atexit
 
@@ -24,7 +24,8 @@ def closeAll():
 atexit.register(closeAll)
 
 
-def progressBar(w: int, h: int, progress: float, mode: str = "1", bgColour: int = 0, barColour: int = 1) -> Image.Image:
+def progressBar(w: int, h: int, progress: float, mode: str = "1", bgColour: Union[str, int, Tuple[int]] = 0,
+        barColour: Union[str, int, Tuple[int]] = 1) -> Image.Image:
     """Create a simple progress bar with a black background. Background fills the image, not limited to the bar shape.
     The default image mode is "1" - single-bit images intended to be used for creating image masks.
     Changes to this should be reflected in bgColour and colour
@@ -35,8 +36,11 @@ def progressBar(w: int, h: int, progress: float, mode: str = "1", bgColour: int 
     :param int h: The image height
     :param str mode: The image mode (Default 1)
     :param float progress: Percentage progress of the bar between 0 and 1
-    :param int bgColour: Colour for the background of the whole image (default black)
-    :param int colour: Colour to fill the bar with (default white)
+    :param bgColour: Colour for the background of the whole image. The type of this parameter depends on pil_image.mode
+                        (default black)
+    :type bgColour: Union[str, int, Tuple[int]]
+    :param barColour: Colour to fill the bar with. The type of this parameter depends on pil_image.mode (default white)
+    :type barColour: Union[str, int, Tuple[int]]
     """
     im = Image.new(mode, (w, h), bgColour)
     drawObject = ImageDraw.Draw(im)
@@ -102,3 +106,23 @@ def copyXPBarBackground(divName: str) -> Image.Image:
                 XP_BAR_BACKGROUNDS[div] = XP_BAR_BACKGROUNDS[div].resize((cfg.xpBarWidth, cfg.xpBarHeight))
 
     return XP_BAR_BACKGROUNDS[divName].copy()
+
+
+def padImage(pil_img: Image.Image, top: int, right: int, bottom: int, left: int,
+        colour: Union[str, int, Tuple[int]]) -> Image.Image:
+    """Pads an image, placing extra space around it and filling that space with the given colour.
+    This is done by creating a new image, the original is not modified.
+
+    https://note.nkmk.me/en/python-pillow-add-margin-expand-canvas/
+
+    :param Image.Image pil_Image: The original image
+    :param int top: Amount of extra space to add on top of the image, in pixels
+    :param int right: Amount of extra space to add on the right of the image, in pixels
+    :param int bottom: Amount of extra space to add beneith the image, in pixels
+    :param int left: Amount of extra space to add on the left of the image, in pixels
+    :param colour: Colour to fill the new empty space with. The type of this parameter depends on pil_image.mode
+    :type colour: Union[str, int, Tuple[int]]
+    """
+    result = Image.new(pil_img.mode, (pil_img.size[0] + right + left, pil_img.size[1] + top + bottom), colour)
+    result.paste(pil_img, (left, top))
+    return result
