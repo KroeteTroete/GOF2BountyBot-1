@@ -214,7 +214,7 @@ xpBarFill = {list(bountyDivisions.keys())[0]: "xp-bar-fill.jpg",
             list(bountyDivisions.keys())[2]: "xp-bar-fill.jpg"}
 
 # The colour that appears behind the xp bar, for the unfilled region
-xpBarSilhouetteColour = (0, 0, 0, 80)
+xpBarSilhouetteColour = (0, 0, 0, 110)
 
 # The width of the XP bar
 xpBarWidth = 350
@@ -222,7 +222,7 @@ xpBarWidth = 350
 xpBarHeight = 20
 
 # Colour of the outline for the xp bar
-xpBarOutlineColour = (255, 255, 255)
+xpBarOutlineColour = (255, 255, 255, 200)
 # Width of the xp bar outline, in pixels
 xpBarOutlineWidth = 1
 
@@ -240,6 +240,10 @@ userProfileLevelColour = (255, 255, 255)
 userProfileDivisionColour = (255, 255, 255)
 userProfileXPColour = (255, 255, 255)
 userProfileNextXPColour = (255, 255, 255)
+
+# Percentage amount of padding to add around the edge of the user profile image
+userProfileEdgePaddingX = 0.05
+userProfileEdgePaddingY = 0.1
 
 
 
