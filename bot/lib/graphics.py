@@ -5,7 +5,7 @@ import atexit
 
 
 XP_BAR_SILHOUETTE: Image.Image = None
-XP_BAR_BACKGROUNDS: Dict[str, Image.Image] = {}
+USR_PROF_BACKGROUND: Image.Image = None
 XP_BAR_FILLS: Dict[str, Image.Image] = {}
 
 
@@ -14,14 +14,42 @@ def closeAll():
     """
     if XP_BAR_SILHOUETTE is not None:
         XP_BAR_SILHOUETTE.close()
-    for im in XP_BAR_BACKGROUNDS.values():
-        im.close()
+    if USR_PROF_BACKGROUND is not None:
+        USR_PROF_BACKGROUND.close()
     for im in XP_BAR_FILLS.values():
         im.close()
 
 
 # Automatically close all images when the module is unimported
 atexit.register(closeAll)
+
+
+def applyProgressBarOutline(progressBar: Image.Image, progress: float, emptyColour: Union[str, int, Tuple[int]],
+        lineColour: Union[str, int, Tuple[int]] = (255, 255, 255), lineWidth: int = 1):
+    """Apply an outline in the shape of a progress bar, over the given image. The operation is performed on a new image,
+    the orignal is not modified. The given image should contain only the bar and nothing else,
+    as provided by the progressBar function below.
+
+    :param Image.Image progressBar: The image to apply the outline to
+    :param float progress: Percentage progress of the bar between 0 and 1
+    :param emptyColour: Colour to fill empty space with
+    :type emptyColour: Union[str, int, Tuple[int]]
+    :param lineColour: The colour of the outline (Default white)
+    :type lineColour: Union[str, int, Tuple[int]]
+    :param int lineWidth: The width of the outline in pixels (Default 1)
+    :return: progressBar, with an outline drawn around the bar
+    :rtype: Image.Image
+    """
+    w, h = progressBar.size
+    progressBar = padImage(progressBar, 0, 0, cfg.xpBarOutlineWidth, 0, emptyColour)
+    w *= min(1, max(0.01, progress))
+    w -= 1
+    draw: ImageDraw.ImageDraw = ImageDraw.Draw(progressBar)
+    draw.arc(((0, 0),     (h, h)), 90, 270,  fill=lineColour, width=lineWidth)
+    draw.arc(((w - h, 0), (w, h)), 270, 450, fill=lineColour, width=lineWidth)
+    draw.line(((h / 2, 0), (w - h / 2, 0)), fill=lineColour, width=lineWidth)
+    draw.line(((h / 2, h), (w - h / 2, h)), fill=lineColour, width=lineWidth)
+    return progressBar
 
 
 def progressBar(w: int, h: int, progress: float, mode: str = "1", bgColour: Union[str, int, Tuple[int]] = 0,
@@ -44,7 +72,7 @@ def progressBar(w: int, h: int, progress: float, mode: str = "1", bgColour: Unio
     """
     im = Image.new(mode, (w, h), bgColour)
     drawObject = ImageDraw.Draw(im)
-    w = w * min(1, max(0.01, progress))
+    w *= min(1, max(0.01, progress))
 
     drawObject.ellipse(  ((0, 0),     (h, h)),         fill=barColour)
     drawObject.ellipse(  ((w - h, 0), (w, h)),         fill=barColour)
@@ -87,25 +115,19 @@ def copyXPBarFill(divName: str) -> Image.Image:
     return XP_BAR_FILLS[divName].copy()
 
 
-def copyXPBarBackground(divName: str) -> Image.Image:
-    """Get a copy of the image to place behind both the XP bar and the silhouette.
+def copyUserProfileBackground() -> Image.Image:
+    """Get a copy of the image to place behind user profile images.
     The image is in "RGBA" mode, and has correct dimensions according to cfg.
 
-    :param str divName: The name of the division whose image to fetch
-    :return: An image containing a full progress bar background, to be pasted behind an XP progress bar and silhouette.
+    :return: An image to use as a user profile background.
     :rtype: Image.Image
     """
-    global XP_BAR_BACKGROUNDS
-    if XP_BAR_BACKGROUNDS == {}:
-        pathsDone: Dict[str, Image.Image] = {}
-        for div, fillPath in cfg.xpBarBackground.items():
-            if fillPath in pathsDone:
-                XP_BAR_BACKGROUNDS[div] = pathsDone[fillPath]
-            else:
-                XP_BAR_BACKGROUNDS[div] = Image.open(fillPath)
-                XP_BAR_BACKGROUNDS[div] = XP_BAR_BACKGROUNDS[div].resize((cfg.xpBarWidth, cfg.xpBarHeight))
+    global USR_PROF_BACKGROUND
+    if USR_PROF_BACKGROUND is None:
+        USR_PROF_BACKGROUND = Image.open(cfg.userProfileBackground)
+        USR_PROF_BACKGROUND = USR_PROF_BACKGROUND.resize((cfg.userProfileImgWidth, cfg.userProfileImgHeight))
 
-    return XP_BAR_BACKGROUNDS[divName].copy()
+    return USR_PROF_BACKGROUND.copy()
 
 
 def padImage(pil_img: Image.Image, top: int, right: int, bottom: int, left: int,
