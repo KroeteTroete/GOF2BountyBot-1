@@ -205,23 +205,41 @@ shipMaxPriceTechLevels = [50000, 100000, 200000, 500000, 1000000, 2000000, 50000
 # total earnings from bounty hunting.
 bountyRewardToXPGainMult = 0.1
 
-# The image to display behind the XP bar during cmd_stats, for users of each division
-xpBarBackground = {"bronze": "xp-bar-background.jpg",
-                    "silver": "xp-bar-background.jpg",
-                    "gold": "xp-bar-background.jpg"}
+# The image to display behind the XP bar during cmd_stats
+userProfileBackground = "xp-bar-background.jpg"
 
 # The image to fill the XP bar with during cmd_stats, for users of each division
-xpBarFill = {"bronze": "xp-bar-fill.jpg",
-            "silver": "xp-bar-fill.jpg",
-            "gold": "xp-bar-fill.jpg"}
+xpBarFill = {list(bountyDivisions.keys())[0]: "xp-bar-fill.jpg",
+            list(bountyDivisions.keys())[1]: "xp-bar-fill.jpg",
+            list(bountyDivisions.keys())[2]: "xp-bar-fill.jpg"}
 
 # The colour that appears behind the xp bar, for the unfilled region
-xpBarSilhouetteColour = (255, 255, 255, 10)
+xpBarSilhouetteColour = (0, 0, 0, 80)
 
 # The width of the XP bar
 xpBarWidth = 350
 # The height of the XP bar
 xpBarHeight = 20
+
+# Colour of the outline for the xp bar
+xpBarOutlineColour = (255, 255, 255)
+# Width of the xp bar outline, in pixels
+xpBarOutlineWidth = 1
+
+# The width of rendered user profile images (currently only includes bounty hunter XP info)
+userProfileImgWidth = 350
+# The height of rendered user profile images (currently only includes bounty hunter XP info)
+userProfileImgHeight = 35
+
+# Name of the user profile background image to display by default
+# defaultUserProfileBackground = "aperture"
+
+userProfileFont = "user-profile-font.ttf"
+userProfileFontSize = 16
+userProfileLevelColour = (255, 255, 255)
+userProfileDivisionColour = (255, 255, 255)
+userProfileXPColour = (255, 255, 255)
+userProfileNextXPColour = (255, 255, 255)
 
 
 
@@ -324,9 +342,9 @@ minGuildActivity = 1
 activityTempPerPlayer = 1
 
 # The RGB colours to make by default for each bounty alert role
-defaultBountyAlertRoleColours = {"bronze": (89, 39, 12),
-                                "silver": (157, 94, 11),
-                                "gold": (255, 174, 8)}
+defaultBountyAlertRoleColours = {list(bountyDivisions.keys())[0]: (89, 39, 12),
+                                list(bountyDivisions.keys())[1]: (157, 94, 11),
+                                list(bountyDivisions.keys())[2]: (255, 174, 8)}
 
 
 
