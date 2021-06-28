@@ -348,9 +348,8 @@ class BountyDB(serializable.Serializable):
         #     raise ValueError("Attempted to add a bounty whose name already exists: " + bounty.criminal.name)
 
         # Add the bounty to the database
-        div.bounties[bounty.techLevel][bounty.criminal] = bounty
-        if div.latestBounty is None or bounty.issueTime > div.latestBounty.issueTime:
-            div.latestBounty = bounty
+        div._addBounty(bounty)
+        
 
 
     def escapedCriminalExists(self, crim):
@@ -387,7 +386,7 @@ class BountyDB(serializable.Serializable):
         #     raise ValueError("Attempted to add a bounty whose name already exists: " + bounty.criminal.name)
 
         # Add the bounty to the database
-        div.escapedBounties[bounty.techLevel][bounty.criminal] = bounty
+        div._addEscapedBounty(bounty)
 
 
     def removeEscapedBountyObj(self, bounty : bounty.Bounty):

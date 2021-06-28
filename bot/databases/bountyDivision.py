@@ -94,6 +94,7 @@ class BountyDivision(Serializable):
         self.newBountyTT: Union[TimedTask, None] = None
         if not self.isFull():
             self.startBountySpawner()
+        print("division created. " + ("full. " if self.isFull() else "not full. ") + ("timed task." if self.newBountyTT else "no timed task."))
 
 
     def startBountySpawner(self):
@@ -127,6 +128,19 @@ class BountyDivision(Serializable):
                                                     rescheduleOnExpiryFuncFailure=True, expiryFunction=self.spawnNewBounty)
 
         botState.taskScheduler.scheduleTask(self.newBountyTT)
+
+
+    def stopBountySpawner(self):
+        """Stop and delete the new bounty spawner.
+
+        :raise ValueError: If no newBountyTT exists already
+        """
+        if self.newBountyTT is None:
+            raise ValueError("Attempted to stopBountySpawner when newBountyTT already doesnt exist")
+
+        self.newBountyTT.autoReschedule = False
+        self.newBountyTT.forceExpire(callExpiryFunc=False)
+        self.newBountyTT = None
 
 
     def updateIsActive(self):
@@ -233,9 +247,7 @@ class BountyDivision(Serializable):
         self.bounties[level][newBounty.criminal] = newBounty
 
         if self.isFull():
-            self.newBountyTT.autoReschedule = False
-            self.newBountyTT.forceExpire(callExpiryFunc=False)
-            self.newBountyTT = None
+            self.stopBountySpawner()
 
         await self.owningDB.owningBasedGuild.announceNewBounty(newBounty)
 
@@ -455,6 +467,52 @@ class BountyDivision(Serializable):
         self.bountyBoardChannel = None
 
 
+    def _addBounty(self, bounty : Bounty):
+        """This is a private method. To ensure unique criminal names across a bountyDB, you should instead call
+        BountyDB.addBounty. The BountyDB that owns this division can be accessed through the owningDB attribute. 
+
+        Add the given bounty object to the division.
+        If the division is now full, stop the new bounty spawner.
+
+        :param Bounty bounty: the bounty object to add to the database
+        :raise OverflowError: if the division is already at capacity
+        :raise ValueError: if the criminal is already wanted in the division
+        """
+        if self.isFull():
+            raise OverflowError(f"Attempted to addBounty but the division is full")
+        
+        if self.criminalObjExists(bounty.criminal):
+            raise ValueError(f"Attempted to add {bounty} for a criminal who is already wanted: {bounty.criminal} by {bounty}")
+
+        self.bounties[bounty.techLevel][bounty.criminal] = bounty
+        if self.latestBounty is None or bounty.issueTime > self.latestBounty.issueTime:
+            self.latestBounty = bounty
+        if self.isFull():
+            self.stopBountySpawner()
+
+
+    def _addEscapedBounty(self, bounty : Bounty):
+        """This is a private method. To ensure unique criminal names across a bountyDB, you should instead call
+        BountyDB.addEscapedBounty. The BountyDB that owns this division can be accessed through the owningDB attribute. 
+
+        Add the given escaped bounty object to the division.
+        If the division is now full, stop the new bounty spawner.
+
+        :param Bounty bounty: the escaped bounty object to add to the database
+        :raise OverflowError: if the division is already at capacity
+        :raise ValueError: if the criminal is already wanted in the division
+        """
+        if self.isFull():
+            raise OverflowError(f"Attempted to addEscapedBounty but the division is full")
+        
+        if self.escapedCriminalExists(bounty.criminal):
+            raise ValueError(f"Attempted to add {bounty} for a criminal who is already escaped: {bounty.criminal} by {bounty}")
+
+        self.escapedBounties[bounty.techLevel][bounty.criminal] = bounty
+        if self.isFull():
+            self.stopBountySpawner()
+
+
     def removeBountyObj(self, bounty : Bounty):
         """Remove a given bounty object from the division.
         If the division was full before, restart the new bounty spawner
@@ -468,7 +526,7 @@ class BountyDivision(Serializable):
             raise KeyError("Bounty not found: " + bounty.criminal.name)
         if wasFull:
             self.startBountySpawner()
-
+    
 
     def removeEscapedBountyObj(self, bounty : Bounty):
         """Remove a given escaped bounty object from the division.
