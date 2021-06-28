@@ -274,9 +274,7 @@ class BountyDivision(Serializable):
         self.bounties[bounty.techLevel][bounty.criminal] = bounty
 
         if self.isFull():
-            self.newBountyTT.autoReschedule = False
-            self.newBountyTT.forceExpire(callExpiryFunc=False)
-            self.newBountyTT = None
+            self.stopBountySpawner()
 
         await self.owningDB.owningBasedGuild.announceNewBounty(bounty)
 
@@ -436,7 +434,7 @@ class BountyDivision(Serializable):
         
         :raise OverflowError: If the division is full
         """
-        if not self.isFull():
+        if self.isFull():
             raise OverflowError("Attempted to resetNewBountyCool but the division is full")
         else:
             await self.newBountyTT.forceExpire(callExpiryFunc=True)
