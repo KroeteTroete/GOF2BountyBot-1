@@ -523,6 +523,7 @@ class BountyDivision(Serializable):
         except KeyError:
             raise KeyError("Bounty not found: " + bounty.criminal.name)
         if wasFull:
+            print("wasFull. Starting nowBountySpawner.")
             self.startBountySpawner()
     
 
