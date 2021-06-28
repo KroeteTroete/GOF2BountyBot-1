@@ -684,7 +684,7 @@ async def cmd_prestige(message : discord.Message, args : str, isDM : bool):
         newCrate = crateTool.CrateTool.fromDict({"type": "bbCrate", "crateType": "special", "typeNum": 0, "builtIn": True})
         callingBBUser.inactiveTools.addItem(newCrate)
 
-        await message.channel.send("👩‍🚀 **" + lib.discordUtil.userOrMemberName(message.author, message.guild) \
+        await message.channel.send(":astronaut: **" + lib.discordUtil.userOrMemberName(message.author, message.guild) \
                                     + " prestiged!** :tada:\n • You got a **" + newCrate.name + "!**")
     else:
         await message.channel.send("🛑 Prestige cancelled.")
