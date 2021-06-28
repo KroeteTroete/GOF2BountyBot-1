@@ -1,6 +1,7 @@
 from __future__ import annotations
 from . import inventoryListing
 from ...baseClasses import serializable
+from typing import Dict, Any, List
 
 
 class Inventory(serializable.Serializable):
@@ -8,9 +9,9 @@ class Inventory(serializable.Serializable):
     Aside from the use of InventoryListing for the purpose of item quantities, this class is type unaware.
 
     :var items: The actual item listings
-    :vartype items: dict[object, InventoryListing]
+    :vartype items: dict[Any, InventoryListing]
     :var keys: The item types stored
-    :vartype keys: ist[object]
+    :vartype keys: ist[Any]
     :var totalItems: The total number of items stored; the sum of all item quantities
     :vartype totalItems: int
     :var numKeys: The number of item types stored; the length of self.keys
@@ -20,21 +21,21 @@ class Inventory(serializable.Serializable):
 
     def __init__(self):
         # The actual item listings
-        self.items = {}
+        self.items: Dict[Any, inventoryListing.InventoryListing] = {}
         # The item types stored
-        self.keys = []
+        self.keys: List[Any] = []
         # The total number of items stored; the sum of all item quantities
         self.totalItems = 0
         # The number of item types stored; the length of self.keys
         self.numKeys = 0
 
 
-    def addItem(self, item : object, quantity : int = 1):
+    def addItem(self, item : Any, quantity : int = 1):
         """Add one or more of an item to the inventory.
         If at least one of item is already in the inventory, that item's InventoryListing count will be incremented.
         Otherwise, a new InventoryListing is created for item.
 
-        :param object item: The item to add to the inventory
+        :param Any item: The item to add to the inventory
         :param int quantity: Integer amount of item to add to the inventory. Must be at least 1. (Default 1)
         :raise ValueError: If quantity is less than 1
         """
@@ -52,6 +53,24 @@ class Inventory(serializable.Serializable):
             # Update keys and numKeys trackers
             self.keys.append(item)
             self.numKeys += 1
+
+
+    def getListing(self, item: Any) -> inventoryListing.InventoryListing:
+        """Get the stored InventoryListing tracking the given item and its quantity.
+        At least one of item must already be in the inventory. The type of the listing returned
+        is self.listingType, which will always be an InventoryListing subclass.
+
+        :param Any item: The item to look up
+        :raise KeyError: If the inventory does not have any of item
+        :return: The InventoryListing (or subclass instance) tracking the inventory's quantity of item
+        :rtype: self.listingType
+        """
+        # Return existing listings
+        if item in self.items:
+            return self.items[item]
+        # Raise an error for unknown listings
+        else:
+            raise KeyError(f"None of '{item}' are currently stored in the inventory")
 
 
     def _addListing(self, newListing : inventoryListing.InventoryListing):
@@ -74,12 +93,12 @@ class Inventory(serializable.Serializable):
             self.numKeys += 1
 
 
-    def removeItem(self, item : object, quantity : int = 1):
+    def removeItem(self, item : Any, quantity : int = 1):
         """Remove one or more of an item from the inventory.
         If the amount of item stored in the inventory is now zero, the InventoryListing is removed from the inventory.
         At least quantity of item must already be stored in the inventory.
 
-        :param object item: The item to remove from the inventory
+        :param Any item: The item to remove from the inventory
         :param int quantity: Integer amount of item to remove from the inventory. Must be between 1 and the amount of item
                                 currently stored, both inclusive. (Default 1)
         :raise ValueError: When attempting to remove more of an item than is in the inventory
@@ -142,7 +161,7 @@ class Inventory(serializable.Serializable):
     def stores(self, item) -> bool:
         """Decide whether a given item is stored in this inventory.
 
-        :param object item: The item to check for membership
+        :param Any item: The item to check for membership
         :return: True if at least one of item is in this inventory, False otherwise
         :rtype: bool
         """
@@ -152,7 +171,7 @@ class Inventory(serializable.Serializable):
     def numStored(self, item) -> int:
         """Get the amount stored of a given item.
 
-        :param object item: The item to count
+        :param Any item: The item to count
         :return: Integer count of number of items in this inventory. 0 if it is not stored in this inventory.
         :rtype: int
         """
@@ -214,7 +233,7 @@ class Inventory(serializable.Serializable):
     def __contains__(self, item) -> bool:
         """Override the 'in' operator.
 
-        :param object item: The object to test for membership
+        :param Any item: The Any to test for membership
         """
         return item in self.keys
 
@@ -250,7 +269,7 @@ class TypeRestrictedInventory(Inventory):
         self.itemType = itemType
 
 
-    def addItem(self, item: object, quantity : int = 1):
+    def addItem(self, item: Any, quantity : int = 1):
         if not isinstance(item, self.itemType):
             raise TypeError("Given item does not match this inventory's item type restriction. Expected '" \
                             + self.itemType.__name__ + "', given '" + type(item).__name__ + "'")
