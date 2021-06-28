@@ -872,7 +872,7 @@ class BasedUser(serializable.Serializable):
         lifetimeBountyCreditsWon = userDict.get("lifetimeBountyCreditsWon", userDict.get("lifetimeBountyCreditsWon", 0))
 
         kaamo = kaamoShop.KaamoShop.fromDict(userDict["kaamo"]) if "kaamo" in userDict else None
-        loma = kaamoShop.KaamoShop.fromDict(userDict["loma"]) if "loma" in userDict else None
+        loma = lomaShop.LomaShop.fromDict(userDict["loma"]) if "loma" in userDict else None
 
         ownedMenus = {}
         if "ownedMenus" in userDict:
