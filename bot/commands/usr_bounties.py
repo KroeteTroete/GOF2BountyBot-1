@@ -91,6 +91,8 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
         toEscape = []
         btyDivision = callingGuild.bountiesDB.divisionForLevel(userLevel)
         sightedCriminalsStr = ""
+        # The total amount to increase the division's activity temperature by
+        divTempDelta = 0
 
         for tlBounties in btyDivision.bounties.values():
             for bounty in tlBounties.values():
@@ -195,7 +197,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
 
                         # Raise guild's activity temperature for this bounty's tl
                         numContributingUsers = len(set(rewards))
-                        btyDivision.raiseTemp(numContributingUsers * cfg.activityTempPerPlayer)
+                        divTempDelta += numContributingUsers * cfg.activityTempPerPlayer
 
                         # add this bounty to the list of bounties to be removed
                         toPop.append(bounty)
@@ -218,6 +220,12 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
         # remove all escaped bounties
         for bounty in toEscape:
             bounty.escape()
+
+        if divTempDelta:
+            # Apply the gathered temperature raises to this division
+            # This must be done after the bounty ojects are removed from the division, as this is the point at which
+            # The division's maxBounties is compared, to see if the new bounty TT needs to be restarted
+            btyDivision.raiseTemp(divTempDelta)
 
         # If a bounty was won, print a congratulatory message
         if bountyWon:
