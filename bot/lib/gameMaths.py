@@ -158,7 +158,7 @@ for shopTL in range(len(itemTLSpawnChanceForShopTL)):
 
 BHLa = 4
 BHLb = 2300000
-BHLc = 0
+BHLc = 1675
 BHLd = 13.55
 
 
