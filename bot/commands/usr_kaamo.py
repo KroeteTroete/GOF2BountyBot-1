@@ -94,12 +94,12 @@ async def cmd_kaamo_store(message : discord.Message, args : str, isDM : bool):
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
     if not botState.usersDB.idExists(message.author.id):
-        await message.channel.send(":x: This command can only be used by level 10 bounty hunters!")
+        await message.channel.send(f":x: This command can only be used by level {cfg.maxTechLevel} bounty hunters!")
         return
 
     requestedBBUser = botState.usersDB.getUser(message.author.id)
-    if gameMaths.calculateUserBountyHuntingLevel(requestedBBUser.bountyHuntingXP) < 10:
-        await message.channel.send(":x: This command can only be used by level 10 bounty hunters!")
+    if gameMaths.calculateUserBountyHuntingLevel(requestedBBUser.bountyHuntingXP) < cfg.maxTechLevel:
+        await message.channel.send(f":x: This command can only be used by level {cfg.maxTechLevel} bounty hunters!")
         return
 
     commandPrefix = cfg.defaultCommandPrefix if isDM else botState.guildsDB.getGuild(message.guild.id).commandPrefix
