@@ -497,6 +497,7 @@ class BountyDB(serializable.Serializable):
             newDB.addBounty(bounty.Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB))
         for bountyDict in escapedBountiesData:
             # Adding escaped bounties to DB is done during Bounty.fromDict
+            # TODO: Should probably change that
             bounty.Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB)
 
         if "bountyBoardChannels" in bountyDBDict:

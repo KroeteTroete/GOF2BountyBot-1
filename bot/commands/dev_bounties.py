@@ -1243,8 +1243,7 @@ async def dev_cmd_current_delay(message : discord.Message, args : str, isDM : bo
         for div in callingBBGuild.bountiesDB.divisions.values():
             if div.isFull():
                 activityEmbed.add_field(name=nameForDivision(div),
-                                        value=lib.timeUtil.td_format_noYM(div.newBountyTT.expiryDelta)
-                                                + "\n<DIVISION FULL>")
+                                        value="<DIVISION FULL>")
             else:
                 activityEmbed.add_field(name=nameForDivision(div),
                                         value=lib.timeUtil.td_format_noYM(div.newBountyTT.expiryDelta)
@@ -1256,8 +1255,7 @@ async def dev_cmd_current_delay(message : discord.Message, args : str, isDM : bo
         else:
             div = callingBBGuild.bountiesDB.divisionForName(divStr)
         if div.isFull():
-            await message.author.send(lib.timeUtil.td_format_noYM(div.newBountyTT.expiryDelta)
-                                    + "\n<DIVISION FULL>")
+            await message.author.send("<DIVISION FULL>")
         else:
             await message.author.send(lib.timeUtil.td_format_noYM(div.newBountyTT.expiryDelta)
                                         + "\nExpiring " + div.newBountyTT.expiryTime.strftime("%B %d %H %M %S"))
