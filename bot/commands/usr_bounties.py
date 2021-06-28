@@ -20,13 +20,7 @@ botCommands.addHelpSection(0, "bounty hunting")
 
 
 async def cmd_check(message : discord.Message, args : str, isDM : bool):
-    """⚠ WARNING: MARKED FOR CHANGE ⚠
-    The following function is provisional and marked as planned for overhaul.
-    Details: Criminal fights are to switch algorithm, using gameObjects.items.battles as a base. Criminals are to be assigned
-    Procedurally generated ships based on a difficulty rating
-    (by direct extension of the items' rarity rankings from bot.on_ready)
-
-    Check a system for bounties and handle rewards
+    """Check a system for bounties and handle rewards
 
     :param discord.Message message: the discord message calling the command
     :param str args: string containing one system to check
@@ -148,6 +142,10 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                             currentDCUser = message.guild.get_member(currentBBUser.id)
 
                             oldLevel = gameMaths.calculateUserBountyHuntingLevel(currentBBUser.bountyHuntingXP)
+                            if oldLevel < cfg.maxTechLevel:
+                                rewards[userID]["xp"] = 0
+                                continue
+                            
                             currentBBUser.bountyHuntingXP += rewards[userID]["xp"]
 
                             newLevel = gameMaths.calculateUserBountyHuntingLevel(currentBBUser.bountyHuntingXP)
