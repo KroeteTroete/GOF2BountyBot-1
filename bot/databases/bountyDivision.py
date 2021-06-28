@@ -61,7 +61,7 @@ class BountyDivision(Serializable):
         :param int maxLevel: The highest level of bounties available in this division
         :param BountyBoardChannel bountyBoardChannel: A BountyBoardChannel object implementing this division's bounty board
                                                         channel if it has one, None otherwise. (Default None)
-        :param int alertRole: The ID of the role to ping when new bounties are spawned into this division. -1 for no role.
+        :param int alertRoleID: The ID of the role to ping when new bounties are spawned into this division. -1 for no role.
                                 (Default -1)
         """
         self.temperature = temperature
