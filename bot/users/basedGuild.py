@@ -456,7 +456,7 @@ class BasedGuild(serializable.Serializable):
 
         if self.hasBountyBoardChannels:
             try:
-                if newBounty.techLevel != 0 and self.hasBountyAlertRoles:
+                if self.hasBountyAlertRoles:
                     msg = f"<@&{newBounty.division.alertRoleID}> {msg}"
                 # announce to the given channel
                 bountyListing = await newBounty.division.bountyBoardChannel.channel.send(msg, embed=bountyEmbed)
@@ -477,7 +477,7 @@ class BasedGuild(serializable.Serializable):
             currentChannel = self.getAnnounceChannel()
             if currentChannel is not None:
                 try:
-                    if newBounty.techLevel != 0 and self.hasBountyAlertRoles:
+                    if self.hasBountyAlertRoles:
                         # announce to the given channel
                         await currentChannel.send(f"<@&{newBounty.division.alertRoleID}> {msg}",
                                                     embed=bountyEmbed)
