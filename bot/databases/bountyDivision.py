@@ -518,6 +518,7 @@ class BountyDivision(Serializable):
         :param Bounty bounty: the bounty object to remove from the database
         """
         wasFull = self.isFull()
+        print("bounty removed. isFull:",wasFull)
         try:
             del self.bounties[bounty.techLevel][bounty.criminal]
         except KeyError:
