@@ -94,6 +94,7 @@ class InventoryListing(serializable.Serializable):
 
 class DiscountableItemListing(InventoryListing):
     """An item listing that also stores a max-sorted list of single-use value modifications.
+    A single value modification applies to a single instance of an item.
     """
     def __init__(self, item, count : int = 0):
         """

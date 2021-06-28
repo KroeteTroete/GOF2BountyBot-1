@@ -30,8 +30,8 @@ class GuildShop(serializable.Serializable):
     :vartype modulesStock: inventory
     :var turretsStock: A inventory containing the shop's stock of turrets
     :vartype turretsStock: inventory
-    :var toolsStock: A bbInventory containing the shop's stock of tools
-    :vartype toolsStock: bbInventory
+    :var toolsStock: A inventory containing the shop's stock of tools
+    :vartype toolsStock: inventory
     """
 
     def __init__(self, shipsStock : Inventory = None, weaponsStock : Inventory = None,
