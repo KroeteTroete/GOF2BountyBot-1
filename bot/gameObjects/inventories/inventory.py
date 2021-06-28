@@ -295,3 +295,10 @@ class DiscountableTypeRestrictedInventory(TypeRestrictedInventory):
     """A TypeRestrictedInventory storing DiscountableItemListing instead of bbItemListings.
     """
     listingType = inventoryListing.DiscountableItemListing
+
+    def _addListing(self, newListing: inventoryListing.DiscountableItemListing):
+        super()._addListing(newListing)
+
+
+    def getListing(self, item: Any) -> inventoryListing.DiscountableItemListing:
+        super().getListing(item)
