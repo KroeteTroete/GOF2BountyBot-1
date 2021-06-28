@@ -100,6 +100,7 @@ class BountyDB(serializable.Serializable):
 
     def clearAllBounties(self, includeEscaped=True):
         """Clear all bounties, for all factions in the DB
+        If any division was full before, restart its new bounty spawner
 
         :param bool includeEscaped: Whether to also clear escaped criminals (Default True)
         """
@@ -112,13 +113,14 @@ class BountyDB(serializable.Serializable):
         """
         divTasks = set()
         for div in self.divisions.values():
-            divTasks.add(asyncio.create_task(div.resetNewBountyCool()))
+            if not div.isFull():
+                divTasks.add(asyncio.create_task(div.resetNewBountyCool()))
         if divTasks:
-                await asyncio.wait(divTasks)
-                for t in divTasks:
-                    if e := t.exception():
-                        botState.logger.log("bountyDB", "resetAllNewBountyTTs", str(e), category="bountiesDB",
-                                            exception=e)
+            await asyncio.wait(divTasks)
+            for t in divTasks:
+                if e := t.exception():
+                    botState.logger.log("bountyDB", "resetAllNewBountyTTs", str(e), category="bountiesDB",
+                                        exception=e)
 
 
     def getBountyByCrim(self, crim : Criminal, level : int = None) -> bounty.Bounty:
@@ -388,32 +390,39 @@ class BountyDB(serializable.Serializable):
         div.escapedBounties[bounty.techLevel][bounty.criminal] = bounty
 
 
+    def removeEscapedBountyObj(self, bounty : bounty.Bounty):
+        """Remove a given escaped bounty object from the database.
+        the bounty must already be recorded in the escaped criminals database.
+        This does not perform respawning of the bounty.
+
+        If the division was full before, restart the new bounty spawner
+
+        :param Bounty bounty: the bounty object to remove from the database
+        """
+        self.divisionForLevel(bounty.techLevel).removeEscapedBountyObj(bounty)
+
+
     def removeEscapedCriminal(self, crim):
         """Remove a criminal from the record of escaped criminals.
         crim must already be recorded in the escaped criminals database.
         This does not perform respawning of the bounty.
 
+        If the division was full before, restart the new bounties timed task
+
         :param criminal crim: The criminal to remove from the record
         :raise KeyError: If criminal is not registered in the db
         """
-        try:
-            bounty = self.getEscapedBountyByCrim(crim)
-        except KeyError:
-            raise KeyError("Escaped criminal not found: " + crim.name)
-        else:
-            del self.divisionForLevel(bounty.techLevel).escapedBounties[bounty.techLevel][bounty.criminal]
-            # print(f"removed escaped criminal {bounty.criminal.name} from div {nameForDivision(self.divisionForLevel(bounty.techLevel))}, level {bounty.techLevel}")
+        self.removeEscapedBountyObj(self.getEscapedBountyByCrim(crim))
+        # print(f"removed escaped criminal {bounty.criminal.name} from div {nameForDivision(self.divisionForLevel(bounty.techLevel))}, level {bounty.techLevel}")
 
 
     def removeBountyObj(self, bounty : bounty.Bounty):
         """Remove a given bounty object from the database.
+        If the division was full before, restart the new bounty spawner
 
         :param Bounty bounty: the bounty object to remove from the database
         """
-        try:
-            del self.divisionForLevel(bounty.techLevel).bounties[bounty.techLevel][bounty.criminal]
-        except KeyError:
-            raise KeyError("Bounty not found: " + bounty.criminal.name)
+        self.divisionForLevel(bounty.techLevel).removeBountyObj(bounty)
 
 
     def removeBountyName(self, name : str, faction : str = None):

@@ -315,9 +315,13 @@ async def dev_cmd_resetnewbountycool(message : discord.Message, args : str, isDM
                 if allDivs:
                     cooldownTasks.add(asyncio.create_task(currentGuild.bountiesDB.resetAllNewBountyTTs()))
                 elif useTL:
-                    cooldownTasks.add(asyncio.create_task(currentGuild.bountiesDB.divisionForLevel(tl).resetNewBountyCool()))
+                    div = currentGuild.bountiesDB.divisionForLevel(tl)
+                    if not div.isFull():
+                        cooldownTasks.add(asyncio.create_task(div.resetNewBountyCool()))
                 else:
-                    cooldownTasks.add(asyncio.create_task(currentGuild.bountiesDB.divisionForName(divStr).resetNewBountyCool()))
+                    div = currentGuild.bountiesDB.divisionForName(divStr)
+                    if not div.isFull():
+                        cooldownTasks.add(asyncio.create_task(div.resetNewBountyCool()))
         if cooldownTasks:
             asyncio.wait(cooldownTasks)
             for t in cooldownTasks:
@@ -332,14 +336,20 @@ async def dev_cmd_resetnewbountycool(message : discord.Message, args : str, isDM
                                         + callingBBGuild.dcGuild.name + "'")
         elif useTL:
             div = callingBBGuild.bountiesDB.divisionForLevel(tl)
-            await div.resetNewBountyCool()
-            await message.channel.send(":ballot_box_with_check: Division " + nameForDivision(div).title() \
-                                        + " bounty cooldown reset for '" + callingBBGuild.dcGuild.name + "'")
+            if div.isFull():
+                await message.channel.send(":x: That division is full!")
+            else:
+                await div.resetNewBountyCool()
+                await message.channel.send(":ballot_box_with_check: Division " + nameForDivision(div).title() \
+                                            + " bounty cooldown reset for '" + callingBBGuild.dcGuild.name + "'")
         else:
             div = callingBBGuild.bountiesDB.divisionForName(divStr)
-            await div.resetNewBountyCool()
-            await message.channel.send(":ballot_box_with_check: Division " + divStr.title() \
-                                        + " bounty cooldown reset for '" + callingBBGuild.dcGuild.name + "'")
+            if div.isFull():
+                await message.channel.send(":x: That division is full!")
+            else:
+                await div.resetNewBountyCool()
+                await message.channel.send(":ballot_box_with_check: Division " + divStr.title() \
+                                            + " bounty cooldown reset for '" + callingBBGuild.dcGuild.name + "'")
 
 
 botCommands.register("resetnewbountycool", dev_cmd_resetnewbountycool, 3, allowDM=True, helpSection="bounties", useDoc=True)
@@ -1231,17 +1241,26 @@ async def dev_cmd_current_delay(message : discord.Message, args : str, isDM : bo
         activityEmbed = lib.discordUtil.makeEmbed("Current New Bounty Delays", desc=message.guild.name,
                         col=discord.Colour.random(), thumb=message.guild.icon_url_as(size=64))
         for div in callingBBGuild.bountiesDB.divisions.values():
-            activityEmbed.add_field(name=nameForDivision(div),
-                                    value=lib.timeUtil.td_format_noYM(div.newBountyTT.expiryDelta)
-                                            + "\nExpiring " + div.newBountyTT.expiryTime.strftime("%B %d %H %M %S"))
+            if div.isFull():
+                activityEmbed.add_field(name=nameForDivision(div),
+                                        value=lib.timeUtil.td_format_noYM(div.newBountyTT.expiryDelta)
+                                                + "\n<DIVISION FULL>")
+            else:
+                activityEmbed.add_field(name=nameForDivision(div),
+                                        value=lib.timeUtil.td_format_noYM(div.newBountyTT.expiryDelta)
+                                                + "\nExpiring " + div.newBountyTT.expiryTime.strftime("%B %d %H %M %S"))
         await message.author.send(embed=activityEmbed)
     else:
         if useTL:
             div = callingBBGuild.bountiesDB.divisionForLevel(tl)
         else:
             div = callingBBGuild.bountiesDB.divisionForName(divStr)
-        await message.author.send(lib.timeUtil.td_format_noYM(div.newBountyTT.expiryDelta)
-                                    + "\nExpiring " + div.newBountyTT.expiryTime.strftime("%B %d %H %M %S"))
+        if div.isFull():
+            await message.author.send(lib.timeUtil.td_format_noYM(div.newBountyTT.expiryDelta)
+                                    + "\n<DIVISION FULL>")
+        else:
+            await message.author.send(lib.timeUtil.td_format_noYM(div.newBountyTT.expiryDelta)
+                                        + "\nExpiring " + div.newBountyTT.expiryTime.strftime("%B %d %H %M %S"))
 
 botCommands.register("current-delay", dev_cmd_current_delay, 3, allowDM=False,
                         helpSection="bounties", useDoc=True)

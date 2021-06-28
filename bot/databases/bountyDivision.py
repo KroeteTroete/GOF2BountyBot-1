@@ -15,7 +15,7 @@ from ..scheduling.timedTask import TimedTask, DynamicRescheduleTask
 
 from datetime import timedelta
 import random
-from typing import List
+from typing import List, Any, Union
 from discord import TextChannel, Client
 
 
@@ -46,6 +46,8 @@ class BountyDivision(Serializable):
     :vartype bountyBoardChannel: BountyBoardChannel
     :var alertRoleID: The ID of the role to ping when new bounties are spawned into this division. -1 if no role is set.
     :vartype alertRoleID: int
+    :var newBountyTT: The timedtask responsible for spawning this division's bounties. If the division is full, this is None.
+    :vartype newBountyTT: Union[None, TimedTask]
     """
     delayRandRange = {"min": timedelta(**cfg.timeouts.newBountyDelayRandomMin),
                         "max": timedelta(**cfg.timeouts.newBountyDelayRandomMax)}
@@ -88,6 +90,22 @@ class BountyDivision(Serializable):
         else:
             self.escapedBounties = escapedBounties
         self.owningDB = owningDB
+
+        self.newBountyTT: Union[TimedTask, None] = None
+        if not self.isFull():
+            self.startBountySpawner()
+
+
+    def startBountySpawner(self):
+        """Create a new self.newBountyTT and schedule it onto the botState.taskScheduler.
+        
+        :raise ValueError: If self.newBountyTT already exists
+        :raise OverflowError: If the division is full
+        """
+        if self.newBountyTT is not None:
+            raise ValueError("Attempted to startBountySpawner when a newBountyTT already exists")
+        elif self.isFull():
+            raise OverflowError("Attempted to startBountySpawner when the division is already full")
 
         bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelay,
                                 "fixed-routeScale": self.getRouteScaledBountyDelayFixed,
@@ -201,14 +219,23 @@ class BountyDivision(Serializable):
         This method ensures that at least one bounty is present at the min tech level of the division,
         and will spawn bounties at random levels otherwise.
 
+        If the division is full after spawning the new bounty, the newBountyTT destroyed
+
         :return: The newly spawned bounty object
         :rtype: Bounty
         :raise OverflowError: If the division is currently full
         """
+        if self.isFull():
+            raise OverflowError("Attempted to spawn a new bounty when the division is already full")
         level = self.pickNewTL()
 
         newBounty = Bounty(division=self, config=BountyConfig(techLevel=level).generate(self))
         self.bounties[level][newBounty.criminal] = newBounty
+
+        if self.isFull():
+            self.newBountyTT.autoReschedule = False
+            self.newBountyTT.forceExpire(callExpiryFunc=False)
+            self.newBountyTT = None
 
         await self.owningDB.owningBasedGuild.announceNewBounty(newBounty)
 
@@ -233,6 +260,11 @@ class BountyDivision(Serializable):
         del self.escapedBounties[bounty.techLevel][bounty.criminal]
         bounty.__init__(config=bounty.makeRespawnConfig().generate(self))
         self.bounties[bounty.techLevel][bounty.criminal] = bounty
+
+        if self.isFull():
+            self.newBountyTT.autoReschedule = False
+            self.newBountyTT.forceExpire(callExpiryFunc=False)
+            self.newBountyTT = None
 
         await self.owningDB.owningBasedGuild.announceNewBounty(bounty)
 
@@ -371,9 +403,11 @@ class BountyDivision(Serializable):
 
     async def clear(self, includeEscaped: bool = True):
         """Remove all bounties from the division.
+        If any division was full before, restart its new bounty spawner
 
         :param bool includeEscaped: Whether to also clear escaped bounties (Default True)
         """
+        wasFull = self.isFull()
         for tlBounties in self.bounties.values():
             tlBounties.clear()
         if includeEscaped:
@@ -381,12 +415,19 @@ class BountyDivision(Serializable):
                 for bty in tlBounties:
                     await bty.respawnTT.forceExpire(callExpiryFunc=False)
                 tlBounties.clear()
+        if wasFull:
+            self.startBountySpawner()
 
 
     async def resetNewBountyCool(self):
         """Force expiry on the new bounty TimedTask, immediately triggering a new bounty spawn.
+        
+        :raise OverflowError: If the division is full
         """
-        await self.newBountyTT.forceExpire(callExpiryFunc=True)
+        if not self.isFull():
+            raise OverflowError("Attempted to resetNewBountyCool but the division is full")
+        else:
+            await self.newBountyTT.forceExpire(callExpiryFunc=True)
 
     
     async def addBountyBoardChannel(self, channel : TextChannel, client : Client):
@@ -412,6 +453,36 @@ class BountyDivision(Serializable):
             raise RuntimeError(f"Attempted to remove a bountyboard channel from division {self.minLevel}-{self.maxLevel} " \
                                 + f"in guild {self.owningDB.owningBasedGuild.id} but none is assigned")
         self.bountyBoardChannel = None
+
+
+    def removeBountyObj(self, bounty : Bounty):
+        """Remove a given bounty object from the division.
+        If the division was full before, restart the new bounty spawner
+
+        :param Bounty bounty: the bounty object to remove from the database
+        """
+        wasFull = self.isFull()
+        try:
+            del self.bounties[bounty.techLevel][bounty.criminal]
+        except KeyError:
+            raise KeyError("Bounty not found: " + bounty.criminal.name)
+        if wasFull:
+            self.startBountySpawner()
+
+
+    def removeEscapedBountyObj(self, bounty : Bounty):
+        """Remove a given escaped bounty object from the division.
+        If the division was full before, restart the new bounty spawner
+
+        :param Bounty bounty: the bounty object to remove from the database
+        """
+        wasFull = self.isFull()
+        try:
+            del self.escapedBounties[bounty.techLevel][bounty.criminal]
+        except KeyError:
+            raise KeyError("Escaped bounty not found: " + bounty.criminal.name)
+        if wasFull:
+            self.startBountySpawner()
 
 
     def toDict(self, **kwargs) -> dict:

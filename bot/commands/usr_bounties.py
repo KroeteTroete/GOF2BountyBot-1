@@ -214,7 +214,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
 
         # remove all completed bounties
         for bounty in toPop:
-            btyDivision.owningDB.removeBountyObj(bounty)
+            btyDivision.removeBountyObj(bounty)
         # remove all escaped bounties
         for bounty in toEscape:
             bounty.escape()
