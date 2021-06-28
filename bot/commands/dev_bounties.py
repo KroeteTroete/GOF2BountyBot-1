@@ -547,6 +547,7 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
         return
     if not allGuilds and not callingBBGuild.bountiesDB.canMakeBounty():
         await message.reply(":x: No space for bounties in this guild!")
+        return
 
     # if no args were given, generate a completely random bounty
     if args == "":
@@ -748,6 +749,9 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
         await message.reply(":x: Bounties are disabled in " \
                             + "that guild" if callingBBGuild.dcGuild is None else callingBBGuild.dcGuild.name \
                             + "!")
+        return
+    if not allGuilds and not callingBBGuild.bountiesDB.canMakeBounty():
+        await message.reply(":x: No space for bounties in this guild!")
         return
 
     # if no arguments were given, generate a completely random bounty
