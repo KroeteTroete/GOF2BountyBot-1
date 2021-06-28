@@ -283,6 +283,13 @@ class TypeRestrictedInventory(Inventory):
         super()._addListing(newListing)
 
 
+    def getListing(self, item: Any) -> inventoryListing.InventoryListing:
+        if not isinstance(item, self.itemType):
+            raise TypeError("Given item does not match this inventory's item type restriction. Expected '" \
+                            + self.itemType.__name__ + "', given '" + type(item).__name__ + "'")
+        super().getListing(item)
+
+
 
 class DiscountableTypeRestrictedInventory(TypeRestrictedInventory):
     """A TypeRestrictedInventory storing DiscountableItemListing instead of bbItemListings.
