@@ -94,7 +94,6 @@ class BountyDivision(Serializable):
         self.newBountyTT: Union[TimedTask, None] = None
         if not self.isFull():
             self.startBountySpawner()
-        print("division created. " + ("full. " if self.isFull() else "not full. ") + ("timed task." if self.newBountyTT else "no timed task."))
 
 
     def startBountySpawner(self):
@@ -139,7 +138,8 @@ class BountyDivision(Serializable):
             raise ValueError("Attempted to stopBountySpawner when newBountyTT already doesnt exist")
 
         self.newBountyTT.autoReschedule = False
-        self.newBountyTT.forceExpire(callExpiryFunc=False)
+        self.newBountyTT.gravestone = True
+        botState.taskScheduler.unscheduleTask(self.newBountyTT)
         self.newBountyTT = None
 
 
