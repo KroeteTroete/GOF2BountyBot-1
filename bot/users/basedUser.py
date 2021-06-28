@@ -98,6 +98,12 @@ class BasedUser(serializable.Serializable):
     :vartype homeGuildID: int
     :var guildTransferCooldownEnd: A timestamp after which this user is allowed to transfer their homeGuildID.
     :vartype guildTransferCooldownEnd: datetime.datetime
+    :var kaamo: The user's Kaamo Club storage, only accessible at bounty hunter level 10. To save memory,
+                this is None until the user first uses it. (default None)
+    :vartype kaamo: Union[KaamoShop, None]
+    :var loma: A shop private to this user, selling special discountable items. To save memory,
+                this is None until the user first uses it. (default None)
+    :vartype loma: Union[LomaShop, None]
     :var prestiges: The number of times the user has prestiged
     :vartype prestiges: int
     :var ownedMenus: Sets of references to all menus that user owns, by string type IDs.
@@ -116,7 +122,7 @@ class BasedUser(serializable.Serializable):
                     duelCreditsLosses : int = 0, alerts : dict[Union[type, str], Union[userAlerts.UABase or bool]] = {},
                     bountyWinsToday : int = 0, dailyBountyWinsReset : datetime = None,
                     homeGuildID : int = -1, guildTransferCooldownEnd : datetime = None, prestiges : int = 0,
-                    kaamo : kaamoShop.KaamoShop = None, loma : lomaShop.LomaShop = None,
+                    kaamo : Union[kaamoShop.KaamoShop, None] = None, loma : Union[lomaShop.LomaShop, None] = None,
                     ownedMenus : Dict[str, MutableSet[reactionMenu.ReactionMenu]] = {}):
         """
         :param int id: The user's unique ID. The same as their unique discord ID.
@@ -156,8 +162,12 @@ class BasedUser(serializable.Serializable):
         :param datetime.datetime guildTransferCooldownEnd: A timestamp after which this user is allowed to transfer
                                                             their homeGuildID.
         :raise TypeError: When given an argument of incorrect type
-        :param KaamoShop kaamo: The user's Kaamo Club storage, only accessible at bounty hunter level 10. To save memory, this is None until the user first uses it. (default None)
-        :param LomaShop loma: A shop private to this user, selling special discountable items. To save memory, this is None until the user first uses it. (default None)
+        :param kaamo: The user's Kaamo Club storage, only accessible at bounty hunter level 10. To save memory,
+                        this is None until the user first uses it. (default None)
+        :type kaamo: Union[KaamoShop, None]
+        :param loma: A shop private to this user, selling special discountable items. To save memory,
+                        this is None until the user first uses it. (default None)
+        :type loma: Union[LomaShop, None]
         :param int prestiges: The number of times the user has prestiged (default 0)
         :param ownedMenus: Sets of references to all menus that user owns, by string type IDs. (default {})
         :type ownedMenus: Dict[str, MutableSet[ReactionMenu]]
