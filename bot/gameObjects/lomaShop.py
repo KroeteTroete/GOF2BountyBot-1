@@ -9,7 +9,7 @@ from .items.weapons import primaryWeapon, turretWeapon
 from .items.modules import moduleItem
 from .inventories import inventory
 from .items.tools import toolItem, toolItemFactory
-from . import guildShop
+from . import guildShop, itemDiscount
 
 
 class LomaShop(guildShop.GuildShop):
@@ -61,6 +61,7 @@ class LomaShop(guildShop.GuildShop):
         raise NotImplementedError("Attempted to sell an item to a Loma shop")
 
 
+
     def userSellToolObj(self, user : basedUser.BasedUser, tool : toolItem.ToolItem):
         """Selling items to Loma is not allowed."""
         raise NotImplementedError("Attempted to sell an item to a Loma shop")
@@ -79,11 +80,11 @@ class LomaShop(guildShop.GuildShop):
         :return: A new bbShop object as described by shopDict
         :rtype: bbShop
         """
-        shipsStock = inventory.TypeRestrictedInventory(shipItem.Ship)
-        weaponsStock = inventory.TypeRestrictedInventory(primaryWeapon.PrimaryWeapon)
-        modulesStock = inventory.TypeRestrictedInventory(moduleItem.ModuleItem)
-        turretsStock = inventory.TypeRestrictedInventory(turretWeapon.TurretWeapon)
-        toolsStock = inventory.TypeRestrictedInventory(toolItem.ToolItem)
+        shipsStock = inventory.DiscountableTypeRestrictedInventory(shipItem.Ship)
+        weaponsStock = inventory.DiscountableTypeRestrictedInventory(primaryWeapon.PrimaryWeapon)
+        modulesStock = inventory.DiscountableTypeRestrictedInventory(moduleItem.ModuleItem)
+        turretsStock = inventory.DiscountableTypeRestrictedInventory(turretWeapon.TurretWeapon)
+        toolsStock = inventory.DiscountableTypeRestrictedInventory(toolItem.ToolItem)
 
         for key, stock, deserializer in (("shipsStock", shipsStock, shipItem.Ship.fromDict),
                                         ("weaponsStock", weaponsStock, primaryWeapon.PrimaryWeapon.fromDict),
@@ -92,7 +93,11 @@ class LomaShop(guildShop.GuildShop):
                                         ("toolsStock", toolsStock, toolItemFactory.fromDict)):
             if key in shopDict:
                 for listingDict in shopDict[key]:
-                    stock.addItem(deserializer(listingDict["item"]), quantity=listingDict["count"])
+                    newItem = deserializer(listingDict["item"], **kwargs)
+                    stock.addItem(newItem, quantity=listingDict["count"])
+                    if "discounts" in listingDict:
+                        for discountDict in listingDict["discounts"]:
+                            stock.getListing(newItem).pushDiscount(itemDiscount.ItemDiscount.fromDict(discountDict, **kwargs))
 
         return LomaShop(shipsStock=shipsStock, weaponsStock=weaponsStock, modulesStock=modulesStock,
                         turretsStock=turretsStock, toolsStock=toolsStock)
