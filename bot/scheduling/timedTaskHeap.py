@@ -210,7 +210,7 @@ class AutoCheckingTimedTaskHeap(TimedTaskHeap):
         """Schedule a new task onto the heap.
         If no checking loop is currently active, a new one is started.
         If a checking loop is already active and waiting for task that expires after this one,
-        the loop's current waiting time is updated to exire this task first.
+        the loop's current waiting time is updated to expire this task first.
 
         :param TimedTask task: the task to schedule
         :param bool startLoop: Give False here to override the starting of a new loop. This may be useful when creating
@@ -242,7 +242,7 @@ class AutoCheckingTimedTaskHeap(TimedTaskHeap):
 
         :param TimedTask task: the task to remove from the heap
         """
-        if self.active and len(self.tasksHeap) > 0 and task == self.tasksHeap[0]:
+        if self.active and self.sleepTask is not None and len(self.tasksHeap) > 0 and task == self.tasksHeap[0]:
             self.sleepTask.cancel()
             self.sleepTask = None
 
