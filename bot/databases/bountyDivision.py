@@ -408,7 +408,7 @@ class BountyDivision(Serializable):
         :return: True if the division is at capacity, False otherwise
         :rtype: bool
         """
-        return self.getNumBounties(includeEscaped=includeEscaped) >= cfg.maxBountiesPerDivision
+        return self.getNumBounties(includeEscaped=includeEscaped) >= self.maxBounties()
 
 
     async def clear(self, includeEscaped: bool = True):
