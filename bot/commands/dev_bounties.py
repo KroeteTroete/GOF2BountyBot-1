@@ -923,10 +923,11 @@ async def dev_cmd_set_bounty_xp(message : discord.Message, args : str, isDM : bo
             tl = gameMaths.calculateUserBountyHuntingLevel(requestedBBUser.bountyHuntingXP)
             oldDiv = homeBGuild.bountiesDB.divisionForLevel(tl)
             oldRole = homeBGuild.dcGuild.get_role(oldDiv.alertRoleID)
+            requestedMember = homeBGuild.dcGuild.get_member(requestedUser.id)
             if oldRole is None:
                     await message.channel.send(f":woozy_face: I can't find the {nameForDivision(oldDiv).title()}" \
                                                 + " division bounty alerts role, did it get deleted?")
-            elif oldRole in requestedUser.roles:
+            elif oldRole in requestedMember.roles:
                 newDiv = homeBGuild.bountiesDB.divisionForLevel(newXP)
                 newRole = homeBGuild.dcGuild.get_role(newDiv.alertRoleID)
                 if newRole is None:
@@ -935,7 +936,7 @@ async def dev_cmd_set_bounty_xp(message : discord.Message, args : str, isDM : bo
                                             + "role, did it get deleted?")
                 
                 if oldRole is not None or newRole is not None:
-                    await homeBGuild.levelUpSwapRoles(requestedUser, message.channel, oldRole, newRole)
+                    await homeBGuild.levelUpSwapRoles(requestedMember, message.channel, oldRole, newRole)
 
     # update the balance
     requestedBBUser.bountyHuntingXP = newXP
