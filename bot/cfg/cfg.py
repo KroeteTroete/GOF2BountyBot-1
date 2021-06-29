@@ -337,7 +337,7 @@ level0CrimLoadout = {"name": "Betty", "builtIn":True,
                     "modules":[{"name": "Telta Quickscan", "builtIn": True}, {"name": "ZMI Optistore", "builtIn": True},
                                 {"name": "IMT Extract 2.7", "builtIn": True}]}
 
-# The multiplier applied each day to each guild's player activity for each division
+# The multiplier applied each timeouts.guildActivityDecay to each guild's player activity for each division
 guildActivityDecayRate = 2/3
 
 # The lowest rating a guild can achieve for player activitivity at a certain division
