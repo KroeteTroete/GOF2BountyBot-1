@@ -41,7 +41,6 @@ async def cmd_loma_buy(message : discord.Message, args : str, isDM : bool):
         return
 
     itemCategory = argsSplit[0].rstrip("s")
-    print(itemCategory)
     if itemCategory == "all" or itemCategory not in cfg.validItemNames:
         await message.channel.send(":x: Invalid item name! Please choose from: ship, weapon, module, turret or tool.")
         return
@@ -69,7 +68,7 @@ async def cmd_loma_buy(message : discord.Message, args : str, isDM : bool):
     requestedItem = itemListing.item
 
     if not requestedBUser.loma.userCanAffordItemObj(requestedBUser, requestedItem):
-        await message.channel.send(":x: You can't afford that item! (" + str(requestedItem.value) + ")")
+        await message.channel.send(":x: You can't afford that item!")
         return
 
     _, valueDiscount = shopItemStock.removeItemAndDiscount()
