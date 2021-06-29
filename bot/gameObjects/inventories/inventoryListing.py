@@ -1,5 +1,6 @@
 from ...baseClasses import serializable
 from ..itemDiscount import ItemDiscount
+from typing import List
 
 
 class InventoryListing(serializable.Serializable):
@@ -102,7 +103,7 @@ class DiscountableItemListing(InventoryListing):
         :param int quantity: The amount of item to store (Default 0)
         """
         super().__init__(item, count=count)
-        self.discounts = []
+        self.discounts: List[ItemDiscount] = []
 
 
     def pushDiscount(self, discount : ItemDiscount):
