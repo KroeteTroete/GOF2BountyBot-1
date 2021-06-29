@@ -112,7 +112,7 @@ maxCommandsPerHelpPage = 5
 includedCommandModules = (  "usr_misc", "usr_homeguilds", "usr_gof2-info", "usr_bounties", "usr_loadout", "usr_economy",
                             "usr_kaamo", "usr_loma",
                             "admn_channels", "admn_misc",
-                            "dev_misc", "dev_channels", "dev_bounties", "dev_items", "dev_skins", "dev_loma")
+                            "dev_misc", "dev_channels", "dev_bounties", "dev_items", "dev_skins", "dev_loma", "dev_kaamo")
 
 # Default prefix for commands
 defaultCommandPrefix = "$"
