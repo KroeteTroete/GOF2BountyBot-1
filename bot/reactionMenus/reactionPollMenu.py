@@ -233,7 +233,7 @@ class ReactionPollMenu(reactionMenu.ReactionMenu):
         timeoutTT = None
         if "timeout" in rmDict:
             expiryTime = datetime.utcfromtimestamp(rmDict["timeout"])
-            botState.reactionMenusTTDB.scheduleTask(timedTask.TimedTask(expiryTime=expiryTime,
+            botState.taskScheduler.scheduleTask(timedTask.TimedTask(expiryTime=expiryTime,
                                                     expiryFunction=printAndExpirePollResults, expiryFunctionArgs=msg.id))
 
         if "owningBBUser" in rmDict and botState.usersDB.idExists(rmDict["owningBBUser"]):

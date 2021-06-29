@@ -757,7 +757,7 @@ async def cmd_poll(message : discord.Message, args : str, isDM : bool):
     timeoutDelta = timedelta(**(timeoutDict or cfg.timeouts.pollMenuExpiry))
     timeoutTT = timedTask.TimedTask(expiryDelta=timeoutDelta, expiryFunction=reactionPollMenu.printAndExpirePollResults,
                                     expiryFunctionArgs=menuMsg.id)
-    botState.reactionMenusTTDB.scheduleTask(timeoutTT)
+    botState.taskScheduler.scheduleTask(timeoutTT)
 
     menu = reactionPollMenu.ReactionPollMenu(menuMsg, pollOptions, timeoutTT, pollStarter=message.author,
                                                 multipleChoice=multipleChoice, targetRole=targetRole,

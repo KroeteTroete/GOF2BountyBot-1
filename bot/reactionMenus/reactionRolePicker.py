@@ -177,7 +177,7 @@ class ReactionRolePicker(reactionMenu.ReactionMenu):
             timeoutTT = timedTask.TimedTask(expiryTime=expiryTime,
                                             expiryFunction=reactionMenu.markExpiredMenu,
                                             expiryFunctionArgs=msg.id)
-            botState.reactionMenusTTDB.scheduleTask(timeoutTT)
+            botState.taskScheduler.scheduleTask(timeoutTT)
 
         menuColour = Colour.from_rgb(rmDict["col"][0], rmDict["col"][1], rmDict["col"][2]) \
                         if "col" in rmDict else Colour.blue()
