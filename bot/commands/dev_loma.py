@@ -109,9 +109,10 @@ async def dev_cmd_loma_give_discount(message : discord.Message, args : str, isDM
 
     await message.channel.send(f":white_check_mark: Given one '{newDiscount.toDict()}' to **" \
                                 + lib.discordUtil.userOrMemberName(botState.client.get_user(requestedUser.id),
-                                                                    message.guild) + "**!")
+                                                                    message.guild) + "**, for their" \
+                                + itemListing.item.name)
 
-botCommands.register("loma-give_discount", dev_cmd_loma_give_discount, 3, forceKeepArgsCasing=True, allowDM=True, helpSection="loma", useDoc=True)
+botCommands.register("loma-give-discount", dev_cmd_loma_give_discount, 3, forceKeepArgsCasing=True, allowDM=True, helpSection="loma", useDoc=True)
 
 
 async def dev_cmd_debug_loma(message : discord.Message, args : str, isDM : bool):
