@@ -486,7 +486,11 @@ class BountyDivision(Serializable):
         if self.latestBounty is None or bounty.issueTime > self.latestBounty.issueTime:
             self.latestBounty = bounty
         if self.isFull():
-            self.stopBountySpawner()
+            try:
+                self.stopBountySpawner()
+            except ValueError as e:
+                if not dbReload:
+                    raise e
 
 
     def _addEscapedBounty(self, bounty : Bounty, dbReload=False):
@@ -508,7 +512,11 @@ class BountyDivision(Serializable):
 
         self.escapedBounties[bounty.techLevel][bounty.criminal] = bounty
         if self.isFull():
-            self.stopBountySpawner()
+            try:
+                self.stopBountySpawner()
+            except ValueError as e:
+                if not dbReload:
+                    raise e
 
 
     def removeBountyObj(self, bounty : Bounty):
