@@ -6,6 +6,7 @@ from ..lib.stringTyping import commaSplitNum
 from ..lib import gameMaths
 from ..cfg import cfg
 from ..gameObjects import lomaShop
+from ..gameObjects.inventories.inventory import DiscountableTypeRestrictedInventory
 from ..users.basedUser import BasedUser
 from ..gameObjects.inventories.inventoryListing import DiscountableItemListing
 
@@ -52,7 +53,7 @@ async def cmd_loma_buy(message : discord.Message, args : str, isDM : bool):
         return
 
     itemNum = int(itemNum)
-    shopItemStock = requestedBUser.loma.getStockByName(itemCategory)
+    shopItemStock: DiscountableTypeRestrictedInventory = requestedBUser.loma.getStockByName(itemCategory)
     if itemNum > shopItemStock.numKeys:
         if shopItemStock.numKeys == 0:
             await message.channel.send(":x: The Loma pirates don't have any " + itemCategory + "s in stock!")
@@ -65,15 +66,16 @@ async def cmd_loma_buy(message : discord.Message, args : str, isDM : bool):
         await message.channel.send(":x: Invalid item number! Must be at least 1.")
         return
 
-    requestedItem = shopItemStock[itemNum - 1].item
+    itemListing: DiscountableItemListing = shopItemStock[itemNum - 1]
+    requestedItem = itemListing.item
 
     if not requestedBUser.loma.userCanAffordItemObj(requestedBUser, requestedItem):
         await message.channel.send(":x: You can't afford that item! (" + str(requestedItem.value) + ")")
         return
 
-    requestedBUser.credits -= requestedItem.value
+    _, valueDiscount = shopItemStock.removeItemAndDiscount()
+    requestedBUser.credits -= requestedItem.value * valueDiscount
     requestedBUser.getInactivesByName(itemCategory).addItem(requestedItem)
-    shopItemStock.removeItem(requestedItem)
 
     await message.channel.send(":moneybag: Congratulations on your new **" + requestedItem.name \
                                 + "**! \n\nYour balance is now: **" + str(requestedBUser.credits) + " credits**.")

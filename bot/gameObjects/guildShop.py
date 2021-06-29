@@ -58,6 +58,29 @@ class GuildShop(serializable.Serializable):
         return all(stock.isEmpty() for stock in (self.shipsStock, self.weaponsStock, self.modulesStock, self.turretsStock))
 
 
+    def getStockByType(self, itemType: type) -> Inventory:
+        """Get the inventory containing all current stock of the given type.
+        This object is mutable and can alter the stock of the shop.
+
+        :param type itemType: The class of items to fetch
+        :return: The inventory used by the shop to store all stock of the requested type
+        :rtype: inventory
+        :raise KeyError: When requesting an unknown item type
+        """
+        if itemType == Ship:
+            return self.shipsStock
+        elif itemType == PrimaryWeapon:
+            return self.weaponsStock
+        elif itemType == moduleItem.ModuleItem:
+            return self.modulesStock
+        elif itemType == TurretWeapon:
+            return self.turretsStock
+        elif itemType == toolItem.ToolItem:
+            return self.toolsStock
+        else:
+            raise KeyError(f"Unknown item type: {itemType.__name__}")
+
+
     def getStockByName(self, item : str) -> Inventory:
         """Get the inventory containing all current stock of the named type.
         This object is mutable and can alter the stock of the shop.

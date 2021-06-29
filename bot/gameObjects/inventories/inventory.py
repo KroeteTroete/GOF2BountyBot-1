@@ -1,7 +1,7 @@
 from __future__ import annotations
 from . import inventoryListing
 from ...baseClasses import serializable
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 
 
 class Inventory(serializable.Serializable):
@@ -302,3 +302,18 @@ class DiscountableTypeRestrictedInventory(TypeRestrictedInventory):
 
     def getListing(self, item: Any) -> inventoryListing.DiscountableItemListing:
         super().getListing(item)
+
+
+    def removeItemAndDiscount(self, item) -> Tuple[Any, float]:
+        """Pop one of item out of the inventory, and return it in a tuple with the largest discount available
+        for that item. The discount is also removed from the inventory.
+        If no discount is available, 1 is returned in its place.
+
+        :param Any item: The item to remove from the inventory
+        :return: The item followed by its discount
+        :rtype: Tuple[Any, float]
+        """
+        listing = self.getListing(item)
+        discount = listing.popDiscount().mult if listing.discounts else 1
+        self.removeItem(item)
+        return item, discount

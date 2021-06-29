@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..users import basedUser
 
-from .items import moduleItemFactory, shipItem
+from .items import moduleItemFactory, shipItem, gameItem
 from .items.weapons import primaryWeapon, turretWeapon
 from .items.modules import moduleItem
-from .inventories import inventory
+from .inventories import inventory, inventoryListing
 from .items.tools import toolItem, toolItemFactory
 from . import guildShop, itemDiscount
 
@@ -16,6 +16,19 @@ class LomaShop(guildShop.GuildShop):
     """A private shop unique to each player, for purchasing special items intended only for that player.
     Items cannot be sold to Loma.
     """
+
+    def userCanAffordItemObj(self, user : basedUser.BasedUser, item : gameItem.GameItem) -> bool:
+        """Decide whether a user has enough credits to buy an item, taking into account any available discounts
+
+        :param basedUser user: The user whose credits balance to check
+        :param gameItem item: The item whose value to check
+        :return: True if user's credits balance is greater than or equal to item's discounted value. False otherwise
+        :rtype: bool
+        """
+        listing: inventoryListing.DiscountableItemListing = self.getStockByType(type(item)).getListing(item)
+        itemValue = item.value * listing.discounts[0] if listing.discounts else item.value
+        return user.credits >= itemValue
+
 
 
     def userSellShipObj(self, user : basedUser.BasedUser, ship : shipItem.Ship):
