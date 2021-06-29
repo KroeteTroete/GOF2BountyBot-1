@@ -187,7 +187,7 @@ async def dev_cmd_del_kaamo_item(message : discord.Message, args : str, isDM : b
     argsSplit = args.split(" ")
     if len(argsSplit) < 3:
         await message.channel.send(":x: Not enough arguments! Please provide a user, an item type " \
-                                    + "(ship/weapon/module/turret) and an item number from `" + prefix + "debug-loma`")
+                                    + "(ship/weapon/module/turret) and an item number from `" + prefix + "debug-kaamo`")
         return
     if len(argsSplit) > 3:
         await message.channel.send(":x: Too many arguments! Please only give a user, an item type " \
@@ -281,11 +281,11 @@ async def dev_cmd_del_kaamo_item(message : discord.Message, args : str, isDM : b
                                 + "'s kaamo: " + itemName, embed=itemEmbed)
     kaamoItemStock.removeItem(requestedItem)
 
-    # Destroy Loma object if it is now empty
+    # Destroy Kaamo object if it is now empty
     if requestedBBUser.kaamo.isEmpty():
         requestedBBUser.kaamo = None
 
-botCommands.register("del-loma-item", dev_cmd_del_kaamo_item, 3, allowDM=True, helpSection="kaamo", useDoc=True)
+botCommands.register("del-kaamo-item", dev_cmd_del_kaamo_item, 3, allowDM=True, helpSection="kaamo", useDoc=True)
 
 
 async def dev_cmd_del_kaamo_item_key(message : discord.Message, args : str, isDM : bool):
