@@ -41,6 +41,7 @@ async def cmd_loma_buy(message : discord.Message, args : str, isDM : bool):
         return
 
     itemCategory = argsSplit[0].rstrip("s")
+    print(itemCategory)
     if itemCategory == "all" or itemCategory not in cfg.validItemNames:
         await message.channel.send(":x: Invalid item name! Please choose from: ship, weapon, module, turret or tool.")
         return
@@ -95,7 +96,7 @@ async def cmd_loma(message : discord.Message, args : str, isDM : bool):
     """
     commandPrefix = cfg.defaultCommandPrefix if isDM else botState.guildsDB.getGuild(message.guild.id).commandPrefix
     if args.startswith("buy"):
-        await cmd_loma_buy(message, args[5:].lstrip(" "), isDM)
+        await cmd_loma_buy(message, args[4:].lstrip(" "), isDM)
         return
     elif args.startswith("sell"):
         await message.channel.send(":x: The Loma pirates do not buy items, they only sell.\nFor private item storage," \
