@@ -203,7 +203,7 @@ async def dev_cmd_debug_loma(message : discord.Message, args : str, isDM : bool)
                             + f" Credits\n*{'+' if itemListing.discounts[0] > 1 else '-'}" \
                             + f"{discountAmountStr}% : {itemListing.discounts[0].desc}\n"
             else:
-                valueStr = f"{commaSplitNum(discountedValue)} Credits\n"
+                valueStr = f"{commaSplitNum(currentItem.value)} Credits\n"
             shopEmbed.add_field(name=str(itemNum) + ". " \
                                     + (currentItem.emoji.sendable + " " if currentItem.hasEmoji else "") \
                                     + ((" `(" + str(currentItemCount) + ")` ") if currentItemCount > 1 else "") \
