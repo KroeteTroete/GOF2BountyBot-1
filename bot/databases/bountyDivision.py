@@ -465,7 +465,7 @@ class BountyDivision(Serializable):
         self.bountyBoardChannel = None
 
 
-    def _addBounty(self, bounty : Bounty):
+    def _addBounty(self, bounty : Bounty, dbReload=False):
         """This is a private method. To ensure unique criminal names across a bountyDB, you should instead call
         BountyDB.addBounty. The BountyDB that owns this division can be accessed through the owningDB attribute. 
 
@@ -476,7 +476,7 @@ class BountyDivision(Serializable):
         :raise OverflowError: if the division is already at capacity
         :raise ValueError: if the criminal is already wanted in the division
         """
-        if self.isFull():
+        if not dbReload and self.isFull():
             raise OverflowError(f"Attempted to addBounty but the division is full")
         
         if self.criminalObjExists(bounty.criminal):
@@ -489,7 +489,7 @@ class BountyDivision(Serializable):
             self.stopBountySpawner()
 
 
-    def _addEscapedBounty(self, bounty : Bounty):
+    def _addEscapedBounty(self, bounty : Bounty, dbReload=False):
         """This is a private method. To ensure unique criminal names across a bountyDB, you should instead call
         BountyDB.addEscapedBounty. The BountyDB that owns this division can be accessed through the owningDB attribute. 
 
@@ -500,7 +500,7 @@ class BountyDivision(Serializable):
         :raise OverflowError: if the division is already at capacity
         :raise ValueError: if the criminal is already wanted in the division
         """
-        if self.isFull():
+        if not dbReload and self.isFull():
             raise OverflowError(f"Attempted to addEscapedBounty but the division is full")
         
         if self.escapedCriminalExists(bounty.criminal):

@@ -236,7 +236,7 @@ class Bounty(serializable.Serializable):
         return self.respawnTT is not None
 
 
-    def escape(self, respawnTT : TimedTask = None):
+    def escape(self, respawnTT : TimedTask = None, dbReload=False):
         """Mark this bounty as escaped.
         Does not schedule respawning or register the bounty as escaped in the owning bountyDB.
 
@@ -256,7 +256,7 @@ class Bounty(serializable.Serializable):
         if self.criminal in self.division.bounties[self.techLevel]:
             self.division.owningDB.removeBountyObj(self)
         botState.taskScheduler.scheduleTask(self.respawnTT)
-        self.division.owningDB.addEscapedBounty(self)
+        self.division.owningDB.addEscapedBounty(self, dbReload=dbReload)
 
 
     async def _respawn(self):
@@ -366,6 +366,6 @@ class Bounty(serializable.Serializable):
                                     expiryTime=datetime.utcfromtimestamp(data["respawnTime"]), 
                                     expiryFunction=newBounty._respawn,
                                     rescheduleOnExpiryFuncFailure=True)
-            newBounty.escape(respawnTT=respawnTT)
+            newBounty.escape(respawnTT=respawnTT, dbReload=dbReload)
 
         return newBounty

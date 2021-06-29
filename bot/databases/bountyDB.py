@@ -325,7 +325,7 @@ class BountyDB(serializable.Serializable):
         return any(div.criminalObjExists(crim) for div in self.divisions.values())
 
 
-    def addBounty(self, bounty : bounty.Bounty):
+    def addBounty(self, bounty : bounty.Bounty, dbReload=False):
         """Add a given bounty object to the database.
         Bounties cannot be added if the division for its level does not have space for more bounties.
         Bounties cannot be added if a bounty already exists for the same criminal in this DB.
@@ -337,7 +337,7 @@ class BountyDB(serializable.Serializable):
         div = self.divisionForLevel(bounty.techLevel)
 
         # Ensure the DB has space for the bounty
-        if div.isFull(includeEscaped=True):
+        if not dbReload and div.isFull(includeEscaped=True):
             raise OverflowError(f"Division for the bounty ({bounty.criminal.name}, level {bounty.techLevel}) is full")
         
         if self.criminalObjExists(bounty.criminal):
@@ -348,7 +348,7 @@ class BountyDB(serializable.Serializable):
         #     raise ValueError("Attempted to add a bounty whose name already exists: " + bounty.criminal.name)
 
         # Add the bounty to the database
-        div._addBounty(bounty)
+        div._addBounty(bounty, dbReload=dbReload)
         
 
 
@@ -362,7 +362,7 @@ class BountyDB(serializable.Serializable):
         return any(div.escapedCriminalExists(crim) for div in self.divisions.values())
 
 
-    def addEscapedBounty(self, bounty : bounty.Bounty):
+    def addEscapedBounty(self, bounty : bounty.Bounty, dbReload=False):
         """Add a given bounty object to the escaped bounties database.
         Bounties cannot be added if the object or name already exists in the database.
 
@@ -372,7 +372,7 @@ class BountyDB(serializable.Serializable):
         div = self.divisionForLevel(bounty.techLevel)
 
         # Ensure the DB has space for the bounty
-        if div.isFull(includeEscaped=True):
+        if not dbReload and div.isFull(includeEscaped=True):
             raise OverflowError(f"Division for the escaped bounty ({bounty.criminal.name}, level {bounty.techLevel}) is full")
         
         if self.criminalObjExists(bounty.criminal):
@@ -386,7 +386,7 @@ class BountyDB(serializable.Serializable):
         #     raise ValueError("Attempted to add a bounty whose name already exists: " + bounty.criminal.name)
 
         # Add the bounty to the database
-        div._addEscapedBounty(bounty)
+        div._addEscapedBounty(bounty, dbReload=dbReload)
 
 
     def removeEscapedBountyObj(self, bounty : bounty.Bounty):
@@ -494,7 +494,7 @@ class BountyDB(serializable.Serializable):
             newDB.divisionForLevel(int(minLevel)).temperature = divTemp
 
         for bountyDict in activeBountiesData:
-            newDB.addBounty(bounty.Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB))
+            newDB.addBounty(bounty.Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB), dbReload=dbReload)
         for bountyDict in escapedBountiesData:
             # Adding escaped bounties to DB is done during Bounty.fromDict
             # TODO: Should probably change that
