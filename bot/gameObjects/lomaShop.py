@@ -87,11 +87,11 @@ class LomaShop(guildShop.GuildShop):
 
     @classmethod
     def fromDict(cls, shopDict : dict, **kwargs) -> LomaShop:
-        """Recreate a bbShop instance from its dictionary-serialized representation - the opposite of bbShop.toDict
+        """Recreate a LomaShop instance from its dictionary-serialized representation - the opposite of LomaShop.toDict
         
         :param dict shopDict: A dictionary containing all information needed to construct the shop
-        :return: A new bbShop object as described by shopDict
-        :rtype: bbShop
+        :return: A new LomaShop object as described by shopDict
+        :rtype: LomaShop
         """
         shipsStock = inventory.DiscountableTypeRestrictedInventory(shipItem.Ship)
         weaponsStock = inventory.DiscountableTypeRestrictedInventory(primaryWeapon.PrimaryWeapon)
