@@ -15,15 +15,14 @@ from ..gameObjects.itemDiscount import ItemDiscount
 botCommands.addHelpSection(3, "loma")
 
 async def dev_cmd_loma_give(message : discord.Message, args : str, isDM : bool):
-    """developer command spawning the described item and item discount, and placing it in the given user's loma shop.
+    """developer command spawning the described item, and placing it in the given user's loma shop.
     user must be either a mention or an ID or empty (to give the item to the calling user).
     type must be in cfg.validItemNames (but not 'all')
     item must be a json format description in line with the item's to and fromDict functions.
-    item discount must be a json format description in line with ItemDiscount.fromDict.
 
     :param discord.Message message: the discord message calling the command
     :param str args: string, containing either a user ID or mention or nothing (to give item to caller), followed by a string
-                        from cfg.validItemNames (but not 'all'), followed by a serialized item, and a serialized ItemDiscount
+                        from cfg.validItemNames (but not 'all'), followed by a serialized item
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
     requestedUser: BasedUser = None
@@ -39,26 +38,7 @@ async def dev_cmd_loma_give(message : discord.Message, args : str, isDM : bool):
         itemStr = args[len(argsSplit[0]) + 1:]
 
     itemType = itemStr.split(" ")[0].lower()
-
     itemDict = json.loads(itemStr[len(itemStr.split(" ")[0]):])
-    if itemDict[0] != "{":
-        await message.channel.send("item dictionary must start with {")
-        return
-    
-    bracesSeen = 1
-    itemDictEnd = -1
-    for charNum, char in enumerate(itemDict[1:]):
-        if char == "{":
-            bracesSeen += 1
-        elif char == "}":
-            bracesSeen -= 1
-            if bracesSeen == 0:
-                itemDictEnd = charNum + 2
-    
-    discountDict = itemDict[itemDictEnd:]
-    itemDict = itemDict[:itemDictEnd]
-    print("DISCOUNTDICT:",discountDict)
-    print("ITEMDICT",itemDict)
 
     if "type" not in itemDict:
         await message.channel.send(":x: Please give a type in your item dictionary.")
@@ -79,14 +59,59 @@ async def dev_cmd_loma_give(message : discord.Message, args : str, isDM : bool):
         requestedUser.loma = LomaShop()
     itemStock = requestedUser.loma.getStockByName(itemType)
     itemStock.addItem(newItem)
-    itemListing: DiscountableItemListing = itemStock.getListing(newItem)
-    itemListing.pushDiscount(ItemDiscount.fromDict(discountDict))
 
     await message.channel.send(":white_check_mark: Given one '" + newItem.name + "' to **" \
                                 + lib.discordUtil.userOrMemberName(botState.client.get_user(requestedUser.id),
                                                                                             message.guild) + "**!")
 
 botCommands.register("loma-give", dev_cmd_loma_give, 3, forceKeepArgsCasing=True, allowDM=True, helpSection="loma", useDoc=True)
+
+
+async def dev_cmd_loma_give_discount(message : discord.Message, args : str, isDM : bool):
+    """developer command the described item item discount, and placing it in the given user's loma shop, for the described item.
+    user must be either a mention or an ID or empty (to give the item to the calling user).
+    type must be in cfg.validItemNames (but not 'all')
+    item number must be a number as shown in dev_cmd_debug_loma
+    item discount must be a json format description in line with ItemDiscount.fromDict.
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: string, containing either a user ID or mention or nothing (to give item to caller), followed by a string
+                        from cfg.validItemNames (but not 'all'), followed by an item number from debug_loma, and a serialized ItemDiscount
+    :param bool isDM: Whether or not the command is being called from a DM channel
+    """
+    requestedUser: BasedUser = None
+    argsSplit = args.split(" ")
+    if not lib.stringTyping.isInt(argsSplit[0]) and not lib.stringTyping.isMention(argsSplit[0]):
+        requestedUser = botState.usersDB.getOrAddID(message.author.id)
+        itemStr = args
+
+    # otherwise get the specified user's bb object
+    # [!] no validation is done.
+    else:
+        requestedUser = botState.usersDB.getOrAddID(int(argsSplit[0].lstrip("<@!").rstrip(">")))
+        itemStr = args[len(argsSplit[0]) + 1:]
+
+    if requestedUser.loma is None or requestedUser.loma.isEmpty():
+        await message.author.send("That user has no items in loma!")
+        return
+
+    itemType = itemStr.split(" ")[0].lower()
+    itemNum = int(itemStr.split(" ")[1])
+    discountDict = json.loads(itemStr[len(itemStr.split(" ")[1]):])
+
+    if itemType == "all" or itemType not in cfg.validItemNames:
+        await message.channel.send(":x: Invalid item type arg - " + itemType)
+        return
+
+    itemListing: DiscountableItemListing = requestedUser.loma.getStockByName(itemType)[itemNum]
+    newDiscount = ItemDiscount.fromDict(discountDict)
+    itemListing.pushDiscount(newDiscount)
+
+    await message.channel.send(f":white_check_mark: Given one '{newDiscount.toDict()}' to **" \
+                                + lib.discordUtil.userOrMemberName(botState.client.get_user(requestedUser.id),
+                                                                    message.guild) + "**!")
+
+botCommands.register("loma-give_discount", dev_cmd_loma_give_discount, 3, forceKeepArgsCasing=True, allowDM=True, helpSection="loma", useDoc=True)
 
 
 async def dev_cmd_debug_loma(message : discord.Message, args : str, isDM : bool):
