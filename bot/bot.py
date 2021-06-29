@@ -276,7 +276,7 @@ def loadGuildsDB(filePath: str, dbReload: bool = False) -> guildDB.GuildDB:
     :return: a GuildDB as described by the dictionary-serialized representation stored in the file located in filePath.
     """
     if os.path.isfile(filePath):
-        return guildDB.GuildDB.fromDict(lib.jsonHandler.readJSON(filePath))
+        return guildDB.GuildDB.fromDict(lib.jsonHandler.readJSON(filePath), dbReload=dbReload)
     return guildDB.GuildDB()
 
 
@@ -484,7 +484,7 @@ async def on_ready():
 
     # Load save data. If the specified files do not exist, an empty database will be created instead.
     botState.usersDB = loadUsersDB(cfg.paths.usersDB)
-    botState.guildsDB = loadGuildsDB(cfg.paths.guildsDB)
+    botState.guildsDB = loadGuildsDB(cfg.paths.guildsDB, dbReload=True)
     botState.reactionMenusDB = await loadReactionMenusDB(cfg.paths.reactionMenusDB)
 
     # Create BasedGuild instances for any guilds that the bot joined whilst it was offline

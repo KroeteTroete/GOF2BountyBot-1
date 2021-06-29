@@ -247,7 +247,7 @@ class BountyConfig:
 
 
     def generate(self, division : bountyDivision.BountyDivision, noCriminal : bool = True, forceKeepChecked : bool = False,
-                    forceNoDBCheck : bool = False) -> BountyConfig:
+                    forceNoDBCheck : bool = False, forceIgnoreFullDivision: bool = False) -> BountyConfig:
         """Validate all given config data, and randomly generate missing data.
 
         :param BountyDB owningDB: Database containing all currently active bounties. When forceNoDBCheck is True,
@@ -267,7 +267,7 @@ class BountyConfig:
         :raise OverflowError: When attempting to spawn a bounty into a full division
         """
         doDBCheck = not forceNoDBCheck
-        if doDBCheck and division.isFull():
+        if doDBCheck and not forceIgnoreFullDivision and division.isFull():
             raise OverflowError("The given division is full: " + bountyDB.nameForDivision(division))
             
         if noCriminal:
