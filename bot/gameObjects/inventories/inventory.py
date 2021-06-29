@@ -47,11 +47,9 @@ class Inventory(serializable.Serializable):
         # increment count for existing bbItemListing
         if item in self.items:
             self.items[item].count += quantity
-            print("item exists")
         # Add a new bbItemListing if one does not exist
         else:
             self.items[item] = self.listingType(item, quantity)
-            print("item doesnt exist, created:", self.items[item])
             # Update keys and numKeys trackers
             self.keys.append(item)
             self.numKeys += 1
