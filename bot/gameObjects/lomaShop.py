@@ -26,7 +26,7 @@ class LomaShop(guildShop.GuildShop):
         :rtype: bool
         """
         listing: inventoryListing.DiscountableItemListing = self.getStockByType(type(item)).getListing(item)
-        itemValue = item.value * listing.discounts[0] if listing.discounts else item.value
+        itemValue = item.value * listing.discounts[0].mult if listing.discounts else item.value
         return user.credits >= itemValue
 
 
