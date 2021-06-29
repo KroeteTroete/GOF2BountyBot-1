@@ -710,7 +710,7 @@ class BasedGuild(serializable.Serializable):
 
 
     @classmethod
-    def fromDict(cls, guildDict: dict, **kwargs) -> BasedGuild:
+    def fromDict(cls, guildDict: dict, dbReload=False, **kwargs) -> BasedGuild:
         """Factory function constructing a new BasedGuild object from the information
         in the provided guildDict - the opposite of BasedGuild.toDict
 
@@ -724,7 +724,6 @@ class BasedGuild(serializable.Serializable):
         if "guildID" not in kwargs:
             raise NameError("Required kwarg missing: guildID")
         guildID = kwargs["guildID"]
-        dbReload = kwargs.get("dbReload", False)
 
         dcGuild = botState.client.get_guild(guildID)
         if dcGuild is None:

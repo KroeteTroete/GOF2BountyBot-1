@@ -194,7 +194,7 @@ class GuildDB(serializable.Serializable):
 
 
     @classmethod
-    def fromDict(cls, guildDBDict: dict, **kwargs) -> GuildDB:
+    def fromDict(cls, guildDBDict: dict, dbReload=False, **kwargs) -> GuildDB:
         """Construct a GuildDB object from dictionary-serialised format; the reverse of GuildDB.todict()
 
         :param dict bountyDBDict: The dictionary representation of the GuildDB to create
@@ -208,7 +208,7 @@ class GuildDB(serializable.Serializable):
             # Instance new BasedGuilds for each ID, with the provided data
             # JSON stores properties as strings, so ids must be converted to int first.
             try:
-                newDB.addBasedGuild(basedGuild.BasedGuild.fromDict(guildDBDict[guildID], guildID=int(guildID)))
+                newDB.addBasedGuild(basedGuild.BasedGuild.fromDict(guildDBDict[guildID], guildID=int(guildID), dbReload=dbReload)
             # Ignore guilds that don't have a corresponding dcGuild
             except lib.exceptions.NoneDCGuildObj:
                 botState.logger.log("GuildDB", "fromDict",
