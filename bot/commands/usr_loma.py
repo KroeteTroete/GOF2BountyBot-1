@@ -71,8 +71,8 @@ async def cmd_loma_buy(message : discord.Message, args : str, isDM : bool):
         await message.channel.send(":x: You can't afford that item!")
         return
 
-    _, valueDiscount = shopItemStock.removeItemAndDiscount()
-    requestedBUser.credits -= requestedItem.value * valueDiscount
+    _, valueDiscount = shopItemStock.removeItemAndDiscount(requestedItem)
+    requestedBUser.credits -= int(requestedItem.value * valueDiscount)
     requestedBUser.getInactivesByName(itemCategory).addItem(requestedItem)
 
     await message.channel.send(":moneybag: Congratulations on your new **" + requestedItem.name \
