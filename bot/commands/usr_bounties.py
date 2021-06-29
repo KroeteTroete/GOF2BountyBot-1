@@ -196,7 +196,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                         await message.channel.send("__Duel Statistics__",embed=statsEmbed)
 
                         # Raise guild's activity temperature for this bounty's tl
-                        numContributingUsers = len(set(rewards))
+                        numContributingUsers = len(set(rewards.keys()))
                         divTempDelta += numContributingUsers * cfg.activityTempPerPlayer
 
                         # add this bounty to the list of bounties to be removed
