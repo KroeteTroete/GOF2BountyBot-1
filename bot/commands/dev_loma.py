@@ -95,22 +95,23 @@ async def dev_cmd_loma_give_discount(message : discord.Message, args : str, isDM
         await message.author.send("That user has no items in loma!")
         return
 
-    itemType = itemStr.split(" ")[0].lower()
-    itemNum = int(itemStr.split(" ")[1])
-    discountDict = json.loads(itemStr[len(itemStr.split(" ")[1]):])
+    itemStrSplit = itemStr.split(" ")
+    itemType = itemStrSplit[0].lower()
+    itemNum = int(itemStrSplit[1])
+    discountDict = json.loads(itemStr[len(itemStrSplit[0]) + len(itemStrSplit[1]) + 2:])
 
     if itemType == "all" or itemType not in cfg.validItemNames:
         await message.channel.send(":x: Invalid item type arg - " + itemType)
         return
 
-    itemListing: DiscountableItemListing = requestedUser.loma.getStockByName(itemType)[itemNum]
+    itemListing: DiscountableItemListing = requestedUser.loma.getStockByName(itemType)[itemNum - 1]
     newDiscount = ItemDiscount.fromDict(discountDict)
     itemListing.pushDiscount(newDiscount)
 
     await message.channel.send(f":white_check_mark: Given one '{newDiscount.toDict()}' to **" \
                                 + lib.discordUtil.userOrMemberName(botState.client.get_user(requestedUser.id),
-                                                                    message.guild) + "**, for their" \
-                                + itemListing.item.name)
+                                                                    message.guild) + "**, for their " \
+                                + itemListing.item.name + ".")
 
 botCommands.register("loma-give-discount", dev_cmd_loma_give_discount, 3, forceKeepArgsCasing=True, allowDM=True, helpSection="loma", useDoc=True)
 
