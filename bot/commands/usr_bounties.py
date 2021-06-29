@@ -216,7 +216,10 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
 
         # remove all completed bounties
         for bounty in toPop:
-            btyDivision.removeBountyObj(bounty)
+            try:
+                btyDivision.removeBountyObj(bounty)
+            except OverflowError as e:
+                botState.logger.log("usr_bounties", "cmd_check", str(e), exception=e)
         # remove all escaped bounties
         for bounty in toEscape:
             bounty.escape()
