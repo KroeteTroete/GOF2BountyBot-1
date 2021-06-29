@@ -6,9 +6,8 @@ from .. import criminal
 from .... import botState
 import asyncio
 from .. import bounty
-from typing import Dict, Union, List
+from typing import Dict, Union
 from ....baseClasses import serializable
-import traceback
 
 
 def makeBountyEmbed(bounty : bounty.Bounty) -> Embed:
@@ -89,7 +88,7 @@ class BountyBoardChannel(serializable.Serializable):
         self.noBountiesMsgToBeLoaded = noBountiesMsgToBeLoaded
 
         # dict of {criminal: int message ID}
-        self.bountyMessages: Dict[criminal.Criminal: Message] = {}
+        self.bountyMessages: Dict[criminal.Criminal, Message] = {}
         # discord message object to be filled when no bounties exist
         self.noBountiesMessage = None
         # discord channel object

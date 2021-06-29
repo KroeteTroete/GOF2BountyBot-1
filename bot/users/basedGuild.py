@@ -1,11 +1,9 @@
 from __future__ import annotations
-from discord import Embed, channel, Client, Forbidden, Guild, Member, Message, HTTPException, NotFound, Colour, Role
+from discord import Embed, channel, Forbidden, Guild, Member, Message, HTTPException, NotFound, Colour, Role
 from discord import TextChannel
 from typing import List, Dict, Union
-from datetime import timedelta
 import asyncio
 from aiohttp import client_exceptions
-import traceback
 import random
 
 from .. import botState, lib
@@ -13,10 +11,8 @@ from ..gameObjects import guildShop
 from ..databases.bountyDB import BountyDB, nameForDivision
 from ..userAlerts import userAlerts
 from ..cfg import cfg, bbData
-from ..scheduling.timedTask import TimedTask, DynamicRescheduleTask
 from ..gameObjects.bounties import bounty, bountyConfig
 from ..baseClasses import serializable
-from . import guildActivity
 from ..databases import bountyDivision
 
 

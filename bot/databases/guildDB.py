@@ -4,12 +4,11 @@ from discord import Guild
 from concurrent.futures import ThreadPoolExecutor
 import os
 
-from ..users import basedGuild, guildActivity
+from ..users import basedGuild
 from . import bountyDB
 from .. import botState
 from ..baseClasses import serializable
 from .. import lib
-from ..cfg import bbData, cfg
 
 
 _minGuildsToParallelize = os.cpu_count()

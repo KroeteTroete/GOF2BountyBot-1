@@ -208,7 +208,7 @@ class BountyDivision(Serializable):
         :return: The maximum number of bounties the division can currently contain
         :rtype: int
         """
-        return cfg.maxBountiesPerDivision if self.isActive else 1
+        return min(cfg.maxBountiesPerDivision, max(1, self.temperature))
 
 
     def pickNewTL(self) -> int:

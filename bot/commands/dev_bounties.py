@@ -9,7 +9,7 @@ from .. import botState, lib
 from ..lib import gameMaths
 from ..cfg import cfg, bbData
 from ..gameObjects.bounties import bounty, bountyConfig
-from ..users import guildActivity, basedGuild, basedUser
+from ..users import basedGuild, basedUser
 from ..databases.bountyDB import nameForDivision
 
 botCommands.addHelpSection(3, "bounties")
