@@ -334,6 +334,10 @@ async def dev_cmd_del_loma_item(message : discord.Message, args : str, isDM : bo
                                 + "'s loma: " + itemName, embed=itemEmbed)
     lomaItemStock.removeItem(requestedItem)
 
+    # Destroy Loma object if it is now empty
+    if requestedBBUser.loma.isEmpty():
+        requestedBBUser.loma = None
+
 botCommands.register("del-loma-item", dev_cmd_del_loma_item, 3, allowDM=True, helpSection="loma", useDoc=True)
 
 
@@ -457,6 +461,10 @@ async def dev_cmd_del_loma_item_key(message : discord.Message, args : str, isDM 
         await message.channel.send(":white_check_mark: " + str(itemCount) + " item(s) deleted from " \
                                     + lib.discordUtil.userOrMemberName(requestedUser, message.guild) \
                                     + "'s loma: " + itemName, embed=itemEmbed)
+
+    # Destroy Loma object if it is now empty
+    if requestedBBUser.loma.isEmpty():
+        requestedBBUser.loma = None
 
 botCommands.register("del-loma-item-key", dev_cmd_del_loma_item_key, 3, allowDM=True, helpSection="loma", useDoc=True)
 

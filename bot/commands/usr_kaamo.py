@@ -81,6 +81,10 @@ async def cmd_kaamo_get(message : discord.Message, args : str, isDM : bool):
         else:
             raise NotImplementedError("Valid but unsupported item name: " + item)
 
+    # Destroy Kaamo object if it is now empty
+    if requestedBBUser.kaamo.isEmpty():
+        requestedBBUser.kaamo = None
+
 bbCommands.register("kaamo get", cmd_kaamo_get, 0, helpSection="kaamo club", allowDM=True,
                     signatureStr="**kaamo get <item-type> <item-number>**",
                     shortHelp="Transfer items from the Kaamo Club to your hangar. This command can only be used by " \
