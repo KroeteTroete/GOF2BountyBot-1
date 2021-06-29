@@ -3,9 +3,7 @@ import discord
 from . import commandsDB as bbCommands
 from .. import botState, lib
 from ..lib.stringTyping import commaSplitNum
-from ..lib import gameMaths
 from ..cfg import cfg
-from ..gameObjects import lomaShop
 from ..gameObjects.inventories.inventory import DiscountableTypeRestrictedInventory
 from ..users.basedUser import BasedUser
 from ..gameObjects.inventories.inventoryListing import DiscountableItemListing
