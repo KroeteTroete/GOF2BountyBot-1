@@ -38,6 +38,14 @@ class KaamoShop(guildShop.GuildShop):
             self.totalItems += 1 + len(ship.weapons) + len(ship.modules) + len(ship.turrets)
 
 
+    def isFull(self) -> bool:
+        """Decide if this KaamoShop is at capacity.
+
+        :return: True if the items stock is full, False otherwise
+        """
+        return self.totalItems >= cfg.kaamoMaxCapacity
+
+
     def userCanAffordItemObj(self, user : basedUser.BasedUser, item : gameItem.GameItem) -> bool:
         """No costs are incurred when transferring items to or from a KaamoShop.
         """
