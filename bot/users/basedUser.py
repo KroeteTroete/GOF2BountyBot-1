@@ -867,7 +867,7 @@ class BasedUser(serializable.Serializable):
             if "lifetimeBountyCreditsWon" not in userDict or userDict["lifetimeBountyCreditsWon"] == 0:
                 bountyHuntingXP = gameMaths.bountyHuntingXPForLevel(1)
             else:
-                int(userDict["lifetimeBountyCreditsWon"] * cfg.bountyRewardToXPGainMult)
+                bountyHuntingXP = int(userDict["lifetimeBountyCreditsWon"] * cfg.bountyRewardToXPGainMult)
 
         lifetimeBountyCreditsWon = userDict.get("lifetimeBountyCreditsWon", userDict.get("lifetimeBountyCreditsWon", 0))
 
