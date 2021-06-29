@@ -78,7 +78,7 @@ async def cmd_loma_buy(message : discord.Message, args : str, isDM : bool):
     await message.channel.send(":moneybag: Congratulations on your new **" + requestedItem.name \
                                 + "**! \n\nYour balance is now: **" + str(requestedBUser.credits) + " credits**.")
 
-bbCommands.register("loma buy", cmd_loma_buy, 0, allowDM=False, helpSection="loma",
+bbCommands.register("loma buy", cmd_loma_buy, 0, allowDM=True, helpSection="loma",
                         signatureStr="**loma buy <item-type> <item-number>**",
                         shortHelp="Buy the requested item from the pirates at Loma. Item numbers can be seen in `loma`.",
                         longHelp="Buy the requested item from the pirates at Loma. Item numbers are shown next to items in " \
