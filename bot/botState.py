@@ -1,13 +1,14 @@
 from .logging import Logger
+from aiohttp import ClientSession
 
 class ShutDownState:
     restart = 0
     shutdown = 1
     update = 2
 
-
 client = None
 shutdown = ShutDownState.restart
+httpClient: ClientSession = None
 
 usersDB = None
 guildsDB = None
