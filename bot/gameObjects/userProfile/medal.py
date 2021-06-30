@@ -48,6 +48,7 @@ class Medal(Serializable):
         data = {"name": self.name, "desc": self.desc, "icon": self.icon, "emoji": self.emoji}
         if self.hasWiki:
             data["wiki"] = self.wiki
+        return data
 
 
     def fromDict(cls, data: dict, **kwargs) -> "Medal":
