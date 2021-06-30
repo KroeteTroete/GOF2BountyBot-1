@@ -429,6 +429,15 @@ crateTypes = ("levelUp", "special")
 
 
 
+##### USER PROFILE #####
+
+# Server in which to save medal emojis
+emojisServer = 699744305274945650
+# Channel in which to send medal icon images
+medalIconsChannel = 859747151746826310
+
+
+
 ##### MISC #####
 
 # Exactly one of botToken or botToken_envVarName must be given.
