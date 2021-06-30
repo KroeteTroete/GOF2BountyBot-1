@@ -76,19 +76,21 @@ builtInSecondariesData = {}
 # data for builtIn ShipSkins to be used in ShipSkin.fromDict
 builtInShipSkinsData = {}
 
+# data for Medals to be used in Medal.fromDict. builtIn is not applicable to Medals, as custom Medals cannot be created
+medalsData = {}
 
-# Objects representing all ship skins in the game.
-builtInShipSkins = {}
-builtInToolObjs = {}
+
 # To be populated during bot.on_ready
 # These dicts contain item name: item object for the object described in the variable name.
-# This is primarily for use in their relevent fromDict functions.
+builtInShipSkins = {}
+builtInToolObjs = {}
 builtInSystemObjs = {}
 builtInCriminalObjs = {}
 builtInModuleObjs = {}
 builtInWeaponObjs = {}
 builtInUpgradeObjs = {}
 builtInTurretObjs = {}
+medalObjs = {}
 
 # References to the above item objects, sorted by techLevel.
 shipKeysByTL = []
