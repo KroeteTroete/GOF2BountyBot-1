@@ -70,7 +70,7 @@ class BasedEmoji(serializable.Serializable):
     :var EMPTY: static class variable representing an empty emoji
     :vartype EMPTY: BasedEmoji
     """
-    EMPTY = None
+    EMPTY: "BasedEmoji" = None
     __hash__ = serializable.Serializable.__hash__
 
     def __init__(self, id: int = -1, unicode: str = "", rejectInvalid: bool = False):
