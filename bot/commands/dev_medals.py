@@ -83,49 +83,51 @@ async def dev_cmd_create_medal(message : discord.Message, args : str, isDM : boo
         if not noIcon and not noEmoji:
             await message.reply("icon and emoji already supplied. Ignoring attachment.")
         else:
-            async with message.attachments[0].to_file() as iconFile:
-                emojiServer: discord.Guild = botState.client.get_guild(cfg.emojisServer) or \
-                                            await botState.client.fetch_guild(cfg.emojisServer)
-                if emojiServer is None:
-                    botState.logger.log("dev_medals", "dev_cmd_create_medal", "Failed to find cfg.emojisServer",
-                                        eventType="UKWN_GLD")
-                    await message.reply(":x: Failed to connect to the emojisServer")
+            iconFile = await message.attachments[0].to_file()
+            emojiServer: discord.Guild = botState.client.get_guild(cfg.emojisServer) or \
+                                        await botState.client.fetch_guild(cfg.emojisServer)
+            if emojiServer is None:
+                botState.logger.log("dev_medals", "dev_cmd_create_medal", "Failed to find cfg.emojisServer",
+                                    eventType="UKWN_GLD")
+                await message.reply(":x: Failed to connect to the emojisServer")
+                return
+            
+            if noIcon:
+                medalIconsChannel: discord.TextChannel = emojiServer.get_channel(cfg.medalIconsChannel)
+                if medalIconsChannel is None:
+                    await emojiServer.fetch_channels()
+                medalIconsChannel = emojiServer.get_channel(cfg.medalIconsChannel)
+                if medalIconsChannel is None:
+                    botState.logger.log("dev_medals", "dev_cmd_create_medal", "Failed to find cfg.medalIconsChannel",
+                                        eventType="UKWN_CHN")
+                    await message.reply(":x: Failed to connect to the medalIconsChannel")
                     return
-                
-                if noIcon:
-                    medalIconsChannel: discord.TextChannel = emojiServer.get_channel(cfg.medalIconsChannel)
-                    if medalIconsChannel is None:
-                        await emojiServer.fetch_channels()
-                    medalIconsChannel = emojiServer.get_channel(cfg.medalIconsChannel)
-                    if medalIconsChannel is None:
-                        botState.logger.log("dev_medals", "dev_cmd_create_medal", "Failed to find cfg.medalIconsChannel",
-                                            eventType="UKWN_CHN")
-                        await message.reply(":x: Failed to connect to the medalIconsChannel")
-                        return
 
-                    try:
-                        iconMsg: discord.Message = await medalIconsChannel.send(f"Medal: {medalName}", file=iconFile)
-                    except (discord.Forbidden, discord.HTTPException) as e:
-                        await message.reply(f":x: Saving the icon to the emojiServer failed: {e}")
-                        botState.logger.log("dev_medals", "dev_cmd_create_medal", str(e), exception=e)
-                        return
-                    else:
-                        kwargs["icon"] = iconMsg.attachments[0].url
+                try:
+                    iconMsg: discord.Message = await medalIconsChannel.send(f"Medal: {medalName}", file=iconFile)
+                except (discord.Forbidden, discord.HTTPException) as e:
+                    await message.reply(f":x: Saving the icon to the emojiServer failed: {e}")
+                    botState.logger.log("dev_medals", "dev_cmd_create_medal", str(e), exception=e)
+                    return
+                else:
+                    kwargs["icon"] = iconMsg.attachments[0].url
 
-                if noEmoji:
+            if noEmoji:
+                try:
+                    newEmoji: discord.Emoji = await emojiServer.create_custom_emoji(name=medalName.replace(" ", "_"),
+                                                                                    image=await message.attachments[0].read(),
+                                                                                    reason="dev_cmd_create_medal")
+                except (discord.Forbidden, discord.HTTPException) as e:
+                    await message.reply(f":x: Failed to create medal emoji: {e}")
+                    botState.logger.log("dev_medals", "dev_cmd_create_medal", str(e), exception=e)
                     try:
-                        newEmoji: discord.Emoji = await emojiServer.create_custom_emoji(name=medalName,
-                                                                                        image=iconFile.fp.read(),
-                                                                                        reason="dev_cmd_create_medal")
-                    except (discord.Forbidden, discord.HTTPException) as e:
-                        await message.reply(f":x: Failed to create medal emoji: {e}")
-                        botState.logger.log("dev_medals", "dev_cmd_create_medal", str(e), exception=e)
-                        try:
-                            await iconMsg.delete()
-                        except (discord.NotFound, discord.HTTPException):
-                            pass
-                        return
-                    kwargs["emoji"] = lib.emojis.BasedEmoji(id=newEmoji.id)
+                        await iconMsg.delete()
+                    except (discord.NotFound, discord.HTTPException):
+                        pass
+                    return
+                kwargs["emoji"] = lib.emojis.BasedEmoji(id=newEmoji.id)
+            
+            iconFile.close()
                     
     else:
         emojiServer: discord.Guild = botState.client.get_guild(cfg.emojisServer) or \
@@ -149,16 +151,16 @@ async def dev_cmd_create_medal(message : discord.Message, args : str, isDM : boo
                         await message.reply(f":x: The icon URL must point to an image, yours is a '{resp.content_type}'")
                         success = False
                     else:
-                        async with resp.read() as iconImg:
-                            try:
-                                newEmoji: discord.Emoji = await emojiServer.create_custom_emoji(name=medalName,
-                                                                                                image=iconImg,
-                                                                                                reason="dev_cmd_create_medal")
-                            except (discord.Forbidden, discord.HTTPException) as e:
-                                await message.reply(f":x: Failed to create medal emoji: {e}")
-                                botState.logger.log("dev_medals", "dev_cmd_create_medal", str(e), exception=e)
-                                return
-                            kwargs["emoji"] = lib.emojis.BasedEmoji(id=newEmoji.id)
+                        iconImg = await resp.read()
+                        try:
+                            newEmoji: discord.Emoji = await emojiServer.create_custom_emoji(name=medalName,
+                                                                                            image=iconImg,
+                                                                                            reason="dev_cmd_create_medal")
+                        except (discord.Forbidden, discord.HTTPException) as e:
+                            await message.reply(f":x: Failed to create medal emoji: {e}")
+                            botState.logger.log("dev_medals", "dev_cmd_create_medal", str(e), exception=e)
+                            return
+                        kwargs["emoji"] = lib.emojis.BasedEmoji(id=newEmoji.id)
             if not success:
                 return
         else:
@@ -188,7 +190,7 @@ async def dev_cmd_create_medal(message : discord.Message, args : str, isDM : boo
     if not os.path.isdir(dirPath):
         os.makedirs(dirPath)
     filePath = os.path.join(dirPath, "META.json")
-    lib.jsonHandler.writeJSON(filePath, newMedal, prettyPrint=True)
+    lib.jsonHandler.writeJSON(filePath, newMedal.toDict(), prettyPrint=True)
 
     await message.reply(f"{cfg.defaultEmojis.submit.sendable} medal added successfuly: {medalName}")
         
