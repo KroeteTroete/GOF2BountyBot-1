@@ -6,13 +6,13 @@ if TYPE_CHECKING:
     from ..gameObjects.battles import duelRequest
 
 from ..baseClasses import serializable
-from ..cfg import cfg
+from ..cfg import cfg, bbData
 from ..gameObjects import kaamoShop, lomaShop
 from ..gameObjects.items import shipItem, moduleItemFactory
 from ..gameObjects.items.weapons import primaryWeapon, turretWeapon
 from ..gameObjects.items.tools import toolItemFactory, toolItem
 from ..gameObjects.items.modules import moduleItem
-
+from ..gameObjects.userProfile.medal import Medal
 from ..gameObjects.inventories import inventory
 from ..userAlerts import userAlerts
 from datetime import datetime, timedelta
@@ -108,6 +108,8 @@ class BasedUser(serializable.Serializable):
     :vartype prestiges: int
     :var ownedMenus: Sets of references to all menus that user owns, by string type IDs.
     :vartype ownedMenus: Dict[str, MutableSet[ReactionMenu]]
+    :var medals: References to all medals awareded to this user
+    :vartype medals: List[Medal]
     """
 
     def __init__(self, userID: int, credits : int = 0, lifetimeBountyCreditsWon : int = 0,
@@ -123,7 +125,7 @@ class BasedUser(serializable.Serializable):
                     bountyWinsToday : int = 0, dailyBountyWinsReset : datetime = None,
                     homeGuildID : int = -1, guildTransferCooldownEnd : datetime = None, prestiges : int = 0,
                     kaamo : Union[kaamoShop.KaamoShop, None] = None, loma : Union[lomaShop.LomaShop, None] = None,
-                    ownedMenus : Dict[str, MutableSet[reactionMenu.ReactionMenu]] = {}):
+                    ownedMenus : Dict[str, MutableSet[reactionMenu.ReactionMenu]] = {}, medals: List[Medal] = []):
         """
         :param int id: The user's unique ID. The same as their unique discord ID.
         :param int credits: The amount of credits (currency) this user has (Default 0)
@@ -171,6 +173,7 @@ class BasedUser(serializable.Serializable):
         :param int prestiges: The number of times the user has prestiged (default 0)
         :param ownedMenus: Sets of references to all menus that user owns, by string type IDs. (default {})
         :type ownedMenus: Dict[str, MutableSet[ReactionMenu]]
+        :param List[Medal] medals: References to all medals awareded to this user (Default [])
         """
         if type(userID) == float:
             userID = int(userID)
@@ -265,16 +268,15 @@ class BasedUser(serializable.Serializable):
         self.bountyWinsToday = bountyWinsToday
         self.dailyBountyWinsReset = dailyBountyWinsReset
         self.bountyHuntingXP = bountyHuntingXP
+        self.prestiges = prestiges
 
         self.homeGuildID = homeGuildID
         self.guildTransferCooldownEnd = guildTransferCooldownEnd
 
         self.kaamo = kaamo
         self.loma = loma
-
-        self.prestiges = prestiges
-
         self.ownedMenus = ownedMenus
+        self.medals = medals
 
 
     def resetUser(self):
@@ -504,6 +506,9 @@ class BasedUser(serializable.Serializable):
             for menuTypeID in self.ownedMenus:
                 if self.ownedMenus[menuTypeID]:
                     data["ownedMenus"][menuTypeID] = [menu.msg.id for menu in self.ownedMenus[menuTypeID]]
+        
+        if self.medals:
+            data["medals"] = [m.name for m in self.medals]
 
         return data
 
@@ -886,6 +891,10 @@ class BasedUser(serializable.Serializable):
                                             "Ignoring unrecognised reactionmenu id: " + menuType \
                                                 + "#" + str(menuID) + " stored in user #" + str(id),
                                             category="reactionMenus", eventType="unknMenuID")
+        
+        medals = []
+        if "medals" in userDict and userDict["medals"]:
+            medals = [bbData.medalObjs[name] for name in userDict["medals"]]
 
         return BasedUser(**cls._makeDefaults(userDict, ("lifetimeBountyCreditsWon",),
                                                 userID=userID, activeShip=activeShip, inactiveShips=inactiveShips,
@@ -893,6 +902,7 @@ class BasedUser(serializable.Serializable):
                                                 inactiveTurrets=inactiveTurrets, inactiveTools=inactiveTools,
                                                 bountyHuntingXP=bountyHuntingXP, kaamo=kaamo, loma=loma,
                                                 ownedMenus=ownedMenus, lifetimeBountyCreditsWon=lifetimeBountyCreditsWon,
+                                                medals=medals
                                                 **{k: datetime.utcfromtimestamp(userDict[k]) \
                                                     for k in ("dailyBountyWinsReset", "guildTransferCooldownEnd") \
                                                     if k in userDict}))
