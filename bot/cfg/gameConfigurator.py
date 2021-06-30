@@ -9,6 +9,7 @@ from ..gameObjects.bounties import criminal, solarSystem
 from ..gameObjects.items import moduleItemFactory
 from ..gameObjects.items.weapons import primaryWeapon, turretWeapon
 from ..gameObjects.items.tools import shipSkinTool, toolItemFactory, crateTool
+from ..gameObjects.userProfile import medal
 from .. import lib
 from ..lib import gameMaths
 
@@ -256,6 +257,7 @@ def loadAllGameObjectData():
     bbData.builtInToolData
     bbData.builtInSecondariesData
     bbData.builtInShipSkinsData
+    bbData.medalsData
     """
     bbData.builtInShipData = _loadShipItemsFromDir(cfg.paths.bbShipMETAFolder)
     bbData.builtInShipSkinsData = _loadShipSkinsFromDir(cfg.paths.shipSkinMETAFolder)
@@ -268,7 +270,8 @@ def loadAllGameObjectData():
                             ("builtInTurretData",     cfg.paths.bbTurretMETAFolder,       ".bbTurret"),
                             ("builtInCommodityData",  cfg.paths.bbCommodityMETAFolder,    ".bbCommodity"),
                             ("builtInToolData",       cfg.paths.bbToolMETAFolder,         ".bbTool"),
-                            ("builtInSecondariesData",cfg.paths.bbModuleMETAFolder,       ".bbModule")):
+                            ("builtInSecondariesData",cfg.paths.bbModuleMETAFolder,       ".bbModule"),
+                            ("medalsData",            cfg.paths.bbMedalsMETAFolder,       ".bbMedal")):
         setattr(bbData, db, _loadGameItemsFromDir(dir, ext))
 
 
@@ -288,6 +291,7 @@ def loadAllGameObjects():
     bbData.builtInTurretObjs
     bbData.builtInToolObjs
     bbData.builtInShipSkins
+    bbData.medalObjs
 
     bbData.shipKeysByTL
     bbData.moduleObjsByTL
@@ -305,7 +309,8 @@ def loadAllGameObjects():
                 (bbData.builtInUpgradeData, bbData.builtInUpgradeObjs,  shipUpgrade.ShipUpgrade.fromDict),
                 (bbData.builtInTurretData,  bbData.builtInTurretObjs,   turretWeapon.TurretWeapon.fromDict),
                 (bbData.builtInModuleData,  bbData.builtInModuleObjs,   moduleItemFactory.fromDict),
-                (bbData.builtInShipSkinsData,bbData.builtInShipSkins,   shipSkin.ShipSkin.fromDict)):
+                (bbData.builtInShipSkinsData,bbData.builtInShipSkins,   shipSkin.ShipSkin.fromDict),
+                (bbData.medalsData,         bbData.medalObjs,           medal.Medal.fromDict)):
         _loadGameObjects(dataDB, objsDB, deserializer)
 
     # generate shipSkinTool objects for each shipSkin

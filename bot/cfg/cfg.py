@@ -91,7 +91,8 @@ paths = {
     "bbShipMETAFolder": "game objects" + "/" + "items" + "/" + "ships",
     "bbWeaponMETAFolder": "game objects" + "/" + "items" + "/" + "weapons",
     "bbTurretMETAFolder": "game objects" + "/" + "items" + "/" + "turrets",
-    "bbToolMETAFolder": "game objects" + "/" + "items" + "/" + "tools"
+    "bbToolMETAFolder": "game objects" + "/" + "items" + "/" + "tools",
+    "bbMedalsMETAFolder": "game objects" + "/" + "user profile" + "/" + "medals"
 }
 
 
