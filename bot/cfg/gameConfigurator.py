@@ -16,7 +16,7 @@ from ..lib import gameMaths
 CWD = os.getcwd()
 
 
-def _loadGameItemsFromDir(itemDir : str, itemFolderExt : str) -> Dict[str, dict]:
+def _loadGameItemsFromDir(itemDir : str, itemFolderExt : str, lowerKey: bool = False) -> Dict[str, dict]:
     """Load metadata for all configured metadata of one game object type into a new dictionary.
 
     :param str itemDir: The directory in which to search for items of the given type
@@ -39,7 +39,10 @@ def _loadGameItemsFromDir(itemDir : str, itemFolderExt : str) -> Dict[str, dict]
                 # Read in the object metadata and add to the database
                 with open(dirpath + os.sep + "META.json", "r") as f:
                     currentItemData = json.loads(f.read())
-                    itemDB[currentItemData["name"]] = currentItemData
+                    if lowerKey:
+                        itemDB[currentItemData["name"].lower()] = currentItemData
+                    else:
+                        itemDB[currentItemData["name"]] = currentItemData
     print("[gameConfigurator] " + str(len(itemDB)) + " " + rawFolderExt + "s loaded.")
     return itemDB
 
@@ -130,10 +133,10 @@ def _loadGameObjects(dataDB : Dict[str, dict], objsDB : Dict[str, Any], deserial
     Objects are registered directly into objsDB, and the metadata in dataDB is updated to be builtIn.
     No new dictionaries are created.
     """
-    for objDict in dataDB.values():
-        objsDB[objDict["name"]] = deserializer(objDict)
-        objsDB[objDict["name"]].builtIn = True
-        dataDB[objDict["name"]]["builtIn"] = True
+    for objKey, objDict in dataDB.items():
+        objsDB[objKey] = deserializer(objDict)
+        objsDB[objKey].builtIn = True
+        dataDB[objKey]["builtIn"] = True
 
 
 def _loadToolObjects(dataDB : Dict[str, dict], objsDB : Dict[str, Any], deserializer: FunctionType):
@@ -252,7 +255,7 @@ def loadAllGameObjectData():
                             ("builtInToolData",       cfg.paths.bbToolMETAFolder,         ".bbTool"),
                             ("builtInSecondariesData",cfg.paths.bbModuleMETAFolder,       ".bbModule"),
                             ("medalsData",            cfg.paths.bbMedalsMETAFolder,       ".bbMedal")):
-        setattr(bbData, db, _loadGameItemsFromDir(dir, ext))
+        setattr(bbData, db, _loadGameItemsFromDir(dir, ext, lowerKey=ext==".bbMedal"))
 
 
 def loadAllGameObjects():
