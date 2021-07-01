@@ -508,7 +508,7 @@ class BasedUser(serializable.Serializable):
                     data["ownedMenus"][menuTypeID] = [menu.msg.id for menu in self.ownedMenus[menuTypeID]]
         
         if self.medals:
-            data["medals"] = [m.name for m in self.medals]
+            data["medals"] = [m.name.lower() for m in self.medals]
 
         return data
 
@@ -892,9 +892,10 @@ class BasedUser(serializable.Serializable):
                                                 + "#" + str(menuID) + " stored in user #" + str(id),
                                             category="reactionMenus", eventType="unknMenuID")
         
-        medals = []
+        medals = set()
         if "medals" in userDict and userDict["medals"]:
-            medals = set((bbData.medalObjs[name] for name in userDict["medals"]))
+            for name in userDict["medals"]:
+                medals.add(bbData.medalObjs[name])
 
         return BasedUser(**cls._makeDefaults(userDict, ("lifetimeBountyCreditsWon",),
                                                 userID=userID, activeShip=activeShip, inactiveShips=inactiveShips,
@@ -902,7 +903,7 @@ class BasedUser(serializable.Serializable):
                                                 inactiveTurrets=inactiveTurrets, inactiveTools=inactiveTools,
                                                 bountyHuntingXP=bountyHuntingXP, kaamo=kaamo, loma=loma,
                                                 ownedMenus=ownedMenus, lifetimeBountyCreditsWon=lifetimeBountyCreditsWon,
-                                                medals=medals
+                                                medals=medals,
                                                 **{k: datetime.utcfromtimestamp(userDict[k]) \
                                                     for k in ("dailyBountyWinsReset", "guildTransferCooldownEnd") \
                                                     if k in userDict}))
