@@ -1,4 +1,4 @@
-import json
+import json, os
 
 
 def readJSON(dbFile: str) -> dict:
@@ -49,3 +49,23 @@ async def saveDBAsync(dbPath: str, db, **kwargs):
     :param db: the database object to save
     """
     writeJSON(dbPath, await db.toDict(**kwargs))
+
+
+def depthLimitedWalk(top: str, maxDepth: int):
+    """os.walk but with a limited recursion depth.
+    Written by Kishan Patel:
+    https://www.semicolonworld.com/question/57766/python-3-travel-directory-tree-with-limited-recursion-depth
+
+    :param str top: Directory to start walking from
+    :param int maxDepth: The maximum number of directories the walk will recurse into
+    :return: An iterator in accordance with os.walk
+    :rtype: Iterator
+    """
+    dirs, nondirs = [], []
+    for name in os.listdir(top):
+        (dirs if os.path.isdir(os.path.join(top, name)) else nondirs).append(name)
+    yield top, dirs, nondirs
+    if maxDepth > 1:
+        for name in dirs:
+            for x in depthLimitedWalk(os.path.join(top, name), maxDepth - 1):
+                yield x

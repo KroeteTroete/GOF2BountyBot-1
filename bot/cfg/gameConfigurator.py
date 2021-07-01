@@ -16,26 +16,6 @@ from ..lib import gameMaths
 CWD = os.getcwd()
 
 
-def depthLimitedWalk(top: str, maxDepth: int):
-    """os.walk but with a limited recursion depth.
-    Written by Kishan Patel:
-    https://www.semicolonworld.com/question/57766/python-3-travel-directory-tree-with-limited-recursion-depth
-
-    :param str top: Directory to start walking from
-    :param int maxDepth: The maximum number of directories the walk will recurse into
-    :return: An iterator in accordance with os.walk
-    :rtype: Iterator
-    """
-    dirs, nondirs = [], []
-    for name in os.listdir(top):
-        (dirs if os.path.isdir(os.path.join(top, name)) else nondirs).append(name)
-    yield top, dirs, nondirs
-    if maxDepth > 1:
-        for name in dirs:
-            for x in depthLimitedWalk(os.path.join(top, name), maxDepth - 1):
-                yield x
-
-
 def _loadGameItemsFromDir(itemDir : str, itemFolderExt : str) -> Dict[str, dict]:
     """Load metadata for all configured metadata of one game object type into a new dictionary.
 
@@ -48,7 +28,7 @@ def _loadGameItemsFromDir(itemDir : str, itemFolderExt : str) -> Dict[str, dict]
     rawFolderExt = itemFolderExt.lstrip(".")
     itemFolderExt = itemFolderExt.lower()
     # Scan all subdirectories recursively, looking for folders ending with the given extension
-    for subdir, dirs, _ in depthLimitedWalk(itemDir, cfg.gameObjectCfgMaxRecursion):
+    for subdir, dirs, _ in lib.jsonHandler.depthLimitedWalk(itemDir, cfg.gameObjectCfgMaxRecursion):
         for dirname in dirs:
             if dirname.lower().endswith(itemFolderExt):
                 dirpath = subdir + os.sep + dirname
@@ -74,7 +54,7 @@ def _loadShipItemsFromDir(shipsDir : str) -> Dict[str, dict]:
     """
     itemDB = {}
     # Scan all subdirectories recursively, looking for folders ending with .bbShip
-    for subdir, dirs, _ in depthLimitedWalk(shipsDir, cfg.gameObjectCfgMaxRecursion):
+    for subdir, dirs, _ in lib.jsonHandler.depthLimitedWalk(shipsDir, cfg.gameObjectCfgMaxRecursion):
         for dirname in dirs:
             if dirname.lower().endswith(".bbship"):
                 dirpath = subdir + os.sep + dirname
@@ -123,7 +103,7 @@ def _loadShipSkinsFromDir(shipsDir : str) -> Dict[str, dict]:
     """
     itemDB = {}
     # Scan all subdirectories recursively, looking for folders ending with .bbShip
-    for subdir, dirs, _ in depthLimitedWalk(shipsDir, cfg.gameObjectCfgMaxRecursion):
+    for subdir, dirs, _ in lib.jsonHandler.depthLimitedWalk(shipsDir, cfg.gameObjectCfgMaxRecursion):
         for dirname in dirs:
             if dirname.lower().endswith(".bbshipskin"):
                 dirpath = subdir + os.sep + dirname
