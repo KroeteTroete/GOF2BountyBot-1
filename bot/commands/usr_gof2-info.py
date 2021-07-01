@@ -1156,7 +1156,7 @@ async def cmd_list(message : discord.Message, args : str, isDM : bool):
     objType = ""
     itemLevel = -1
     manufacturer = ""
-    objTypes = ["system", "criminal", "ship", "weapon", "module", "turret", "commodity"]
+    objTypes = ["system", "criminal", "ship", "weapon", "module", "turret", "commodity", "medal", "skin"]
 
     for arg in args.split(" "):
         if levelFound:
@@ -1196,48 +1196,65 @@ async def cmd_list(message : discord.Message, args : str, isDM : bool):
         await message.channel.send(":x: Please give a tech level to match after `level`!")
         return
 
-    foundObjs = []
     if itemLevel != -1:
         print("LEVEL",itemLevel)
 
     factionObjs = {"system": bbData.builtInSystemObjs, "criminal": bbData.builtInCriminalObjs}
     manufacturerObjs = {"weapon" : bbData.builtInWeaponObjs, "module" : bbData.builtInModuleObjs,
                         "turret" : bbData.builtInTurretObjs, "ship": bbData.builtInShipData}
-    tlObjs = {"weapon" : bbData.builtInWeaponObjs, "module" : bbData.builtInModuleObjs, "turret" : bbData.builtInTurretObjs,
-                "ship": bbData.builtInShipData}
+    tlObjs = {"weapon" : bbData.builtInWeaponObjs, "module" : bbData.builtInModuleObjs,
+                "turret" : bbData.builtInTurretObjs, "ship": bbData.builtInShipData}
     dictObjs = {"ship": bbData.builtInShipData}
 
-    if itemLevel != -1 and objType not in tlObjs:
-        await message.channel.send(":x: " + objType.title() + "s don't have tech levels!")
-        return
-
-    if objType in factionObjs:
-        if objType in dictObjs:
-            for item in factionObjs[objType].values():
-                if (manufacturer == "" or (manufacturer != "" and item["faction"] == manufacturer)) and \
-                        (objType not in tlObjs or (objType in tlObjs and \
-                            (itemLevel == -1 or (itemLevel != -1 and item["techLevel"])) == itemLevel)):
-                    foundObjs.append(item)
+    if objType == "medal":
+        if itemLevel != -1:
+            await message.reply(":x: Medals don't have tech levels!")
+        elif manufacturer != "":
+            await message.reply(":x: Medals don't have manufacturers!")
         else:
-            for item in factionObjs[objType].values():
-                if (manufacturer == "" or (manufacturer != "" and item.faction == manufacturer)) and \
-                        (objType not in tlObjs or (objType in tlObjs and \
-                            (itemLevel == -1 or (itemLevel != -1 and item.techLevel == itemLevel)))):
-                    foundObjs.append(item)
+            foundObjs = bbData.medalObjs.values()
 
-    elif objType in manufacturerObjs:
-        if objType in dictObjs:    
-            for item in manufacturerObjs[objType].values():
-                if (manufacturer == "" or (manufacturer != "" and item["manufacturer"] == manufacturer)) and \
-                        (objType not in tlObjs or (objType in tlObjs and \
-                            (itemLevel == -1 or (itemLevel != -1 and item["techLevel"] == itemLevel)))):
-                    foundObjs.append(item)
-        else:
-            for item in manufacturerObjs[objType].values():
-                if (manufacturer == "" or (manufacturer != "" and item.manufacturer == manufacturer)) and \
-                        (objType not in tlObjs or (objType in tlObjs and \
-                            (itemLevel == -1 or (itemLevel != -1 and item.techLevel == itemLevel)))):
-                    foundObjs.append(item)
+    elif objType == "skin":
+        foundObjs = bbData.builtInShipSkins.values()
+        if itemLevel != -1:
+            foundObjs = [i.skin for i in bbData.builtInCrateObjs["levelUp"][itemLevel].itemPool]
+        elif manufacturer != "":
+            foundObjs = [i for i in foundObjs if i.designer == manufacturer]
+
+    else:
+        foundObjs = []
+
+        if itemLevel != -1 and objType not in tlObjs:
+            await message.channel.send(":x: " + objType.title() + "s don't have tech levels!")
+            return
+
+        if objType in factionObjs:
+            if objType in dictObjs:
+                for item in factionObjs[objType].values():
+                    if (manufacturer == "" or (manufacturer != "" and item["faction"] == manufacturer)) and \
+                            (objType not in tlObjs or (objType in tlObjs and \
+                                (itemLevel == -1 or (itemLevel != -1 and item["techLevel"])) == itemLevel)):
+                        foundObjs.append(item)
+            else:
+                for item in factionObjs[objType].values():
+                    if (manufacturer == "" or (manufacturer != "" and item.faction == manufacturer)) and \
+                            (objType not in tlObjs or (objType in tlObjs and \
+                                (itemLevel == -1 or (itemLevel != -1 and item.techLevel == itemLevel)))):
+                        foundObjs.append(item)
+
+        elif objType in manufacturerObjs:
+            if objType in dictObjs:    
+                for item in manufacturerObjs[objType].values():
+                    if (manufacturer == "" or (manufacturer != "" and item["manufacturer"] == manufacturer)) and \
+                            (objType not in tlObjs or (objType in tlObjs and \
+                                (itemLevel == -1 or (itemLevel != -1 and item["techLevel"] == itemLevel)))):
+                        foundObjs.append(item)
+            else:
+                for item in manufacturerObjs[objType].values():
+                    if (manufacturer == "" or (manufacturer != "" and item.manufacturer == manufacturer)) and \
+                            (objType not in tlObjs or (objType in tlObjs and \
+                                (itemLevel == -1 or (itemLevel != -1 and item.techLevel == itemLevel)))):
+                        foundObjs.append(item)
 
     if not foundObjs:
         await message.channel.send("No results found!")
