@@ -65,6 +65,11 @@ async def dev_cmd_create_medal(message : discord.Message, args : str, isDM : boo
                 except lib.exceptions.UnrecognisedCustomEmoji as e:
                     await message.reply(f"Unrecognised emoji: {line[len('emoji='):]}\nPlease make sure I can access it.")
                     return
+            elif line.startswith("wiki="):
+                if kwargs["wiki"] != "":
+                    await message.reply(":x: You can only specify wiki once!")
+                    return
+                kwargs["wiki"] = line[len("wiki="):]
             else:
                 await message.reply(":x: Unrecognised kwarg on your " \
                                     + f"{lineNum+3}{lib.stringTyping.getNumExtension(lineNum+3)} line.")
