@@ -122,7 +122,7 @@ async def cmd_info_system(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a systemw as specified
     if args == "":
-        await message.channel.send(":x: Please provide a system! Example: `" + prefix + "system Augmenta`")
+        await message.channel.send(":x: Please provide a system! Example: `" + prefix + "info system Augmenta`")
         return
 
     # attempt to look up the specified system
@@ -183,7 +183,7 @@ async def cmd_info_criminal(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a criminal was given
     if args == "":
-        await message.channel.send(":x: Please provide a criminal! Example: `" + prefix + "criminal Toma Prakupy`")
+        await message.channel.send(":x: Please provide a criminal! Example: `" + prefix + "info criminal Toma Prakupy`")
         return
 
     # look up the criminal object
@@ -232,7 +232,7 @@ async def cmd_info_ship(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a ship! Example: `" + prefix + "ship Groza Mk II`")
+        await message.channel.send(":x: Please provide a ship! Example: `" + prefix + "info ship Groza Mk II`")
         return
 
     # look up the ship object
@@ -326,7 +326,7 @@ async def cmd_info_weapon(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a weapon! Example: `" + prefix + "weapon Nirai Impulse EX 1`")
+        await message.channel.send(":x: Please provide a weapon! Example: `" + prefix + "info weapon Nirai Impulse EX 1`")
         return
 
     # look up the weapon object
@@ -383,7 +383,7 @@ async def cmd_info_module(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a module! Example: `" + prefix + "module Groza Mk II`")
+        await message.channel.send(":x: Please provide a module! Example: `" + prefix + "info module Groza Mk II`")
         return
 
     # look up the module object
@@ -441,7 +441,7 @@ async def cmd_info_turret(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a turret! Example: `" + prefix + "turret Groza Mk II`")
+        await message.channel.send(":x: Please provide a turret! Example: `" + prefix + "info turret Groza Mk II`")
         return
 
     # look up the turret object
@@ -502,7 +502,7 @@ async def cmd_info_commodity(message : discord.Message, args : str, isDM : bool)
 
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a commodity! Example: `" + prefix + "commodity Groza Mk II`")
+        await message.channel.send(":x: Please provide a commodity! Example: `" + prefix + "info commodity Groza Mk II`")
         return
 
     # look up the commodity object
@@ -553,7 +553,7 @@ async def cmd_info_skin(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a Skin! Example: `" + prefix + "skin tex`")
+        await message.channel.send(":x: Please provide a Skin! Example: `" + prefix + "info skin tex`")
         return
     skin = args.lower()
     if skin not in bbData.builtInShipSkins:
@@ -595,6 +595,47 @@ async def cmd_info_skin(message : discord.Message, args : str, isDM : bool):
 # bbCommands.register("info-skin", cmd_info_skin)
 
 
+async def cmd_info_medal(message : discord.Message, args : str, isDM : bool):
+    """return information about a specified medal
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: string containing a medal name
+    :param bool isDM: Whether or not the command is being called from a DM channel
+    """
+    if not bbData.medalObjs:
+        await message.reply(":x: There are currently no medals in the game.")
+        return
+
+    if isDM:
+        prefix = cfg.defaultCommandPrefix
+    else:
+        prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
+    # verify a item was given
+    if args == "":
+        await message.channel.send(f":x: Please provide a medal! Example: `{prefix}info medal {next(i for i in bbData.medalObjs)}`")
+        return
+    medal = args.lower()
+    if medal not in bbData.medalObjs:
+        if len(medal) < 20:
+            await message.channel.send(":x: The **" + medal + "** medal is not in my database! :detective:")
+        else:
+            await message.channel.send(":x: The **" + medal[0:15] + "**... medal is not in my database! :detective:")
+    else:
+        requestedMedal = bbData.medalObjs[medal]
+        # build the stats embed
+        statsEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), desc=f"__Medal File__\n{requestedMedal.desc}",
+                                                titleTxt=requestedMedal.name, thumb=requestedMedal.icon,
+                                                footerTxt="See all available medals with the list command")
+
+        if requestedMedal.hasWiki:
+            statsEmbed.add_field(name="‎", value="[Wiki](" + requestedMedal.wiki + ")", inline=False)
+
+        # send the embed
+        await message.channel.send(embed=statsEmbed)
+
+# bbCommands.register("info-medal", cmd_info_medal)
+
+
 async def cmd_info(message : discord.Message, args : str, isDM : bool):
     """Return statistics about a named game object, of a specified type.
     The named used to reference the object may be an alias.
@@ -610,26 +651,19 @@ async def cmd_info(message : discord.Message, args : str, isDM : bool):
         return
 
     argsSplit = args.split(" ")
-    if argsSplit[0] not in ["system", "criminal", "ship", "weapon", "module", "turret", "commodity", "skin"]:
-        await message.channel.send(":x: Invalid object type! (system/criminal/ship/weapon/module/turret/commodity/skin)")
-        return
 
-    if argsSplit[0] == "system":
-        await cmd_info_system(message, args[7:], isDM)
-    elif argsSplit[0] == "criminal":
-        await cmd_info_criminal(message, args[9:], isDM)
-    elif argsSplit[0] == "ship":
-        await cmd_info_ship(message, args[5:], isDM)
-    elif argsSplit[0] == "weapon":
-        await cmd_info_weapon(message, args[7:], isDM)
-    elif argsSplit[0] == "module":
-        await cmd_info_module(message, args[7:], isDM)
-    elif argsSplit[0] == "turret":
-        await cmd_info_turret(message, args[7:], isDM)
-    elif argsSplit[0] == "commodity":
-        await cmd_info_commodity(message, args[10:], isDM)
-    elif argsSplit[0] == "skin":
-        await cmd_info_skin(message, args[5:], isDM)
+    infoCmds = {"system": cmd_info_system,
+                "criminal": cmd_info_criminal,
+                "ship": cmd_info_ship,
+                "weapon": cmd_info_weapon,
+                "module": cmd_info_module,
+                "turret": cmd_info_turret,
+                "commodity": cmd_info_commodity,
+                "skin": cmd_info_skin,
+                "medal": cmd_info_medal}
+    
+    if argsSplit[0] in infoCmds:
+        await infoCmds[argsSplit[0]](message, args[len(argsSplit[0])+1:], isDM)
     else:
         await message.channel.send(":x: Unknown object type! (system/criminal/ship/weapon/module/turret/commodity/skin)")
 
