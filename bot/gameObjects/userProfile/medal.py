@@ -45,7 +45,7 @@ class Medal(Serializable):
         :return: A dictionary fully describing this medal and its attriutes
         :rtype: dict
         """
-        data = {"name": self.name, "desc": self.desc, "icon": self.icon, "emoji": self.emoji}
+        data = {"name": self.name, "desc": self.desc, "icon": self.icon, "emoji": self.emoji.toDict()}
         if self.hasWiki:
             data["wiki"] = self.wiki
         return data
@@ -58,4 +58,4 @@ class Medal(Serializable):
         :return: A new Medal instance with the attributes described in data
         :rtype: Medal
         """
-        return Medal(**cls._makeDefaults(data))
+        return Medal(**cls._makeDefaults(data, emoji=BasedEmoji.fromDict(data["emoji"])))
