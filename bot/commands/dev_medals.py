@@ -194,7 +194,6 @@ async def dev_cmd_create_medal(message : discord.Message, args : str, isDM : boo
     lib.jsonHandler.writeJSON(filePath, newMedal.toDict(), prettyPrint=True)
 
     await message.reply(f"{cfg.defaultEmojis.submit.sendable} medal added successfuly: {medalName}")
-        
 
 
 botCommands.register("create-medal", dev_cmd_create_medal, 3, forceKeepArgsCasing=True, allowDM=True, helpSection="medals", useDoc=True)
@@ -216,7 +215,7 @@ async def dev_cmd_give_medal(message : discord.Message, args : str, isDM : bool)
         await message.reply(":x: Your first argument must be either a user ID or a user mention")
         return
 
-    medalName = args[len(argsSplit[0])+1:].lower()
+    medalName = args[len(argsSplit[0])+1:]
     if medalName not in bbData.medalObjs:
         await message.reply(f":x: Unknown medal: '{medalName}'")
         return
@@ -256,7 +255,7 @@ async def dev_cmd_take_medal(message : discord.Message, args : str, isDM : bool)
         await message.reply(":x: Your first argument must be either a user ID or a user mention")
         return
 
-    medalName = args[len(argsSplit[0])+1:].lower()
+    medalName = args[len(argsSplit[0])+1:]
     if medalName not in bbData.medalObjs:
         await message.reply(f":x: Unknown medal: '{medalName}'")
         return
