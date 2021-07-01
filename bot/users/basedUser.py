@@ -109,7 +109,7 @@ class BasedUser(serializable.Serializable):
     :var ownedMenus: Sets of references to all menus that user owns, by string type IDs.
     :vartype ownedMenus: Dict[str, MutableSet[ReactionMenu]]
     :var medals: References to all medals awareded to this user
-    :vartype medals: List[Medal]
+    :vartype medals: MutableSet[Medal]
     """
 
     def __init__(self, userID: int, credits : int = 0, lifetimeBountyCreditsWon : int = 0,
@@ -125,7 +125,7 @@ class BasedUser(serializable.Serializable):
                     bountyWinsToday : int = 0, dailyBountyWinsReset : datetime = None,
                     homeGuildID : int = -1, guildTransferCooldownEnd : datetime = None, prestiges : int = 0,
                     kaamo : Union[kaamoShop.KaamoShop, None] = None, loma : Union[lomaShop.LomaShop, None] = None,
-                    ownedMenus : Dict[str, MutableSet[reactionMenu.ReactionMenu]] = {}, medals: List[Medal] = []):
+                    ownedMenus : Dict[str, MutableSet[reactionMenu.ReactionMenu]] = {}, medals: MutableSet[Medal] = []):
         """
         :param int id: The user's unique ID. The same as their unique discord ID.
         :param int credits: The amount of credits (currency) this user has (Default 0)
@@ -173,7 +173,7 @@ class BasedUser(serializable.Serializable):
         :param int prestiges: The number of times the user has prestiged (default 0)
         :param ownedMenus: Sets of references to all menus that user owns, by string type IDs. (default {})
         :type ownedMenus: Dict[str, MutableSet[ReactionMenu]]
-        :param List[Medal] medals: References to all medals awareded to this user (Default [])
+        :param MutableSet[Medal] medals: References to all medals awareded to this user (Default [])
         """
         if type(userID) == float:
             userID = int(userID)
@@ -894,7 +894,7 @@ class BasedUser(serializable.Serializable):
         
         medals = []
         if "medals" in userDict and userDict["medals"]:
-            medals = [bbData.medalObjs[name] for name in userDict["medals"]]
+            medals = set((bbData.medalObjs[name] for name in userDict["medals"]))
 
         return BasedUser(**cls._makeDefaults(userDict, ("lifetimeBountyCreditsWon",),
                                                 userID=userID, activeShip=activeShip, inactiveShips=inactiveShips,
