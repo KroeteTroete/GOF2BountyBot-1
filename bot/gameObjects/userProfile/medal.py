@@ -51,6 +51,7 @@ class Medal(Serializable):
         return data
 
 
+    @classmethod
     def fromDict(cls, data: dict, **kwargs) -> "Medal":
         """Deserialize a Medal instance.
 
