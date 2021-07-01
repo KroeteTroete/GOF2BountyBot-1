@@ -508,12 +508,9 @@ class BasedUser(serializable.Serializable):
                     data["ownedMenus"][menuTypeID] = [menu.msg.id for menu in self.ownedMenus[menuTypeID]]
         
         if self.medals:
-            data["medals"] = []
-            for m in self.medals:
-                if m.name.lower() in bbData.medalObjs:
-                    data["medals"].append(m.name.lower())
-                else:
-                    self.medals.remove(m)
+            for m in [i for i in self.medals if i.name.lower() not in bbData.medalObjs]:
+                self.medals.remove(m)
+            data["medals"] = [m.name.lower() for m in self.medals]
 
         return data
 
