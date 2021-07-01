@@ -508,7 +508,12 @@ class BasedUser(serializable.Serializable):
                     data["ownedMenus"][menuTypeID] = [menu.msg.id for menu in self.ownedMenus[menuTypeID]]
         
         if self.medals:
-            data["medals"] = [m.name.lower() for m in self.medals]
+            data["medals"] = []
+            for m in self.medals:
+                if m.name.lower() in bbData.medalObjs:
+                    data["medals"].append(m.name.lower())
+                else:
+                    self.medals.remove(m)
 
         return data
 
@@ -895,7 +900,8 @@ class BasedUser(serializable.Serializable):
         medals = set()
         if "medals" in userDict and userDict["medals"]:
             for name in userDict["medals"]:
-                medals.add(bbData.medalObjs[name])
+                if name in bbData.medalObjs:
+                    medals.add(bbData.medalObjs[name])
 
         return BasedUser(**cls._makeDefaults(userDict, ("lifetimeBountyCreditsWon",),
                                                 userID=userID, activeShip=activeShip, inactiveShips=inactiveShips,

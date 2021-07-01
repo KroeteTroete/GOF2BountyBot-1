@@ -1,12 +1,14 @@
 import discord
 import aiohttp
 import os
+import shutil
 
 from . import commandsDB as botCommands
 from .. import botState, lib
 from ..cfg import cfg, bbData
 from ..gameObjects.userProfile.medal import Medal
 from ..users.basedUser import BasedUser
+from ..reactionMenus import confirmationReactionMenu
 
 
 botCommands.addHelpSection(3, "medals")
@@ -277,3 +279,52 @@ async def dev_cmd_take_medal(message : discord.Message, args : str, isDM : bool)
 
 
 botCommands.register("take-medal", dev_cmd_take_medal, 3, allowDM=True, helpSection="medals", useDoc=True)
+
+
+async def dev_cmd_delete_medal(message : discord.Message, args : str, isDM : bool):
+    """Developer command deleting a medal from the game.
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: A string containing a medal name
+    :param bool isDM: Whether or not the command is being called from a DM channel    
+    """
+    if not args:
+        await message.reply(":x: Supply a medal name")
+        return
+
+    if args not in bbData.medalObjs:
+        await message.reply(f":x: Unknown medal: '{args}'")
+        return
+
+    medal = bbData.medalObjs[args]
+    
+    confirmMsg = await message.channel.send(f"Are you sure you want to completely remove the {medal.name} " \
+                                            + "medal from the game? The medal will be lazily removed from all owning users.")
+    confirmResult = await confirmationReactionMenu.InlineConfirmationMenu(confirmMsg, message.author, 20).doMenu()
+
+    if cfg.defaultEmojis.accept in confirmResult:
+        # locate medal META file
+        medalFound = False
+        for subdir, dirs, _ in lib.jsonHandler.depthLimitedWalk(cfg.paths.bbMedalsMETAFolder, cfg.gameObjectCfgMaxRecursion):
+            for dirname in dirs:
+                if dirname.lower().endswith(".bbmedal"):
+                    dirpath = subdir + os.sep + dirname
+
+                    # Read in the medal metadata
+                    if lib.jsonHandler.readJSON(dirpath + os.sep + "META.json")["name"] == medal.name:
+                        medalFound = True
+                        shutil.rmtree(dirpath)
+            
+            if medalFound:
+                break
+        if medalFound:
+            del bbData.medalObjs[args]
+            await message.reply(f"{cfg.defaultEmojis.submit} The {medal.name} medal was removed from the game successfuly." \
+                                + f"\nThe medal's emoji ({medal.emoji.toDict()}) and icon message (if any) were NOT deleted.")
+        else:
+            await message.reply(":x: The medal's META file could not be located. Medal deletion cancelled.")
+    else:
+        await message.reply("Medal deletion cancelled.")
+
+
+botCommands.register("delete-medal", dev_cmd_delete_medal, 3, allowDM=True, helpSection="medals", useDoc=True)

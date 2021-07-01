@@ -225,7 +225,13 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
         nextXP = gameMaths.bountyHuntingXPForLevel(hunterLvl + 1)
         levelProgress = (userObj.bountyHuntingXP - xpForLevel) / (nextXP - xpForLevel)
         if userObj.medals:
-            statsEmbed.description = "*Medals*\n" + "".join(m.emoji.sendable for m in userObj.medals) + "\n\n" + statsEmbed.description
+            medalsStr = ""
+            for m in userObj.medals:
+                if m.name.lower() in bbData.medalObjs:
+                    medalsStr += m.emoji.sendable
+                else:
+                    userObj.medals.remove(m)
+            statsEmbed.description = f"*Medals*\n{medalsStr}\n\n{statsEmbed.description}"
         statsEmbed.add_field(name="Credits balance:", value=str(userObj.credits), inline=True)
         statsEmbed.add_field(name="Total value:", value=str(userObj.getStatByName("value")), inline=True)
         statsEmbed.add_field(name="‎", value="__Bounty Hunting__", inline=False)
