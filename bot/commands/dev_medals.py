@@ -6,6 +6,7 @@ from . import commandsDB as botCommands
 from .. import botState, lib
 from ..cfg import cfg, bbData
 from ..gameObjects.userProfile.medal import Medal
+from ..users.basedUser import BasedUser
 
 
 botCommands.addHelpSection(3, "medals")
@@ -197,3 +198,83 @@ async def dev_cmd_create_medal(message : discord.Message, args : str, isDM : boo
 
 
 botCommands.register("create-medal", dev_cmd_create_medal, 3, forceKeepArgsCasing=True, allowDM=True, helpSection="medals", useDoc=True)
+
+
+async def dev_cmd_give_medal(message : discord.Message, args : str, isDM : bool):
+    """Developer command adding a medal to a user's profile
+    Provide a user ID or mention followed by the medal name
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: A string containing a user ID or mention followed by a medal name
+    :param bool isDM: Whether or not the command is being called from a DM channel    
+    """
+    argsSplit = args.split(" ")
+    if len(argsSplit) < 2:
+        await message.reply(":x: Supply both a user and a medal")
+        return
+    if not lib.stringTyping.isInt(argsSplit[0]) or lib.stringTyping.isMention(argsSplit[0]):
+        await message.reply(":x: Your first argument must be either a user ID or a user mention")
+        return
+
+    medalName = args[len(argsSplit[0])+1:].lower()
+    if medalName not in bbData.medalObjs:
+        await message.reply(f":x: Unknown medal: '{medalName}'")
+        return
+
+    userID = int(argsSplit[0].lstrip("<@!").rstrip(">"))
+    requestedUser: discord.User = lib.client.get_user(userID) or await lib.client.fetch_user(userID)
+    if requestedUser is None:
+        await message.reply(":x: Unrecognisd user. Make sure we share a server.")
+        return
+
+    requestedBUser: BasedUser = botState.usersDB.getOrAddID(userID)
+    medal: Medal = bbData.medalObjs[medalName]
+    if medal in requestedBUser.medals:
+        await message.reply(f":x: {requestedUser.display_name} already has the {medal.name} medal.")
+        return
+    
+    requestedBUser.medals.add(medal)
+    await message.reply(f"{cfg.defaultEmojis.submit} {requestedUser.display_name} was awarded the {medal.name} medal successfuly.")
+
+
+botCommands.register("give-medal", dev_cmd_give_medal, 3, allowDM=True, helpSection="medals", useDoc=True)
+
+
+async def dev_cmd_take_medal(message : discord.Message, args : str, isDM : bool):
+    """Developer command removing a medal from a user's profile
+    Provide a user ID or mention followed by the medal name
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: A string containing a user ID or mention followed by a medal name
+    :param bool isDM: Whether or not the command is being called from a DM channel    
+    """
+    argsSplit = args.split(" ")
+    if len(argsSplit) < 2:
+        await message.reply(":x: Supply both a user and a medal")
+        return
+    if not lib.stringTyping.isInt(argsSplit[0]) or lib.stringTyping.isMention(argsSplit[0]):
+        await message.reply(":x: Your first argument must be either a user ID or a user mention")
+        return
+
+    medalName = args[len(argsSplit[0])+1:].lower()
+    if medalName not in bbData.medalObjs:
+        await message.reply(f":x: Unknown medal: '{medalName}'")
+        return
+
+    userID = int(argsSplit[0].lstrip("<@!").rstrip(">"))
+    requestedUser: discord.User = lib.client.get_user(userID) or await lib.client.fetch_user(userID)
+    if requestedUser is None:
+        await message.reply(":x: Unrecognisd user. Make sure we share a server.")
+        return
+
+    requestedBUser: BasedUser = botState.usersDB.getOrAddID(userID)
+    medal: Medal = bbData.medalObjs[medalName]
+    if medal not in requestedBUser.medals:
+        await message.reply(f":x: {requestedUser.display_name} already does not have the {medal.name} medal.")
+        return
+    
+    requestedBUser.medals.remove(medal)
+    await message.reply(f"{cfg.defaultEmojis.submit} {requestedUser.display_name} was un-awarded the {medal.name} medal successfuly.")
+
+
+botCommands.register("take-medal", dev_cmd_take_medal, 3, allowDM=True, helpSection="medals", useDoc=True)
