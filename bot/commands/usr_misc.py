@@ -231,7 +231,7 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
                     medalsStr += m.emoji.sendable
                 else:
                     userObj.medals.remove(m)
-            statsEmbed.description = f"*Medals*\n{medalsStr}\n\n{statsEmbed.description}"
+            statsEmbed.description = f"{medalsStr}\n\n{statsEmbed.description}"
         statsEmbed.add_field(name="Credits balance:", value=str(userObj.credits), inline=True)
         statsEmbed.add_field(name="Total value:", value=str(userObj.getStatByName("value")), inline=True)
         statsEmbed.add_field(name="‎", value="__Bounty Hunting__", inline=False)
