@@ -92,7 +92,6 @@ class BasedUser(serializable.Serializable):
     :var dailyBountyWinsReset: A datetime.datetime representing the time at which the user's bountyWinsToday should be reset
                                 to zero
     :vartype dailyBountyWinsReset: datetime.datetime
-    :var pollOwned: Whether or not this user has a running ReactionPollMenu
     :var homeGuildID: The id of this user's 'home guild' - the only guild from which they may use several commands
                         e.g buy and check.
     :vartype homeGuildID: int

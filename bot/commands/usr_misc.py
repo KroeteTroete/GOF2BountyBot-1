@@ -635,7 +635,7 @@ async def cmd_poll(message : discord.Message, args : str, isDM : bool):
                         in this function's docstring
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
-    if botState.usersDB.getOrAddID(message.author.id).pollOwned:
+    if botState.usersDB.getOrAddID(message.author.id).hasMenuOfTypeID("poll"):
         await message.channel.send(":x: You can only make one poll at a time!")
         return
 
@@ -770,7 +770,7 @@ async def cmd_poll(message : discord.Message, args : str, isDM : bool):
                                                 desc=pollSubject)
     await menu.updateMessage()
     botState.reactionMenusDB[menuMsg.id] = menu
-    botState.usersDB.getUser(message.author.id).pollOwned = True
+    botState.usersDB.getUser(message.author.id).addOwnedMenu("poll", menu)
 
 botCommands.register("poll", cmd_poll, 0, forceKeepArgsCasing=True, allowDM=False,
                         signatureStr="**poll** *<subject>*\n**<option1 emoji> <option1 name>**\n...    ...\n*[kwargs]*",

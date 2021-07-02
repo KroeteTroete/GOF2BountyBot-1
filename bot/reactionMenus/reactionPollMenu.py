@@ -25,7 +25,10 @@ async def printAndExpirePollResults(msgID : int):
     results = {}
 
     if menu.owningBBUser is not None:
-        menu.owningBBUser.pollOwned = False
+        try:
+            menu.owningBBUser.removeOwnedMenu("poll", menu)
+        except KeyError:
+            pass
 
     maxOptionLen = 0
 
