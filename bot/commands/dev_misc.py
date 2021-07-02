@@ -4,6 +4,7 @@ from datetime import datetime
 
 from . import commandsDB as botCommands
 from .. import botState, lib
+from ..users.basedUser import BasedUser
 
 from . import util_help
 
@@ -106,14 +107,22 @@ async def dev_cmd_reset_has_poll(message : discord.Message, args : str, isDM : b
     :param str args: string, can be empty or contain a user mention
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
-    # reset the calling user's cooldown if no user is specified
-    if args == "":
-        botState.usersDB.getUser(message.author.id).pollOwned = False
-        # otherwise get the specified user's discord object and reset their cooldown.
+    try:
+        # reset the calling user's cooldown if no user is specified
+        if args == "":
+            requestedBUser: BasedUser = botState.usersDB.getUser(message.author.id)
+        # otherwise get the specified user's discord object and reset their poll ownership.
         # [!] no validation is done.
+        else:
+            requestedBUser: BasedUser = botState.usersDB.getUser(int(args.lstrip("<@!").rstrip(">")))
+    except KeyError:
+        await message.reply(":x: Unknown user. They may not have used the bot yet.")
+
+    menusRemoved = requestedBUser.removeAllOwnedMenusOfTypeID("poll")
+    if menusRemoved:
+        await message.reply(f"Ownership of {menusRemoved} removed successfuly.")
     else:
-        botState.usersDB.getUser(int(args.lstrip("<@!").rstrip(">"))).pollOwned = False
-    await message.channel.send("Done!")
+        await message.channel.send("This user has no polls!")
 
 botCommands.register("reset-has-poll", dev_cmd_reset_has_poll, 3, allowDM=True, useDoc=True)
 

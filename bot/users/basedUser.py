@@ -809,6 +809,22 @@ class BasedUser(serializable.Serializable):
             self.ownedMenus[menuTypeID] = set()
         self.ownedMenus[menuTypeID].add(menu)
 
+    
+    def removeAllOwnedMenusOfTypeID(self, menuTypeID: str) -> int:
+        """Remove ownership of all menus of the given type ID.
+        The number of menus removed is returned.
+        The menu type is specified as a string type ID, e.g 'help'.
+
+        :param str menuTypeID: The ID of the menu type to clear ownership of
+        :return: The number of menus removed from this user's ownership, possibly zero
+        :rtype: int
+        """
+        if menuTypeID not in self.ownedMenus:
+            return 0
+        menusOwned = len(self.ownedMenus[menuTypeID])
+        self.ownedMenus[menuTypeID].clear()
+        return menusOwned
+
 
     def removeOwnedMenu(self, menuTypeID: str, menu: reactionMenu.ReactionMenu):
         """Remove the given menu as 'owned' by the user.
