@@ -261,6 +261,28 @@ duelLogMaxLength = 10
 # Percentage probability of a user envoking a cloak module in a given timeStep, should they have one equipped
 duelCloakChance = 20
 
+# Background images to display behind duel results. Images are selected at random
+duelResultsBackgrounds = []
+# Image to display on top of all other graphics
+duelResultsOverlay = "duel-results-overay.png"
+# Dimensions of the duel results image
+duelResultsImageDims = (500, 500)
+
+# Width (and height) of player profile images
+duelResultsPlayerWidth = 144
+# Coordinates of the top-left corner of the player 1 profile image
+duelResultsP1Pos = (54, 54)
+# Coordinates of the top-left corner of the player 2 profile image
+duelResultsP2Pos = (304, 54)
+
+# Font to use for duel statistics, e.g time to kill
+duelResultsFont = "duel-results-font.ttf"
+duelResultsFontSize = 16
+# Where to place player 1's duel statistics
+duelResultsP1StatsPos = (51, 211)
+# Where to place player 2's duel statistics
+duelResultsP2StatsPos = (301, 211)
+
 
 
 ##### SHOPS #####
