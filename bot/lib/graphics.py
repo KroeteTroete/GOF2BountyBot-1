@@ -1,12 +1,16 @@
 from PIL import Image, ImageDraw
-from typing import Dict, Union, Tuple
+from typing import Dict, Union, Tuple, List
 from ..cfg import cfg
 import atexit
+import random
 
 
 XP_BAR_SILHOUETTE: Image.Image = None
 USR_PROF_BACKGROUND: Image.Image = None
 XP_BAR_FILLS: Dict[str, Image.Image] = {}
+
+DUEL_RESULTS_BACKGROUNDS: List[Image.Image] = []
+DUEL_RESULTS_OVERLAY: Image.Image = None
 
 
 def closeAll():
@@ -17,14 +21,21 @@ def closeAll():
     if USR_PROF_BACKGROUND is not None:
         USR_PROF_BACKGROUND.close()
     for im in XP_BAR_FILLS.values():
-        im.close()
+        if im is not None:
+            im.close()
+
+    for im in DUEL_RESULTS_BACKGROUNDS.values():
+        if im is not None:
+            im.close()
+    if DUEL_RESULTS_OVERLAY is not None:
+        DUEL_RESULTS_OVERLAY.close()
 
 
 # Automatically close all images when the module is unimported
 atexit.register(closeAll)
 
 
-def cropAndScale(baseImage: Image.Image, w: int, h: int):
+def cropAndScale(baseImage: Image.Image, w: int, h: int) -> Image.Image:
     """Crop baseImage to match the aspect ratio of (w, h), and then scale the result to match (w, h).
     Cropping is performed from the top-left of the image. The original image is not altered, a new one is created.
 
@@ -146,6 +157,7 @@ def copyXPBarFill(divName: str) -> Image.Image:
             else:
                 XP_BAR_FILLS[div] = Image.open(fillPath)
                 XP_BAR_FILLS[div] = XP_BAR_FILLS[div].resize((cfg.xpBarWidth, cfg.xpBarHeight))
+                pathsDone[div] = XP_BAR_FILLS[div]
 
     return XP_BAR_FILLS[divName].copy()
 
@@ -163,6 +175,42 @@ def copyUserProfileBackground() -> Image.Image:
         USR_PROF_BACKGROUND = USR_PROF_BACKGROUND.resize((cfg.userProfileImgWidth, cfg.userProfileImgHeight))
 
     return USR_PROF_BACKGROUND.copy()
+
+
+def copyRandomDuelResultsBackground() -> Image.Image:
+    """Get a copy of a random image to display behind duel results.
+    The image has correct dimensions according to cfg.
+
+    :return: A random image selected from cfg.duelResultsBackgrounds, but scaled to the right dimensions
+    :rtype: Image.Image
+    """
+    global DUEL_RESULTS_BACKGROUNDS
+    if DUEL_RESULTS_BACKGROUNDS == []:
+        pathsDone: Dict[str, Image.Image] = {}
+        for imgPath in cfg.duelResultsBackgrounds:
+            if imgPath in pathsDone:
+                DUEL_RESULTS_BACKGROUNDS.append(pathsDone[imgPath])
+            else:
+                DUEL_RESULTS_BACKGROUNDS.append(cropAndScale(Image.open(imgPath), cfg.duelResultsImageDims[0],
+                                                                cfg.duelResultsImageDims[1]))
+                pathsDone[imgPath] = DUEL_RESULTS_BACKGROUNDS[-1]
+
+    return random.choice(DUEL_RESULTS_BACKGROUNDS).copy()
+
+
+def copyDuelResultsOverlay() -> Image.Image:
+    """Get a copy of the image to place on top of duel results images.
+    The image is in "RGBA" mode, and has correct dimensions according to cfg.
+
+    :return: An image to use as the overlay for duel results.
+    :rtype: Image.Image
+    """
+    global DUEL_RESULTS_OVERLAY
+    if DUEL_RESULTS_OVERLAY is None:
+        DUEL_RESULTS_OVERLAY = Image.open(cfg.duelResultsOverlay)
+        DUEL_RESULTS_OVERLAY = DUEL_RESULTS_OVERLAY.resize(cfg.duelResultsImageDims)
+
+    return DUEL_RESULTS_OVERLAY.copy()
 
 
 def padImage(pil_img: Image.Image, top: int, right: int, bottom: int, left: int,
