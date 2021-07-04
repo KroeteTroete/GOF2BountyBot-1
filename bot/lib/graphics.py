@@ -24,6 +24,40 @@ def closeAll():
 atexit.register(closeAll)
 
 
+def cropAndScale(baseImage: Image.Image, w: int, h: int):
+    """Crop baseImage to match the aspect ratio of (w, h), and then scale the result to match (w, h).
+    Cropping is performed from the top-left of the image. The original image is not altered, a new one is created.
+
+    :param Image.Image baseImage: Image to crop/resize
+    :param int w: The desired new image width (px)
+    :param int h: The desired new image height (px)
+    :return: A copy of baseImage, resized to (w, h), but by cropping instead of stretching
+    :rtype: Image.Image
+    """
+    # If sizes are the same, do nothing
+    if baseImage.size == (w, h):
+        return baseImage
+
+    # If aspect ratios are different, crop
+    if baseImage.width / baseImage.height != w / h:
+        # Crop the longest side
+        if baseImage.width < baseImage.height:
+            desiredHeight = (w / baseImage.width) * h
+            newImage = baseImage.crop(0, baseImage.width, 0, desiredHeight)
+        else:
+            desiredwidth = (h / baseImage.height) * w
+            newImage = baseImage.crop(0, desiredwidth, 0, baseImage.height)
+
+        # If no scaling is needed, return cropped image
+        if newImage.width == w:
+            return newImage
+    else:
+        newImage = baseImage
+
+    # Scale image
+    return newImage.resize((w, h))
+
+
 def applyProgressBarOutline(progressBar: Image.Image, progress: float, emptyColour: Union[str, int, Tuple[int]],
         lineColour: Union[str, int, Tuple[int]] = (255, 255, 255), lineWidth: int = 1):
     """Apply an outline in the shape of a progress bar, over the given image. The operation is performed on a new image,
