@@ -35,6 +35,61 @@ def closeAll():
 atexit.register(closeAll)
 
 
+def paddedScale(baseImage: Image.Image, w: int, h: int, fill: Union[str, int, Tuple[int]], offsetMode: str = "CENTRE",
+                offset: int = 0, newMode: str = None) -> Image.Image:
+    """Scale `baseImage` down to (`w`, `h`), but without distorting/stretching the image. Instead, if the image is of a
+    different aspect ratio, the empty space around it is filled with `fill` - "black bars".
+
+    offsetMode is a keyword string, being one of:
+        "MIN" - Place the image in the top-left
+        "MAX" - Place the image in the bottom-right
+        "CENTRE" - Place the image in the centre
+        "PX" - Place the image `offset` pixels from the top-left.
+
+    :param Image.Image baseImage: The image to scale
+    :param int w: The new desired image width
+    :param int h: The new desired image height
+    :param fill: The colour to fill empty space around the image with
+    :type fill: Union[str, int, Tuple[int]]
+    :param str offsetMode: Where to place the scaled image with respect to the empty space, as above (Default "CENTRE")
+    :param int offset: If `offsetMode` is "PX", the number of pixels from the top-left to place the image (Default 0)
+    :param str newMode: Mode override for the new image (Default baseImage.mode)
+    :rtype: Image.Image
+    """
+    # Create new canvas
+    if newMode is None:
+        newMode = baseImage.mode
+    newImage = Image.new(newMode, (w, h), fill)
+
+    # Calculate scaled size of baseImage by matching the longest side to the desired length of that side
+    if baseImage.width < baseImage.height:
+        newSize = (int(baseImage.width * (h / baseImage.height)), h)
+    else:
+        newSize = (w, int(baseImage.height * (w / baseImage.width)))
+    scaledImage = baseImage.resize(newSize)
+
+    # Calculate where to paste the scaled image
+    if scaledImage.size == (w, h) or offsetMode == "MIN":
+        pasteOrigin = (0, 0)
+    elif offsetMode == "MAX":
+        pasteOrigin = (w - scaledImage.width, h - scaledImage.height)
+    elif offsetMode == "CENTRE":
+        pasteOrigin = (int((w - scaledImage.width) / 2), int((h - scaledImage.height) / 2))
+    elif offsetMode == "PX":
+        if baseImage.width < baseImage.height:
+            pasteOrigin = (offset, 0)
+        else:
+            pasteOrigin = (0, offset)
+    else:
+        raise ValueError(f"Unknown offsetMode: {offsetMode}")
+
+    # Paste image and return
+    newImage.paste(scaledImage, pasteOrigin, newImage)
+    return newImage
+
+    
+
+
 def cropAndScale(baseImage: Image.Image, w: int, h: int) -> Image.Image:
     """Crop baseImage to match the aspect ratio of (w, h), and then scale the result to match (w, h).
     Cropping is performed from the top-left of the image. The original image is not altered, a new one is created.
@@ -54,10 +109,10 @@ def cropAndScale(baseImage: Image.Image, w: int, h: int) -> Image.Image:
         # Crop the longest side
         if baseImage.width < baseImage.height:
             desiredHeight = (w / baseImage.width) * h
-            newImage = baseImage.crop(0, baseImage.width, 0, desiredHeight)
+            newImage = baseImage.crop(0, baseImage.width, 0, int(desiredHeight))
         else:
             desiredwidth = (h / baseImage.height) * w
-            newImage = baseImage.crop(0, desiredwidth, 0, baseImage.height)
+            newImage = baseImage.crop(0, int(desiredwidth), 0, baseImage.height)
 
         # If no scaling is needed, return cropped image
         if newImage.width == w:
