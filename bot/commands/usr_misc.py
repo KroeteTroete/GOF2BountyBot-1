@@ -254,7 +254,10 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
     # Image to mask with xpBarMask, filling the bar
     xpBarFill = lib.graphics.copyXPBarFill(divisionNameForLevel(hunterLvl))
     # User profile background image
-    profileBackground = lib.graphics.copyUserProfileBackground()
+    if cfg.userProfileBackground:
+        profileBackground = lib.graphics.copyUserProfileBackground()
+    else:
+        profileBackground = Image.new("RGBA", (cfg.userProfileImgWidth, cfg.userProfileImgHeight), (0, 0, 0, 0))
 
     # Reader for the final image, to be given to discord
     userProfileFile = None

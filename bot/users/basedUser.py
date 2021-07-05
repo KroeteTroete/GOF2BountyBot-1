@@ -461,7 +461,7 @@ class BasedUser(serializable.Serializable):
             raise IndexError("Index out of range")
         if self.activeShip is not None:
             self.inactiveShips.addItem(self.activeShip)
-        self.activeShip = self.inactiveShips[index]
+        self.activeShip = self.inactiveShips[index].getItem()
         self.inactiveShips.removeItem(self.activeShip)
 
 

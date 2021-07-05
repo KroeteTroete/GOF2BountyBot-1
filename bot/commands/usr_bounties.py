@@ -465,8 +465,17 @@ async def cmd_duel(message : discord.Message, args : str, isDM : bool):
         await message.channel.send(":x: Invalid stakes (amount of credits)!")
         return
 
-    sourceBBUser = botState.usersDB.getOrAddID(message.author.id)
-    targetBBUser = botState.usersDB.getOrAddID(requestedUser.id)
+    sourceBBUser: basedUser.BasedUser = botState.usersDB.getOrAddID(message.author.id)
+    targetBBUser: basedUser.BasedUser = botState.usersDB.getOrAddID(requestedUser.id)
+
+    # await duelRequest.buildDuelResultsImage(sourceBBUser, sourceBBUser.activeShip, targetBBUser, targetBBUser.activeShip, {"winningShip": sourceBBUser.activeShip if int((sourceBBUser.activeShip.getArmour() + sourceBBUser.activeShip.getShield()) / targetBBUser.activeShip.getDPS()) > int((targetBBUser.activeShip.getArmour() + targetBBUser.activeShip.getShield()) / sourceBBUser.activeShip.getDPS()) else targetBBUser.activeShip,
+    #         "ship1": {"health": {"stock": int(sourceBBUser.activeShip.getArmour() + sourceBBUser.activeShip.getShield()), "varied": int(sourceBBUser.activeShip.getArmour() + sourceBBUser.activeShip.getShield())},
+    #                 "DPS": {"stock": sourceBBUser.activeShip.getDPS(), "varied": sourceBBUser.activeShip.getDPS()},
+    #                 "TTK": int((sourceBBUser.activeShip.getArmour() + sourceBBUser.activeShip.getShield()) / targetBBUser.activeShip.getDPS())},
+    #         "ship2": {"health": {"stock": int(targetBBUser.activeShip.getArmour() + targetBBUser.activeShip.getShield()), "varied": int(targetBBUser.activeShip.getArmour() + targetBBUser.activeShip.getShield())},
+    #                 "DPS": {"stock": targetBBUser.activeShip.getDPS(), "varied": targetBBUser.activeShip.getDPS()},
+    #                 "TTK": int((targetBBUser.activeShip.getArmour() + targetBBUser.activeShip.getShield()) / sourceBBUser.activeShip.getDPS())}})
+    # return
 
     callingGuild = botState.guildsDB.getGuild(message.guild.id)
 
