@@ -261,6 +261,44 @@ duelLogMaxLength = 10
 # Percentage probability of a user envoking a cloak module in a given timeStep, should they have one equipped
 duelCloakChance = 20
 
+# Background images to display behind duel results. Images are selected at random. Give [] to disable
+duelResultsBackgrounds = []
+# Image to display between the background and content. Give "" to disable
+duelResultsUnderlay = ""
+# Image to display on top of all other graphics. Give "" to disable
+duelResultsOverlay = ""
+duelResultsRightWinner = ""
+duelResultsLeftWinner = ""
+duelResultsDraw = ""
+# Dimensions of the duel results image
+duelResultsImageDims = (500, 300)
+
+# Width (and height) of player profile images
+duelResultsPlayerWidth = 144
+# Coordinates of the top-left corner of the player 1 profile image
+duelResultsP1Pos = (54, 54)
+# Coordinates of the top-left corner of the player 2 profile image
+duelResultsP2Pos = (304, 54)
+
+# Font to use for duel statistics, e.g time to kill
+duelResultsFont = "duel-results-font.ttf"
+duelResultsNameFontSize = 16
+duelResultsStatsFontSize = 12
+duelResultsNameFontColour = "white"
+duelResultsStatsFontColour = "white"
+duelResultsMaxNameWidth = 10
+duelResultsMaxStatsWidth = 10
+duelResultsTextLinePadding = 5
+# Where to place player 1's duel statistics
+duelResultsP1StatsPos = (82, 211)
+# Where to place player 2's duel statistics
+duelResultsP2StatsPos = (332, 211)
+# Where to place player 1's ship
+duelResultsP1ShipPos = (19, 211)
+# Where to place player 2's ship
+duelResultsP2ShipPos = (269, 211)
+duelResultsShipDims = (53, 53)
+
 
 
 ##### SHOPS #####

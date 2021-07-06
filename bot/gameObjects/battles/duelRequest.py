@@ -1,11 +1,17 @@
 from ... import lib, botState
 from ...cfg import cfg
-from discord import Embed, User, Message
+from discord import Embed, User, Message, DiscordException, HTTPException, NotFound, File
 from ...users import basedUser
 from ...scheduling import timedTask
 from ...users import basedGuild
 from ..items import shipItem
+from ..bounties import criminal
 import random
+from typing import Union
+from io import BytesIO
+from PIL import Image, ImageDraw, ImageFont, ImageOps
+import aiohttp
+import textwrap
 
 
 def makeDuelStatsEmbed(duelResults : dict, targetUser : basedUser.BasedUser, sourceUser : basedUser.BasedUser) -> Embed:
@@ -197,6 +203,22 @@ async def fightDuel(sourceUser : User, targetUser : User, duelReq : DuelRequest,
         winningBasedUser = None
         losingBasedUser = None
 
+    try:
+        duelResultsImg = await buildDuelResultsImage(sourceBasedUser, sourceBasedUser.activeShip,
+                                                    targetBasedUser, targetBasedUser.activeShip,
+                                                    duelResults)
+    except RuntimeError:
+        statsEmbed = makeDuelStatsEmbed(duelResults, sourceUser, targetUser)
+        statsEmbed.set_footer(text="An unexpected error occurred when building your duel results image. The error has been logged.")
+        duelResultsImg = None
+    else:
+        statsEmbed = lib.discordUtil.makeEmbed("Duel Results")
+        statsEmbed.set_image(url="attachment://duelResults.png")
+        duelResultsBytes = BytesIO()
+        duelResultsImg.save(duelResultsBytes, "PNG")
+        duelResultsBytes.seek(0)
+        duelResultsFile = File(duelResultsBytes, filename="duelResults.png")
+
     # battleMsg =
 
     # winningBasedUser = sourceBasedUser if winningShip is sourceBasedUser.activeShip else \
@@ -206,7 +228,8 @@ async def fightDuel(sourceUser : User, targetUser : User, duelReq : DuelRequest,
 
     if winningBasedUser is None:
         await acceptMsg.channel.send(":crossed_swords: **Stalemate!** " \
-                                        + str(targetUser) + " and " + sourceUser.mention + " drew in a duel!")
+                                        + str(targetUser) + " and " + sourceUser.mention + " drew in a duel!",
+                                        embed=statsEmbed, file=None if duelResultsImg is None else duelResultsFile)
         if acceptMsg.guild.get_member(targetUser.id) is None:
             targetDCGuild = lib.discordUtil.findBasedUserDCGuild(targetBasedUser)
             if targetDCGuild is not None:
@@ -214,10 +237,13 @@ async def fightDuel(sourceUser : User, targetUser : User, duelReq : DuelRequest,
                 if targetBasedGuild.hasPlayChannel():
                     await targetBasedGuild.getPlayChannel().send(":crossed_swords: **Stalemate!** " \
                                                                     + targetDCGuild.get_member(targetUser.id).mention \
-                                                                    + " and " + str(sourceUser) + " drew in a duel!")
+                                                                    + " and " + str(sourceUser) + " drew in a duel!",
+                                                                embed=statsEmbed,
+                                                                file=None if duelResultsImg is None else duelResultsFile)
         else:
             await acceptMsg.channel.send(":crossed_swords: **Stalemate!** " + targetUser.mention + " and " \
-                                            + sourceUser.mention + " drew in a duel!")
+                                            + sourceUser.mention + " drew in a duel!",
+                                            embed=statsEmbed, file=None if duelResultsImg is None else duelResultsFile)
     else:
         winningBasedUser.duelWins += 1
         losingBasedUser.duelLosses += 1
@@ -236,12 +262,11 @@ async def fightDuel(sourceUser : User, targetUser : User, duelReq : DuelRequest,
                 + str(winningBasedUser.credits) + " credits**.\n**" + botState.client.get_user(losingBasedUser.id).name \
                 + "** now has **" + str(losingBasedUser.credits) + " credits**."
 
-        statsEmbed = makeDuelStatsEmbed(duelResults, sourceUser, targetUser)
-
         if acceptMsg.guild.get_member(winningBasedUser.id) is None:
             await acceptMsg.channel.send(":crossed_swords: **Fight!** " + str(botState.client.get_user(winningBasedUser.id)) \
                                             + " beat " + botState.client.get_user(losingBasedUser.id).mention \
-                                            + " in a duel!\n" + creditsMsg, embed=statsEmbed)
+                                            + " in a duel!\n" + creditsMsg, embed=statsEmbed,
+                                            file=None if duelResultsImg is None else duelResultsFile)
             winnerDCGuild = lib.discordUtil.findBasedUserDCGuild(winningBasedUser)
             if winnerDCGuild is not None:
                 winnerBasedGuild = botState.guildsDB.getGuild(winnerDCGuild.id)
@@ -250,13 +275,15 @@ async def fightDuel(sourceUser : User, targetUser : User, duelReq : DuelRequest,
                                                                     + winnerDCGuild.get_member(winningBasedUser.id).mention \
                                                                     + " beat " \
                                                                     + str(botState.client.get_user(losingBasedUser.id)) \
-                                                                    + " in a duel!\n" + creditsMsg, embed=statsEmbed)
+                                                                    + " in a duel!\n" + creditsMsg, embed=statsEmbed,
+                                                                    file=None if duelResultsImg is None else duelResultsFile)
         else:
             if acceptMsg.guild.get_member(losingBasedUser.id) is None:
                 await acceptMsg.channel.send(":crossed_swords: **Fight!** " \
                                                 + botState.client.get_user(winningBasedUser.id).mention + " beat " \
                                                 + str(botState.client.get_user(losingBasedUser.id)) + " in a duel!\n" \
-                                                    + creditsMsg, embed=statsEmbed)
+                                                    + creditsMsg, embed=statsEmbed,
+                                                    file=None if duelResultsImg is None else duelResultsFile)
                 loserDCGuild = lib.discordUtil.findBasedUserDCGuild(losingBasedUser)
                 if loserDCGuild is not None:
                     loserBasedGuild = botState.guildsDB.getGuild(loserDCGuild.id)
@@ -265,12 +292,14 @@ async def fightDuel(sourceUser : User, targetUser : User, duelReq : DuelRequest,
                                                                     + str(botState.client.get_user(winningBasedUser.id)) \
                                                                     + " beat " \
                                                                     + loserDCGuild.get_member(losingBasedUser.id).mention \
-                                                                    + " in a duel!\n" + creditsMsg, embed=statsEmbed)
+                                                                    + " in a duel!\n" + creditsMsg, embed=statsEmbed,
+                                                                    file=None if duelResultsImg is None else duelResultsFile)
             else:
                 await acceptMsg.channel.send(":crossed_swords: **Fight!** " \
                                                 + botState.client.get_user(winningBasedUser.id).mention + " beat " \
                                                 + botState.client.get_user(losingBasedUser.id).mention + " in a duel!\n" \
-                                                + creditsMsg, embed=statsEmbed)
+                                                + creditsMsg, embed=statsEmbed,
+                                                file=None if duelResultsImg is None else duelResultsFile)
 
     await targetBasedUser.duelRequests[sourceBasedUser].duelTimeoutTask.forceExpire(callExpiryFunc=False)
     targetBasedUser.removeDuelChallengeObj(duelReq)
@@ -320,3 +349,134 @@ async def expireAndAnnounceDuelReq(duelReqDict : DuelRequest):
             await playCh.send(":stopwatch: <@" + str(duelReq.sourceBasedUser.id) + ">, your duel challenge for **" \
                                 + str(botState.client.get_user(duelReq.targetBasedUser.id)) + "** has now expired.")
     duelReq.sourceBasedUser.removeDuelChallengeObj(duelReq)
+
+
+async def buildDuelResultsImage(player1: Union[basedUser.BasedUser, criminal.Criminal],
+                                ship1: shipItem.Ship,
+                                player2: Union[basedUser.BasedUser, criminal.Criminal],
+                                ship2: shipItem.Ship,
+                                resultsDict: dict) -> Image.Image:
+    """
+    
+    :raise RuntimeError: When failing to fetch the profile image of one of the players
+    """
+    if cfg.duelResultsBackgrounds:
+        canvas = lib.graphics.copyRandomDuelResultsBackground()
+    else:
+        canvas = Image.new("RGBA", cfg.duelResultsImageDims, (0, 0, 0, 0))
+    
+    # Load font
+    nameFont = ImageFont.truetype(cfg.duelResultsFont, cfg.duelResultsNameFontSize)
+    statsFont = ImageFont.truetype(cfg.duelResultsFont, cfg.duelResultsStatsFontSize)
+
+    for player, ship, iconPos, statsPos, shipPos, shipKey in ((player1, ship1, cfg.duelResultsP1Pos,
+                                                        cfg.duelResultsP1StatsPos, cfg.duelResultsP1ShipPos, "ship1"),
+                                                    (player2, ship2, cfg.duelResultsP2Pos,
+                                                        cfg.duelResultsP2StatsPos, cfg.duelResultsP2ShipPos, "ship2")):
+        if type(player) == basedUser.BasedUser:
+            dcUser: User = botState.client.get_user(player.id) or await botState.client.fetch_user(player.id)
+            if dcUser is None:
+                raise ValueError(f"Failed to find discord User for BasedUser {player}")
+
+            try:
+                profileSize = next(2**i for i in range(4,11) if 2**i >= cfg.duelResultsPlayerWidth)
+            except StopIteration:
+                profileSize = 1024
+            icon = BytesIO()
+
+            try:
+                await (dcUser.avatar_url_as(size=profileSize)).save(icon, seek_begin=True)
+            except (DiscordException, HTTPException, NotFound) as e:
+                botState.logger.log("duelRequest", "buildDuelResultsImage",
+                                    f"Failed to fetch profile image for user {player}: {e}", exception=e)
+                raise RuntimeError(f"Failed to fetch profile image for user {player}")
+
+            name = str(dcUser)
+        else:
+            async with botState.httpClient.get(player.icon) as resp:
+                try:
+                    resp.raise_for_status()
+                except aiohttp.ClientResponseError as e:
+                    botState.logger.log("duelRequest", "buildDuelResultsImage",
+                                    f"Failed to fetch profile image for criminal {player}: {e}", exception=e)
+                    raise RuntimeError(f"Failed to fetch profile image for criminal {player}")
+                if not resp.content_type.startswith("image"):
+                    errStr = f"Criminal '{player.name}' icon url does not point to an image, " \
+                            + f"it points to a {resp.content_type}"
+                    botState.logger.log("duelRequest", "buildDuelResultsImage", errStr)
+                    raise RuntimeError(errStr)
+
+                icon = BytesIO(await resp.read())
+
+            name = player.name.title()
+            
+        # icon = lib.graphics.cropAndScale(Image.open(icon), cfg.duelResultsPlayerWidth, cfg.duelResultsPlayerWidth).convert("RGBA")
+        icon = lib.graphics.paddedScale(Image.open(icon), cfg.duelResultsPlayerWidth, cfg.duelResultsPlayerWidth,
+                                        (0, 0, 0, 0), "CENTRE", newMode="RGBA")
+        # canvas = Image.composite().paste(icon, iconPos, icon)
+        icon = lib.graphics.padImage(icon, iconPos[1], canvas.width - (iconPos[0]+cfg.duelResultsPlayerWidth),
+                                        canvas.height - (iconPos[1]+cfg.duelResultsPlayerWidth), iconPos[0], (0, 0, 0, 0))
+        canvas = Image.composite(icon, canvas, icon)
+
+        if ship.hasIcon:
+            async with botState.httpClient.get(ship.icon) as resp:
+                try:
+                    resp.raise_for_status()
+                except aiohttp.ClientResponseError as e:
+                    botState.logger.log("duelRequest", "buildDuelResultsImage",
+                                    f"Failed to fetch ship icon for ship {ship.name}: {e}", exception=e)
+                    raise RuntimeError(f"Failed to fetch ship icon for ship {ship.name}")
+                if not resp.content_type.startswith("image"):
+                    errStr = f"Ship '{ship.name}' icon url does not point to an image, " \
+                            + f"it points to a {resp.content_type}"
+                    botState.logger.log("duelRequest", "buildDuelResultsImage", errStr)
+                    raise RuntimeError(errStr)
+
+                shipIcon = lib.graphics.paddedScale(Image.open(BytesIO(await resp.read())),
+                                                    cfg.duelResultsShipDims[0], cfg.duelResultsShipDims[1],
+                                                    (0, 0, 0, 0))
+                if ship is ship1:
+                    shipIcon = ImageOps.mirror(shipIcon)
+                canvas.paste(shipIcon, shipPos, shipIcon)
+
+        draw: ImageDraw.ImageDraw = ImageDraw.Draw(canvas)
+        currentHeight = statsPos[1]
+        if len(name) <= cfg.duelResultsMaxNameWidth:
+            draw.text(statsPos, name, cfg.duelResultsNameFontColour, font=nameFont)
+            currentHeight += nameFont.getsize(name)[1] + cfg.duelResultsTextLinePadding
+        else:
+            pxPerLine = nameFont.getsize(name)[1] + cfg.duelResultsTextLinePadding
+            for line in textwrap.wrap(name, cfg.duelResultsMaxNameWidth):
+                draw.text((statsPos[0], currentHeight), line, cfg.duelResultsNameFontColour, font=nameFont)
+                currentHeight += pxPerLine
+
+        for attName, attStats in resultsDict[shipKey].items():
+            if type(attStats) == dict and "varied" in attStats:
+                attStr = attName + ": " + str(int(attStats["varied"]))
+            else:
+                attStr = attName + ": " + str(int(attStats))
+            if attName == "TTK":
+                attStr += "s"
+            
+            if len(attStr) <= cfg.duelResultsMaxStatsWidth:
+                draw.text((statsPos[0], currentHeight), attStr, cfg.duelResultsStatsFontColour, font=statsFont)
+                currentHeight += statsFont.getsize(attStr)[1] + cfg.duelResultsTextLinePadding
+            else:
+                pxPerLine = statsFont.getsize(attStr)[1] + cfg.duelResultsTextLinePadding
+                for line in textwrap.wrap(attStr, cfg.duelResultsMaxStatsWidth):
+                    draw.text((statsPos[0], currentHeight), line, cfg.duelResultsStatsFontColour, font=statsFont)
+                    currentHeight += pxPerLine
+
+    if cfg.duelResultsOverlay:
+        overlay = lib.graphics.copyDuelResultsOverlay()
+        canvas = Image.composite(overlay, canvas, overlay)
+
+    if resultsDict["winningShip"] is None:
+        winnerOverlay = lib.graphics.copyDuelWinnerOverlay("draw")
+    elif resultsDict["winningShip"] is ship1:
+        winnerOverlay = lib.graphics.copyDuelWinnerOverlay("left")
+    else:
+        winnerOverlay = lib.graphics.copyDuelWinnerOverlay("right")
+        
+    canvas = Image.composite(winnerOverlay, canvas, winnerOverlay)
+    return canvas

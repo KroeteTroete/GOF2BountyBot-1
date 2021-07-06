@@ -1,10 +1,12 @@
 import discord
 from datetime import datetime, timedelta
+from io import BytesIO
 
 from . import commandsDB as botCommands
 from .. import botState, lib
 from ..cfg import cfg, bbData
 from ..gameObjects.battles import duelRequest
+from ..gameObjects.bounties.bounty import Bounty
 from ..scheduling import timedTask
 from ..reactionMenus import reactionDuelChallengeMenu, expiryFunctions, confirmationReactionMenu
 from ..users import basedUser, basedGuild
@@ -93,6 +95,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
         sightedCriminalsStr = ""
         # The total amount to increase the division's activity temperature by
         divTempDelta = 0
+        bounty: Bounty = None
 
         for tlBounties in btyDivision.bounties.values():
             for bounty in tlBounties.values():
@@ -102,30 +105,48 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                 if checkResult == 3:
                     duelResults = duelRequest.fightShips(requestedBBUser.activeShip, bounty.activeShip,
                                                             cfg.duelVariancePercent)
-                    statsEmbed = lib.discordUtil.makeEmbed(authorName="**Duel Stats**")
-                    statsEmbed.add_field(name="DPS (" + str(cfg.duelVariancePercent * 100) + "% RNG)",
-                                            value=message.author.mention + ": " \
-                                                + str(round(duelResults["ship1"]["DPS"]["varied"], 2)) + "\n" \
-                                                + bounty.criminal.name + ": " \
-                                                + str(round(duelResults["ship2"]["DPS"]["varied"], 2)))
-                    statsEmbed.add_field(name="Health (" + str(cfg.duelVariancePercent * 100) + "% RNG)",
-                                            value=message.author.mention + ": " \
-                                                + str(round(duelResults["ship1"]["health"]["varied"])) + "\n" \
-                                                + bounty.criminal.name + ": " \
-                                                + str(round(duelResults["ship2"]["health"]["varied"], 2)))
-                    statsEmbed.add_field(name="Time To Kill",
-                                            value=message.author.mention + ": " \
-                                                + (str(round(duelResults["ship1"]["TTK"], 2)) \
-                                                    if duelResults["ship1"]["TTK"] != -1 else "inf.") + "s\n" \
-                                                + bounty.criminal.name + ": " \
-                                                + (str(round(duelResults["ship2"]["TTK"], 2)) \
-                                                    if duelResults["ship2"]["TTK"] != -1 else "inf.") + "s")
+                    try:
+                        duelResultsImg = await duelRequest.buildDuelResultsImage(requestedBBUser, requestedBBUser.activeShip,
+                                                                                    bounty.criminal, bounty.activeShip,
+                                                                                    duelResults)
+                    except RuntimeError:
+                        statsEmbed = lib.discordUtil.makeEmbed(authorName="**Duel Stats**")
+                        statsEmbed.add_field(name=f"DPS ({cfg.duelVariancePercent * 100}% RNG)",
+                                                value=message.author.mention + ": " \
+                                                    + str(round(duelResults["ship1"]["DPS"]["varied"], 2)) + "\n" \
+                                                    + bounty.criminal.name + ": " \
+                                                    + str(round(duelResults["ship2"]["DPS"]["varied"], 2)))
+                        statsEmbed.add_field(name=f"Health ({cfg.duelVariancePercent * 100}% RNG)",
+                                                value=message.author.mention + ": " \
+                                                    + str(round(duelResults["ship1"]["health"]["varied"])) + "\n" \
+                                                    + bounty.criminal.name + ": " \
+                                                    + str(round(duelResults["ship2"]["health"]["varied"], 2)))
+                        statsEmbed.add_field(name="Time To Kill",
+                                                value=message.author.mention + ": " \
+                                                    + (str(round(duelResults["ship1"]["TTK"], 2)) \
+                                                        if duelResults["ship1"]["TTK"] != -1 else "inf.") + "s\n" \
+                                                    + bounty.criminal.name + ": " \
+                                                    + (str(round(duelResults["ship2"]["TTK"], 2)) \
+                                                        if duelResults["ship2"]["TTK"] != -1 else "inf.") + "s")
+
+                        statsEmbed.set_footer(text="An unexpected error occurred when building your duel results image. " \
+                                                + "The error has been logged.")
+                        duelResultsImg = None
+                    else:
+                        statsEmbed = lib.discordUtil.makeEmbed("Duel Results")
+                        statsEmbed.set_image(url="attachment://duelResults.png")
+                        duelResultsBytes = BytesIO()
+                        duelResultsImg.save(duelResultsBytes, "PNG")
+                        duelResultsBytes.seek(0)
+                        duelResultsFile = discord.File(duelResultsBytes, filename="duelResults.png")
+                    
 
                     if duelResults["winningShip"] is not requestedBBUser.activeShip:
                         toEscape.append(bounty)
                         # bounty.escape()
                         bountyLost = True
-                        await message.channel.send(bounty.criminal.name + " got away! ", embed=statsEmbed)
+                        await message.channel.send(bounty.criminal.name + " got away! ", embed=statsEmbed,
+                                                    file=None if duelResultsImg is None else duelResultsFile)
 
                     else:
                         bountyWon = True
@@ -193,7 +214,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
 
                         # Announce the bounty has been completed
                         await callingGuild.announceBountyWon(bounty, rewards, message.author)
-                        await message.channel.send("__Duel Statistics__",embed=statsEmbed)
+                        await message.channel.send(embed=statsEmbed, file=None if duelResultsImg is None else duelResultsFile)
 
                         # Raise guild's activity temperature for this bounty's tl
                         numContributingUsers = len(set(rewards.keys()))
@@ -261,9 +282,8 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
     else:
         # Print an error message with the remaining time on the calling user's cooldown
         diff = datetime.utcfromtimestamp(botState.usersDB.getUser(message.author.id).bountyCooldownEnd) - datetime.utcnow()
-        await message.channel.send(":stopwatch: **" + message.author.display_name \
-                                    + "**, your *Khador Drive* is still charging! please wait **" \
-                                    + lib.timeUtil.td_format_noYM(diff) + ".**")
+        await message.channel.send(f":stopwatch: **{message.author.display_name}**, your *Khador Drive* is still charging! " \
+                                    + f"please wait **{lib.timeUtil.td_format_noYM(diff)}.**")
 
 botCommands.register("check", cmd_check, 0, aliases=["search"], allowDM=False, helpSection="bounty hunting",
                         signatureStr="**check <system>**",
@@ -465,8 +485,17 @@ async def cmd_duel(message : discord.Message, args : str, isDM : bool):
         await message.channel.send(":x: Invalid stakes (amount of credits)!")
         return
 
-    sourceBBUser = botState.usersDB.getOrAddID(message.author.id)
-    targetBBUser = botState.usersDB.getOrAddID(requestedUser.id)
+    sourceBBUser: basedUser.BasedUser = botState.usersDB.getOrAddID(message.author.id)
+    targetBBUser: basedUser.BasedUser = botState.usersDB.getOrAddID(requestedUser.id)
+
+    # await duelRequest.buildDuelResultsImage(sourceBBUser, sourceBBUser.activeShip, targetBBUser, targetBBUser.activeShip, {"winningShip": sourceBBUser.activeShip if int((sourceBBUser.activeShip.getArmour() + sourceBBUser.activeShip.getShield()) / targetBBUser.activeShip.getDPS()) > int((targetBBUser.activeShip.getArmour() + targetBBUser.activeShip.getShield()) / sourceBBUser.activeShip.getDPS()) else targetBBUser.activeShip,
+    #         "ship1": {"health": {"stock": int(sourceBBUser.activeShip.getArmour() + sourceBBUser.activeShip.getShield()), "varied": int(sourceBBUser.activeShip.getArmour() + sourceBBUser.activeShip.getShield())},
+    #                 "DPS": {"stock": sourceBBUser.activeShip.getDPS(), "varied": sourceBBUser.activeShip.getDPS()},
+    #                 "TTK": int((sourceBBUser.activeShip.getArmour() + sourceBBUser.activeShip.getShield()) / targetBBUser.activeShip.getDPS())},
+    #         "ship2": {"health": {"stock": int(targetBBUser.activeShip.getArmour() + targetBBUser.activeShip.getShield()), "varied": int(targetBBUser.activeShip.getArmour() + targetBBUser.activeShip.getShield())},
+    #                 "DPS": {"stock": targetBBUser.activeShip.getDPS(), "varied": targetBBUser.activeShip.getDPS()},
+    #                 "TTK": int((targetBBUser.activeShip.getArmour() + targetBBUser.activeShip.getShield()) / sourceBBUser.activeShip.getDPS())}})
+    # return
 
     callingGuild = botState.guildsDB.getGuild(message.guild.id)
 
