@@ -267,8 +267,8 @@ def copyRandomDuelResultsBackground() -> Image.Image:
                 DUEL_RESULTS_BACKGROUNDS.append(cropAndScale(Image.open(imgPath), cfg.duelResultsImageDims[0],
                                                                 cfg.duelResultsImageDims[1]).convert("RGBA"))
                 if cfg.duelResultsUnderlay:
-                    DUEL_RESULTS_BACKGROUNDS[-1] = Image.composite(DUEL_RESULTS_BACKGROUNDS[-1], underlayImg,
-                                                                    DUEL_RESULTS_BACKGROUNDS[-1])
+                    DUEL_RESULTS_BACKGROUNDS[-1] = Image.composite(underlayImg, DUEL_RESULTS_BACKGROUNDS[-1],
+                                                                    underlayImg)
                 pathsDone[imgPath] = DUEL_RESULTS_BACKGROUNDS[-1]
 
     return random.choice(DUEL_RESULTS_BACKGROUNDS).copy()
