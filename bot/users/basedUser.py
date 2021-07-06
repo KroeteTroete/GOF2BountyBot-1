@@ -794,7 +794,7 @@ class BasedUser(serializable.Serializable):
                                                 activeShip=activeShip, inactiveShips=inactiveShips,
                                                 inactiveModules=inactiveModules, inactiveWeapons=inactiveWeapons,
                                                 inactiveTurrets=inactiveTurrets, inactiveTools=inactiveTools,
-                                                lifetimeBountyCreditsWon=userDict.get("lifetimeBountyCreditsWon", userDict.get("lifetimeBountyCreditsWon"), 0),
+                                                lifetimeBountyCreditsWon=userDict.get("lifetimeBountyCreditsWon", userDict.get("lifetimeBountyCreditsWon", 0)),
                                                 **{k: datetime.utcfromtimestamp(userDict[k]) \
                                                     for k in ("dailyBountyWinsReset", "guildTransferCooldownEnd") \
                                                     if k in userDict}))

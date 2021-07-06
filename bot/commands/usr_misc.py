@@ -64,7 +64,7 @@ async def cmd_source(message: discord.Message, args: str, isDM: bool):
                                                         + " • **The BountyBot testing team** for their incredible support\n" \
                                                         + " • **NovahKiin22 and Poisonwasp** for development " \
                                                             + "contributions and insights", inline=False)
-    await message.channel.send(embed=srcEmbed)
+    await message.reply(mention_author=False, embed=srcEmbed)
 
 botCommands.register("source", cmd_source, 0, allowDM=True, signatureStr="**source**",
                      shortHelp="Show links to the project's GitHub page and todo list, and some information about the " \
@@ -138,7 +138,7 @@ async def cmd_how_to_play(message : discord.Message, args : str, isDM : bool):
 
         await sendChannel.send(embed=howToPlayEmbed)
     except discord.Forbidden:
-        await message.channel.send(":x: I can't DM you, " + message.author.display_name \
+        await message.reply(mention_author=False, content=":x: I can't DM you, " + message.author.display_name \
                                     + "! Please enable DMs from users who are not friends.")
         return
 
@@ -156,7 +156,7 @@ async def cmd_hello(message : discord.Message, args : str, isDM : bool):
     :param str args: ignored
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
-    await message.channel.send("Greetings, pilot! **o7**")
+    await message.reply(mention_author=False, content="Greetings, pilot! **o7**")
 
 botCommands.register("hello", cmd_hello, 0, allowDM=True, noHelp=True)
 
@@ -181,7 +181,7 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
                 prefix = cfg.defaultCommandPrefix
             else:
                 prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
-            await message.channel.send(":x: **Invalid user!** use `" + prefix + "balance` to display your own balance, or `" \
+            await message.reply(mention_author=False, content=":x: **Invalid user!** use `" + prefix + "balance` to display your own balance, or `" \
                                         + prefix + "balance <user>` to display someone else's balance!\n" \
                                         + "When referencing a player from another server, you must use their long ID number")
             return
@@ -221,7 +221,7 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
             statsEmbed.add_field(name="Total credits lost:", value=str( userObj.duelCreditsLosses), inline=True)
 
         # send the stats embed
-        await message.channel.send(embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 
 botCommands.register("stats", cmd_stats, 0, aliases=["profile"], forceKeepArgsCasing=True, allowDM=True,
                         signatureStr="**stats** *[user]*",
@@ -262,16 +262,16 @@ async def cmd_leaderboard(message : discord.Message, args : str, isDM : bool):
     if args != "":
         args = args.lower()
         if not args.startswith("-"):
-            await message.channel.send(":x: Please prefix your arguments with a dash! E.g: `" + prefix + "leaderboard -gc`")
+            await message.reply(mention_author=False, content=":x: Please prefix your arguments with a dash! E.g: `" + prefix + "leaderboard -gc`")
             return
         args = args[1:]
         if ("g" not in args and len(args) > 2) or ("g" in args and len(args) > 3):
-            await message.channel.send(":x: Too many arguments! Please only specify one leaderboard. E.g: `" + prefix \
+            await message.reply(mention_author=False, content=":x: Too many arguments! Please only specify one leaderboard. E.g: `" + prefix \
                                         + "leaderboard -gc`")
             return
         for arg in args:
             if arg not in "gcsw":
-                await message.channel.send(":x: Unknown argument: '**" + arg + "**'. Please refer to `" + prefix \
+                await message.reply(mention_author=False, content=":x: Unknown argument: '**" + arg + "**'. Please refer to `" + prefix \
                                             + "help leaderboard`")
                 return
         if "c" in args:
@@ -335,7 +335,7 @@ async def cmd_leaderboard(message : discord.Message, args : str, isDM : bool):
         leaderboardEmbed.set_footer(
             text="An `*` indicates a user that is from another server.")
     # send the embed
-    await message.channel.send(embed=leaderboardEmbed)
+    await message.reply(mention_author=False, embed=leaderboardEmbed)
 
 botCommands.register("leaderboard", cmd_leaderboard, 0, allowDM=False, signatureStr="**leaderboard** *[-g|-c|-s|-w]*",
                         longHelp="Show the leaderboard for total player value. Give `-g` for the global leaderboard, " \
@@ -363,11 +363,11 @@ async def cmd_notify(message : discord.Message, args : str, isDM : bool):
     requestedBBGuild = botState.guildsDB.getGuild(message.guild.id)
 
     if not message.guild.me.guild_permissions.manage_roles:
-        await message.channel.send(":x: I do not have the 'Manage Roles' permission in this server! " \
+        await message.reply(mention_author=False, content=":x: I do not have the 'Manage Roles' permission in this server! " \
                                     + "Please contact an admin :robot:")
         return
     if args == "":
-        await message.channel.send(":x: Please name what you would like to be notified for! E.g `" \
+        await message.reply(mention_author=False, content=":x: Please name what you would like to be notified for! E.g `" \
                                     + requestedBBGuild.commandPrefix + "notify bounties`")
         return
 
@@ -375,26 +375,26 @@ async def cmd_notify(message : discord.Message, args : str, isDM : bool):
     alertsToToggle = userAlerts.getAlertIDFromHeirarchicalAliases(argsSplit)
 
     if alertsToToggle[0] == "ERR":
-        await message.channel.send(alertsToToggle[1].replace("$COMMANDPREFIX$", requestedBBGuild.commandPrefix))
+        await message.reply(mention_author=False, content=alertsToToggle[1].replace("$COMMANDPREFIX$", requestedBBGuild.commandPrefix))
         return
 
     for alertID in alertsToToggle:
         alertType = userAlerts.userAlertsIDsTypes[alertID]
         try:
             alertNewState = await requestedBBUser.toggleAlertType(alertType, message.guild, requestedBBGuild, message.author)
-            await message.channel.send(":white_check_mark: You have " \
+            await message.reply(mention_author=False, content=":white_check_mark: You have " \
                                         + ("subscribed to" if alertNewState else "unsubscribed from") + " " \
                                         + userAlerts.userAlertsTypesNames[alertType] + " notifications.")
         except discord.Forbidden:
-            await message.channel.send(":woozy_face: I don't have permission to do that! Please ensure the requested role " \
+            await message.reply(mention_author=False, content=":woozy_face: I don't have permission to do that! Please ensure the requested role " \
                                         + "is beneath the BountyBot role.")
         except discord.HTTPException:
-            await message.channel.send(":woozy_face: Something went wrong! Please contact an admin or try again later.")
+            await message.reply(mention_author=False, content=":woozy_face: Something went wrong! Please contact an admin or try again later.")
         except ValueError:
-            await message.channel.send(":x: This server does not have a role for " \
+            await message.reply(mention_author=False, content=":x: This server does not have a role for " \
                                         + userAlerts.userAlertsTypesNames[alertType] + " notifications. :robot:")
         except client_exceptions.ClientOSError:
-            await message.channel.send(":thinking: Whoops! A connection error occurred, and the error has been logged. " \
+            await message.reply(mention_author=False, content=":thinking: Whoops! A connection error occurred, and the error has been logged. " \
                                         + "Could you try that again please?")
             botState.logger.log("main", "cmd_notify", "aiohttp.client_exceptions.ClientOSError occurred when attempting to " \
                                                         + "grant " + message.author.name + "#" + str(message.author.id) \
@@ -445,7 +445,7 @@ async def cmd_poll(message : discord.Message, args : str, isDM : bool):
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
     if botState.usersDB.getOrAddID(message.author.id).pollOwned:
-        await message.channel.send(":x: You can only make one poll at a time!")
+        await message.reply(mention_author=False, content=":x: You can only make one poll at a time!")
         return
 
     pollOptions = {}
@@ -454,7 +454,7 @@ async def cmd_poll(message : discord.Message, args : str, isDM : bool):
 
     argsSplit = args.split("\n")
     if len(argsSplit) < 2:
-        await message.channel.send(":x: Invalid arguments! Please provide your poll subject, followed by a new line, then " \
+        await message.reply(mention_author=False, content=":x: Invalid arguments! Please provide your poll subject, followed by a new line, then " \
                                     + "a new line-separated series of poll options.\nFor more info, see `" \
                                     + requestedBBGuild.commandPrefix + "help poll`")
         return
@@ -474,18 +474,18 @@ async def cmd_poll(message : discord.Message, args : str, isDM : bool):
                     kwArgs[kwArg[:-1]] = arg[len(kwArg):]
                     break
         # except lib.exceptions.UnrecognisedCustomEmoji:
-        #     await message.channel.send(":x: I don't know your " + str(argPos) + lib.stringTyping.getNumExtension(argPos) \
+        #     await message.reply(mention_author=False, content=":x: I don't know your " + str(argPos) + lib.stringTyping.getNumExtension(argPos) \
         #                                 + " emoji!\n" \
         #                                 + "You can only use built in emojis, or custom emojis that are in this server.")
         #     return
         else:
             if dumbReact.sendable == "None":
-                await message.channel.send(":x: I don't know your " + str(argPos) + lib.stringTyping.getNumExtension(argPos) \
+                await message.reply(mention_author=False, content=":x: I don't know your " + str(argPos) + lib.stringTyping.getNumExtension(argPos) \
                                             + " emoji!\nYou can only use built in emojis, " \
                                             + "or custom emojis that are in this server.")
                 return
             if dumbReact is None:
-                await message.channel.send(":x: Invalid emoji: " + argNoSpaces.split(" ")[1])
+                await message.reply(mention_author=False, content=":x: Invalid emoji: " + argNoSpaces.split(" ")[1])
                 return
             elif dumbReact.isID:
                 localEmoji = False
@@ -495,20 +495,20 @@ async def cmd_poll(message : discord.Message, args : str, isDM : bool):
                         print("EMOJI FOUND")
                         break
                 if not localEmoji:
-                    await message.channel.send(":x: I don't know your " + str(argPos) \
+                    await message.reply(mention_author=False, content=":x: I don't know your " + str(argPos) \
                                                 + lib.stringTyping.getNumExtension(argPos) + " emoji!\n" \
                                                 + "You can only use built in emojis, or custom emojis " \
                                                 + "that are in this server.")
                     return
 
             if dumbReact in pollOptions:
-                await message.channel.send(":x: Cannot use the same emoji for two options!")
+                await message.reply(mention_author=False, content=":x: Cannot use the same emoji for two options!")
                 return
 
             pollOptions[dumbReact] = reactionMenu.DummyReactionMenuOption(optionName, dumbReact)
 
     if len(pollOptions) == 0:
-        await message.channel.send(":x: No options given!")
+        await message.reply(mention_author=False, content=":x: No options given!")
         return
 
     targetRole = None
@@ -517,17 +517,17 @@ async def cmd_poll(message : discord.Message, args : str, isDM : bool):
         if lib.stringTyping.isRoleMention(kwArgs["target"]):
             targetRole = message.guild.get_role(int(kwArgs["target"].lstrip("<@&").rstrip(">")))
             if targetRole is None:
-                await message.channel.send(":x: Unknown target role!")
+                await message.reply(mention_author=False, content=":x: Unknown target role!")
                 return
 
         elif lib.stringTyping.isMention(kwArgs["target"]):
             targetMember = message.guild.get_member(int(kwArgs["target"].lstrip("<@!").rstrip(">")))
             if targetMember is None:
-                await message.channel.send(":x: Unknown target user!")
+                await message.reply(mention_author=False, content=":x: Unknown target user!")
                 return
 
         else:
-            await message.channel.send(":x: Invalid target role/user!")
+            await message.reply(mention_author=False, content=":x: Invalid target role/user!")
             return
 
     timeoutDict = {}
@@ -538,7 +538,7 @@ async def cmd_poll(message : discord.Message, args : str, isDM : bool):
                 timeoutDict[timeName] = -1
             else:
                 if not lib.stringTyping.isInt(kwArgs[timeName]) or int(kwArgs[timeName]) < 1:
-                    await message.channel.send(":x: Invalid number of " + timeName + " before timeout!")
+                    await message.reply(mention_author=False, content=":x: Invalid number of " + timeName + " before timeout!")
                     return
 
                 timeoutDict[timeName] = int(kwArgs[timeName])
@@ -550,7 +550,7 @@ async def cmd_poll(message : discord.Message, args : str, isDM : bool):
         if kwArgs["multiplechoice"].lower() in ["off", "no", "false", "single", "one"]:
             multipleChoice = False
         elif kwArgs["multiplechoice"].lower() not in ["on", "yes", "true", "multiple", "many"]:
-            await message.channel.send("Invalid `multiplechoice` argument '" + kwArgs["multiplechoice"] \
+            await message.reply(mention_author=False, content="Invalid `multiplechoice` argument '" + kwArgs["multiplechoice"] \
                                         + "'! Please use either `multiplechoice=yes` or `multiplechoice=no`")
             return
 
@@ -562,10 +562,10 @@ async def cmd_poll(message : discord.Message, args : str, isDM : bool):
     timeoutExists = timeoutExists or timeoutDict == {}
 
     if not timeoutExists:
-        await message.channel.send(":x: Poll timeouts cannot be disabled!")
+        await message.reply(mention_author=False, content=":x: Poll timeouts cannot be disabled!")
         return
 
-    menuMsg = await message.channel.send("‎")
+    menuMsg = await message.reply(mention_author=False, content="‎")
 
     timeoutDelta = timedelta(**(timeoutDict or cfg.timeouts.pollMenuExpiry))
     timeoutTT = timedTask.TimedTask(expiryDelta=timeoutDelta, expiryFunction=reactionPollMenu.printAndExpirePollResults,

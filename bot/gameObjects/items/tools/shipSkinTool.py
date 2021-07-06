@@ -119,7 +119,7 @@ class ShipSkinTool(toolItem.ToolItem):
                     + prefix + "info skin " + self.name + "` to see what ships are compatible with this skin."
 
         callingBUser = kwargs["callingBUser"]
-        confirmMsg = await message.channel.send("Are you sure you want to apply the " + self.skin.name \
+        confirmMsg = await message.reply(mention_author=False, content="Are you sure you want to apply the " + self.skin.name \
                                                 + " skin to your " + ship.getNameAndNick() + "?")
         confirmation = await InlineConfirmationMenu(confirmMsg, message.author,
                                                     cfg.toolUseConfirmTimeoutSeconds).doMenu()
