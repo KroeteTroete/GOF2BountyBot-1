@@ -9,7 +9,7 @@ from ..bounties import criminal
 import random
 from typing import Union
 from io import BytesIO
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 import aiohttp
 import textwrap
 
@@ -430,6 +430,8 @@ async def buildDuelResultsImage(player1: Union[basedUser.BasedUser, criminal.Cri
                 shipIcon = lib.graphics.paddedScale(Image.open(BytesIO(await resp.read())),
                                                     cfg.duelResultsShipDims[0], cfg.duelResultsShipDims[1],
                                                     (0, 0, 0, 0))
+                if ship is ship1:
+                    shipIcon = ImageOps.mirror(shipIcon)
                 canvas.paste(shipIcon, shipPos, shipIcon)
 
         currentHeight = statsPos[1]
