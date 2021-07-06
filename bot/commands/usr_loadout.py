@@ -115,7 +115,7 @@ async def cmd_hangar(message : discord.Message, args : str, isDM : bool):
                                                 thumb=requestedUser.avatar_url_as(size=64))
 
         hangarEmbed.add_field(name="No Stored Items", value="‎", inline=False)
-        await message.reply(mention_author=False, content=embed=hangarEmbed)
+        await message.reply(mention_author=False, embed=hangarEmbed)
         return
 
     else:
@@ -295,7 +295,7 @@ async def cmd_loadout(message : discord.Message, args : str, isDM : bool):
                                         + activeShip.turrets[turretNum - 1].name,
                                     value=activeShip.turrets[turretNum - 1].statsStringShort(), inline=True)
 
-        await message.reply(mention_author=False, content=embed=loadoutEmbed)
+        await message.reply(mention_author=False, embed=loadoutEmbed)
         return
 
     else:
@@ -351,7 +351,7 @@ async def cmd_loadout(message : discord.Message, args : str, isDM : bool):
                                                 + activeShip.turrets[turretNum - 1].name,
                                             value=activeShip.turrets[turretNum - 1].statsStringShort(), inline=True)
 
-        await message.reply(mention_author=False, content=embed=loadoutEmbed)
+        await message.reply(mention_author=False, embed=loadoutEmbed)
 
 botCommands.register("loadout", cmd_loadout, 0, forceKeepArgsCasing=True, allowDM=True, helpSection="loadout",
                     signatureStr="**loadout** *[user]*",

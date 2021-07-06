@@ -64,7 +64,7 @@ async def cmd_source(message: discord.Message, args: str, isDM: bool):
                                                         + " • **The BountyBot testing team** for their incredible support\n" \
                                                         + " • **NovahKiin22 and Poisonwasp** for development " \
                                                             + "contributions and insights", inline=False)
-    await message.reply(mention_author=False, content=embed=srcEmbed)
+    await message.reply(mention_author=False, embed=srcEmbed)
 
 botCommands.register("source", cmd_source, 0, allowDM=True, signatureStr="**source**",
                      shortHelp="Show links to the project's GitHub page and todo list, and some information about the " \
@@ -221,7 +221,7 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
             statsEmbed.add_field(name="Total credits lost:", value=str( userObj.duelCreditsLosses), inline=True)
 
         # send the stats embed
-        await message.reply(mention_author=False, content=embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 
 botCommands.register("stats", cmd_stats, 0, aliases=["profile"], forceKeepArgsCasing=True, allowDM=True,
                         signatureStr="**stats** *[user]*",
@@ -335,7 +335,7 @@ async def cmd_leaderboard(message : discord.Message, args : str, isDM : bool):
         leaderboardEmbed.set_footer(
             text="An `*` indicates a user that is from another server.")
     # send the embed
-    await message.reply(mention_author=False, content=embed=leaderboardEmbed)
+    await message.reply(mention_author=False, embed=leaderboardEmbed)
 
 botCommands.register("leaderboard", cmd_leaderboard, 0, allowDM=False, signatureStr="**leaderboard** *[-g|-c|-s|-w]*",
                         longHelp="Show the leaderboard for total player value. Give `-g` for the global leaderboard, " \

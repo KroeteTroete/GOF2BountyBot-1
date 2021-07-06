@@ -411,7 +411,7 @@ async def dev_cmd_debug_hangar(message : discord.Message, args : str, isDM : boo
                                                 + currentItemName + "\n`" + repr(itemKey) + "`",
                                               value="unexpected type", inline=False)
 
-        await message.reply(mention_author=False, content=embed=hangarEmbed)
+        await message.reply(mention_author=False, embed=hangarEmbed)
 
 
 botCommands.register("debug-hangar", dev_cmd_debug_hangar, 2, allowDM=True, helpSection="items", useDoc=True)

@@ -121,7 +121,7 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
                     aliasesStr += alias + ", "
                 aliasesStr += botCommands.commands[userAccessLevel][args].aliases[-1]
                 helpEmbed.add_field(name="Alaises", value=aliasesStr)
-            await message.reply(mention_author=False, content=embed=helpEmbed)
+            await message.reply(mention_author=False, embed=helpEmbed)
 
         else:
             await message.reply(mention_author=False, content=":x: Unknown command/section! See `help help` for a list of help sections.")

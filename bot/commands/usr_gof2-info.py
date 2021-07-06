@@ -164,7 +164,7 @@ async def cmd_info_system(message : discord.Message, args : str, isDM : bool):
         if systObj.hasWiki:
             statsEmbed.add_field(name="‎", value="[Wiki](" + systObj.wiki + ")", inline=False)
         # send the embed
-        await message.reply(mention_author=False, content=embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 
 # botCommands.register("info-system", 0, cmd_system)
 
@@ -213,7 +213,7 @@ async def cmd_info_criminal(message : discord.Message, args : str, isDM : bool):
         if criminalObj.hasWiki:
             statsEmbed.add_field(name="‎", value="[Wiki](" + criminalObj.wiki + ")", inline=False)
         # send the embed
-        await message.reply(mention_author=False, content=embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 
 # botCommands.register("info-criminal", 0, cmd_criminal)
 
@@ -297,7 +297,7 @@ async def cmd_info_ship(message : discord.Message, args : str, isDM : bool):
         if itemObj.hasWiki:
             statsEmbed.add_field( name="‎", value="[Wiki](" + itemObj.wiki + ")", inline=False)
         # send the embed
-        await message.reply(mention_author=False, content=embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 
 # botCommands.register("info-ship", 0, cmd_ship)
 
@@ -354,7 +354,7 @@ async def cmd_info_weapon(message : discord.Message, args : str, isDM : bool):
         if itemObj.hasWiki:
             statsEmbed.add_field(name="‎", value="[Wiki](" + itemObj.wiki + ")", inline=False)
         # send the embed
-        await message.reply(mention_author=False, content=embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 
 # botCommands.register("info-weapon", 0, cmd_weapon)
 
@@ -412,7 +412,7 @@ async def cmd_info_module(message : discord.Message, args : str, isDM : bool):
         if itemObj.hasWiki:
             statsEmbed.add_field(name="‎", value="[Wiki](" + itemObj.wiki + ")", inline=False)
         # send the embed
-        await message.reply(mention_author=False, content=embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 
 # botCommands.register("info-module", 0, cmd_module)
 
@@ -469,7 +469,7 @@ async def cmd_info_turret(message : discord.Message, args : str, isDM : bool):
         if itemObj.hasWiki:
             statsEmbed.add_field(name="‎", value="[Wiki](" + itemObj.wiki + ")", inline=False)
         # send the embed
-        await message.reply(mention_author=False, content=embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 
 # botCommands.register("info-turret", 0, cmd_turret)
 
@@ -524,7 +524,7 @@ async def cmd_info_commodity(message : discord.Message, args : str, isDM : bool)
         if itemObj.hasWiki:
             statsEmbed.add_field(name="‎", value="[Wiki](" + itemObj.wiki + ")", inline=False)
         # send the embed
-        await message.reply(mention_author=False, content=embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 
 # botCommands.register("info-commodity", 0, cmd_commodity)
 
@@ -569,7 +569,7 @@ async def cmd_info_skin(message : discord.Message, args : str, isDM : bool):
         if requestedSkin.hasWiki:
             statsEmbed.add_field( name="‎", value="[Wiki](" + requestedSkin.wiki + ")", inline=False)
         # send the embed
-        await message.reply(mention_author=False, content=embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 # botCommands.register("commodity", cmd_commodity)
 
 
@@ -648,7 +648,7 @@ async def cmd_showme_criminal(message : discord.Message, args : str, isDM : bool
     else:
         itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=criminalObj.icon,
                                                 titleTxt=criminalObj.name, footerTxt="Wanted criminal")
-        await message.reply(mention_author=False, content=embed=itemEmbed)
+        await message.reply(mention_author=False, embed=itemEmbed)
 
 # botCommands.register("showme-criminal", cmd_showme_criminal)
 
@@ -835,7 +835,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
                                                 cfg.skinRenderShowmeSamples,
                                                 full=skin == "$ATTACHEDFILEFULL$")
             except shipRenderer.RenderFailed:
-                await message.reply(mention_author=True,"🥺 Render failed! The error has been logged, " \
+                await message.reply(mention_author=True, content="🥺 Render failed! The error has been logged, " \
                                             + "please try a different ship.")
                 botState.logger.log("Main", "cmd_showme_ship", "Ship render failed with args: '" + args + "'")
             else:
@@ -882,14 +882,14 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
                                                         img=bbData.builtInShipSkins[skin].shipRenders[itemObj.name][0],
                                                         titleTxt=itemObj.name,
                                                         footerTxt="Custom skin: " + skin.capitalize())
-                await message.reply(mention_author=False, content=embed=itemEmbed)
+                await message.reply(mention_author=False, embed=itemEmbed)
     else:
         if not itemObj.hasIcon:
             await message.reply(mention_author=False, content=":x: I don't have an icon for **" + itemObj.name.title() + "**!")
         else:
             itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name,
                                                     footerTxt=itemObj.manufacturer.capitalize() + " ship")
-            await message.reply(mention_author=False, content=embed=itemEmbed)
+            await message.reply(mention_author=False, embed=itemEmbed)
 
 # botCommands.register("showme-ship", cmd_showme_ship)
 
@@ -927,7 +927,7 @@ async def cmd_showme_weapon(message : discord.Message, args : str, isDM : bool):
         else:
             itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name,
                                                     footerTxt="Level " + str(itemObj.techLevel) + " weapon")
-            await message.reply(mention_author=False, content=embed=itemEmbed)
+            await message.reply(mention_author=False, embed=itemEmbed)
 
 # botCommands.register("showme-weapon", cmd_showme_weapon)
 
@@ -965,7 +965,7 @@ async def cmd_showme_module(message : discord.Message, args : str, isDM : bool):
         else:
             itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name,
                                                     footerTxt="Level " + str(itemObj.techLevel) + " module")
-            await message.reply(mention_author=False, content=embed=itemEmbed)
+            await message.reply(mention_author=False, embed=itemEmbed)
 
 # botCommands.register("showme-module", cmd_showme_module)
 
@@ -1002,7 +1002,7 @@ async def cmd_showme_turret(message : discord.Message, args : str, isDM : bool):
         else:
             itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name,
                                                     footerTxt="Level " + str(itemObj.techLevel) + " turret")
-            await message.reply(mention_author=False, content=embed=itemEmbed)
+            await message.reply(mention_author=False, embed=itemEmbed)
 
 # botCommands.register("showme-turret", cmd_showme_turret)
 
@@ -1040,7 +1040,7 @@ async def cmd_showme_commodity(message : discord.Message, args : str, isDM : boo
             await message.reply(mention_author=False, content=":x: I don't have an icon for **" + itemObj.name.title() + "**!")
         else:
             itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name)
-            await message.reply(mention_author=False, content=embed=itemEmbed)
+            await message.reply(mention_author=False, embed=itemEmbed)
 
 # botCommands.register("showme-commodity", cmd_showme_commodity)
 
