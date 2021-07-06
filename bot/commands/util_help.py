@@ -49,7 +49,7 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
             helpTT = timedTask.TimedTask(expiryDelta=timedelta(**cfg.timeouts.helpMenu),
                                         expiryFunction=expiryFunctions.expireHelpMenu, expiryFunctionArgs=menuMsg.id)
             botState.taskScheduler.scheduleTask(helpTT)
-            indexEmbed = lib.discordUtil.makeEmbed(titleTxt=cfg.userAccessLevels[userAccessLevel] + " Commands",
+            indexEmbed = lib.discordUtil.makeEmbed(titleTxt=cfg.userAccessLevels[userAccessLevel].title() + " Commands",
                                                     desc="Select " + cfg.defaultEmojis.next.sendable + " to go to page one.",
                                                     thumb=botState.client.user.avatar_url_as(size=64),
                                                     footerTxt="This menu will expire in " + helpMenuTimeoutStr + ".")
@@ -107,7 +107,7 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
                 owningUser.addOwnedMenu("help", helpMenu)
 
         elif args in botCommands.commands[userAccessLevel] and botCommands.commands[userAccessLevel][args].allowHelp:
-            helpEmbed = lib.discordUtil.makeEmbed(titleTxt=cfg.userAccessLevels[userAccessLevel] + " Commands",
+            helpEmbed = lib.discordUtil.makeEmbed(titleTxt=cfg.userAccessLevels[userAccessLevel].title() + " Commands",
                                                     desc=cfg.helpIntro + "\n__" \
                                                         + botCommands.commands[userAccessLevel][args].helpSection.title() \
                                                         + "__", col=discord.Colour.blue(),
