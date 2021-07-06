@@ -328,7 +328,7 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
                 # Load font
                 font = ImageFont.truetype(cfg.userProfileFont, cfg.userProfileFontSize)
                 # Add level and division
-                textDraw.text((xPad, yPad), f"Level {hunterLvl} {divisionNameForLevel(hunterLvl).title()} Bounty Hunter",
+                textDraw.text((xPad, yPad), f"Level {hunterLvl} {divisionNameForLevel(hunterLvl).title()}",
                                 cfg.userProfileLevelColour, font=font)
                 # Build current XP string
                 currentXPStr = str(bountyXP) + "/"
