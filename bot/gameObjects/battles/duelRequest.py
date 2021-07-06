@@ -410,7 +410,7 @@ async def buildDuelResultsImage(player1: Union[basedUser.BasedUser, criminal.Cri
 
             name = player.name.title()
             
-        icon = Image.open(icon).resize((cfg.duelResultsPlayerWidth, cfg.duelResultsPlayerWidth))
+        icon = lib.graphics.cropAndScale(Image.open(icon), cfg.duelResultsPlayerWidth, cfg.duelResultsPlayerWidth)
         canvas.paste(icon, iconPos)
 
         if ship.hasIcon:
