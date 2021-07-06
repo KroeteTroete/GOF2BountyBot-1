@@ -364,7 +364,7 @@ async def buildDuelResultsImage(player1: Union[basedUser.BasedUser, criminal.Cri
         canvas = lib.graphics.copyRandomDuelResultsBackground()
     else:
         canvas = Image.new("RGBA", cfg.duelResultsImageDims, (0, 0, 0, 0))
-    draw: ImageDraw.ImageDraw = ImageDraw.Draw(canvas)
+    
     # Load font
     nameFont = ImageFont.truetype(cfg.duelResultsFont, cfg.duelResultsNameFontSize)
     statsFont = ImageFont.truetype(cfg.duelResultsFont, cfg.duelResultsStatsFontSize)
@@ -439,6 +439,7 @@ async def buildDuelResultsImage(player1: Union[basedUser.BasedUser, criminal.Cri
                     shipIcon = ImageOps.mirror(shipIcon)
                 canvas.paste(shipIcon, shipPos, shipIcon)
 
+        draw: ImageDraw.ImageDraw = ImageDraw.Draw(canvas)
         currentHeight = statsPos[1]
         if len(name) <= cfg.duelResultsMaxNameWidth:
             draw.text(statsPos, name, cfg.duelResultsNameFontColour, font=nameFont)
