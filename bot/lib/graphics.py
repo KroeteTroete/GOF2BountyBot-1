@@ -90,6 +90,8 @@ def paddedScale(baseImage: Image.Image, w: int, h: int, fill: Union[str, int, Tu
         raise ValueError(f"Unknown offsetMode: {offsetMode}")
 
     # Paste image and return
+    scaledImage = padImage(scaledImage, pasteOrigin[1], w - (pasteOrigin[0]+scaledImage.width),
+                            h - (pasteOrigin[1]+scaledImage.height), pasteOrigin[0], fill)
     newImage = Image.composite(scaledImage, newImage, scaledImage)
     # newImage.paste(scaledImage, pasteOrigin, scaledImage)
     return newImage
