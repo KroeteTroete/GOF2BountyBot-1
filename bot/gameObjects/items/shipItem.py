@@ -636,8 +636,7 @@ class Ship(GameItem):
                     The ship name on its own otherwise.
         :rtype: str
         """
-        skinStr = ("`[" + self.skin + "]` ") if self.isSkinned else ""
-        return (skinStr + self.name) if not self.hasNickname else (skinStr + self.nickname + " (" + self.name + ")")
+        return self.name if not self.hasNickname else (self.nickname + " (" + self.name + ")")
 
 
     def transferItemsTo(self, other : Ship):
@@ -768,6 +767,8 @@ class Ship(GameItem):
         :rtype: str
         """
         stats = ""
+        if self.isSkinned:
+            stats += f"Ship skin: {self.skin.title()}\n"
         stats += "*Armour: " + str(self.getArmour(shipUpgradesOnly=True)) + ("(+)" \
                                 if self.getArmour(shipUpgradesOnly=True) > self.armour else "") + ", "
         stats += "Cargo hold: " + str(self.getCargo(shipUpgradesOnly=True)) + ("(+)" \
@@ -775,8 +776,8 @@ class Ship(GameItem):
         stats += "Handling: " + str(self.getHandling(shipUpgradesOnly=True)) + ("(+)" \
                                 if self.getHandling(shipUpgradesOnly=True) > self.handling else "") + ", "
         stats += "Max secondaries: " + str(self.getMaxSecondaries(shipUpgradesOnly=True)) + ("(+)" \
-                                if self.getMaxSecondaries(shipUpgradesOnly=True) > self.maxSecondaries else "") + "*"
-        return stats
+                                if self.getMaxSecondaries(shipUpgradesOnly=True) > self.maxSecondaries else "")
+        return stats + "*"
 
 
     def fillLoadoutEmbed(self, baseEmbed : Embed, shipEmoji : bool = False):
@@ -786,9 +787,8 @@ class Ship(GameItem):
                                 You may wish to leave this as false and instead use the ship's icon
                                 in the embed icon (Default False)
         """
-        baseEmbed.add_field(name="Active Ship:",
-                            value=(self.emoji.sendable if shipEmoji and self.hasEmoji else "") + self.getNameAndNick() \
-                                    + "\n" + self.statsStringNoItems(),
+        baseEmbed.add_field(name="Active Ship: " + (self.emoji.sendable if shipEmoji and self.hasEmoji else "") + self.getNameAndNick(),
+                            value=self.statsStringNoItems(),
                             inline=False)
 
         for name, maxEquip, equipped in (   ("Weapons", self.getMaxPrimaries(), self.weapons),
