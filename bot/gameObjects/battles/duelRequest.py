@@ -449,6 +449,8 @@ async def buildDuelResultsImage(player1: Union[basedUser.BasedUser, criminal.Cri
                 attStr = attName + ": " + str(int(attStats["varied"]))
             else:
                 attStr = attName + ": " + str(int(attStats))
+            if attName == "TTK":
+                attStr += "s"
             
             if len(attStr) <= cfg.duelResultsMaxStatsWidth:
                 draw.text((statsPos[0], currentHeight), attStr, cfg.duelResultsStatsFontColour, font=statsFont)
