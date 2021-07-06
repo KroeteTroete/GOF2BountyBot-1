@@ -451,12 +451,23 @@ async def buildDuelResultsImage(player1: Union[basedUser.BasedUser, criminal.Cri
                 currentHeight += pxPerLine
 
         for attName, attStats in resultsDict[shipKey].items():
-            if type(attStats) == dict and "varied" in attStats:
-                attStr = attName + ": " + str(int(attStats["varied"]))
+            # {"winningShip": winningShip,
+            # "ship1": {"health": {"stock": ship1HP, "varied": ship1HPVaried},
+            #         "DPS": {"stock": ship1DPS, "varied": ship1DPSVaried},
+            #         "TTK": ship1TTK},
+            # "ship2": {"health": {"stock": ship2HP, "varied": ship2HPVaried},
+            #         "DPS": {"stock": ship2DPS, "varied": ship2DPSVaried},
+            #         "TTK": ship2TTK}}
+            if attName == "health":
+                attStr = f"Total HP: {int(attStats['varied'])}"
+            elif attName == "DPS":
+                attStr = f"Total Damage/s: {int(attStats['varied'])}"
+            elif attName == "TTK":
+                attStr = f"Time alive: {attStats:.2f}s"
+            elif type(attStats) == dict and "varied" in attStats:
+                attStr = f"{attName.title()}: {int(attStats['varied'])}"
             else:
-                attStr = attName + ": " + str(int(attStats))
-            if attName == "TTK":
-                attStr += "s"
+                attStr = f"{attName.title()}: {int(attStats)}"
             
             if len(attStr) <= cfg.duelResultsMaxStatsWidth:
                 draw.text((statsPos[0], currentHeight), attStr, cfg.duelResultsStatsFontColour, font=statsFont)
