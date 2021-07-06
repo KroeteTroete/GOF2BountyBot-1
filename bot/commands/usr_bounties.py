@@ -28,21 +28,21 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
     # Verify that this guild has bounties enabled
     callingGuild = botState.guildsDB.getGuild(message.guild.id)
     if callingGuild.bountiesDisabled:
-        await message.channel.send(":x: This server does not have bounties enabled.")
+        await message.reply(mention_author=False, content=":x: This server does not have bounties enabled.")
         return
 
     # verify this is the calling user's home guild. If no home guild is set, transfer here.
     requestedBBUser = botState.usersDB.getOrAddID(message.author.id)
     if not requestedBBUser.hasHomeGuild():
         await requestedBBUser.transferGuild(message.guild)
-        await message.channel.send(":airplane_arriving: Your home guild has been set.")
+        await message.reply(mention_author=False, content=":airplane_arriving: Your home guild has been set.")
     elif requestedBBUser.homeGuildID != message.guild.id:
-        await message.channel.send(":x: This command can only be used from your home guild!")
+        await message.reply(mention_author=False, content=":x: This command can only be used from your home guild!")
         return
 
     # verify a system was given
     if args == "":
-        await message.channel.send(":x: Please provide a system to check! E.g: `" \
+        await message.reply(mention_author=False, content=":x: Please provide a system to check! E.g: `" \
                                     + callingGuild.commandPrefix + "check Pescal Inartu`")
         return
 
@@ -57,15 +57,15 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
     # reject if the requested system is not in the database
     if systObj is None:
         if len(requestedSystem) < 20:
-            await message.channel.send(":x: The **" + requestedSystem + "** system is not on my star map! :map:")
+            await message.reply(mention_author=False, content=":x: The **" + requestedSystem + "** system is not on my star map! :map:")
         else:
-            await message.channel.send(":x: The **" + requestedSystem[0:15] + "**... system is not on my star map! :map:")
+            await message.reply(mention_author=False, content=":x: The **" + requestedSystem[0:15] + "**... system is not on my star map! :map:")
         return
 
     requestedSystem = systObj.name
 
     if not requestedBBUser.activeShip.hasWeaponsEquipped() and not requestedBBUser.activeShip.hasTurretsEquipped():
-        await message.channel.send(":x: Your ship has no weapons equipped!")
+        await message.reply(mention_author=False, content=":x: Your ship has no weapons equipped!")
         return
 
     # Restrict the number of bounties a player may win in a single day
@@ -74,7 +74,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
         requestedBBUser.dailyBountyWinsReset = lib.timeUtil.tomorrow()
 
     if requestedBBUser.bountyWinsToday >= cfg.maxDailyBountyWins:
-        await message.channel.send(":x: You have reached the maximum number of bounty wins allowed for today! " \
+        await message.reply(mention_author=False, content=":x: You have reached the maximum number of bounty wins allowed for today! " \
                                     + "Check back tomorrow.")
         return
 
@@ -135,7 +135,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
         # If a bounty was won, print a congratulatory message
         if bountyWon:
             requestedBBUser.bountyWins += 1
-            await message.channel.send(sightedCriminalsStr + "\n" + ":moneybag: **" + message.author.display_name \
+            await message.reply(mention_author=False, content=sightedCriminalsStr + "\n" + ":moneybag: **" + message.author.display_name \
                                         + "**, you now have **" + str(requestedBBUser.credits) + " Credits!**\n" \
                                         + ("You have now reached the maximum number of bounty wins allowed for today! " \
                                         + "Please check back tomorrow." if dailyBountiesMaxReached else "You have **" \
@@ -144,7 +144,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
 
         # If no bounty was won, print an error message
         else:
-            await message.channel.send(":telescope: **" + message.author.display_name \
+            await message.reply(mention_author=False, content=":telescope: **" + message.author.display_name \
                                         + "**, you did not find any criminals in **" + requestedSystem.title() \
                                         + "**!\n" + sightedCriminalsStr)
 
@@ -162,7 +162,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
         diff = datetime.utcfromtimestamp(botState.usersDB.getUser(message.author.id).bountyCooldownEnd) - datetime.utcnow()
         minutes = int(diff.total_seconds() / 60)
         seconds = int(diff.total_seconds() % 60)
-        await message.channel.send(":stopwatch: **" + message.author.display_name \
+        await message.reply(mention_author=False, content=":stopwatch: **" + message.author.display_name \
                                     + "**, your *Khador Drive* is still charging! please wait **" + str(minutes) + "m " \
                                     + str(seconds) + "s.**")
 
@@ -183,7 +183,7 @@ async def cmd_bounties(message : discord.Message, args : str, isDM : bool):
     # Verify that this guild has bounties enabled
     callingGuild = botState.guildsDB.getGuild(message.guild.id)
     if callingGuild.bountiesDisabled:
-        await message.channel.send(":x: This server does not have bounties enabled.")
+        await message.reply(mention_author=False, content=":x: This server does not have bounties enabled.")
         return
 
     # If no faction is specified
@@ -212,7 +212,7 @@ async def cmd_bounties(message : discord.Message, args : str, isDM : bool):
             maxBountiesMsg = "\nYou have **" + str(cfg.maxDailyBountyWins - requestedBBUser.bountyWinsToday) \
                                 + "** remaining bounty wins today!"
         outmessage += "```" + maxBountiesMsg
-        await message.channel.send(outmessage)
+        await message.reply(mention_author=False, content=outmessage)
 
     # if a faction is specified
     else:
@@ -220,14 +220,14 @@ async def cmd_bounties(message : discord.Message, args : str, isDM : bool):
         # verify the passed faction
         if requestedFaction not in bbData.bountyFactions:
             if len(requestedFaction) < 20:
-                await message.channel.send(":x: Unrecognised faction: **" + requestedFaction + "**")
+                await message.reply(mention_author=False, content=":x: Unrecognised faction: **" + requestedFaction + "**")
             else:
-                await message.channel.send(":x: Unrecognised faction **" + requestedFaction[0:15] + "**...")
+                await message.reply(mention_author=False, content=":x: Unrecognised faction **" + requestedFaction[0:15] + "**...")
             return
 
         # Ensure the requested faction has active bounties
         if not callingGuild.bountiesDB.hasBounties(faction=requestedFaction):
-            await message.channel.send(":stopwatch: There are no **" + requestedFaction.title() \
+            await message.reply(mention_author=False, content=":stopwatch: There are no **" + requestedFaction.title() \
                                         + "** bounties active currently!\nYou have **" \
                                         + str(cfg.maxDailyBountyWins \
                                             - botState.usersDB.getOrAddID(message.author.id).bountyWinsToday) \
@@ -264,7 +264,7 @@ async def cmd_bounties(message : discord.Message, args : str, isDM : bool):
                 else:
                     maxBountiesMsg = "\nYou have **" + str(cfg.maxDailyBountyWins - requestedBBUser.bountyWinsToday) \
                                         + "** remaining bounty wins today!"
-            await message.channel.send(outmessage + "```\nTrack down criminals and **win credits** using `" \
+            await message.reply(mention_author=False, content=outmessage + "```\nTrack down criminals and **win credits** using `" \
                                         + callingGuild.commandPrefix + "route` and `" + callingGuild.commandPrefix \
                                         + "check`!" + maxBountiesMsg)
 
@@ -285,12 +285,12 @@ async def cmd_route(message : discord.Message, args : str, isDM : bool):
     # Verify that this guild has bounties enabled
     callingGuild = botState.guildsDB.getGuild(message.guild.id)
     if callingGuild.bountiesDisabled:
-        await message.channel.send(":x: This server does not have bounties enabled.")
+        await message.reply(mention_author=False, content=":x: This server does not have bounties enabled.")
         return
 
     # verify a criminal was specified
     if args == "":
-        await message.channel.send(":x: Please provide the criminal name! E.g: `" + callingGuild.commandPrefix \
+        await message.reply(mention_author=False, content=":x: Please provide the criminal name! E.g: `" + callingGuild.commandPrefix \
                                     + "route Kehnor`")
         return
 
@@ -304,7 +304,7 @@ async def cmd_route(message : discord.Message, args : str, isDM : bool):
             outmessage += " " + ("~~" if bounty.checked[system] != -1 else "") \
                             + system + ("~~" if bounty.checked[system] != -1 else "") + ","
         outmessage = outmessage[:-1] + ". :rocket:"
-        await message.channel.send(outmessage)
+        await message.reply(mention_author=False, content=outmessage)
     # if the named criminal is not wanted
     else:
         # display an error
@@ -313,7 +313,7 @@ async def cmd_route(message : discord.Message, args : str, isDM : bool):
         if lib.stringTyping.isMention(requestedBountyName):
             outmsg += "\n:warning: **Don't tag users**, use their name and ID number like so: `" \
                         + callingGuild.commandPrefix + "route Trimatix#2244`"
-        await message.channel.send(outmsg)
+        await message.reply(mention_author=False, content=outmsg)
 
 botCommands.register("route", cmd_route, 0, allowDM=False, helpSection="bounties", signatureStr="**route <criminal name>**",
                         shortHelp="Get the named criminal's current route.",
@@ -342,31 +342,31 @@ async def cmd_duel(message : discord.Message, args : str, isDM : bool):
     """
     argsSplit = args.split(" ")
     if len(argsSplit) == 0:
-        await message.channel.send(":x: Please provide an action (`challenge`/`cancel`/`accept`/`reject or decline`), " \
+        await message.reply(mention_author=False, content=":x: Please provide an action (`challenge`/`cancel`/`accept`/`reject or decline`), " \
                                     + "a user, and the stakes (an amount of credits)!")
         return
     action = argsSplit[0]
     if action not in ["challenge", "cancel", "accept", "reject", "decline"]:
-        await message.channel.send(":x: Invalid action! please choose from `challenge`, `cancel`, " \
+        await message.reply(mention_author=False, content=":x: Invalid action! please choose from `challenge`, `cancel`, " \
                                     + "`reject/decline` or `accept`.")
         return
     if action == "challenge":
         if len(argsSplit) < 3:
-            await message.channel.send(":x: Please provide a user and the stakes (an amount of credits)!")
+            await message.reply(mention_author=False, content=":x: Please provide a user and the stakes (an amount of credits)!")
             return
     else:
         if len(argsSplit) < 2:
-            await message.channel.send(":x: Please provide a user!")
+            await message.reply(mention_author=False, content=":x: Please provide a user!")
             return
     requestedUser = lib.discordUtil.getMemberByRefOverDB(argsSplit[1], dcGuild=message.guild)
     if requestedUser is None:
-        await message.channel.send(":x: User not found!")
+        await message.reply(mention_author=False, content=":x: User not found!")
         return
     if requestedUser.id == message.author.id:
-        await message.channel.send(":x: You can't challenge yourself!")
+        await message.reply(mention_author=False, content=":x: You can't challenge yourself!")
         return
     if action == "challenge" and (not lib.stringTyping.isInt(argsSplit[2]) or int(argsSplit[2]) < 0):
-        await message.channel.send(":x: Invalid stakes (amount of credits)!")
+        await message.reply(mention_author=False, content=":x: Invalid stakes (amount of credits)!")
         return
 
     sourceBBUser = botState.usersDB.getOrAddID(message.author.id)
@@ -377,7 +377,7 @@ async def cmd_duel(message : discord.Message, args : str, isDM : bool):
     if action == "challenge":
         stakes = int(argsSplit[2])
         if sourceBBUser.hasDuelChallengeFor(targetBBUser):
-            await message.channel.send(":x: You already have a duel challenge pending for " \
+            await message.reply(mention_author=False, content=":x: You already have a duel challenge pending for " \
                                         + lib.discordUtil.userOrMemberName(requestedUser, message.guild) \
                                         + "! To make a new one, cancel it first. (see `" + callingGuild.commandPrefix \
                                         + "help duel`)")
@@ -393,10 +393,10 @@ async def cmd_duel(message : discord.Message, args : str, isDM : bool):
             botState.duelRequestTTDB.scheduleTask(duelTT)
             sourceBBUser.addDuelChallenge(newDuelReq)
         except KeyError:
-            await message.channel.send(":x: User not found! Did they leave the server?")
+            await message.reply(mention_author=False, content=":x: User not found! Did they leave the server?")
             return
         except Exception:
-            await message.channel.send(":woozy_face: An unexpected error occurred! Tri, what did you do...")
+            await message.reply(mention_author=False, content=":woozy_face: An unexpected error occurred! Tri, what did you do...")
             return
 
         expiryTimesSplit = duelTT.expiryTime.strftime("%d %B %H %M").split(" ")
@@ -418,7 +418,7 @@ async def cmd_duel(message : discord.Message, args : str, isDM : bool):
         if message.guild.get_member(requestedUser.id) is None:
             targetUserDCGuild = lib.discordUtil.findBBUserDCGuild(targetBBUser)
             if targetUserDCGuild is None:
-                await message.channel.send(":x: User not found! Did they leave the server?")
+                await message.reply(mention_author=False, content=":x: User not found! Did they leave the server?")
                 return
             else:
                 targetUserBBGuild = botState.guildsDB.getGuild(targetUserDCGuild.id)
@@ -448,11 +448,11 @@ async def cmd_duel(message : discord.Message, args : str, isDM : bool):
 
     elif action == "cancel":
         if not sourceBBUser.hasDuelChallengeFor(targetBBUser):
-            await message.channel.send(":x: You do not have an active duel challenge for this user! Did it already expire?")
+            await message.reply(mention_author=False, content=":x: You do not have an active duel challenge for this user! Did it already expire?")
             return
 
         if message.guild.get_member(requestedUser.id) is None:
-            await message.channel.send(":white_check_mark: You have cancelled your duel challenge for **" \
+            await message.reply(mention_author=False, content=":white_check_mark: You have cancelled your duel challenge for **" \
                                         + str(requestedUser) + "**.")
             targetUserGuild = lib.discordUtil.findBBUserDCGuild(targetBBUser)
             if targetUserGuild is not None:
@@ -467,10 +467,10 @@ async def cmd_duel(message : discord.Message, args : str, isDM : bool):
             if targetBBUser.isAlertedForID("duels_challenge_incoming_cancel", message.guild,
                                             botState.guildsDB.getGuild(message.guild.id),
                                             message.guild.get_member(targetBBUser.id)):
-                await message.channel.send(":white_check_mark: You have cancelled your duel challenge for " \
+                await message.reply(mention_author=False, content=":white_check_mark: You have cancelled your duel challenge for " \
                                             + requestedUser.mention + ".")
             else:
-                await message.channel.send(":white_check_mark: You have cancelled your duel challenge for **" \
+                await message.reply(mention_author=False, content=":white_check_mark: You have cancelled your duel challenge for **" \
                                             + str(requestedUser) + "**.")
 
         # IDAlertedUserMentionOrName(alertType, dcUser=None, basedUser=None, basedGuild=None, dcGuild=None)
@@ -481,7 +481,7 @@ async def cmd_duel(message : discord.Message, args : str, isDM : bool):
 
     elif action in ["reject", "decline"]:
         if not targetBBUser.hasDuelChallengeFor(sourceBBUser):
-            await message.channel.send(":x: This user does not have an active duel challenge for you! Did it expire?")
+            await message.reply(mention_author=False, content=":x: This user does not have an active duel challenge for you! Did it expire?")
             return
 
         duelReq = targetBBUser.duelRequests[sourceBBUser]
@@ -489,17 +489,17 @@ async def cmd_duel(message : discord.Message, args : str, isDM : bool):
 
     elif action == "accept":
         if not targetBBUser.hasDuelChallengeFor(sourceBBUser):
-            await message.channel.send(":x: This user does not have an active duel challenge for you! Did it expire?")
+            await message.reply(mention_author=False, content=":x: This user does not have an active duel challenge for you! Did it expire?")
             return
 
         requestedDuel = targetBBUser.duelRequests[sourceBBUser]
 
         if sourceBBUser.credits < requestedDuel.stakes:
-            await message.channel.send(":x: You do not have enough credits to accept this duel request! (" \
+            await message.reply(mention_author=False, content=":x: You do not have enough credits to accept this duel request! (" \
                                         + str(requestedDuel.stakes) + ")")
             return
         if targetBBUser.credits < requestedDuel.stakes:
-            await message.channel.send(":x:" + str(requestedUser) + " does not have enough credits to fight this duel! (" \
+            await message.reply(mention_author=False, content=":x:" + str(requestedUser) + " does not have enough credits to fight this duel! (" \
                                         + str(requestedDuel.stakes) + ")")
             return
 
@@ -524,21 +524,21 @@ async def cmd_use(message : discord.Message, args : str, isDM : bool):
     callingGuild = botState.guildsDB.getGuild(message.guild.id)
 
     if not lib.stringTyping.isInt(args):
-        await message.channel.send(":x: Please give the number of the tool you would like to use! e.g: `" \
+        await message.reply(mention_author=False, content=":x: Please give the number of the tool you would like to use! e.g: `" \
                                     + callingGuild.commandPrefix + "use 1`")
     else:
         toolNum = int(args)
         if toolNum < 1:
-            await message.channel.send(":x: Tool number must be at least 1!")
+            await message.reply(mention_author=False, content=":x: Tool number must be at least 1!")
         elif callingBUser.inactiveTools.isEmpty():
-            await message.channel.send(":x: You don't have any tools to use!")
+            await message.reply(mention_author=False, content=":x: You don't have any tools to use!")
         elif toolNum > callingBUser.inactiveTools.numKeys:
-            await message.channel.send(":x: Tool number too big - you only have " + str(callingBUser.inactiveTools.numKeys) \
+            await message.reply(mention_author=False, content=":x: Tool number too big - you only have " + str(callingBUser.inactiveTools.numKeys) \
                                         + " tool" + ("" if callingBUser.inactiveTools.numKeys == 1 else "s") + "!")
         else:
             result = await callingBUser.inactiveTools[toolNum - 1].item.userFriendlyUse(message, ship=callingBUser.activeShip,
                                                                                         callingBUser=callingBUser)
-            await message.channel.send(result)
+            await message.reply(mention_author=False, content=result)
 
 
 botCommands.register("use", cmd_use, 0, allowDM=False, helpSection="bounties", signatureStr="**use [tool number]**",
