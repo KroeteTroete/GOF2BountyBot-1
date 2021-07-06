@@ -410,7 +410,7 @@ async def buildDuelResultsImage(player1: Union[basedUser.BasedUser, criminal.Cri
 
             name = player.name.title()
             
-        icon = lib.graphics.cropAndScale(Image.open(icon), cfg.duelResultsPlayerWidth, cfg.duelResultsPlayerWidth)
+        icon = lib.graphics.cropAndScale(Image.open(icon), cfg.duelResultsPlayerWidth, cfg.duelResultsPlayerWidth).convert("RGBA")
         # canvas = Image.composite().paste(icon, iconPos, icon)
         icon = lib.graphics.padImage(icon, iconPos[1], canvas.width - (iconPos[0]+cfg.duelResultsPlayerWidth),
                                         canvas.height - (iconPos[1]+cfg.duelResultsPlayerWidth), iconPos[0], (0, 0, 0, 0))
