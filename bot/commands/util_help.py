@@ -107,20 +107,22 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
                 owningUser.addOwnedMenu("help", helpMenu)
 
         elif args in botCommands.commands[userAccessLevel] and botCommands.commands[userAccessLevel][args].allowHelp:
+            cmdObj = botCommands.commands[userAccessLevel][args]
             helpEmbed = lib.discordUtil.makeEmbed(titleTxt=cfg.userAccessLevels[userAccessLevel].title() + " Commands",
                                                     desc=cfg.helpIntro + "\n__" \
-                                                        + botCommands.commands[userAccessLevel][args].helpSection.title() \
+                                                        + cmdObj.helpSection.title() \
                                                         + "__", col=discord.Colour.blue(),
                                                     thumb=botState.client.user.avatar_url_as(size=64))
-            helpEmbed.add_field(name=botCommands.commands[userAccessLevel][args].signatureStr,
-                                value=botCommands.commands[userAccessLevel][args].longHelp, inline=False)
-            helpEmbed.add_field(name="DMable", value="Yes" if botCommands.commands[userAccessLevel][args].allowDM else "No")
-            if botCommands.commands[userAccessLevel][args].aliases:
+            helpEmbed.add_field(name=cmdObj.signatureStr,
+                                value=cmdObj.longHelp, inline=False)
+            helpEmbed.add_field(name="DMable", value="Yes" if cmdObj.allowDM else "No")
+            if cmdObj.aliases:
                 aliasesStr = ""
-                for alias in botCommands.commands[userAccessLevel][args].aliases[:-1]:
+                for alias in cmdObj.aliases[:-1]:
                     aliasesStr += alias + ", "
-                aliasesStr += botCommands.commands[userAccessLevel][args].aliases[-1]
+                aliasesStr += cmdObj.aliases[-1]
                 helpEmbed.add_field(name="Alaises", value=aliasesStr)
+            helpEmbed.set_footer(text=f"Section: {cmdObj.helpSection.title()} | [optional args] <required args>")
             await message.channel.send(embed=helpEmbed)
 
         else:
