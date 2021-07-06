@@ -1,4 +1,4 @@
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageEnhance, ImageChops, ImageFilter
 from typing import Dict, Union, Tuple, List
 from ..cfg import cfg
 import atexit
@@ -95,6 +95,28 @@ def paddedScale(baseImage: Image.Image, w: int, h: int, fill: Union[str, int, Tu
     newImage = Image.composite(scaledImage, newImage, scaledImage)
     # newImage.paste(scaledImage, pasteOrigin, scaledImage)
     return newImage
+
+
+def dropShadow(baseImage: Image.Image, opacity: float, offset: Tuple[int, int], blurIterations: int) -> Image.Image:
+    """Return a copy of baseImage with a drop shadow placed beneath.
+    If the shadow goes out of bounds of the image, the image is NOT padded to account for this.
+    You should isntead pass your image pre-padded.
+
+    :param Image.Image baseImage: Image to apply the shadow to
+    :param float opacity: Opacity of the shadow, between 0 and 1
+    :param offset: Tuple specifying the x offset of the shadow followed by the y offset
+    :type offset: Tuple[int, int]
+    :param int blurIterations: The number of times to apply the blur filter to the shadow
+    :return: baseImage pasted on top of a drop shadow. The image is "RGBA" mode.
+    :rtype: Image.Image
+    """
+    shadow = ImageEnhance.Brightness(ImageChops.offset(baseImage, offset[0], offset[1])).enhance(0).convert("RGBA")
+    if opacity < 1:
+        shadowAlpha = ImageEnhance.Brightness(shadow.getchannel("A")).enhance(opacity)
+        shadow.putalpha(shadowAlpha)
+    for _ in range(blurIterations):
+        shadow = shadow.filter(ImageFilter.BLUR)
+    return Image.composite(baseImage, shadow, baseImage)
 
     
 

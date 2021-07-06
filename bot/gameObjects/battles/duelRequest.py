@@ -360,10 +360,7 @@ async def buildDuelResultsImage(player1: Union[basedUser.BasedUser, criminal.Cri
     
     :raise RuntimeError: When failing to fetch the profile image of one of the players
     """
-    if cfg.duelResultsBackgrounds:
-        canvas = lib.graphics.copyRandomDuelResultsBackground()
-    else:
-        canvas = Image.new("RGBA", cfg.duelResultsImageDims, (0, 0, 0, 0))
+    canvas = Image.new("RGBA", cfg.duelResultsImageDims, (0, 0, 0, 0))
     
     # Load font
     nameFont = ImageFont.truetype(cfg.duelResultsFont, cfg.duelResultsNameFontSize)
@@ -478,6 +475,9 @@ async def buildDuelResultsImage(player1: Union[basedUser.BasedUser, criminal.Cri
                     draw.text((statsPos[0], currentHeight), line, cfg.duelResultsStatsFontColour, font=statsFont)
                     currentHeight += pxPerLine
 
+    if cfg.duelResultsShadowOpacity:
+        canvas = lib.graphics.dropShadow(canvas, cfg.duelResultsShadowOpacity, cfg.duelResultsShadowOffset, cfg.duelResultsBlurIterations)
+
     if cfg.duelResultsOverlay:
         overlay = lib.graphics.copyDuelResultsOverlay()
         canvas = Image.composite(overlay, canvas, overlay)
@@ -490,4 +490,7 @@ async def buildDuelResultsImage(player1: Union[basedUser.BasedUser, criminal.Cri
         winnerOverlay = lib.graphics.copyDuelWinnerOverlay("right")
         
     canvas = Image.composite(winnerOverlay, canvas, winnerOverlay)
+
+    if cfg.duelResultsBackgrounds:
+        canvas = Image.composite(canvas, lib.graphics.copyRandomDuelResultsBackground(), canvas)
     return canvas

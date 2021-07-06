@@ -298,6 +298,9 @@ duelResultsP1ShipPos = (19, 211)
 # Where to place player 2's ship
 duelResultsP2ShipPos = (269, 211)
 duelResultsShipDims = (53, 53)
+duelResultsShadowOffset = (-4, 3)
+duelResultsShadowOpacity = 0.7
+duelResultsBlurIterations = 1
 
 
 
