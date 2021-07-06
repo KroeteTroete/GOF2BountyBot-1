@@ -414,7 +414,7 @@ async def buildDuelResultsImage(player1: Union[basedUser.BasedUser, criminal.Cri
         # canvas = Image.composite().paste(icon, iconPos, icon)
         icon = lib.graphics.padImage(icon, iconPos[1], canvas.width - (iconPos[0]+cfg.duelResultsPlayerWidth),
                                         canvas.height - (iconPos[1]+cfg.duelResultsPlayerWidth), iconPos[0], (0, 0, 0, 0))
-        canvas.alpha_composite(icon)
+        canvas = Image.composite(icon, canvas, icon)
 
         if ship.hasIcon:
             async with botState.httpClient.get(ship.icon) as resp:
