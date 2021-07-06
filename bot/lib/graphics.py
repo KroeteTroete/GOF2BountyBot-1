@@ -63,6 +63,8 @@ def paddedScale(baseImage: Image.Image, w: int, h: int, fill: Union[str, int, Tu
     # Create new canvas
     if newMode is None:
         newMode = baseImage.mode
+    elif baseImage.mode != newMode:
+        baseImage = baseImage.convert(newMode)
     newImage = Image.new(newMode, (w, h), fill)
 
     # Calculate scaled size of baseImage by matching the longest side to the desired length of that side
