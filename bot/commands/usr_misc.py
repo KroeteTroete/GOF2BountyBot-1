@@ -353,7 +353,7 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
                 statsEmbed.set_image(url="attachment://userProfile.png")
 
     # send the stats embed
-    await message.reply(mention_author=False, embed=statsEmbed)
+    await message.reply(file=userProfileFile, mention_author=False, embed=statsEmbed)
     closeAll()
     filesOpen = False
 
