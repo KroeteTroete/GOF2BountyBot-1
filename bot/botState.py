@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 class ShutDownState:
     restart = 0
     shutdown = 1
@@ -27,3 +29,6 @@ newBountyFixedDeltaChanged = False
 
 # Names of ships currently being rendered
 currentRenders = []
+
+# timedelta representing the system's offset from UTC time
+utcOffset: timedelta = None
