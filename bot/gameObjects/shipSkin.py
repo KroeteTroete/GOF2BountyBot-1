@@ -3,7 +3,7 @@ import os
 from ..shipRenderer import shipRenderer
 from .. import lib
 from discord import File
-from typing import Dict
+from typing import Dict, List
 from ..baseClasses import serializable
 
 
@@ -22,8 +22,9 @@ def _saveShip(ship):
 
 
 class ShipSkin(serializable.Serializable):
-    def __init__(self, name : str, textureRegions : int, shipRenders : Dict[str, str],
-                    path : str, designer : str, wiki : str = ""):
+    def __init__(self, name : str, textureRegions : List[int], shipRenders : Dict[str, str],
+                    path : str, designer : str, wiki : str = "", disabledRegions : List[int] = []):
+
         self.name = name
         self.textureRegions = textureRegions
         self.compatibleShips = list(shipRenders.keys())
@@ -39,6 +40,10 @@ class ShipSkin(serializable.Serializable):
         self.designer = designer
         self.wiki = wiki
         self.hasWiki = wiki != ""
+        self.disabledRegions = disabledRegions
+        for region in disabledRegions:
+            if region < 1:
+                raise ValueError("Attempted to disable an invalid region number: " + str(region) + ", skin " + name)
 
 
     def toDict(self, **kwargs) -> dict:
@@ -46,10 +51,12 @@ class ShipSkin(serializable.Serializable):
                     "ships": self.shipRenders, "designer": self.designer}
         if self.hasWiki:
             data["wiki"] = self.wiki
+        if self.disabledRegions:
+            data["disabledRegions"] = self.disabledRegions
         return data
 
 
-    def _save(self, **kwargs):
+    def _updateItemMETA(self, **kwargs):
         lib.jsonHandler.writeJSON(self.path + os.sep + "META.json", self.toDict(**kwargs), prettyPrint=True)
 
 
@@ -71,11 +78,19 @@ class ShipSkin(serializable.Serializable):
 
             # if not os.path.isfile(renderPath):
             textureFiles = {0: self.path + os.sep + "1.jpg"}
-            for i in range(self.textureRegions):
-                textureFiles[i  +1] = self.path + os.sep + str(i + 2) + ".jpg"
-            await shipRenderer.renderShip(self.name, shipData["path"], shipData["model"], textureFiles, [],
-                                            cfg.skinRenderIconResolution[0], cfg.skinRenderIconResolution[1],
-                                            cfg.skinRenderIconSamples)
+
+            for textureNum in self.textureRegions:
+                if textureNum <= shipData["textureRegions"]:
+                    textureFiles[textureNum] = self.path + os.sep + str(textureNum + 1) + ".jpg"
+
+            regionsToDisable = []
+            if "textureRegions" in shipData and shipData["textureRegions"] > 0:
+                for disabledRegionNum in self.disabledRegions:
+                    if disabledRegionNum <= shipData["textureRegions"]:
+                        regionsToDisable.append(disabledRegionNum)
+
+            await shipRenderer.renderShip(self.name, shipData["path"], shipData["model"], textureFiles, regionsToDisable,
+                                            cfg.skinRenderIconResolution[0], cfg.skinRenderIconResolution[1])
 
             # == Scrapped code for creating custom emojis for each ship reskin ==
             # await shipRenderer.renderShip(self.name + "_emoji", shipData["path"], shipData["model"], [texPath],
@@ -101,7 +116,7 @@ class ShipSkin(serializable.Serializable):
             shipData["compatibleSkins"].append(self.name.lower())
 
         _saveShip(ship)
-        self._save()
+        self._updateItemMETA()
 
 
     async def removeShip(self, ship, rendersChannel):
@@ -126,11 +141,11 @@ class ShipSkin(serializable.Serializable):
             del self.shipRenders[ship]
 
         _saveShip(ship)
-        self._save()
+        self._updateItemMETA()
 
 
     @classmethod
     def fromDict(cls, skinDict: dict, **kwargs):
         if skinDict["name"] in bbData.builtInShipSkins:
             return bbData.builtInShipSkins[skinDict["name"]]
-        return ShipSkin(**cls._makeDefaults(skinDict, ignores=("ships","disabledRegions"), shipRenders=skinDict["ships"]))
+        return ShipSkin(**cls._makeDefaults(skinDict, ignores=("ships",), shipRenders=skinDict["ships"]))

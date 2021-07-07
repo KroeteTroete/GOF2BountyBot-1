@@ -116,16 +116,6 @@ class ReactionMenuOption(serializable.Serializable):
             return await self.removeFunc() if self.removeIsCoroutine else self.removeFunc()
 
 
-    def __hash__(self) -> int:
-        """Calculate a hash of this menu option from its repr string.
-        As of writing, this is based on the object's memory location.
-
-        :return: A hash of this menu option
-        :rtype: int
-        """
-        return hash(repr(self))
-
-
     @abstractmethod
     def toDict(self, **kwargs) -> dict:
         """Serialize this menu option into dictionary format for saving to file.
@@ -639,7 +629,7 @@ class SingleUserReactionMenu(ReactionMenu):
                     if self.targetMember in await react.users().flatten() and \
                     lib.emojis.BasedEmoji.fromReaction(react.emoji) in self.options]
 
-          
+
 saveableMenuTypeNames: Dict[type, str] = {}
 saveableNameMenuTypes: Dict[str, type] = {}
 

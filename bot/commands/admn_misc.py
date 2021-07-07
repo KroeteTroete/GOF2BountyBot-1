@@ -103,13 +103,15 @@ async def admin_cmd_config(message : discord.Message, args : str, isDM : bool):
                 await message.reply(mention_author=False, content=":x: Bounties are already enabled in this server!")
             else:
                 callingBBGuild.enableBounties()
-                await message.reply(mention_author=False, content=":white_check_mark: Bounties are now enabled on this server!")
+                await message.reply(mention_author=False,
+                                    content=":white_check_mark: Bounties are now enabled on this server!")
         elif value in falseStrings:
             if callingBBGuild.bountiesDisabled:
                 await message.reply(mention_author=False, content=":x: Bounties are already disabled in this server!")
             else:
-                callingBBGuild.disableBounties()
-                await message.reply(mention_author=False, content=":white_check_mark: Bounties are now disabled on this server!")
+                await callingBBGuild.disableBounties()
+                await message.reply(mention_author=False,
+                                    content=":white_check_mark: Bounties are now disabled on this server!")
         else:
             await message.reply(mention_author=False, content=":x: Unknown value!")
     elif setting in ["shop", "shops"]:
@@ -130,7 +132,7 @@ async def admin_cmd_config(message : discord.Message, args : str, isDM : bool):
     else:
         await message.reply(mention_author=False, content=":x: Unknown setting!")
 
-botCommands.register("config", admin_cmd_config, 1, signatureStr="**config <setting> <value>**",
+botCommands.register("config", admin_cmd_config, 2, signatureStr="**config <setting> <value>**",
                         shortHelp="Set various settings for how bountybot will function in this server.",
                         longHelp="Set various settings for how bountybot will function in this server. Currently, " \
                                     + "`setting` can be either 'bounties' or 'shop', and `value` can either " \
@@ -151,7 +153,7 @@ async def admin_cmd_del_reaction_menu(message : discord.Message, args : str, isD
     else:
         await message.reply(mention_author=False, content=":x: Unrecognised reaction menu!")
 
-botCommands.register("del-reaction-menu", admin_cmd_del_reaction_menu, 1, signatureStr="**del-reaction-menu <id>**",
+botCommands.register("del-reaction-menu", admin_cmd_del_reaction_menu, 2, signatureStr="**del-reaction-menu <id>**",
                         longHelp="Remove the specified reaction menu. You can also just delete the message," \
                                     + " if you have permissions.\nTo get the ID of a reaction menu, enable discord's " \
                                     + "developer mode, right click on the menu, and click Copy ID.")
@@ -196,7 +198,7 @@ async def admin_cmd_set_notify_role(message : discord.Message, args : str, isDM 
         await message.reply(mention_author=False, content=":white_check_mark: Role set for " + userAlerts.userAlertsTypesNames[alertType] \
                                     + " notifications!")
 
-botCommands.register("set-notify-role", admin_cmd_set_notify_role, 1,
+botCommands.register("set-notify-role", admin_cmd_set_notify_role, 2,
                         signatureStr="**set-notify-role <type>** *[alert]* **<role>**",
                         shortHelp="Set a role to ping when various events occur. For valid notification types, " \
                                     + "see `help notify`.", longHelp="Set a role to ping when various events occur. " \
@@ -229,11 +231,62 @@ async def admin_cmd_remove_notify_role(message : discord.Message, args : str, is
         await message.reply(mention_author=False, content=":white_check_mark: Role pings disabled for " \
                                     + userAlerts.userAlertsTypesNames[alertType] + " notifications.")
 
-botCommands.register("remove-notify-role", admin_cmd_remove_notify_role, 1,
+botCommands.register("remove-notify-role", admin_cmd_remove_notify_role, 2,
                         signatureStr="**remove-notify-role <type>** *[alert]*",
                         shortHelp="Disable role pings for various events. For valid notification types, see `help notify`.",
                         longHelp="Disable role pings for various events. **<type>** and/or *[alert]* must specify a type of " \
                                     + "notification. For valid notification types, see `help notify`.")
+
+
+async def admin_cmd_make_bounty_notify_roles(message : discord.Message, args : str, isDM : bool):
+    """For the current guild, create 10 notify-able roles, one for each user tech level.
+    These roles will be used to alert users when new bounties spawn at each tech level.
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: ignored
+    :param bool isDM: Whether or not the command is being called from a DM channel
+    """
+    requestedBBGuild = botState.guildsDB.getGuild(message.guild.id)
+    if requestedBBGuild.hasBountyAlertRoles:
+        await message.reply(":x: This server already has new bounty alert roles!")
+    elif requestedBBGuild.bountiesDisabled:
+        await message.reply(":x: Bounties are disabled in this server!")
+    elif not message.guild.me.guild_permissions.manage_roles:
+        await message.channel.send(":x: I do not have the 'Manage Roles' permission in this server!")
+    else:
+        await requestedBBGuild.makeBountyAlertRoles()
+        await message.channel.send(":white_check_mark: New roles have been created for new bounties notifications!")
+
+botCommands.register("make-bounty-notify-roles", admin_cmd_make_bounty_notify_roles, 2,
+                        signatureStr="**make-bounty-notify-roles**",
+                        shortHelp="Make 10 roles, one for each tech levle users can be, which the bot will ping when new " \
+                                    + "bounties are spawned.",
+                        longHelp="Automatically create 10 new roles, one for each tech levle users can be. When new " \
+                                    + "spawn, the bot will ping the role for the bounty's tech level. Users can self-assign" \
+                                    + " and self-unassign these roles with the `notify` command. Moving the user between " \
+                                    + "roles as they level up is handled automatically. Once created, feel free to edit the" \
+                                    + " roles, but please do not delete them, and they must remain pingable by the bot.")
+
+
+async def admin_cmd_remove_bounty_notify_roles(message : discord.Message, args : str, isDM : bool):
+    """Remove all new bounty alert roles in the calling guild.
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: ignored
+    :param bool isDM: Whether or not the command is being called from a DM channel
+    """
+    requestedBBGuild = botState.guildsDB.getGuild(message.guild.id)
+    if not requestedBBGuild.hasBountyAlertRoles:
+        await message.reply(":x: This server does not have new bounty alert roles!")
+    elif not message.guild.me.guild_permissions.manage_roles:
+        await message.channel.send(":x: I do not have the 'Manage Roles' permission in this server!")
+    else:
+        await requestedBBGuild.deleteBountyAlertRoles()
+        await message.channel.send(":white_check_mark: New bounties notifications have been disabled, and their roles removed!")
+
+botCommands.register("remove-bounty-notify-roles", admin_cmd_remove_bounty_notify_roles, 2,
+                        signatureStr="**remove-bounty-notify-roles**",
+                        shortHelp="Disable new bounty notifications, and remove all new bounty alert roles from the server.")
 
 
 async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM : bool):
@@ -309,8 +362,9 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
                 if arg.lower().startswith(kwArg):
                     kwArgs[kwArg[:-1]] = arg[len(kwArg):]
                     break
-        # except lib.emojis.UnrecognisedCustomEmoji:
-        #     await message.reply(mention_author=False, content=":x: I don't know your " + str(argPos) + lib.stringTyping.getNumExtension(argPos) \
+        # except lib.exceptions.UnrecognisedCustomEmoji:
+        #     await message.reply(mention_author=False,
+        #                       content=":x: I don't know your " + str(argPos) + lib.stringTyping.getNumExtension(argPos) \
         #                                 + " emoji!\nYou can only use built in emojis, or custom emojis " \
         #                                 + "that are in this server.")
         #     return
@@ -398,7 +452,7 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
         timeoutDelta = timedelta(**cfg.timeouts.roleMenuExpiry if timeoutDict == {} else timeoutDict)
         timeoutTT = timedTask.TimedTask(expiryDelta=timeoutDelta, expiryFunction=reactionRolePicker.markExpiredRoleMenu,
                                         expiryFunctionArgs=menuMsg.id)
-        botState.reactionMenusTTDB.scheduleTask(timeoutTT)
+        botState.taskScheduler.scheduleTask(timeoutTT)
 
     else:
         timeoutTT = None
@@ -408,7 +462,7 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
     await menu.updateMessage()
     botState.reactionMenusDB[menuMsg.id] = menu
 
-botCommands.register("make-role-menu", admin_cmd_make_role_menu, 1, forceKeepArgsCasing=True,
+botCommands.register("make-role-menu", admin_cmd_make_role_menu, 2, forceKeepArgsCasing=True,
                         signatureStr="**make-role-menu** *<title>*\n**<option1 emoji> <@option1 role>**\n" \
                                         + "...    ...\n*[kwargs]*",
                         shortHelp="Create a reaction role menu. Each option must be on its own new line, as an emoji, " \
@@ -597,7 +651,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
     except shipRenderer.RenderFailed:
         await message.reply("🥺 Render failed! The error has been logged, please try a different ship.",
                             mention_author=True)
-        botState.logger.log("Main", "admin_cmd_showmeHD", "HD ship render failed with args: '" + args + "'")
+        botState.logger.log("Main", "admin_cmd_showmeHD", f"HD ship render failed with args: '{args}'")
     else:
         with open(renderPath, "rb") as f:
             imageEmbedMsg = await botState.client.get_channel(cfg.showmeSkinRendersChannel).send("HD-u" \
@@ -629,13 +683,6 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
     return
 
 
-botCommands.register("showmehd", admin_cmd_showmeHD, 1, allowDM=False, signatureStr="**showmeHD <ship-name>** *[-full]*",
-                        shortHelp="Render your specified ship with the given skin, in full HD 1080p! " \
-                                    + "⚠ WARNING: THIS WILL TAKE A LONG TIME.",
-                        longHelp="You must attach a 2048x2048 jpg to your message. Render your specified ship with the " \
-                                    + "given skin, in full HD 1080p! ⚠ WARNING: THIS WILL TAKE A LONG TIME. Give `-full` " \
-                                    + "to disable autoskin and render exactly your provided image, " \
-                                    + "with no additional texturing.")
 botCommands.register("showmehd", admin_cmd_showmeHD, 2, allowDM=True, signatureStr="**showmeHD <ship-name>** *[-full]*",
                         shortHelp="Render your specified ship with the given skin, in full HD 1080p! " \
                                     + "⚠ WARNING: THIS WILL TAKE A LONG TIME.",

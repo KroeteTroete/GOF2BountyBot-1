@@ -67,4 +67,4 @@ class ReactionSkinRegionPicker(reactionMenu.SingleUserReactionMenu):
                                                         options=regionOptions, titleTxt=titleTxt, desc=desc, col=col,
                                                         footerTxt=footerTxt, img=img, thumb=thumb, icon=icon,
                                                         authorName=authorName)
-        self.saveable = False
+                                                        

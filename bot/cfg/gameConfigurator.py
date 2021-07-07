@@ -8,34 +8,15 @@ from ..gameObjects import shipUpgrade, shipSkin
 from ..gameObjects.bounties import criminal, solarSystem
 from ..gameObjects.items import moduleItemFactory
 from ..gameObjects.items.weapons import primaryWeapon, turretWeapon
-from ..gameObjects.items.tools import shipSkinTool, toolItemFactory
+from ..gameObjects.items.tools import shipSkinTool, toolItemFactory, crateTool
+from ..gameObjects.userProfile import medal
 from .. import lib
 from ..lib import gameMaths
 
 CWD = os.getcwd()
 
 
-def depthLimitedWalk(top: str, maxDepth: int):
-    """os.walk but with a limited recursion depth.
-    Written by Kishan Patel:
-    https://www.semicolonworld.com/question/57766/python-3-travel-directory-tree-with-limited-recursion-depth
-
-    :param str top: Directory to start walking from
-    :param int maxDepth: The maximum number of directories the walk will recurse into
-    :return: An iterator in accordance with os.walk
-    :rtype: Iterator
-    """
-    dirs, nondirs = [], []
-    for name in os.listdir(top):
-        (dirs if os.path.isdir(os.path.join(top, name)) else nondirs).append(name)
-    yield top, dirs, nondirs
-    if maxDepth > 1:
-        for name in dirs:
-            for x in depthLimitedWalk(os.path.join(top, name), maxDepth - 1):
-                yield x
-
-
-def _loadGameItemsFromDir(itemDir : str, itemFolderExt : str) -> Dict[str, dict]:
+def _loadGameItemsFromDir(itemDir : str, itemFolderExt : str, lowerKey: bool = False) -> Dict[str, dict]:
     """Load metadata for all configured metadata of one game object type into a new dictionary.
 
     :param str itemDir: The directory in which to search for items of the given type
@@ -47,7 +28,7 @@ def _loadGameItemsFromDir(itemDir : str, itemFolderExt : str) -> Dict[str, dict]
     rawFolderExt = itemFolderExt.lstrip(".")
     itemFolderExt = itemFolderExt.lower()
     # Scan all subdirectories recursively, looking for folders ending with the given extension
-    for subdir, dirs, _ in depthLimitedWalk(itemDir, cfg.gameObjectCfgMaxRecursion):
+    for subdir, dirs, _ in lib.jsonHandler.depthLimitedWalk(itemDir, cfg.gameObjectCfgMaxRecursion):
         for dirname in dirs:
             if dirname.lower().endswith(itemFolderExt):
                 dirpath = subdir + os.sep + dirname
@@ -58,7 +39,10 @@ def _loadGameItemsFromDir(itemDir : str, itemFolderExt : str) -> Dict[str, dict]
                 # Read in the object metadata and add to the database
                 with open(dirpath + os.sep + "META.json", "r") as f:
                     currentItemData = json.loads(f.read())
-                    itemDB[currentItemData["name"]] = currentItemData
+                    if lowerKey:
+                        itemDB[currentItemData["name"].lower()] = currentItemData
+                    else:
+                        itemDB[currentItemData["name"]] = currentItemData
     print("[gameConfigurator] " + str(len(itemDB)) + " " + rawFolderExt + "s loaded.")
     return itemDB
 
@@ -73,7 +57,7 @@ def _loadShipItemsFromDir(shipsDir : str) -> Dict[str, dict]:
     """
     itemDB = {}
     # Scan all subdirectories recursively, looking for folders ending with .bbShip
-    for subdir, dirs, _ in depthLimitedWalk(shipsDir, cfg.gameObjectCfgMaxRecursion):
+    for subdir, dirs, _ in lib.jsonHandler.depthLimitedWalk(shipsDir, cfg.gameObjectCfgMaxRecursion):
         for dirname in dirs:
             if dirname.lower().endswith(".bbship"):
                 dirpath = subdir + os.sep + dirname
@@ -122,7 +106,7 @@ def _loadShipSkinsFromDir(shipsDir : str) -> Dict[str, dict]:
     """
     itemDB = {}
     # Scan all subdirectories recursively, looking for folders ending with .bbShip
-    for subdir, dirs, _ in depthLimitedWalk(shipsDir, cfg.gameObjectCfgMaxRecursion):
+    for subdir, dirs, _ in lib.jsonHandler.depthLimitedWalk(shipsDir, cfg.gameObjectCfgMaxRecursion):
         for dirname in dirs:
             if dirname.lower().endswith(".bbshipskin"):
                 dirpath = subdir + os.sep + dirname
@@ -149,10 +133,29 @@ def _loadGameObjects(dataDB : Dict[str, dict], objsDB : Dict[str, Any], deserial
     Objects are registered directly into objsDB, and the metadata in dataDB is updated to be builtIn.
     No new dictionaries are created.
     """
+    for objKey, objDict in dataDB.items():
+        objsDB[objKey] = deserializer(objDict)
+        objsDB[objKey].builtIn = True
+        dataDB[objKey]["builtIn"] = True
+
+
+def _loadToolObjects(dataDB : Dict[str, dict], objsDB : Dict[str, Any], deserializer: FunctionType):
+    """Spawn in builtIn instances of all ToolItems described in dataDB, and register into objsDB.
+    This is the same as _loadGameObjects, with the extra step of checking all spawned tools to see if they are crates,
+    and adding crates to bbData.builtInCrateObjs.
+    """
     for objDict in dataDB.values():
-        objsDB[objDict["name"]] = deserializer(objDict)
-        objsDB[objDict["name"]].builtIn = True
-        dataDB[objDict["name"]]["builtIn"] = True
+        newTool = deserializer(objDict)
+        newTool.builtIn = True
+        objsDB[newTool.name] = newTool
+        dataDB[newTool.name]["builtIn"] = True
+        if isinstance(newTool, crateTool.CrateTool):
+            if newTool.crateType not in bbData.builtInCrateObjs:
+                raise ValueError("Unknown cratetype for crate '" + newTool.name + "': " + newTool.crateType)
+            if len(bbData.builtInCrateObjs[newTool.crateType]) < newTool.typeNum + 1:
+                slotsToAdd = newTool.typeNum - len(bbData.builtInCrateObjs[newTool.crateType]) + 1
+                bbData.builtInCrateObjs[newTool.crateType] += [None] * slotsToAdd
+            bbData.builtInCrateObjs[newTool.crateType][newTool.typeNum] = newTool
 
 
 def _sortShipKeys():
@@ -177,7 +180,7 @@ def _sortGameObjects(objsDB : Dict[str, Any]) -> List[List[Any]]:
     :rtype: List[List[Any]]
     """
     # Sort module objects by tech level
-    sortedDB = [[] for _ in range(cfg.minTechLevel, cfg.maxTechLevel + 1)]
+    sortedDB = [[] for _ in range(cfg.maxTechLevel - cfg.minTechLevel + 1)]
     for obj in objsDB.values():
         sortedDB[obj.techLevel - 1].append(obj)
     return sortedDB
@@ -202,6 +205,26 @@ def _makeItemSpawnRates(objsDB : Dict[str, Any]):
         item.shopSpawnRate = gameMaths.truncItemSpawnResolution(normalizedChance * 100)
 
 
+def _makeLevelUpCrates():
+    crates = [crateTool.CrateTool([], "$INVALID_CRATE_LUP0$", [], builtIn=True)] + [None] * gameMaths.numTechLevels
+
+    # generate bbCrates for bbShipSkinTools for each player bounty hunter level up
+    for level in gameMaths.techLevelRange:
+        itemPool = []
+        shipSkins = set()
+        for shipName in bbData.shipKeysByTL[level-1]:
+            if "compatibleSkins" in bbData.builtInShipData[shipName]:
+                for skinName in bbData.builtInShipData[shipName]["compatibleSkins"]:
+                    if bbData.builtInShipSkins[skinName] not in shipSkins:
+                        shipSkins.add(bbData.builtInShipSkins[skinName])
+
+        itemPool = [bbData.shipSkinToolsBySkin[skin] for skin in shipSkins]
+        crates[level] = crateTool.CrateTool(itemPool, "Level " + str(level) + " skins crate", techLevel=level,
+                                                builtIn=True, value=gameMaths.crateValueForTL(level),
+                                                crateType="levelUp", typeNum=level)
+    return crates
+
+
 def loadAllGameObjectData():
     """Load json descriptions of all configured game objects into bbData variables.
     This function populates:
@@ -217,6 +240,7 @@ def loadAllGameObjectData():
     bbData.builtInToolData
     bbData.builtInSecondariesData
     bbData.builtInShipSkinsData
+    bbData.medalsData
     """
     bbData.builtInShipData = _loadShipItemsFromDir(cfg.paths.bbShipMETAFolder)
     bbData.builtInShipSkinsData = _loadShipSkinsFromDir(cfg.paths.shipSkinMETAFolder)
@@ -229,8 +253,9 @@ def loadAllGameObjectData():
                             ("builtInTurretData",     cfg.paths.bbTurretMETAFolder,       ".bbTurret"),
                             ("builtInCommodityData",  cfg.paths.bbCommodityMETAFolder,    ".bbCommodity"),
                             ("builtInToolData",       cfg.paths.bbToolMETAFolder,         ".bbTool"),
-                            ("builtInSecondariesData", cfg.paths.bbModuleMETAFolder,       ".bbModule")):
-        setattr(bbData, db, _loadGameItemsFromDir(dir, ext))
+                            ("builtInSecondariesData",cfg.paths.bbModuleMETAFolder,       ".bbModule"),
+                            ("medalsData",            cfg.paths.bbMedalsMETAFolder,       ".bbMedal")):
+        setattr(bbData, db, _loadGameItemsFromDir(dir, ext, lowerKey=ext==".bbMedal"))
 
 
 def loadAllGameObjects():
@@ -249,6 +274,7 @@ def loadAllGameObjects():
     bbData.builtInTurretObjs
     bbData.builtInToolObjs
     bbData.builtInShipSkins
+    bbData.medalObjs
 
     bbData.shipKeysByTL
     bbData.moduleObjsByTL
@@ -266,7 +292,8 @@ def loadAllGameObjects():
                 (bbData.builtInUpgradeData, bbData.builtInUpgradeObjs,  shipUpgrade.ShipUpgrade.fromDict),
                 (bbData.builtInTurretData,  bbData.builtInTurretObjs,   turretWeapon.TurretWeapon.fromDict),
                 (bbData.builtInModuleData,  bbData.builtInModuleObjs,   moduleItemFactory.fromDict),
-                (bbData.builtInShipSkinsData,bbData.builtInShipSkins,   shipSkin.ShipSkin.fromDict)):
+                (bbData.builtInShipSkinsData,bbData.builtInShipSkins,   shipSkin.ShipSkin.fromDict),
+                (bbData.medalsData,         bbData.medalObjs,           medal.Medal.fromDict)):
         _loadGameObjects(dataDB, objsDB, deserializer)
 
     # generate shipSkinTool objects for each shipSkin
@@ -278,6 +305,10 @@ def loadAllGameObjects():
                                                 builtIn=True)
             bbData.builtInToolObjs[toolName] = newTool
 
+        # Register skin tools in shipSkinToolsBySkin
+        if currentSkin not in bbData.shipSkinToolsBySkin:
+            bbData.shipSkinToolsBySkin[currentSkin] = bbData.builtInToolObjs[toolName]
+
     _sortShipKeys()
     _makeShipSpawnRates()
 
@@ -287,8 +318,11 @@ def loadAllGameObjects():
         setattr(bbData, db, _sortGameObjects(objsDB))
         _makeItemSpawnRates(objsDB)
 
-    # Crates can contain any other item, so need to be loaded after all other items
-    _loadGameObjects(bbData.builtInToolData, bbData.builtInToolObjs, toolItemFactory.fromDict)
+    bbData.builtInCrateObjs = {crateType: [] for crateType in cfg.crateTypes}
+    # Load in tools
+    _loadToolObjects(bbData.builtInToolData, bbData.builtInToolObjs, toolItemFactory.fromDict)
+
+    bbData.builtInCrateObjs["levelUp"] = _makeLevelUpCrates()
 
     # Fetch bounty names and longest bounty name
     for criminalName in bbData.builtInCriminalData:

@@ -1,202 +1,273 @@
 from __future__ import annotations
+from typing import Dict
+import asyncio
 
+from ..gameObjects.bounties.bountyBoards.bountyBoardChannel import BountyBoardChannel
 from ..gameObjects.bounties import bounty
+from ..gameObjects.bounties.criminal import Criminal
 from typing import List
 from ..baseClasses import serializable
 from ..cfg import cfg
+from ..users import basedGuild
+from .. import botState
+from .bountyDivision import BountyDivision
+
+
+def nameForDivision(div: BountyDivision) -> str:
+    """Get the name for the given BountyDivision, as specified in cfg.bountyDivisions.
+
+    :param BountyDivison div: The division to get the name of
+    :return: The name for the given division
+    :rtype: str
+    :raise KeyError: When no name is found for the given division
+    """
+    try:
+        return next(k for k, v in cfg.bountyDivisions.items() if div.minLevel == v[0])
+    except KeyError:
+        raise KeyError(f"The given division is non-standard, no name found: {div} range: {div.minLevel} - {div.maxLevel}")
+
+
+def divisionNameForLevel(tl: int) -> str:
+    """Get the name of the division which players and bounties of the given techlevel belong to.
+
+    :param int tl: The techlevel whose division name to find
+    :return: The name for divisions responsible for bounties of the given level
+    :rtype: str
+    :raise KeyError: When no division is found for bounties of the given level
+    """
+    try:
+        return next(name for name, tlBoundaries in cfg.bountyDivisions.items() if tlBoundaries[0] <= tl <= tlBoundaries[1])
+    except StopIteration:
+        raise KeyError(f"No division found for bounties of TL {tl}")
 
 
 class BountyDB(serializable.Serializable):
-    """A database of bbObject.bounties.bounty.
-    Bounty criminal names and faction names must be unique within the database.
+    """A database of Bounty.
+    Bounty criminal names must be unique within the database.
     Faction names are case sensitive.
 
-    TODO: Give factions default values
-
-    :var bounties: Dictionary of faction name to list of bounties
-    :vartype bounties: dict
-    :var factions: List of str faction names, to be used in self.bounties keys
-    :vartype factions: list
-    :var latestBounty: The most recent bounty to be added to this db.As of writing,
-                        this is only used when scaling new bounty delays by the most recent length
-    :vartype latestBounty: gameObjects.bounties.bounty.Bounty
+    :var divisions: Dictionary of tech level range to bounty division
+    :vartype divisions: Dict[range, BountyDivision]
+    :var owningBasedGuild: The BasedGuild where this DB's bounties are active
+    :vartype owningBasedGuild: BasedGuild
     """
 
-    def __init__(self, factions: str):
+    def __init__(self, owningBasedGuild: "basedGuild.BasedGuild", dummy : bool = False):
         """
-        :param list factions: list of unique faction names useable in this db's bounties
+        :param BasedGuild owningBasedGuild: The guild that owns this bountyDB
+        :param bool dummy: Whether this db is to be functional or only a placeholder (Default False)
         """
-        # Dictionary of faction name : list of bounties
-        # TODO: add criminal.__hash__, and change bountyDB.bounties into dict of faction:{criminal:bounty}
-        self.bounties = {}
-        self.escapedBounties = {}
-
-        # Useable faction names for this bountyDB
-        self.factions = factions
-        for fac in factions:
-            self.bounties[fac] = []
-
-        self.latestBounty = None
+        if not dummy:
+            self.divisions: Dict[range, BountyDivision] = {}
+            for minLevel, maxLevel in cfg.bountyDivisions.values():
+                self.divisions[range(minLevel, maxLevel+1)] = BountyDivision(self, minLevel, maxLevel)
+            self.orderedDivs: List[BountyDivision] = []
+            self.owningBasedGuild = owningBasedGuild
 
 
-    def addFaction(self, faction: str):
-        """Add a new useable faction name to the DB
+    def divisionForLevel(self, tl: int) -> BountyDivision:
+        """Get the stored BountyDivision which handles bounties of the given level.
 
-        :param str faction: The new name to enable bounty storage under. Must be unique within the db.
-        :raise KeyError: When attempting to add a faction which already exists in this DB
+        :param int tl: The techlevel whose division to find
+        :return: The BountyDivison responsible for bounties of the given level
+        :rtype: BountyDivision
+        :raise KeyError: When no division is found for bounties of the given level
         """
-        # Ensure faction name does not already exist
-        if self.factionExists(faction):
-            raise KeyError("Attempted to add a faction that already exists: " + faction)
-        # Initialise faction's database to empty
-        self.bounties[faction] = []
+        try:
+            return next(self.divisions[tlRange] for tlRange in self.divisions if tl in tlRange)
+        except StopIteration:
+            raise KeyError(f"No BountyDivision is registered for bounties of TL {tl}")
 
 
-    def removeFaction(self, faction: str):
-        """Remove a faction name from this DB
+    def divisionForName(self, name: str) -> BountyDivision:
+        """Get the stored BountyDivision for the given division name, as specified in cfg.bountyDivisions.
 
-        :param str faction: The faction name to remove. Case sensitive.
-        :raise KeyError: When given a faction which does not exist in this DB
+        :param str name: The name of the division to get
+        :return: The BountyDivison of the given name
+        :rtype: BountyDivision
+        :raise KeyError: When no division is found for the given name
         """
-        # Ensure the faction name exists
-        if not self.factionExists(faction):
-            raise KeyError("Unrecognised faction: " + faction)
-        # Remove the faction name from the DB
-        self.bounties.pop(faction)
+        try:
+            return self.divisionForLevel(cfg.bountyDivisions[name][0])
+        except KeyError:
+            raise KeyError(f"No BountyDivision with the given name: {name}")
 
 
-    def clearBounties(self, faction : str = None):
-        """Clear all bounties stored under a faction, or under all factions if none is specified
+    def clearAllBounties(self, includeEscaped=True):
+        """Clear all bounties, for all factions in the DB
+        If any division was full before, restart its new bounty spawner
 
-        :param str faction: The faction whose bounties to clear.
-                            All factions' bounties are cleared if None is given. (default None)
-        :raise KeyError: When given a faction which does not exist in this DB
+        :param bool includeEscaped: Whether to also clear escaped criminals (Default True)
         """
-        if faction is not None:
-            # Ensure the faction name exists
-            if not self.factionExists(faction):
-                raise KeyError("Unrecognised faction: " + faction)
-            # Empty the faction's bounties
-            self.bounties[faction] = []
-        # If no faction is given
+        for div in self.divisions.values():
+            div.clear(includeEscaped=includeEscaped)
+
+
+    async def resetAllNewBountyTTs(self):
+        """Reset all new bounty TimedTasks, immediately triggering the spawning of one bounty per division
+        """
+        divTasks = set()
+        for div in self.divisions.values():
+            if not div.isFull():
+                divTasks.add(asyncio.create_task(div.resetNewBountyCool()))
+        if divTasks:
+            await asyncio.wait(divTasks)
+            for t in divTasks:
+                if e := t.exception():
+                    botState.logger.log("bountyDB", "resetAllNewBountyTTs", str(e), category="bountiesDB",
+                                        exception=e)
+
+
+    def getBountyByCrim(self, crim : Criminal, level : int = None) -> bounty.Bounty:
+        """Get the bounty object for a given criminal name object
+        This process is much more efficient when given the difficulty level of the criminal's bounty.
+
+        :param Criminal crim: The criminal whose bounty is to be fetched.
+        :param str level: The difficulty level of the criminal's bounty. Give None if this is not known,
+                            to search all difficulties. (default None)
+
+        :return: the bounty object tracking crim
+        :rtype: Bounty
+        :param int level: The difficulty level of the criminal's bounty, if known (Default None)
+        :raise KeyError: If the requested criminal does not exist in this DB
+        """
+        # If the criminal's level is known
+        if level is not None:
+            try:
+                return self.divisionForLevel(level).bounties[level][crim]
+            except KeyError:
+                pass
+
+        # If the criminal's level is not known, search all levels
         else:
-            # clearBounties for each faction in the DB
-            for fac in self.getFactions():
-                self.clearBounties(faction=fac)
+            for div in self.divisions.values():
+                for tl in range(div.minLevel, div.maxLevel + 1):
+                    try:
+                        return div.bounties[tl][crim]
+                    except KeyError:
+                        pass
+        
+        raise KeyError(f"No bounty found for criminal: '{crim.name}'" + ("" if level is None else f" and level: {level}"))
 
-        self.latestBounty = None
 
+    def getEscapedBountyByCrim(self, crim : Criminal, level : int = None) -> bounty.Bounty:
+        """Get the escaped bounty object for a given criminal object.
+        This process is much more efficient when given the difficulty level of the criminal's bounty.
 
-    def getFactions(self) -> List[bounty.Bounty]:
-        """Get the list of useable faction names for this DB
+        :param Criminal crim: The criminal whose escaped bounty is to be fetched.
+        :param str level: The difficulty level of the criminal's bounty. Give None if this is not known,
+                            to search all difficulties. (default None)
 
-        :return: A list containing this DB's useable faction names
-        :rtype: list
+        :return: the escaped bounty object tracking crim
+        :rtype: Bounty
+        :param int level: The difficulty level of the criminal's bounty, if known (Default None)
+        :raise KeyError: If the requested criminal does not exist in this DB
         """
-        return self.factions
+        # If the criminal's level is known
+        if level is not None:
+            try:
+                return self.divisionForLevel(level).escapedBounties[level][crim]
+            except KeyError:
+                pass
+
+        # If the criminal's level is not known, search all levels
+        else:
+            for div in self.divisions.values():
+                for tl in range(div.minLevel, div.maxLevel + 1):
+                    try:
+                        return div.escapedBounties[tl][crim]
+                    except KeyError:
+                        pass
+        
+        raise KeyError(f"No escaped bounty found for criminal: '{crim.name}'" + ("" if level is None else f" and level: {level}"))
 
 
-    def factionExists(self, faction : str) -> bool:
-        """Decide whether a given faction name is useable in this DB
-
-        :param str faction: The faction to test for existence. Case sensitive.
-
-        :return: True if faction is one of this DB's factions, false otherwise.
-        :rtype: bool
-        """
-        return faction in self.getFactions()
-
-
-    def getFactionBounties(self, faction : str) -> List[bounty.Bounty]:
-        """Get a list of all bounty objects stored under a given faction.
-
-        :param str faction: The faction whose bounties to return. Case sensitive.
-
-        :return: A list containing references to all bbBounties made available by faction.
-                    ⚠ Muteable, and can alter the DB!
-        :rtype: list
-        """
-        return self.bounties[faction]
-
-
-    def getFactionNumBounties(self, faction : str) -> int:
-        """Get the number of bounties stored by a faction.
-
-        :param str faction: The faction whose bounties to return. Case sensitive.
-
-        :return: Integer number of bounties stored by a faction
-        :rtype: int
-        """
-        return len(self.bounties[faction])
-
-
-    def getBounty(self, name : str, faction : str = None) -> bounty.Bounty:
+    def getBounty(self, name : str, level : int = None) -> bounty.Bounty:
         """Get the bounty object for a given criminal name or alias.
-        This process is much more efficient when given the faction that the criminal is wanted by.
+        This process is much more efficient when given the difficulty level of the criminal's bounty.
 
         :param str name: A name or alias for the criminal whose bounty is to be fetched.
-        :param str faction: The faction by which the criminal is wanted. Give None if this is not known,
-                            to search all factions. (default None)
+        :param str level: The difficulty level of the criminal's bounty. Give None if this is not known,
+                            to search all difficulties. (default None)
 
         :return: the bounty object tracking the named criminal
-        :rtype: gameObjects.bounties.bounty.Bounty
-
+        :rtype: Bounty
+        :param int level: The difficulty level of the criminal's bounty, if known (Default None)
         :raise KeyError: If the requested criminal name does not exist in this DB
         """
-        # If the criminal's faction is known
-        if faction is not None:
-            # Search the given faction's bounties
-            for currentBounty in self.bounties[faction]:
-                # Return the named criminal's bounty if the name is found
-                if currentBounty.criminal.isCalled(name):
-                    return currentBounty
+        # If the criminal's level is known
+        if level is not None:
+            return self.divisionForLevel(level).bounties[level].getValueForKeyNamed(name)
 
-        # If the criminal's faction is not known, search all factions
+        # If the criminal's level is not known, search all levels
         else:
-            for fac in self.getFactions():
-                # Return the named criminal's bounty if the name is found
-                for currentBounty in self.bounties[fac]:
-                    if currentBounty.criminal.isCalled(name):
-                        return currentBounty
+            for div in self.divisions.values():
+                for tl in range(div.minLevel, div.maxLevel + 1):
+                    try:
+                        return div.bounties[tl].getValueForKeyNamed(name)
+                    except KeyError:
+                        pass
+        
+        raise KeyError("No bounty found for name: '" + name + ("'" if level is None else "' and level: " + str(level)))
 
-        # The criminal was not recognised, raise an error
-        raise KeyError("Bounty not found: " + name)
+
+    def getEscapedBounty(self, name : str, level : int = None) -> bounty.Bounty:
+        """Get the escaped bounty object for a given criminal name or alias.
+        This process is much more efficient when given the difficulty level of the criminal's bounty.
+
+        :param str name: A name or alias for the criminal whose escaped bounty is to be fetched.
+        :param str level: The difficulty level of the criminal's bounty. Give None if this is not known,
+                            to search all difficulties. (default None)
+
+        :return: the escaped bounty object tracking the named criminal
+        :rtype: Bounty
+        :param int level: The difficulty level of the criminal's bounty, if known (Default None)
+        :raise KeyError: If the requested criminal name does not exist in this DB
+        """
+        # If the criminal's level is known
+        if level is not None:
+            return self.divisionForLevel(level).escapedBounties[level].getValueForKeyNamed(name)
+
+        # If the criminal's level is not known, search all levels
+        else:
+            for div in self.divisions.values():
+                for tl in range(div.minLevel, div.maxLevel + 1):
+                    try:
+                        return div.escapedBounties[tl].getValueForKeyNamed(name)
+                    except KeyError:
+                        pass
+        
+        raise KeyError(f"No escaped bounty found for name: '{name}'" + ("" if level is None else " and level: " + str(level)))
+
+
+    def totalBounties(self, includeEscaped : bool = True) -> int:
+        """Decide the total number of bounties currently stored across all divisions.
+        If includeEscaped is given as true, escaped bounties will also be counted.
+
+        :param bool includeEscaped: Whether or not to count escaped bounties as well as active bounties (Default True)
+        :return: The number of bounties stored in the DB across all divisions
+        :rtype: int
+        """
+        return sum(div.getNumBounties(includeEscaped=includeEscaped) for div in self.divisions)
 
 
     def canMakeBounty(self) -> bounty.Bounty:
         """Check whether this DB has space for more bounties
 
-        :return: True if at least one faction is not at capacity, False if all factions' bounties are full
+        :return: True if at least one division is not at capacity, False if all divisions' bounties are full
         :rtype: bool
         """
-        # Check all bounties for factionCanMakeBounty
-        for fac in self.getFactions():
-            if self.factionCanMakeBounty(fac):
-                # If a faction can take a bounty, return True
-                return True
-
-        # No faction found with space remaining
-        return False
+        return any(not div.isFull() for div in self.divisions.values())
 
 
-    def factionCanMakeBounty(self, faction : str) -> bool:
-        """Check whether a faction has space for more bounties
-
-        :param str faction: the faction whose DB space to check
-
-        :return: True if the requested faction has space for more bounties, False otherwise
-        :rtype: bool
-        """
-        return self.getFactionNumBounties(faction) < cfg.maxBountiesPerFaction
-
-
-    def bountyNameExists(self, name : str, faction : str = None) -> bool:
+    def bountyNameExists(self, name : str, level : int = None, noEscapedCrim : bool = True) -> bool:
         """Check whether a criminal with the given name or alias exists in the DB
         The process is much more efficient if the faction where the criminal should reside is known.
 
         :param str name: The name or alias to check for criminal existence against
-        :param str faction: The faction whose bounties to check for the named criminal.
-                            Use None if the faction is not known. (default None)
+        :param str level: The difficulty level of the named criminal's bounty.
+                            Use None if the level is not known. (default None)
+        :param bool noEscapedCrim: When False, the escaped criminals database is also checked (default True)
 
         :return: True if a bounty is found for a criminal with the given name,
                     False if the given name does not correspond to an active bounty in this DB
@@ -204,71 +275,148 @@ class BountyDB(serializable.Serializable):
         """
         # Search for a bounty object under the given name
         try:
-            self.getBounty(name, faction)
+            self.getBounty(name, level)
         # Return False if the name was not found, True otherwise
         except KeyError:
-            return False
+            if not noEscapedCrim:
+                try:
+                    self.getEscapedBounty(name, level)
+                except KeyError:
+                    return False
+            else:
+                return False
         return True
+    
+
+    def divisionObjExists(self, div: BountyDivision) -> bool:
+        """Decide whether this DB owns the given division.
+
+        :param BountyDivision div: The division to check for ownership
+        :return: True if div is one of this DB's divisions, False otherwise
+        :rtype: bool
+        """
+        return div in self.divisions.values()
 
 
     def bountyObjExists(self, bounty : bounty.Bounty) -> bool:
         """Check whether a given bounty object exists in the DB.
-        Existence is checked by the bounty __eq__ method, which is currently object equality
-        (i.e physical memory address equality)
+        Existence is checked for the bounty's criminal, at the given techLevel
 
-        :param bounty.Bounty bounty: The bounty object to check for existence in the DB
-        :return: True if the given bounty is found within the DB, False otherwise
+        :param Bounty bounty: The bounty object to check for existence in the DB
+        :return: True if the given bounty's criminal is in the DB at the given techLevel, False otherwise
         :rtype: bool
         """
-        return bounty in self.bounties[bounty.faction]
+        return self.divisionForLevel(bounty.techLevel).bountyObjExists(bounty)
 
 
-    """Commented out as bounty indices should not be used in the main code, object references should be used instead.
+    def criminalObjExists(self, crim : Criminal) -> bool:
+        """Check whether a given criminal object exists in the DB.
+        Existence is checked across all divisions and levels.
 
-    # def getBountyObjIndex(self, bounty):
-    #     return self.bounties[bounty.faction].index(bounty)
-
-
-    # def getBountyNameIndex(self, name, faction=None):
-    #     return self.getBountyObjIndex(self.getBounty(name, faction=faction))
-    """
-
-
-    def addBounty(self, bounty : bounty.Bounty):
-        """Add a given bounty object to the database.
-        Bounties cannot be added if the bounty.faction does not have space for more bounties.
-        Bounties cannot be added if the object or name already exists in the database.
-
-        :param bounty.Bounty bounty: the bounty object to add to the database
-        :raise OverflowError: if the bounty.faction does not have space for more bounties
-        :raise ValueError: if the requested bounty's name already exists in the database
+        :param Criminal crim: The criminal object to check for existence in the DB
+        :return: True if the given criminal is found within the DB, False otherwise
+        :rtype: bool
         """
-        # Ensure the DB has space for the bounty
-        if not self.factionCanMakeBounty(bounty.faction):
-            raise OverflowError("Requested faction's bounty DB is full")
+        return any(div.criminalObjExists(crim) for div in self.divisions.values())
 
-        # ensure the given bounty does not already exist
-        if self.bountyNameExists(bounty.criminal.name):
-            raise ValueError("Attempted to add a bounty whose name already exists: " + bounty.name)
+
+    def addBounty(self, bounty : bounty.Bounty, dbReload=False):
+        """Add a given bounty object to the database.
+        Bounties cannot be added if the division for its level does not have space for more bounties.
+        Bounties cannot be added if a bounty already exists for the same criminal in this DB.
+
+        :param Bounty bounty: the bounty object to add to the database
+        :raise OverflowError: if the division for this bounty's level is already at capacity
+        :raise ValueError: if the criminal is already wanted in the database
+        """
+        div = self.divisionForLevel(bounty.techLevel)
+
+        # Ensure the DB has space for the bounty
+        if not dbReload and div.isFull(includeEscaped=True):
+            raise OverflowError(f"Division for the bounty ({bounty.criminal.name}, level {bounty.techLevel}) is full")
+        
+        if self.criminalObjExists(bounty.criminal):
+            raise ValueError(f"Attempted to add {bounty} for a criminal who is already wanted: {bounty.criminal} by {bounty}")
+
+        # # ensure the given bounty does not already exist
+        # if self.bountyNameExists(bounty.criminal.name, noEscapedCrim=False):
+        #     raise ValueError("Attempted to add a bounty whose name already exists: " + bounty.criminal.name)
 
         # Add the bounty to the database
-        self.bounties[bounty.faction].append(bounty)
-        self.latestBounty = bounty
+        div._addBounty(bounty, dbReload=dbReload)
+        
 
 
-    def addEscapedBounty(self, bounty : bounty.Bounty):
+    def escapedCriminalExists(self, crim):
+        """Decide whether a criminal is recorded in the escaped criminals database.
+
+        :param criminal crim: The criminal to check for existence
+        :return: True if crim is in this database's escaped criminals record, False otherwise
+        :rtype: bool
+        """
+        return any(div.escapedCriminalExists(crim) for div in self.divisions.values())
+
+
+    def addEscapedBounty(self, bounty : bounty.Bounty, dbReload=False):
         """Add a given bounty object to the escaped bounties database.
         Bounties cannot be added if the object or name already exists in the database.
 
-        :param bounty.Bounty bounty: the bounty object to add to the database
+        :param Bounty bounty: the bounty object to add to the database
         :raise ValueError: if the requested bounty's name already exists in the database
         """
-        # ensure the given bounty does not already exist
-        if self.bountyNameExists(bounty.criminal.name) or bounty.criminal.name in self.escapedBounties[bounty.faction]:
-            raise ValueError("Attempted to add a bounty whose name already exists: " + bounty.name)
+        div = self.divisionForLevel(bounty.techLevel)
+
+        # Ensure the DB has space for the bounty
+        if not dbReload and div.isFull(includeEscaped=True):
+            raise OverflowError(f"Division for the escaped bounty ({bounty.criminal.name}, level {bounty.techLevel}) is full")
+        
+        if self.criminalObjExists(bounty.criminal):
+            raise ValueError(f"Attempted to add escaped {bounty} for a criminal who is already wanted: " \
+                            + f"{bounty.criminal} by unescaped {bounty}")
+        if self.escapedCriminalExists(bounty.criminal):
+            raise ValueError(f"Attempted to add escaped {bounty} for a criminal who is already wanted: " \
+                            + f"{bounty.criminal} by escaped {bounty}")
+        # # ensure the given bounty does not already exist
+        # if self.bountyNameExists(bounty.criminal.name, noEscapedCrim=False):
+        #     raise ValueError("Attempted to add a bounty whose name already exists: " + bounty.criminal.name)
 
         # Add the bounty to the database
-        self.escapedBounties[bounty.faction].append(bounty)
+        div._addEscapedBounty(bounty, dbReload=dbReload)
+
+
+    def removeEscapedBountyObj(self, bounty : bounty.Bounty):
+        """Remove a given escaped bounty object from the database.
+        the bounty must already be recorded in the escaped criminals database.
+        This does not perform respawning of the bounty.
+
+        If the division was full before, restart the new bounty spawner
+
+        :param Bounty bounty: the bounty object to remove from the database
+        """
+        self.divisionForLevel(bounty.techLevel).removeEscapedBountyObj(bounty)
+
+
+    def removeEscapedCriminal(self, crim):
+        """Remove a criminal from the record of escaped criminals.
+        crim must already be recorded in the escaped criminals database.
+        This does not perform respawning of the bounty.
+
+        If the division was full before, restart the new bounties timed task
+
+        :param criminal crim: The criminal to remove from the record
+        :raise KeyError: If criminal is not registered in the db
+        """
+        self.removeEscapedBountyObj(self.getEscapedBountyByCrim(crim))
+        # print(f"removed escaped criminal {bounty.criminal.name} from div {nameForDivision(self.divisionForLevel(bounty.techLevel))}, level {bounty.techLevel}")
+
+
+    def removeBountyObj(self, bounty : bounty.Bounty):
+        """Remove a given bounty object from the database.
+        If the division was full before, restart the new bounty spawner
+
+        :param Bounty bounty: the bounty object to remove from the database
+        """
+        self.divisionForLevel(bounty.techLevel).removeBountyObj(bounty)
 
 
     def removeBountyName(self, name : str, faction : str = None):
@@ -282,96 +430,77 @@ class BountyDB(serializable.Serializable):
         self.removeBountyObj(self.getBounty(name, faction=faction))
 
 
-    def removeBountyObj(self, bounty : bounty.Bounty):
-        """Remove a given bounty object from the database.
+    def hasBounties(self) -> bool:
+        """Check whether any division has bounties stored.
 
-        :param bounty.Bounty bounty: the bounty object to remove from the database
-        """
-        if bounty is self.latestBounty:
-            self.latestBounty = None
-        self.bounties[bounty.faction].remove(bounty)
-
-
-    def hasBounties(self, faction : str = None) -> bool:
-        """Check whether the given faction has any bounties stored, or if ANY faction has bounties stored if none is given.
-
-        :param str faction: The faction whose bounties to check. Give None to check all factions for bounties. (default None)
         :return: True if at least one bounty is stored in this DB, False otherwise
         :rtype: bool
         """
-        # If no faction is specified
-        if faction is None:
-            # Return true if any faction has at least one bounty
-            for fac in self.getFactions():
-                if self.getFactionNumBounties(fac) != 0:
-                    return True
-
-        # If a faction is specified, return true if it has at least one bounty
-        else:
-            return self.getFactionNumBounties(faction) != 0
-
-        # no bounties found, return false
-        return False
-
-
-    def __str__(self) -> str:
-        """Return summarising info about this bountyDB in string format.
-        Currently: The number of factions in the DB.
-
-        :return: a string summarising this db
-        :rtype: str
-        """
-        return "<bountyDB: " + str(len(self.bounties)) + " factions>"
+        return any(not div.isEmpty() for div in self.divisions.values())
 
 
     def toDict(self, **kwargs) -> dict:
-        """Serialise the bountyDB and all of its bbBounties into dictionary format.
+        """Serialise the bountyDB and all of its divisions into dictionary format.
 
         :return: A dictionary containing all data needed to recreate this bountyDB.
         :rtype: dict
         """
-        data = {"active": {}, "escaped": {}}
-        # Serialise all factions into name : list of serialised bounty
-        for fac in self.bounties:
-            data["active"][fac] = []
-            # Serialise all of the current faction's bounties into dictionary
-            for currentBounty in self.getFactionBounties(fac):
-                data["active"][fac].append(currentBounty.toDict(**kwargs))
-        # Serialise all factions into name : list of serialised escaped bounty
-        for fac in self.escapedBounties:
-            data["escaped"][fac] = []
-            # Serialise all of the current faction's bounties into dictionary
-            for currentBounty in self.escapedBounties[fac]:
-                data["escaped"][fac].append(currentBounty.toDict(**kwargs))
+        data = {"active": [], "escaped": [], "temperatures": {}}
+        for div in self.divisions.values():
+            data["temperatures"][div.minLevel] = div.temperature
+            for tlBounties in div.bounties.values():
+                for bty in tlBounties.values():
+                    data["active"].append(bty.toDict(**kwargs))
+            for tlBounties in div.escapedBounties.values():
+                for bty in tlBounties.values():
+                    data["escaped"].append(bty.toDict(**kwargs))
+        
+        if next(i for i in self.divisions.values()).bountyBoardChannel is not None:
+            data["bountyBoardChannels"] = {div.minLevel: div.bountyBoardChannel.toDict(**kwargs) for div in self.divisions.values()}
+        
+        if next(i for i in self.divisions.values()).alertRoleID != -1:
+            data["alertRoleIDs"] = {div.minLevel: div.alertRoleID for div in self.divisions.values()}
+
         return data
 
 
     @classmethod
-    def fromDict(cls, bountyDBDict : dict, **kwargs) -> BountyDB:
+    def fromDict(cls, bountyDBDict: dict, owningBasedGuild: basedGuild.BasedGuild = None, dbReload: bool = False, **kwargs) -> BountyDB:
         """Build a bountyDB object from a serialised dictionary format - the reverse of bountyDB.toDict.
 
         :param dict bountyDBDict: a dictionary representation of the bountyDB, to convert to an object
         :param bool dbReload: Whether or not this bountyDB is being created during the initial database loading
                                 phase of bountybot. This is used to toggle name checking in bounty contruction.
-
+        :param basedGuild.BasedGuild owningBasedGuild: The guild that owns this bountyDB. Required argument.
         :return: The new bountyDB object
         :rtype: bountyDB
         """
-        dbReload = kwargs.get("dbReload", False)
+        if owningBasedGuild is None:
+            raise ValueError("missing required kwarg: owningBasedGuild")
 
-        escapedBountiesData = bountyDBDict.get("escaped", {})
-        activeBountiesData = bountyDBDict.get("active", {})
+        escapedBountiesData = bountyDBDict.get("escaped", [])
+        activeBountiesData = bountyDBDict.get("active", [])
+        temps = bountyDBDict.get("temperatures", {})
 
         # Instanciate a new bountyDB
-        newDB = BountyDB(activeBountiesData.keys())
-        # Iterate over all factions in the DB
-        for fac in activeBountiesData.keys():
-            # Convert each serialised bounty into a bounty object
-            for bountyDict in activeBountiesData[fac]:
-                newDB.addBounty(bounty.Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB))
-        # Iterate over all factions in the DB
-        for fac in escapedBountiesData.keys():
-            # Convert each serialised bounty into a bounty object
-            for bountyDict in escapedBountiesData[fac]:
-                newDB.addEscapedBounty(bounty.Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB))
+        newDB = BountyDB(owningBasedGuild)
+
+        for minLevel, divTemp in temps.items():
+            newDB.divisionForLevel(int(minLevel)).temperature = divTemp
+
+        for bountyDict in activeBountiesData:
+            newDB.addBounty(bounty.Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB), dbReload=dbReload)
+        for bountyDict in escapedBountiesData:
+            # Adding escaped bounties to DB is done during Bounty.fromDict
+            # TODO: Should probably change that
+            bounty.Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB)
+
+        if "bountyBoardChannels" in bountyDBDict:
+            for minLevel, bbcDict in bountyDBDict["bountyBoardChannels"].items():
+                newDB.divisionForLevel(int(minLevel)).bountyBoardChannel = BountyBoardChannel.fromDict(bbcDict)
+
+        if "alertRoleIDs" in bountyDBDict:
+            for minLevel, roleID in bountyDBDict["alertRoleIDs"].items():
+                newDB.divisionForLevel(int(minLevel)).alertRoleID = roleID
+
         return newDB

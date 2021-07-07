@@ -1,4 +1,6 @@
 from ...baseClasses import serializable
+from ..itemDiscount import ItemDiscount
+from typing import List
 
 
 class InventoryListing(serializable.Serializable):
@@ -89,3 +91,32 @@ class InventoryListing(serializable.Serializable):
     def fromDict(cls, listingDict : dict, **kwargs):
         raise NotImplementedError("Cannot fromDict on InventoryListing in the general case. " \
                                     + "Instead instance InventoryListing with your fromDict-ed item object.")
+
+
+class DiscountableItemListing(InventoryListing):
+    """An item listing that also stores a max-sorted list of single-use value modifications.
+    A single value modification applies to a single instance of an item.
+    """
+    def __init__(self, item, count : int = 0):
+        """
+        :param item: The item to store
+        :param int quantity: The amount of item to store (Default 0)
+        """
+        super().__init__(item, count=count)
+        self.discounts: List[ItemDiscount] = []
+
+
+    def pushDiscount(self, discount : ItemDiscount):
+        self.discounts.append(discount)
+        self.discounts.sort()
+
+
+    def popDiscount(self) -> ItemDiscount:
+        return self.discounts.pop(0)
+
+
+    def toDict(self, **kwargs) -> dict:
+        data = super().toDict(**kwargs)
+        if self.discounts:
+            data["discounts"] = [discount.toDict(**kwargs) for discount in self.discounts]
+        return data

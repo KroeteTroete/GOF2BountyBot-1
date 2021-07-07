@@ -43,6 +43,14 @@ class Serializable(ABC):
         """
         pass
 
+
+    def __hash__(self) -> int:
+        """Calculate a hash of this object based on its type name and location in memory.
+
+        :return: A unique hash for this object
+        :rtype: int
+        """
+        return hash(repr(self))
     
     @classmethod
     def _makeDefaults(cls, args : Dict[str, Any] = {}, ignores : Tuple[str] = (), **overrides) -> Dict[str, Any]:
