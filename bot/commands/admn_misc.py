@@ -45,11 +45,11 @@ async def admin_cmd_set_prefix(message: discord.Message, args: str, isDM: bool):
     callingBGuild = botState.guildsDB.getGuild(message.guild.id)
 
     if not args:
-        await message.channel.send("Please provide the command prefix you would like to set. E.g: `" \
+        await message.reply(mention_author=False, content="Please provide the command prefix you would like to set. E.g: `" \
                                     + callingBGuild.commandPrefix + "set-prefix $`")
     else:
         callingBGuild.commandPrefix = args
-        await message.channel.send("Command prefix set.")
+        await message.reply(mention_author=False, content="Command prefix set.")
 
 botCommands.register("set-prefix", admin_cmd_set_prefix, 2, signatureStr="**set-prefix <prefix>**",
                      shortHelp="Set the prefix you would like to use for bot commands in this server.")
@@ -63,7 +63,7 @@ async def admin_cmd_ping(message: discord.Message, args: str, isDM: bool):
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
     start = time.perf_counter()
-    msg = await message.channel.send("Ping...")
+    msg = await message.reply(mention_author=False, content="Ping...")
     end = time.perf_counter()
     duration = (end - start) * 1000
     await msg.edit(content='Pong! {:.2f}ms'.format(duration))
@@ -87,7 +87,7 @@ async def admin_cmd_config(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
 
     if len(argsSplit) < 2 or not (argsSplit[0] and argsSplit[1]):
-        await message.channel.send(":x: Please provide both a setting and a value! e.g: `" + prefix \
+        await message.reply(mention_author=False, content=":x: Please provide both a setting and a value! e.g: `" + prefix \
                                     + "config bounties enable`")
         return
 
@@ -100,35 +100,37 @@ async def admin_cmd_config(message : discord.Message, args : str, isDM : bool):
     if setting in ["bounty", "bounties"]:
         if value in trueStrings:
             if not callingBBGuild.bountiesDisabled:
-                await message.channel.send(":x: Bounties are already enabled in this server!")
+                await message.reply(mention_author=False, content=":x: Bounties are already enabled in this server!")
             else:
                 callingBBGuild.enableBounties()
-                await message.channel.send(":white_check_mark: Bounties are now enabled on this server!")
+                await message.reply(mention_author=False,
+                                    content=":white_check_mark: Bounties are now enabled on this server!")
         elif value in falseStrings:
             if callingBBGuild.bountiesDisabled:
-                await message.channel.send(":x: Bounties are already disabled in this server!")
+                await message.reply(mention_author=False, content=":x: Bounties are already disabled in this server!")
             else:
                 await callingBBGuild.disableBounties()
-                await message.channel.send(":white_check_mark: Bounties are now disabled on this server!")
+                await message.reply(mention_author=False,
+                                    content=":white_check_mark: Bounties are now disabled on this server!")
         else:
-            await message.channel.send(":x: Unknown value!")
+            await message.reply(mention_author=False, content=":x: Unknown value!")
     elif setting in ["shop", "shops"]:
         if value in trueStrings:
             if not callingBBGuild.shopDisabled:
-                await message.channel.send(":x: The shop is already enabled in this server!")
+                await message.reply(mention_author=False, content=":x: The shop is already enabled in this server!")
             else:
                 callingBBGuild.enableShop()
-                await message.channel.send(":white_check_mark: The shop is now enabled on this server!")
+                await message.reply(mention_author=False, content=":white_check_mark: The shop is now enabled on this server!")
         elif value in falseStrings:
             if callingBBGuild.shopDisabled:
-                await message.channel.send(":x: The shop is already disabled in this server!")
+                await message.reply(mention_author=False, content=":x: The shop is already disabled in this server!")
             else:
                 callingBBGuild.disableShop()
-                await message.channel.send(":white_check_mark: The shop is now disabled on this server!")
+                await message.reply(mention_author=False, content=":white_check_mark: The shop is now disabled on this server!")
         else:
-            await message.channel.send(":x: Unknown value!")
+            await message.reply(mention_author=False, content=":x: Unknown value!")
     else:
-        await message.channel.send(":x: Unknown setting!")
+        await message.reply(mention_author=False, content=":x: Unknown setting!")
 
 botCommands.register("config", admin_cmd_config, 2, signatureStr="**config <setting> <value>**",
                         shortHelp="Set various settings for how bountybot will function in this server.",
@@ -149,7 +151,7 @@ async def admin_cmd_del_reaction_menu(message : discord.Message, args : str, isD
     if msgID in botState.reactionMenusDB:
         await botState.reactionMenusDB[msgID].delete()
     else:
-        await message.channel.send(":x: Unrecognised reaction menu!")
+        await message.reply(mention_author=False, content=":x: Unrecognised reaction menu!")
 
 botCommands.register("del-reaction-menu", admin_cmd_del_reaction_menu, 2, signatureStr="**del-reaction-menu <id>**",
                         longHelp="Remove the specified reaction menu. You can also just delete the message," \
@@ -168,16 +170,17 @@ async def admin_cmd_set_notify_role(message : discord.Message, args : str, isDM 
     """
     argsSplit = args.split(" ")
     if len(argsSplit) < 2:
-        await message.channel.send(":x: Please provide both a notification type, and either a role mention or ID!")
+        await message.reply(mention_author=False, content=":x: Please provide both a notification type, and either a role mention or ID!")
         return
     if not (lib.stringTyping.isInt(argsSplit[-1]) or lib.stringTyping.isRoleMention(argsSplit[-1])):
-        await message.channel.send(":x: Invalid role! Please give either a role mention or ID!")
+        await message.reply(mention_author=False, content=":x: Invalid role! Please give either a role mention or ID!")
         return
 
     requestedBBGuild = botState.guildsDB.getGuild(message.guild.id)
     alertsToSet = userAlerts.getAlertIDFromHeirarchicalAliases(argsSplit)
     if alertsToSet[0] == "ERR":
-        await message.channel.send(alertsToSet[1].replace("$COMMANDPREFIX$", requestedBBGuild.commandPrefix))
+        await message.reply(alertsToSet[1].replace("$COMMANDPREFIX$", requestedBBGuild.commandPrefix),
+                            mention_author=False)
         return
 
     if lib.stringTyping.isRoleMention(argsSplit[-1]):
@@ -186,13 +189,13 @@ async def admin_cmd_set_notify_role(message : discord.Message, args : str, isDM 
         requestedRole = message.guild.get_role(int(argsSplit[-1]))
 
     if requestedRole is None:
-        await message.channel.send(":x: Role not found!")
+        await message.reply(mention_author=False, content=":x: Role not found!")
         return
 
     for alertID in alertsToSet:
         alertType = userAlerts.userAlertsIDsTypes[alertID]
         requestedBBGuild.setUserAlertRoleID(alertID, requestedRole.id)
-        await message.channel.send(":white_check_mark: Role set for " + userAlerts.userAlertsTypesNames[alertType] \
+        await message.reply(mention_author=False, content=":white_check_mark: Role set for " + userAlerts.userAlertsTypesNames[alertType] \
                                     + " notifications!")
 
 botCommands.register("set-notify-role", admin_cmd_set_notify_role, 2,
@@ -212,19 +215,20 @@ async def admin_cmd_remove_notify_role(message : discord.Message, args : str, is
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
     if args == "":
-        await message.channel.send(":x: Please provide both a notification type!")
+        await message.reply(mention_author=False, content=":x: Please provide both a notification type!")
         return
 
     requestedBBGuild = botState.guildsDB.getGuild(message.guild.id)
     alertsToSet = userAlerts.getAlertIDFromHeirarchicalAliases(args)
     if alertsToSet[0] == "ERR":
-        await message.channel.send(alertsToSet[1].replace("$COMMANDPREFIX$", requestedBBGuild.commandPrefix))
+        await message.reply(alertsToSet[1].replace("$COMMANDPREFIX$", requestedBBGuild.commandPrefix),
+                            mention_author=False)
         return
 
     for alertID in alertsToSet:
         alertType = userAlerts.userAlertsIDsTypes[alertID]
         requestedBBGuild.removeUserAlertRoleID(alertID)
-        await message.channel.send(":white_check_mark: Role pings disabled for " \
+        await message.reply(mention_author=False, content=":white_check_mark: Role pings disabled for " \
                                     + userAlerts.userAlertsTypesNames[alertType] + " notifications.")
 
 botCommands.register("remove-notify-role", admin_cmd_remove_notify_role, 2,
@@ -320,7 +324,7 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
     """
     requestedBBGuild = botState.guildsDB.getGuild(message.guild.id)
     if requestedBBGuild.ownedRoleMenus >= cfg.maxRoleMenusPerGuild:
-        await message.channel.send(":x: Guilds can have at most " + str(cfg.maxRoleMenusPerGuild) + " role menus!")
+        await message.reply(mention_author=False, content=":x: Guilds can have at most " + str(cfg.maxRoleMenusPerGuild) + " role menus!")
         return
     requestedBBGuild.ownedRoleMenus += 1
 
@@ -331,7 +335,7 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
             potentialRoles.append(currRole)
 
     if potentialRoles == []:
-        await message.channel.send(":x: I can't find my '" + message.guild.me.name + "' role! Have you renamed it?")
+        await message.reply(mention_author=False, content=":x: I can't find my '" + message.guild.me.name + "' role! Have you renamed it?")
         return
     botRole = potentialRoles[-1]
 
@@ -340,7 +344,7 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
 
     argsSplit = args.split("\n")
     if len(argsSplit) < 2:
-        await message.channel.send(":x: Invalid arguments! Please provide your menu title, followed by a new line, " \
+        await message.reply(mention_author=False, content=":x: Invalid arguments! Please provide your menu title, followed by a new line, " \
                                     + "then a new line-separated series of options.\nFor more info, see `" \
                                     + requestedBBGuild.commandPrefix + "admin-help`")
         return
@@ -359,18 +363,19 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
                     kwArgs[kwArg[:-1]] = arg[len(kwArg):]
                     break
         # except lib.exceptions.UnrecognisedCustomEmoji:
-        #     await message.channel.send(":x: I don't know your " + str(argPos) + lib.stringTyping.getNumExtension(argPos) \
+        #     await message.reply(mention_author=False,
+        #                       content=":x: I don't know your " + str(argPos) + lib.stringTyping.getNumExtension(argPos) \
         #                                 + " emoji!\nYou can only use built in emojis, or custom emojis " \
         #                                 + "that are in this server.")
         #     return
         else:
             if dumbReact.sendable == "None":
-                await message.channel.send(":x: I don't know your " + str(argPos) + lib.stringTyping.getNumExtension(argPos) \
+                await message.reply(mention_author=False, content=":x: I don't know your " + str(argPos) + lib.stringTyping.getNumExtension(argPos) \
                                             + " emoji!\nYou can only use built in emojis, or custom emojis that " \
                                             + "are in this server.")
                 return
             if dumbReact is None:
-                await message.channel.send(":x: Invalid emoji: " + arg.strip(" ").split(" ")[1])
+                await message.reply(mention_author=False, content=":x: Invalid emoji: " + arg.strip(" ").split(" ")[1])
                 return
             elif dumbReact.isID:
                 localEmoji = False
@@ -379,28 +384,28 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
                         localEmoji = True
                         break
                 if not localEmoji:
-                    await message.channel.send(":x: I don't know your " + str(argPos) \
+                    await message.reply(mention_author=False, content=":x: I don't know your " + str(argPos) \
                                                 + lib.stringTyping.getNumExtension(argPos) + " emoji!\n" \
                                                 + "You can only use built in emojis, or custom emojis " \
                                                 + "that are in this server.")
                     return
 
             if dumbReact in reactionRoles:
-                await message.channel.send(":x: Cannot use the same emoji for two options!")
+                await message.reply(mention_author=False, content=":x: Cannot use the same emoji for two options!")
                 return
 
 
             role = message.guild.get_role(int(roleStr.lstrip("<@&").rstrip(">")))
             if role is None:
-                await message.channel.send(":x: Unrecognised role: " + roleStr)
+                await message.reply(mention_author=False, content=":x: Unrecognised role: " + roleStr)
                 return
             elif role.position > botRole.position:
-                await message.channel.send(":x: I can't grant the **" + role.name + "** role!\nMake sure it's below my '" \
+                await message.reply(mention_author=False, content=":x: I can't grant the **" + role.name + "** role!\nMake sure it's below my '" \
                                             + botRole.name + "' role in the server roles list.")
             reactionRoles[dumbReact] = role
 
     if len(reactionRoles) == 0:
-        await message.channel.send(":x: No roles given!")
+        await message.reply(mention_author=False, content=":x: No roles given!")
         return
 
     targetRole = None
@@ -409,17 +414,17 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
         if lib.stringTyping.isRoleMention(kwArgs["target"]):
             targetRole = message.guild.get_role(int(kwArgs["target"].lstrip("<@&").rstrip(">")))
             if targetRole is None:
-                await message.channel.send(":x: Unknown target role!")
+                await message.reply(mention_author=False, content=":x: Unknown target role!")
                 return
 
         elif lib.stringTyping.isMention(kwArgs["target"]):
             targetMember = message.guild.get_member(int(kwArgs["target"].lstrip("<@!").rstrip(">")))
             if targetMember is None:
-                await message.channel.send(":x: Unknown target user!")
+                await message.reply(mention_author=False, content=":x: Unknown target user!")
                 return
 
         else:
-            await message.channel.send(":x: Invalid target role/user!")
+            await message.reply(mention_author=False, content=":x: Invalid target role/user!")
             return
 
     timeoutDict = {}
@@ -430,7 +435,7 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
                 timeoutDict[timeName] = -1
             else:
                 if not lib.stringTyping.isInt(kwArgs[timeName]) or int(kwArgs[timeName]) < 1:
-                    await message.channel.send(":x: Invalid number of " + timeName + " before timeout!")
+                    await message.reply(mention_author=False, content=":x: Invalid number of " + timeName + " before timeout!")
                     return
 
                 timeoutDict[timeName] = int(kwArgs[timeName])
@@ -441,7 +446,7 @@ async def admin_cmd_make_role_menu(message : discord.Message, args : str, isDM :
             timeoutExists = True
     timeoutExists = timeoutExists or timeoutDict == {}
 
-    menuMsg = await message.channel.send("‎")
+    menuMsg = await message.reply(mention_author=False, content="‎")
 
     if timeoutExists:
         timeoutDelta = timedelta(**cfg.timeouts.roleMenuExpiry if timeoutDict == {} else timeoutDict)
@@ -486,7 +491,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
 
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a ship! Example: `" + prefix + "ship Groza Mk II`")
+        await message.reply(mention_author=False, content=":x: Please provide a ship! Example: `" + prefix + "ship Groza Mk II`")
         return
 
     full = False
@@ -505,40 +510,40 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
     # report unrecognised ship names
     if itemObj is None:
         if len(itemName) < 20:
-            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName + "** is not in my database! :detective:")
         else:
-            await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
         return
 
     shipData = bbData.builtInShipData[itemObj.name]
     if not shipData["skinnable"]:
-        await message.channel.send(":x: That ship is not skinnable!")
+        await message.reply(mention_author=False, content=":x: That ship is not skinnable!")
         return
 
     if len(botState.currentRenders) >= cfg.maxConcurrentRenders:
-        await message.channel.send(":x: My rendering queue is full currently. Please try this command again once someone " \
+        await message.reply(mention_author=False, content=":x: My rendering queue is full currently. Please try this command again once someone " \
                                     + "else's render has completed.")
         return
     if itemObj.name in botState.currentRenders:
-        await message.channel.send(":x: Someone else is currently rendering this ship! Please use this command again once " \
+        await message.reply(mention_author=False, content=":x: Someone else is currently rendering this ship! Please use this command again once " \
                                     + "my other " + itemObj.name + " render has completed.")
         return
 
     botState.currentRenders.append(itemObj.name)
 
     if len(message.attachments) < 1:
-        await message.channel.send(":x: Please attach a 2048x2048 jpg to render.")
+        await message.reply(mention_author=False, content=":x: Please attach a 2048x2048 jpg to render.")
         botState.currentRenders.remove(itemObj.name)
         return
     skinFile = message.attachments[0]
     if (not skinFile.filename.lower().endswith(".jpg")) or not (skinFile.width == 2048 and skinFile.height == 2048):
-        await message.channel.send(":x: Please attach a 2048x2048 jpg to render.")
+        await message.reply(mention_author=False, content=":x: Please attach a 2048x2048 jpg to render.")
         botState.currentRenders.remove(itemObj.name)
         return
     try:
         await skinFile.save(CWD + os.sep + cfg.paths.rendererTempFolder + os.sep + str(message.id) + "_0.jpg")
     except (discord.HTTPException, discord.NotFound):
-        await message.channel.send(":x: I couldn't download your skin file. Did you delete it?")
+        await message.reply(mention_author=False, content=":x: I couldn't download your skin file. Did you delete it?")
         botState.currentRenders.remove(itemObj.name)
         return
 
@@ -548,7 +553,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
     if not full:
         layerIndices = [i for i in range(1, shipData["textureRegions"] + 1)]
 
-        layersPickerMsg = await message.channel.send("** **")
+        layersPickerMsg = await message.reply(mention_author=False, content="** **")
         layersPickerMenu = reactionSkinRegionPicker.ReactionSkinRegionPicker(layersPickerMsg, message.author,
                                                                                 cfg.toolUseConfirmTimeoutSeconds,
                                                                                 numRegions=shipData["textureRegions"])
@@ -557,7 +562,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
         if cfg.defaultEmojis.spiral in menuOutput:
             pickedLayers = layerIndices
         elif cfg.defaultEmojis.cancel in menuOutput:
-            await message.channel.send("🛑 Skin render cancelled.")
+            await message.reply(mention_author=False, content="🛑 Skin render cancelled.")
             for skinPath in skinPaths.values():
                 os.remove(skinPath)
             botState.currentRenders.remove(itemObj.name)
@@ -581,7 +586,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
             if cfg.defaultEmojis.spiral in menuOutput:
                 disabledLayers = remainingIndices
             elif cfg.defaultEmojis.cancel in menuOutput:
-                await message.channel.send("🛑 Skin render cancelled.")
+                await message.reply(mention_author=False, content="🛑 Skin render cancelled.")
                 for skinPath in skinPaths.values():
                     os.remove(skinPath)
                 botState.currentRenders.remove(itemObj.name)
@@ -598,7 +603,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
                     (newMessage.content.lower().startswith(prefix + "cancel") or len(newMessage.attachments) > 0)
 
         for regionNum in pickedLayers:
-            nextLayerMsg = await message.channel.send("Please send your image for texture region #" + str(regionNum) \
+            nextLayerMsg = await message.reply(mention_author=False, content="Please send your image for texture region #" + str(regionNum) \
                                                         + ", or `" + prefix + "cancel` to cancel the render, within " \
                                                         + str(cfg.toolUseConfirmTimeoutSeconds) + " seconds.")
             try:
@@ -608,7 +613,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
                 await nextLayerMsg.edit(content="This menu has now expired. Please try the command again.")
             else:
                 if imgMsg.content.lower().startswith(prefix + "cancel"):
-                    await message.channel.send("🛑 Skin render cancelled.")
+                    await message.reply(mention_author=False, content="🛑 Skin render cancelled.")
                     for skinPath in skinPaths.values():
                         os.remove(skinPath)
                     botState.currentRenders.remove(itemObj.name)
@@ -616,7 +621,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
                 nextLayer = imgMsg.attachments[0]
                 if (not nextLayer.filename.lower().endswith(".jpg")) or \
                         not (nextLayer.width == 2048 and nextLayer.height == 2048):
-                    await message.channel.send(":x: Please only give 2048x2048 jpgs!\n🛑 Skin render cancelled.")
+                    await message.reply(mention_author=False, content=":x: Please only give 2048x2048 jpgs!\n🛑 Skin render cancelled.")
                     for skinPath in skinPaths.values():
                         os.remove(skinPath)
                     botState.currentRenders.remove(itemObj.name)
@@ -625,7 +630,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
                     await nextLayer.save(CWD + os.sep + cfg.paths.rendererTempFolder + os.sep + str(message.id) + "_" \
                                             + str(regionNum) + ".jpg")
                 except (discord.HTTPException, discord.NotFound):
-                    await message.channel.send(":x: I couldn't download your skin file. Did you delete it?" \
+                    await message.reply(mention_author=False, content=":x: I couldn't download your skin file. Did you delete it?" \
                                                 + "\n🛑 Skin render cancelled.")
                     for skinPath in skinPaths.values():
                         os.remove(skinPath)
@@ -634,7 +639,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
                 skinPaths[regionNum] = CWD + os.sep + cfg.paths.rendererTempFolder + os.sep + str(message.id) + "_" \
                                         + str(regionNum) + ".jpg"
 
-    waitMsg = await message.channel.send("🤖 Render started! I'll ping you when I'm done.")
+    waitMsg = await message.reply(mention_author=False, content="🤖 Render started! I'll ping you when I'm done.")
 
     renderPath = shipData["path"] + os.sep + "skins" + os.sep + str(message.id) + "-RENDER.png"
     outSkinPath = shipData["path"] + os.sep + "skins" + os.sep + str(message.id) + ".jpg"
@@ -644,8 +649,8 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
         await shipRenderer.renderShip(str(message.id), shipData["path"], shipData["model"], skinPaths, disabledLayers,
                                         cfg.skinRenderShowmeHDResolution[0], cfg.skinRenderShowmeHDResolution[1], full=full)
     except shipRenderer.RenderFailed:
-        await message.channel.send(message.author.mention \
-                                    + "\n🥺 Render failed! The error has been logged, please try a different ship.")
+        await message.reply("🥺 Render failed! The error has been logged, please try a different ship.",
+                            mention_author=True)
         botState.logger.log("Main", "admin_cmd_showmeHD", f"HD ship render failed with args: '{args}'")
     else:
         with open(renderPath, "rb") as f:
@@ -657,7 +662,7 @@ async def admin_cmd_showmeHD(message : discord.Message, args : str, isDM : bool)
             renderEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=imageEmbedMsg.attachments[0].url,
                                                     authorName="Skin Render Complete!",
                                                     icon=robotIcon, footerTxt="Custom skinned " + itemObj.name.capitalize())
-            await message.channel.send(message.author.mention, embed=renderEmbed)
+            await message.reply(embed=renderEmbed, mention_author=True)
 
     botState.currentRenders.remove(itemObj.name)
 

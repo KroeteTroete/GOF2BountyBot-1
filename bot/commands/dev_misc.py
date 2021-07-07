@@ -35,7 +35,7 @@ async def dev_cmd_sleep(message: discord.Message, args: str, isDM: bool):
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
     botState.shutdown = botState.ShutDownState.shutdown
-    await message.channel.send("shutting down.")
+    await message.reply(mention_author=False, content="shutting down.")
     await botState.client.shutdown()
 
 botCommands.register("bot-sleep", dev_cmd_sleep, 3, allowDM=True, useDoc=True)
@@ -53,10 +53,10 @@ async def dev_cmd_save(message: discord.Message, args: str, isDM: bool):
     except Exception as e:
         print("SAVING ERROR", type(e).__name__)
         print(traceback.format_exc())
-        await message.channel.send("failed!")
+        await message.reply(mention_author=False, content="failed!")
         return
     print(datetime.now().strftime("%H:%M:%S: Data saved manually!"))
-    await message.channel.send("saved!")
+    await message.reply(mention_author=False, content="saved!")
 
 botCommands.register("save", dev_cmd_save, 3, allowDM=True, useDoc=True)
 
@@ -69,7 +69,7 @@ async def dev_cmd_say(message: discord.Message, args: str, isDM: bool):
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
     if args == "":
-        await message.channel.send("provide a message!")
+        await message.reply(mention_author=False, content="provide a message!")
     else:
         await message.channel.send(**lib.discordUtil.messageArgsFromStr(args))
 
@@ -84,7 +84,7 @@ async def dev_cmd_broadcast(message : discord.Message, args : str, isDM : bool):
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
     if args == "":
-        await message.channel.send("provide a message!")
+        await message.reply(mention_author=False, content="provide a message!")
     else:
         sendArgs = lib.discordUtil.messageArgsFromStr(args)
 
@@ -122,7 +122,12 @@ async def dev_cmd_reset_has_poll(message : discord.Message, args : str, isDM : b
     if menusRemoved:
         await message.reply(f"Ownership of {menusRemoved} removed successfuly.")
     else:
+<<<<<<< HEAD
         await message.channel.send("This user has no polls!")
+=======
+        botState.usersDB.getUser(int(args.lstrip("<@!").rstrip(">"))).pollOwned = False
+    await message.reply(mention_author=False, content="Done!")
+>>>>>>> master
 
 botCommands.register("reset-has-poll", dev_cmd_reset_has_poll, 3, allowDM=True, useDoc=True)
 
@@ -135,7 +140,7 @@ async def dev_cmd_bot_update(message: discord.Message, args: str, isDM: bool):
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
     botState.shutdown = botState.ShutDownState.update
-    await message.channel.send("updating and restarting...")
+    await message.reply(mention_author=False, content="updating and restarting...")
     await botState.client.shutdown()
 
 botCommands.register("bot-update", dev_cmd_bot_update, 3, allowDM=True, useDoc=True)
@@ -151,16 +156,16 @@ async def dev_cmd_setbalance(message : discord.Message, args : str, isDM : bool)
     argsSplit = args.split(" ")
     # verify both a user and a balance were given
     if len(argsSplit) < 2:
-        await message.channel.send(":x: Please give a user mention followed by the new balance!")
+        await message.reply(mention_author=False, content=":x: Please give a user mention followed by the new balance!")
         return
     # verify the requested balance is an integer
     if not lib.stringTyping.isInt(argsSplit[1]):
-        await message.channel.send(":x: that's not a number!")
+        await message.reply(mention_author=False, content=":x: that's not a number!")
         return
     # verify the requested user
     requestedUser = botState.client.get_user(int(argsSplit[0].lstrip("<@!").rstrip(">")))
     if requestedUser is None:
-        await message.channel.send(":x: invalid user!!")
+        await message.reply(mention_author=False, content=":x: invalid user!!")
         return
     if not botState.usersDB.idExists(requestedUser.id):
         requestedBBUser = botState.usersDB.addID(requestedUser.id)
@@ -168,7 +173,7 @@ async def dev_cmd_setbalance(message : discord.Message, args : str, isDM : bool)
         requestedBBUser = botState.usersDB.getUser(requestedUser.id)
     # update the balance
     requestedBBUser.credits = int(argsSplit[1])
-    await message.channel.send("Done!")
+    await message.reply(mention_author=False, content="Done!")
 
 botCommands.register("setbalance", dev_cmd_setbalance, 3, allowDM=True, useDoc=True)
 
@@ -187,7 +192,7 @@ async def dev_cmd_reset_transfer_cool(message : discord.Message, args : str, isD
     # [!] no validation is done.
     else:
         botState.usersDB.getUser(int(args.lstrip("<@!").rstrip(">"))).guildTransferCooldownEnd = datetime.utcnow()
-    await message.channel.send("Done!")
+    await message.reply(mention_author=False, content="Done!")
 
 
 botCommands.register("reset-transfer-cool", dev_cmd_reset_transfer_cool, 3, allowDM=True, useDoc=True)

@@ -28,7 +28,7 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
 
     if lib.stringTyping.isInt(args):
         if int(args) < 1 or int(args) > len(botCommands.helpSectionEmbeds[userAccessLevel]):
-            await message.channel.send(":x: Section number must be between 1 and " \
+            await message.reply(mention_author=False, content=":x: Section number must be between 1 and " \
                                         + str(len(botCommands.helpSectionEmbeds[userAccessLevel])) + "!")
             return
         args = list(botCommands.helpSectionEmbeds[userAccessLevel].keys())[int(args) - 1]
@@ -41,8 +41,9 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
         if args == "":
             owningUser = botState.usersDB.getOrAddID(message.author.id)
             if owningUser.hasMenuOfTypeID("help"):
-                await message.channel.send(":x: Please close your existing help menu before making a new one!\n" \
-                                            + "In case you can't find it, help menus auto exire after **" \
+                await message.reply(mention_author=False,
+                                    content=":x: Please close your existing help menu before making a new one!\n" \
+                                            + f"In case you can't find it, help menus auto exire after **" \
                                             + helpMenuTimeoutStr + "**.")
                 return
             menuMsg = await sendChannel.send("‎")
@@ -86,7 +87,8 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
             else:
                 owningUser = botState.usersDB.getOrAddID(message.author.id)
                 if owningUser.hasMenuOfTypeID("help"):
-                    await message.channel.send(":x: Please close your existing help menu before making a new one!\n" \
+                    await message.reply(mention_author=False,
+                                        content=":x: Please close your existing help menu before making a new one!\n" \
                                                 + "In case you can't find it, help menus auto exire after **" \
                                                 + helpMenuTimeoutStr + "**.")
                     return
@@ -123,13 +125,13 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
                 aliasesStr += cmdObj.aliases[-1]
                 helpEmbed.add_field(name="Alaises", value=aliasesStr)
             helpEmbed.set_footer(text=f"Section: {cmdObj.helpSection.title()} | [optional args] <required args>")
-            await message.channel.send(embed=helpEmbed)
+            await message.reply(mention_author=False, embed=helpEmbed)
 
         else:
-            await message.channel.send(":x: Unknown command/section! See `help help` for a list of help sections.")
+            await message.reply(mention_author=False, content=":x: Unknown command/section! See `help help` for a list of help sections.")
 
     except discord.Forbidden:
-        await message.channel.send(":x: I can't DM you, " + message.author.display_name \
+        await message.reply(mention_author=False, content=":x: I can't DM you, " + message.author.display_name \
                                     + "! Please enable DMs from users who are not friends.")
         return
     else:

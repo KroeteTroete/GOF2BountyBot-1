@@ -19,23 +19,23 @@ async def cmd_transfer(message : discord.Message, args : str, isDM : bool):
     """
     requestedBBUser = botState.usersDB.getOrAddID(message.author.id)
     if message.guild.id == requestedBBUser.homeGuildID:
-        await message.channel.send(":x: This is already your home server!")
+        await message.reply(mention_author=False, content=":x: This is already your home server!")
     elif not requestedBBUser.canTransferGuild():
         timeLeft = requestedBBUser.guildTransferCooldownEnd - datetime.utcnow()
-        await message.channel.send(":x: This command is still on cooldown. (" \
+        await message.reply(mention_author=False, content=":x: This command is still on cooldown. (" \
                                     + lib.timeUtil.td_format_noYM(timeLeft) + " left)")
     else:
-        confirmMsg = await message.channel.send("Move your home server to '" + message.guild.name + "'?")
+        confirmMsg = await message.reply(mention_author=False, content="Move your home server to '" + message.guild.name + "'?")
         cooldownTime = timedelta(**cfg.homeGuildTransferCooldown)
         confirmation = await InlineConfirmationMenu(confirmMsg, message.author, cfg.toolUseConfirmTimeoutSeconds,
                                                     desc="This command's cooldown is " \
                                                         + lib.timeUtil.td_format_noYM(cooldownTime) + ".").doMenu()
 
         if cfg.defaultEmojis.reject in confirmation:
-            await message.channel.send("🛑 Home guild transfer cancelled.")
+            await message.reply(mention_author=False, content="🛑 Home guild transfer cancelled.")
         elif cfg.defaultEmojis.accept in confirmation:
             await requestedBBUser.transferGuild(message.guild)
-            await message.channel.send(":airplane_arriving: You transferred your home server to " + message.guild.name + "!")
+            await message.reply(mention_author=False, content=":airplane_arriving: You transferred your home server to " + message.guild.name + "!")
 
 botCommands.register("transfer", cmd_transfer, 0, allowDM=False, helpSection="home servers", signatureStr="**transfer**",
                     shortHelp="Change your home server. This command has a long cooldown!",
@@ -53,17 +53,17 @@ async def cmd_home(message : discord.Message, args : str, isDM : bool):
     if botState.usersDB.idExists(message.author.id):
         requestedBBUser = botState.usersDB.getUser(message.author.id)
         if message.guild is not None and message.guild.id == requestedBBUser.homeGuildID:
-            await message.channel.send("🌍 This is your home server.")
+            await message.reply(mention_author=False, content="🌍 This is your home server.")
             return
         elif requestedBBUser.hasHomeGuild() and botState.client.get_guild(requestedBBUser.homeGuildID) is not None:
-            await message.channel.send("🪐 Your home server is '" \
+            await message.reply(mention_author=False, content="🪐 Your home server is '" \
                                         + botState.client.get_guild(requestedBBUser.homeGuildID).name + "'.")
             return
     if isDM:
         prefix = cfg.defaultCommandPrefix
     else:
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
-    await message.channel.send("🌑 Your home server has not yet been set.\n" \
+    await message.reply(mention_author=False, content="🌑 Your home server has not yet been set.\n" \
                                 + "Set your home server by using the shop or bounty board, or with the `" + prefix \
                                 + "transfer` command.")
 

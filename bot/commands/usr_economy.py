@@ -22,7 +22,7 @@ async def cmd_balance(message : discord.Message, args : str, isDM : bool):
     if args == "":
         if not botState.usersDB.idExists(message.author.id):
             botState.usersDB.addID(message.author.id)
-        await message.channel.send(":moneybag: **" + message.author.display_name + "**, you have **" \
+        await message.reply(mention_author=False, content=":moneybag: **" + message.author.display_name + "**, you have **" \
                                     + str(botState.usersDB.getUser(message.author.id).credits) + " Credits**.")
 
     # If a user is specified
@@ -30,13 +30,13 @@ async def cmd_balance(message : discord.Message, args : str, isDM : bool):
         # Verify the passed user tag
         requestedUser = lib.discordUtil.getMemberByRefOverDB(args, dcGuild=message.guild)
         if requestedUser is None:
-            await message.channel.send(":x: Unknown user!")
+            await message.reply(mention_author=False, content=":x: Unknown user!")
             return
         # ensure that the user is in the users database
         if not botState.usersDB.idExists(requestedUser.id):
             botState.usersDB.addID(requestedUser.id)
         # send the user's balance
-        await message.channel.send(":moneybag: **" + lib.discordUtil.userOrMemberName(requestedUser, message.guild) \
+        await message.reply(mention_author=False, content=":moneybag: **" + lib.discordUtil.userOrMemberName(requestedUser, message.guild) \
                                     + "** has **" + str(botState.usersDB.getUser(requestedUser.id).credits) + " Credits**.")
 
 botCommands.register("balance", cmd_balance, 0, aliases=["bal", "credits"], forceKeepArgsCasing=True, allowDM=True,
@@ -57,14 +57,14 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
     """
     requestedBGuild = botState.guildsDB.getGuild(message.guild.id)
     if requestedBGuild.shopDisabled:
-        await message.channel.send(":x: This server does not have a shop.")
+        await message.reply(mention_author=False, content=":x: This server does not have a shop.")
         return
 
     item = "all"
     if args.rstrip("s") in cfg.validItemNames:
         item = args.rstrip("s")
     elif args != "":
-        await message.channel.send(":x: Invalid item type! (ship/weapon/module/turret/all)")
+        await message.reply(mention_author=False, content=":x: Invalid item type! (ship/weapon/module/turret/all)")
         return
 
     sendChannel = None
@@ -135,7 +135,7 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
     try:
         await sendChannel.send(embed=shopEmbed)
     except discord.Forbidden:
-        await message.channel.send(":x: I can't DM you, " + message.author.display_name \
+        await message.reply(mention_author=False, content=":x: I can't DM you, " + message.author.display_name \
                                     + "! Please enable DMs from users who are not friends.")
         return
     if sendDM:
@@ -164,7 +164,7 @@ async def cmd_shop_buy(message : discord.Message, args : str, isDM : bool):
     """
     requestedBGuild = botState.guildsDB.getGuild(message.guild.id)
     if requestedBGuild.shopDisabled:
-        await message.channel.send(":x: This server does not have a shop.")
+        await message.reply(mention_author=False, content=":x: This server does not have a shop.")
         return
 
     requestedShop = requestedBGuild.shop
@@ -173,43 +173,43 @@ async def cmd_shop_buy(message : discord.Message, args : str, isDM : bool):
     requestedBUser = botState.usersDB.getOrAddID(message.author.id)
     if not requestedBUser.hasHomeGuild():
         await requestedBUser.transferGuild(message.guild)
-        await message.channel.send(":airplane_arriving: Your home guild has been set.")
+        await message.reply(mention_author=False, content=":airplane_arriving: Your home guild has been set.")
     elif requestedBUser.homeGuildID != message.guild.id:
-        await message.channel.send(":x: This command can only be used from your home guild!")
+        await message.reply(mention_author=False, content=":x: This command can only be used from your home guild!")
         return
 
     argsSplit = args.split(" ")
     if len(argsSplit) < 2:
-        await message.channel.send(":x: Not enough arguments! Please provide both an item type (ship/weapon/module/turret) " \
+        await message.reply(mention_author=False, content=":x: Not enough arguments! Please provide both an item type (ship/weapon/module/turret) " \
                                     + "and an item number from `" + requestedBGuild.commandPrefix + "shop`")
         return
     if len(argsSplit) > 4:
-        await message.channel.send(":x: Too many arguments! Please only give an item type (ship/weapon/module/turret), an " \
+        await message.reply(mention_author=False, content=":x: Too many arguments! Please only give an item type (ship/weapon/module/turret), an " \
                                     + "item number, and optionally `transfer` and/or `sell` when buying a ship.")
         return
 
     item = argsSplit[0].rstrip("s")
     if item == "all" or item not in cfg.validItemNames:
-        await message.channel.send(":x: Invalid item name! Please choose from: ship, weapon, module or turret.")
+        await message.reply(mention_author=False, content=":x: Invalid item name! Please choose from: ship, weapon, module or turret.")
         return
 
     itemNum = argsSplit[1]
     requestedShop = botState.guildsDB.getGuild(message.guild.id).shop
     if not lib.stringTyping.isInt(itemNum):
-        await message.channel.send(":x: Invalid item number!")
+        await message.reply(mention_author=False, content=":x: Invalid item number!")
         return
     itemNum = int(itemNum)
     shopItemStock = requestedShop.getStockByName(item)
     if itemNum > shopItemStock.numKeys:
         if shopItemStock.numKeys == 0:
-            await message.channel.send(":x: This shop has no " + item + "s in stock!")
+            await message.reply(mention_author=False, content=":x: This shop has no " + item + "s in stock!")
         else:
-            await message.channel.send(":x: Invalid item number! This shop has " + str(shopItemStock.numKeys) \
+            await message.reply(mention_author=False, content=":x: Invalid item number! This shop has " + str(shopItemStock.numKeys) \
                                         + " " + item + "(s).")
         return
 
     if itemNum < 1:
-        await message.channel.send(":x: Invalid item number! Must be at least 1.")
+        await message.reply(mention_author=False, content=":x: Invalid item number! Must be at least 1.")
         return
 
     transferItems = False
@@ -218,22 +218,22 @@ async def cmd_shop_buy(message : discord.Message, args : str, isDM : bool):
         for arg in argsSplit[2:]:
             if arg == "transfer":
                 if transferItems:
-                    await message.channel.send(":x: Invalid argument! Please only specify `transfer` once!")
+                    await message.reply(mention_author=False, content=":x: Invalid argument! Please only specify `transfer` once!")
                     return
                 if item != "ship":
-                    await message.channel.send(":x: `transfer` can only be used when buying a ship!")
+                    await message.reply(mention_author=False, content=":x: `transfer` can only be used when buying a ship!")
                     return
                 transferItems = True
             elif arg == "sell":
                 if sellOldShip:
-                    await message.channel.send(":x: Invalid argument! Please only specify `sell` once!")
+                    await message.reply(mention_author=False, content=":x: Invalid argument! Please only specify `sell` once!")
                     return
                 if item != "ship":
-                    await message.channel.send(":x: `sell` can only be used when buying a ship!")
+                    await message.reply(mention_author=False, content=":x: `sell` can only be used when buying a ship!")
                     return
                 sellOldShip = True
             else:
-                await message.channel.send(":x: Invalid argument! Please only give an item type " \
+                await message.reply(mention_author=False, content=":x: Invalid argument! Please only give an item type " \
                                             + "(ship/weapon/module/turret), an item number, and optionally `transfer` " \
                                             + "and/or `sell` when buying a ship.")
                 return
@@ -248,7 +248,7 @@ async def cmd_shop_buy(message : discord.Message, args : str, isDM : bool):
         if (not sellOldShip and not requestedShop.userCanAffordItemObj(requestedBUser, requestedItem)) or \
                     (sellOldShip and not requestedShop.amountCanAffordShipObj(requestedBUser.credits \
                     + requestedBUser.activeShip.getValue(shipUpgradesOnly=transferItems), requestedItem)):
-            await message.channel.send(":x: You can't afford that item! (" + str(requestedItem.getValue()) + ")")
+            await message.reply(mention_author=False, content=":x: You can't afford that item! (" + str(requestedItem.getValue()) + ")")
             return
 
         requestedBUser.inactiveShips.addItem(requestedItem)
@@ -282,18 +282,18 @@ async def cmd_shop_buy(message : discord.Message, args : str, isDM : bool):
         outStr += "\n\nYour balance is now: **" \
                     + str(requestedBUser.credits) + " credits**."
 
-        await message.channel.send(outStr)
+        await message.reply(mention_author=False, content=outStr)
 
     elif item in ["weapon", "module", "turret", "tool"]:
         if not requestedShop.userCanAffordItemObj(requestedBUser, requestedItem):
-            await message.channel.send(":x: You can't afford that item! (" + str(requestedItem.value) + ")")
+            await message.reply(mention_author=False, content=":x: You can't afford that item! (" + str(requestedItem.value) + ")")
             return
 
         requestedBUser.credits -= requestedItem.value
         requestedBUser.getInactivesByName(item).addItem(requestedItem)
         shopItemStock.removeItem(requestedItem)
 
-        await message.channel.send(":moneybag: Congratulations on your new **" + requestedItem.name \
+        await message.reply(mention_author=False, content=":moneybag: Congratulations on your new **" + requestedItem.name \
                                     + "**! \n\nYour balance is now: **" + str(requestedBUser.credits) + " credits**.")
     else:
         raise NotImplementedError("Valid but unsupported item name: " + item)
@@ -320,7 +320,7 @@ async def cmd_shop_sell(message : discord.Message, args : str, isDM : bool):
     """
     requestedBGuild = botState.guildsDB.getGuild(message.guild.id)
     if requestedBGuild.shopDisabled:
-        await message.channel.send(":x: This server does not have a shop.")
+        await message.reply(mention_author=False, content=":x: This server does not have a shop.")
         return
 
     requestedShop = requestedBGuild.shop
@@ -329,49 +329,49 @@ async def cmd_shop_sell(message : discord.Message, args : str, isDM : bool):
     requestedBUser = botState.usersDB.getOrAddID(message.author.id)
     if not requestedBUser.hasHomeGuild():
         await requestedBUser.transferGuild(message.guild)
-        await message.channel.send(":airplane_arriving: Your home guild has been set.")
+        await message.reply(mention_author=False, content=":airplane_arriving: Your home guild has been set.")
     elif requestedBUser.homeGuildID != message.guild.id:
-        await message.channel.send(":x: This command can only be used from your home guild!")
+        await message.reply(mention_author=False, content=":x: This command can only be used from your home guild!")
         return
 
     argsSplit = args.split(" ")
     if len(argsSplit) < 2:
-        await message.channel.send(":x: Not enough arguments! Please provide both an item type (ship/weapon/module/turret) " \
+        await message.reply(mention_author=False, content=":x: Not enough arguments! Please provide both an item type (ship/weapon/module/turret) " \
                                     + "and an item number from `" + requestedBGuild.commandPrefix + "hangar`")
         return
     if len(argsSplit) > 3:
-        await message.channel.send(":x: Too many arguments! Please only give an item type (ship/weapon/module/turret), an " \
+        await message.reply(mention_author=False, content=":x: Too many arguments! Please only give an item type (ship/weapon/module/turret), an " \
                                     + "item number, and optionally `clear` when selling a ship.")
         return
 
     item = argsSplit[0].rstrip("s")
     if item == "all" or item not in cfg.validItemNames:
-        await message.channel.send(":x: Invalid item name! Please choose from: ship, weapon, module or turret.")
+        await message.reply(mention_author=False, content=":x: Invalid item name! Please choose from: ship, weapon, module or turret.")
         return
 
     itemNum = argsSplit[1]
     if not lib.stringTyping.isInt(itemNum):
-        await message.channel.send(":x: Invalid item number!")
+        await message.reply(mention_author=False, content=":x: Invalid item number!")
         return
     itemNum = int(itemNum)
 
     userItemInactives = requestedBUser.getInactivesByName(item)
     if itemNum > userItemInactives.numKeys:
-        await message.channel.send(":x: Invalid item number! You have " + str(userItemInactives.numKeys) + " " + item + "s.")
+        await message.reply(mention_author=False, content=":x: Invalid item number! You have " + str(userItemInactives.numKeys) + " " + item + "s.")
         return
     if itemNum < 1:
-        await message.channel.send(":x: Invalid item number! Must be at least 1.")
+        await message.reply(mention_author=False, content=":x: Invalid item number! Must be at least 1.")
         return
 
     clearItems = False
     if len(argsSplit) == 3:
         if argsSplit[2] == "clear":
             if item != "ship":
-                await message.channel.send(":x: `clear` can only be used when selling a ship!")
+                await message.reply(mention_author=False, content=":x: `clear` can only be used when selling a ship!")
                 return
             clearItems = True
         else:
-            await message.channel.send(":x: Invalid argument! Please only give an item type (ship/weapon/module/turret), " \
+            await message.reply(mention_author=False, content=":x: Invalid argument! Please only give an item type (ship/weapon/module/turret), " \
                                         + "an item number, and optionally `clear` when selling a ship.")
             return
 
@@ -391,14 +391,14 @@ async def cmd_shop_sell(message : discord.Message, args : str, isDM : bool):
                     + str(requestedItem.getValue()) + " credits**!"
         if clearItems:
             outStr += "\nItems removed from the ship can be found in the hangar."
-        await message.channel.send(outStr)
+        await message.reply(mention_author=False, content=outStr)
 
     elif item in ["weapon", "module", "turret", "tool"]:
         {"weapon": requestedShop.userSellWeaponObj, "module": requestedShop.userSellModuleObj,
             "turret": requestedShop.userSellTurretObj,
             "tool": requestedShop.userSellToolObj}[item](requestedBUser, requestedItem)
 
-        await message.channel.send(":moneybag: You sold your **" + requestedItem.name + "** for **" \
+        await message.reply(mention_author=False, content=":moneybag: You sold your **" + requestedItem.name + "** for **" \
                                     + str(requestedItem.getValue()) + " credits**!")
 
     else:
@@ -419,21 +419,21 @@ async def cmd_pay(message : discord.Message, args : str, isDM : bool):
     """
     argsSplit = args.split(" ")
     if len(argsSplit) < 2:
-        await message.channel.send(":x: Please give a target user and an amount!")
+        await message.reply(mention_author=False, content=":x: Please give a target user and an amount!")
         return
 
     if not lib.stringTyping.isInt(argsSplit[1]):
-        await message.channel.send(":x: Invalid amount!")
+        await message.reply(mention_author=False, content=":x: Invalid amount!")
         return
 
     requestedUser = lib.discordUtil.getMemberByRefOverDB(argsSplit[0], dcGuild=message.guild)
     if requestedUser is None:
-        await message.channel.send(":x: Unknown user!")
+        await message.reply(mention_author=False, content=":x: Unknown user!")
         return
 
     amount = int(argsSplit[1])
     if amount < 1:
-        await message.channel.send(":x: You have to pay at least 1 credit!")
+        await message.reply(mention_author=False, content=":x: You have to pay at least 1 credit!")
         return
 
     if botState.usersDB.idExists(message.author.id):
@@ -442,7 +442,7 @@ async def cmd_pay(message : discord.Message, args : str, isDM : bool):
         sourceBBUser: basedUser.BasedUser = botState.usersDB.addID(message.author.id)
 
     if not sourceBBUser.credits >= amount:
-        await message.channel.send(":x: You don't have that many credits!")
+        await message.reply(mention_author=False, content=":x: You don't have that many credits!")
         return
 
     if botState.usersDB.idExists(requestedUser.id):
@@ -461,7 +461,7 @@ async def cmd_pay(message : discord.Message, args : str, isDM : bool):
     sourceBBUser.credits -= amount
     targetBBUser.credits += amount
 
-    await message.channel.send(":moneybag: You paid " + lib.discordUtil.userOrMemberName(requestedUser, message.guild) \
+    await message.reply(mention_author=False, content=":moneybag: You paid " + lib.discordUtil.userOrMemberName(requestedUser, message.guild) \
                                 + " **" + str(amount) + "** credits!")
     
     if message.guild.get_member(requestedUser.id) is None:
@@ -502,7 +502,7 @@ async def cmd_total_value(message : discord.Message, args : str, isDM : bool):
     if args == "":
         if not botState.usersDB.idExists(message.author.id):
             botState.usersDB.addID(message.author.id)
-        await message.channel.send(":moneybag: **" + message.author.display_name \
+        await message.reply(mention_author=False, content=":moneybag: **" + message.author.display_name \
                                     + "**, your items and balance are worth a total of **" \
                                     + str(botState.usersDB.getUser(message.author.id).getStatByName("value")) + " Credits**.")
 
@@ -511,13 +511,13 @@ async def cmd_total_value(message : discord.Message, args : str, isDM : bool):
         # Verify the passed user tag
         requestedUser = lib.discordUtil.getMemberByRefOverDB(args, dcGuild=message.guild)
         if requestedUser is None:
-            await message.channel.send(":x: Unknown user!")
+            await message.reply(mention_author=False, content=":x: Unknown user!")
             return
         # ensure that the user is in the users database
         if not botState.usersDB.idExists(requestedUser.id):
             botState.usersDB.addID(requestedUser.id)
         # send the user's balance
-        await message.channel.send(":moneybag: **" + lib.discordUtil.userOrMemberName(requestedUser, message.guild) \
+        await message.reply(mention_author=False, content=":moneybag: **" + lib.discordUtil.userOrMemberName(requestedUser, message.guild) \
                                     + "**'s items and balance have a total value of **" \
                                     + str(botState.usersDB.getUser(requestedUser.id).getStatByName("value")) + " Credits**.")
 

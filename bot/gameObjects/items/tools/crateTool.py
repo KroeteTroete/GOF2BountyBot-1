@@ -100,7 +100,8 @@ class CrateTool(toolItem.ToolItem):
                             + type(kwargs["callingBUser"]).__name__)
 
         callingBUser = kwargs["callingBUser"]
-        confirmMsg = await message.channel.send("Are you sure you want to open your '" + self.name + "' crate?")
+        confirmMsg = await message.reply(mention_author=False,
+                                        content=f"Are you sure you want to open your '{self.name}' crate?")
         confirmation = await InlineConfirmationMenu(confirmMsg, message.author,
                                                     cfg.toolUseConfirmTimeoutSeconds).doMenu()
 

@@ -36,23 +36,23 @@ async def dev_cmd_give(message : discord.Message, args : str, isDM : bool):
 
     itemDict = json.loads(itemStr[len(itemStr.split(" ")[0]):])
     if "type" not in itemDict:
-        await message.channel.send(":x: Please give a type in your item dictionary.")
+        await message.reply(mention_author=False, content=":x: Please give a type in your item dictionary.")
         return
 
     if itemDict["type"] not in gameItem.subClassNames:
-        await message.channel.send(":x: Unknown gameItem subclass type: " + itemDict["type"])
+        await message.reply(mention_author=False, content=":x: Unknown gameItem subclass type: " + itemDict["type"])
         return
 
 
     if itemType == "all" or itemType not in cfg.validItemNames:
-        await message.channel.send(":x: Invalid item type arg - " + itemType)
+        await message.reply(mention_author=False, content=":x: Invalid item type arg - " + itemType)
         return
 
     newItem = gameItem.spawnItem(itemDict)
 
     requestedUser.getInactivesByName(itemType).addItem(newItem)
 
-    await message.channel.send(":white_check_mark: Given one '" + newItem.name + "' to **" \
+    await message.reply(mention_author=False, content=":white_check_mark: Given one '" + newItem.name + "' to **" \
                                 + lib.discordUtil.userOrMemberName(botState.client.get_user(requestedUser.id),
                                                                                             message.guild) + "**!")
 
@@ -76,43 +76,43 @@ async def dev_cmd_del_item(message : discord.Message, args : str, isDM : bool):
 
     argsSplit = args.split(" ")
     if len(argsSplit) < 3:
-        await message.channel.send(":x: Not enough arguments! Please provide a user, an item type " \
+        await message.reply(mention_author=False, content=":x: Not enough arguments! Please provide a user, an item type " \
                                     + "(ship/weapon/module/turret) and an item number from `" + prefix + "hangar`")
         return
     if len(argsSplit) > 3:
-        await message.channel.send(":x: Too many arguments! Please only give a user, an item type " \
+        await message.reply(mention_author=False, content=":x: Too many arguments! Please only give a user, an item type " \
                                     + "(ship/weapon/module/turret), and an item number.")
         return
 
     item = argsSplit[1].rstrip("s")
     if item == "all" or item not in cfg.validItemNames:
-        await message.channel.send(":x: Invalid item name! Please choose from: ship, weapon, module or turret.")
+        await message.reply(mention_author=False, content=":x: Invalid item name! Please choose from: ship, weapon, module or turret.")
         return
 
     if not (lib.stringTyping.isInt(argsSplit[0]) or lib.stringTyping.isMention(argsSplit[0])):
-        await message.channel.send(":x: Invalid user! ")
+        await message.reply(mention_author=False, content=":x: Invalid user! ")
         return
     requestedBBUser = botState.usersDB.getOrAddID(
         int(argsSplit[0].lstrip("<@!").rstrip(">")))
 
     requestedUser = botState.client.get_user(requestedBBUser.id)
     if requestedUser is None:
-        await message.channel.send(":x: Unrecognised user!")
+        await message.reply(mention_author=False, content=":x: Unrecognised user!")
         return
 
     itemNum = argsSplit[2]
     if not lib.stringTyping.isInt(itemNum):
-        await message.channel.send(":x: Invalid item number!")
+        await message.reply(mention_author=False, content=":x: Invalid item number!")
         return
     itemNum = int(itemNum)
 
     userItemInactives = requestedBBUser.getInactivesByName(item)
     if itemNum > userItemInactives.numKeys:
-        await message.channel.send(":x: Invalid item number! The user only has " + str(userItemInactives.numKeys) \
+        await message.reply(mention_author=False, content=":x: Invalid item number! The user only has " + str(userItemInactives.numKeys) \
                                     + " " + item + "s.")
         return
     if itemNum < 1:
-        await message.channel.send(":x: Invalid item number! Must be at least 1.")
+        await message.reply(mention_author=False, content=":x: Invalid item number! Must be at least 1.")
         return
 
     requestedItem = userItemInactives[itemNum - 1].item
@@ -163,7 +163,7 @@ async def dev_cmd_del_item(message : discord.Message, args : str, isDM : bool):
     else:
         itemName = requestedItem.name + "\n" + requestedItem.statsStringShort()
 
-    await message.channel.send(":white_check_mark: One item deleted from " \
+    await message.reply(mention_author=False, content=":white_check_mark: One item deleted from " \
                                 + lib.discordUtil.userOrMemberName(requestedUser, message.guild) \
                                 + "'s inventory: " + itemName, embed=itemEmbed)
     userItemInactives.removeItem(requestedItem)
@@ -187,43 +187,43 @@ async def dev_cmd_del_item_key(message : discord.Message, args : str, isDM : boo
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     argsSplit = args.split(" ")
     if len(argsSplit) < 3:
-        await message.channel.send(":x: Not enough arguments! Please provide a user, an item type " \
+        await message.reply(mention_author=False, content=":x: Not enough arguments! Please provide a user, an item type " \
                                     + "(ship/weapon/module/turret) and an item number from `" + prefix + "hangar`")
         return
     if len(argsSplit) > 3:
-        await message.channel.send(":x: Too many arguments! Please only give a user, an item type " \
+        await message.reply(mention_author=False, content=":x: Too many arguments! Please only give a user, an item type " \
                                     + "(ship/weapon/module/turret), and an item number.")
         return
 
     item = argsSplit[1].rstrip("s")
     if item == "all" or item not in cfg.validItemNames:
-        await message.channel.send(":x: Invalid item name! Please choose from: ship, weapon, module or turret.")
+        await message.reply(mention_author=False, content=":x: Invalid item name! Please choose from: ship, weapon, module or turret.")
         return
 
     if not (lib.stringTyping.isInt(argsSplit[0]) or lib.stringTyping.isMention(argsSplit[0])):
-        await message.channel.send(":x: Invalid user! ")
+        await message.reply(mention_author=False, content=":x: Invalid user! ")
         return
     requestedBBUser = botState.usersDB.getOrAddID(
         int(argsSplit[0].lstrip("<@!").rstrip(">")))
 
     requestedUser = botState.client.get_user(requestedBBUser.id)
     if requestedUser is None:
-        await message.channel.send(":x: Unrecognised user!")
+        await message.reply(mention_author=False, content=":x: Unrecognised user!")
         return
 
     itemNum = argsSplit[2]
     if not lib.stringTyping.isInt(itemNum):
-        await message.channel.send(":x: Invalid item number!")
+        await message.reply(mention_author=False, content=":x: Invalid item number!")
         return
     itemNum = int(itemNum)
 
     userItemInactives = requestedBBUser.getInactivesByName(item)
     if itemNum > userItemInactives.numKeys:
-        await message.channel.send(":x: Invalid item number! The user only has " + str(userItemInactives.numKeys) \
+        await message.reply(mention_author=False, content=":x: Invalid item number! The user only has " + str(userItemInactives.numKeys) \
                                     + " " + item + "s.")
         return
     if itemNum < 1:
-        await message.channel.send(":x: Invalid item number! Must be at least 1.")
+        await message.reply(mention_author=False, content=":x: Invalid item number! Must be at least 1.")
         return
 
     requestedItem = userItemInactives.keys[itemNum - 1]
@@ -277,7 +277,7 @@ async def dev_cmd_del_item_key(message : discord.Message, args : str, isDM : boo
     if requestedItem not in userItemInactives.items:
         userItemInactives.keys.remove(requestedItem)
         userItemInactives.numKeys -= 1
-        await message.channel.send(":white_check_mark: **Erroneous key** deleted from " \
+        await message.reply(mention_author=False, content=":white_check_mark: **Erroneous key** deleted from " \
                                     + lib.discordUtil.userOrMemberName(requestedUser, message.guild) \
                                     + "'s inventory: " + itemName, embed=itemEmbed)
     else:
@@ -285,7 +285,7 @@ async def dev_cmd_del_item_key(message : discord.Message, args : str, isDM : boo
         del userItemInactives.items[requestedItem]
         userItemInactives.keys.remove(requestedItem)
         userItemInactives.numKeys -= 1
-        await message.channel.send(":white_check_mark: " + str(itemCount) + " item(s) deleted from " \
+        await message.reply(mention_author=False, content=":white_check_mark: " + str(itemCount) + " item(s) deleted from " \
                                     + lib.discordUtil.userOrMemberName(requestedUser, message.guild) \
                                     + "'s inventory: " + itemName, embed=itemEmbed)
 
@@ -302,12 +302,12 @@ async def dev_cmd_refreshshop(message : discord.Message, args : str, isDM : bool
     level = -1
     if args != "":
         if not lib.stringTyping.isInt(args) or not int(args) in range(cfg.minTechLevel, cfg.maxTechLevel + 1):
-            await message.channel.send("Invalid tech level!")
+            await message.reply(mention_author=False, content="Invalid tech level!")
             return
         level = int(args)
     guild = botState.guildsDB.getGuild(message.guild.id)
     if guild.shopDisabled:
-        await message.channel.send(":x: This guild's shop is disabled.")
+        await message.reply(mention_author=False, content=":x: This guild's shop is disabled.")
     else:
         guild.shop.refreshStock(level=level)
         await guild.announceNewShopStock()
@@ -323,16 +323,16 @@ async def dev_cmd_debug_hangar(message : discord.Message, args : str, isDM : boo
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
     if not (lib.stringTyping.isInt(args) or lib.stringTyping.isMention(args)):
-        await message.channel.send(":x: Invalid user!")
+        await message.reply(mention_author=False, content=":x: Invalid user!")
         return
 
     requestedUser = botState.client.get_user(int(args.lstrip("<@!").rstrip(">")))
     if requestedUser is None:
-        await message.channel.send(":x: Unrecognised user!")
+        await message.reply(mention_author=False, content=":x: Unrecognised user!")
         return
 
     if not botState.usersDB.idExists(requestedUser.id):
-        await message.channel.send("User has not played yet!")
+        await message.reply(mention_author=False, content="User has not played yet!")
         return
 
     requestedBBUser = botState.usersDB.getUser(requestedUser.id)
@@ -340,13 +340,13 @@ async def dev_cmd_debug_hangar(message : discord.Message, args : str, isDM : boo
 
     maxPage = requestedBBUser.numInventoryPages("all", maxPerPage)
     if maxPage == 0:
-        await message.channel.send(":x: The requested pilot doesn't have any items!")
+        await message.reply(mention_author=False, content=":x: The requested pilot doesn't have any items!")
         return
 
     itemTypes = ("ship", "weapon", "module", "turret")
     for itemType in itemTypes:
         itemInv = requestedBBUser.getInactivesByName(itemType)
-        await message.channel.send(itemType.upper() + " KEYS: " + str(itemInv.keys) + "\n" + itemType.upper() \
+        await message.reply(mention_author=False, content=itemType.upper() + " KEYS: " + str(itemInv.keys) + "\n" + itemType.upper() \
                                     + " LISTINGS: " + str(list(itemInv.items.keys())))
 
     for page in range(1, maxPage + 1):
@@ -411,7 +411,7 @@ async def dev_cmd_debug_hangar(message : discord.Message, args : str, isDM : boo
                                                 + currentItemName + "\n`" + repr(itemKey) + "`",
                                               value="unexpected type", inline=False)
 
-        await message.channel.send(embed=hangarEmbed)
+        await message.reply(mention_author=False, embed=hangarEmbed)
 
 
 botCommands.register("debug-hangar", dev_cmd_debug_hangar, 3, allowDM=True, helpSection="items", useDoc=True)

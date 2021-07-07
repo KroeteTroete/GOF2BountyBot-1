@@ -37,7 +37,7 @@ async def cmd_hangar(message : discord.Message, args : str, isDM : bool):
     useDummyData = False
 
     if len(argsSplit) > 3:
-        await message.channel.send(":x: Too many arguments! I can only take a target user, an item type " \
+        await message.reply(mention_author=False, content=":x: Too many arguments! I can only take a target user, an item type " \
                                     + "(ship/weapon/module), and a page number!")
         return
 
@@ -47,7 +47,7 @@ async def cmd_hangar(message : discord.Message, args : str, isDM : bool):
             if arg != "":
                 if lib.discordUtil.getMemberByRefOverDB(arg, dcGuild=message.guild) is not None:
                     if foundUser:
-                        await message.channel.send(":x: I can only take one user!")
+                        await message.reply(mention_author=False, content=":x: I can only take one user!")
                         return
                     else:
                         requestedUser = lib.discordUtil.getMemberByRefOverDB(arg, dcGuild=message.guild)
@@ -55,7 +55,7 @@ async def cmd_hangar(message : discord.Message, args : str, isDM : bool):
 
                 elif arg.rstrip("s") in cfg.validItemNames:
                     if foundItem:
-                        await message.channel.send(":x: I can only take one item type (ship/weapon/module/turret)!")
+                        await message.reply(mention_author=False, content=":x: I can only take one item type (ship/weapon/module/turret)!")
                         return
                     else:
                         item = arg.rstrip("s")
@@ -63,20 +63,20 @@ async def cmd_hangar(message : discord.Message, args : str, isDM : bool):
 
                 elif lib.stringTyping.isInt(arg):
                     if foundPage:
-                        await message.channel.send(":x: I can only take one page number!")
+                        await message.reply(mention_author=False, content=":x: I can only take one page number!")
                         return
                     else:
                         page = int(arg)
                         foundPage = True
                 else:
-                    await message.channel.send(":x: " + str(argNum) + lib.stringTyping.getNumExtension(argNum) \
+                    await message.reply(mention_author=False, content=":x: " + str(argNum) + lib.stringTyping.getNumExtension(argNum) \
                                                 + " argument invalid! I can only take a target user, an item type " \
                                                 + "(ship/weapon/module/turret), and a page number!")
                     return
                 argNum += 1
 
     if requestedUser is None:
-        await message.channel.send(":x: Unrecognised user!")
+        await message.reply(mention_author=False, content=":x: Unrecognised user!")
         return
 
     if not botState.usersDB.idExists(requestedUser.id):
@@ -101,11 +101,11 @@ async def cmd_hangar(message : discord.Message, args : str, isDM : bool):
 
     if useDummyData:
         if page > 1:
-            await message.channel.send(":x: " + ("The requested pilot" if foundUser else "You") + " only " \
+            await message.reply(mention_author=False, content=":x: " + ("The requested pilot" if foundUser else "You") + " only " \
                                         + ("has" if foundUser else "have") + " one page of items. Showing page one:")
             page = 1
         elif page < 1:
-            await message.channel.send(":x: Invalid page number. Showing page one:")
+            await message.reply(mention_author=False, content=":x: Invalid page number. Showing page one:")
             page = 1
 
         hangarEmbed = lib.discordUtil.makeEmbed(titleTxt="Hangar", desc=requestedUser.mention,
@@ -115,7 +115,7 @@ async def cmd_hangar(message : discord.Message, args : str, isDM : bool):
                                                 thumb=requestedUser.avatar_url_as(size=64))
 
         hangarEmbed.add_field(name="No Stored Items", value="‎", inline=False)
-        await message.channel.send(embed=hangarEmbed)
+        await message.reply(mention_author=False, embed=hangarEmbed)
         return
 
     else:
@@ -127,16 +127,16 @@ async def cmd_hangar(message : discord.Message, args : str, isDM : bool):
             maxPerPage = cfg.maxItemsPerHangarPageIndividual
 
         if page < 1:
-            await message.channel.send(":x: Invalid page number. Showing page one:")
+            await message.reply(mention_author=False, content=":x: Invalid page number. Showing page one:")
             page = 1
         else:
             maxPage = requestedBBUser.numInventoryPages(item, maxPerPage)
             if maxPage == 0:
-                await message.channel.send(":x: " + ("The requested pilot doesn't" if foundUser else "You don't") \
+                await message.reply(mention_author=False, content=":x: " + ("The requested pilot doesn't" if foundUser else "You don't") \
                                             + " have any " + ("items" if item == "all" else "of that item") + "!")
                 return
             elif page > maxPage:
-                await message.channel.send(":x: " + ("The requested pilot" if foundUser else "You") + " only " \
+                await message.reply(mention_author=False, content=":x: " + ("The requested pilot" if foundUser else "You") + " only " \
                                             + ("has " if foundUser else "have ") + str(maxPage) \
                                             + " page(s) of items. Showing page " + str(maxPage) + ":")
                 page = maxPage
@@ -213,7 +213,7 @@ async def cmd_hangar(message : discord.Message, args : str, isDM : bool):
             if sendDM:
                 await message.add_reaction(cfg.defaultEmojis.dmSent.sendable)
         except discord.Forbidden:
-            await message.channel.send(":x: I can't DM you, " + message.author.display_name \
+            await message.reply(mention_author=False, content=":x: I can't DM you, " + message.author.display_name \
                                         + "! Please enable DMs from users who are not friends.")
 
 botCommands.register("hangar", cmd_hangar, 0, aliases=["hanger"], forceKeepArgsCasing=True, allowDM=True,
@@ -239,7 +239,7 @@ async def cmd_loadout(message : discord.Message, args : str, isDM : bool):
     userFound = False
 
     if len(args.split(" ")) > 1 and args.split(" ")[0] != "criminal":
-        await message.channel.send(":x: Too many arguments! I can only take a target user/criminal!")
+        await message.reply(mention_author=False, content=":x: Too many arguments! I can only take a target user/criminal!")
         return
     elif len(args.split(" ")) == 1 and args == "criminal":
         await message.channel.send(":x: Not enough arguments! Please give the criminal name.")
@@ -287,7 +287,7 @@ async def cmd_loadout(message : discord.Message, args : str, isDM : bool):
     if args != "":
         requestedUser = lib.discordUtil.getMemberByRefOverDB(args, dcGuild=message.guild)
         if requestedUser is None:
-            await message.channel.send(":x: Invalid user requested! Please either ping them, or give their ID!")
+            await message.reply(mention_author=False, content=":x: Invalid user requested! Please either ping them, or give their ID!")
             return
 
     if not botState.usersDB.idExists(requestedUser.id):
@@ -302,7 +302,7 @@ async def cmd_loadout(message : discord.Message, args : str, isDM : bool):
                                                     thumb=activeShip.icon if activeShip.hasIcon \
                                                         else requestedUser.avatar_url_as(size=64))
 
-        await message.channel.send(embed=activeShip.fillLoadoutEmbed(loadoutEmbed))
+        await message.reply(mention_author=False, embed=activeShip.fillLoadoutEmbed(loadoutEmbed))
         return
 
     else:
@@ -320,7 +320,7 @@ async def cmd_loadout(message : discord.Message, args : str, isDM : bool):
         else:
             loadoutEmbed = activeShip.fillLoadoutEmbed(loadoutEmbed)
 
-        await message.channel.send(embed=loadoutEmbed)
+        await message.reply(mention_author=False, embed=loadoutEmbed)
 
 botCommands.register("loadout", cmd_loadout, 0, forceKeepArgsCasing=True, allowDM=True, helpSection="loadout",
                     signatureStr="**loadout** *[user]*",
@@ -345,44 +345,44 @@ async def cmd_equip(message : discord.Message, args : str, isDM : bool):
 
     argsSplit = args.split(" ")
     if len(argsSplit) < 2:
-        await message.channel.send(":x: Not enough arguments! Please provide both an item type (ship/weapon/module/turret) " \
+        await message.reply(mention_author=False, content=":x: Not enough arguments! Please provide both an item type (ship/weapon/module/turret) " \
                                     + "and an item number from `" + prefix + "hangar`")
         return
     if len(argsSplit) > 3:
-        await message.channel.send(":x: Too many arguments! Please only give an item type (ship/weapon/module/turret), " \
+        await message.reply(mention_author=False, content=":x: Too many arguments! Please only give an item type (ship/weapon/module/turret), " \
                                     + "an item number, and optionally `transfer` when equipping a ship.")
         return
 
     item = argsSplit[0].rstrip("s")
     if item in ["all", "tool"] or item not in cfg.validItemNames:
-        await message.channel.send(":x: Invalid item name! Please choose from: ship, weapon, module or turret.")
+        await message.reply(mention_author=False, content=":x: Invalid item name! Please choose from: ship, weapon, module or turret.")
         return
 
     requestedBBUser = botState.usersDB.getOrAddID(message.author.id)
 
     itemNum = argsSplit[1]
     if not lib.stringTyping.isInt(itemNum):
-        await message.channel.send(":x: Invalid item number!")
+        await message.reply(mention_author=False, content=":x: Invalid item number!")
         return
     itemNum = int(itemNum)
 
     userItemInactives = requestedBBUser.getInactivesByName(item)
     if itemNum > userItemInactives.numKeys:
-        await message.channel.send(":x: Invalid item number! You have " + str(userItemInactives.numKeys) + " " + item + "s.")
+        await message.reply(mention_author=False, content=":x: Invalid item number! You have " + str(userItemInactives.numKeys) + " " + item + "s.")
         return
     if itemNum < 1:
-        await message.channel.send(":x: Invalid item number! Must be at least 1.")
+        await message.reply(mention_author=False, content=":x: Invalid item number! Must be at least 1.")
         return
 
     transferItems = False
     if len(argsSplit) == 3:
         if argsSplit[2] == "transfer":
             if item != "ship":
-                await message.channel.send(":x: `transfer` can only be used when equipping a ship!")
+                await message.reply(mention_author=False, content=":x: `transfer` can only be used when equipping a ship!")
                 return
             transferItems = True
         else:
-            await message.channel.send(":x: Invalid argument! Please only give an item type (ship/weapon/module/turret), " \
+            await message.reply(mention_author=False, content=":x: Invalid argument! Please only give an item type (ship/weapon/module/turret), " \
                                         + "an item number, and optionally `transfer` when equipping a ship.")
             return
 
@@ -400,41 +400,41 @@ async def cmd_equip(message : discord.Message, args : str, isDM : bool):
         outStr = ":rocket: You switched to the **" + requestedItem.getNameOrNick() + "**."
         if transferItems:
             outStr += "\nItems thay could not fit in your new ship can be found in the hangar."
-        await message.channel.send(outStr)
+        await message.reply(mention_author=False, content=outStr)
 
     elif item == "weapon":
         if not requestedBBUser.activeShip.canEquipMoreWeapons():
-            await message.channel.send(":x: Your active ship does not have any free weapon slots!")
+            await message.reply(mention_author=False, content=":x: Your active ship does not have any free weapon slots!")
             return
 
         requestedBBUser.activeShip.equipWeapon(requestedItem)
         requestedBBUser.inactiveWeapons.removeItem(requestedItem)
 
-        await message.channel.send(":wrench: You equipped the **" + requestedItem.name + "**.")
+        await message.reply(mention_author=False, content=":wrench: You equipped the **" + requestedItem.name + "**.")
 
     elif item == "module":
         if not requestedBBUser.activeShip.canEquipMoreModules():
-            await message.channel.send(":x: Your active ship does not have any free module slots!")
+            await message.reply(mention_author=False, content=":x: Your active ship does not have any free module slots!")
             return
 
         if not requestedBBUser.activeShip.canEquipModuleType(type(requestedItem)):
-            await message.channel.send(":x: You already have the max of this type of module equipped!")
+            await message.reply(mention_author=False, content=":x: You already have the max of this type of module equipped!")
             return
 
         requestedBBUser.activeShip.equipModule(requestedItem)
         requestedBBUser.inactiveModules.removeItem(requestedItem)
 
-        await message.channel.send(":wrench: You equipped the **" + requestedItem.name + "**.")
+        await message.reply(mention_author=False, content=":wrench: You equipped the **" + requestedItem.name + "**.")
 
     elif item == "turret":
         if not requestedBBUser.activeShip.canEquipMoreTurrets():
-            await message.channel.send(":x: Your active ship does not have any free turret slots!")
+            await message.reply(mention_author=False, content=":x: Your active ship does not have any free turret slots!")
             return
 
         requestedBBUser.activeShip.equipTurret(requestedItem)
         requestedBBUser.inactiveTurrets.removeItem(requestedItem)
 
-        await message.channel.send(":wrench: You equipped the **" + requestedItem.name + "**.")
+        await message.reply(mention_author=False, content=":wrench: You equipped the **" + requestedItem.name + "**.")
 
     else:
         raise NotImplementedError("Valid but unsupported item name: " + item)
@@ -465,11 +465,11 @@ async def cmd_unequip(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
 
     if not unequipAllItems and len(argsSplit) < 2:
-        await message.channel.send(":x: Not enough arguments! Please provide both an item type (all/weapon/module/turret) " \
+        await message.reply(mention_author=False, content=":x: Not enough arguments! Please provide both an item type (all/weapon/module/turret) " \
                                     + "and an item number from `" + prefix + "hangar` or `all`.")
         return
     if len(argsSplit) > 2:
-        await message.channel.send(":x: Too many arguments! Please only give an item type (all/weapon/module/turret), " \
+        await message.reply(mention_author=False, content=":x: Too many arguments! Please only give an item type (all/weapon/module/turret), " \
                                     + "an item number or `all`.")
         return
 
@@ -478,84 +478,84 @@ async def cmd_unequip(message : discord.Message, args : str, isDM : bool):
     if unequipAllItems:
         requestedBBUser.unequipAll(requestedBBUser.activeShip)
 
-        await message.channel.send(":wrench: You unequipped **all items** from your ship.")
+        await message.reply(mention_author=False, content=":wrench: You unequipped **all items** from your ship.")
         return
 
     item = argsSplit[0].rstrip("s")
     if item not in cfg.validItemNames:
-        await message.channel.send(":x: Invalid item name! Please choose from: weapon, module or turret.")
+        await message.reply(mention_author=False, content=":x: Invalid item name! Please choose from: weapon, module or turret.")
         return
     if item == "ship":
-        await message.channel.send(":x: You can't go without a ship! Instead, switch to another one.")
+        await message.reply(mention_author=False, content=":x: You can't go without a ship! Instead, switch to another one.")
         return
 
     unequipAll = argsSplit[1] == "all"
     if not unequipAll:
         itemNum = argsSplit[1]
         if not lib.stringTyping.isInt(itemNum):
-            await message.channel.send(":x: Invalid item number!")
+            await message.reply(mention_author=False, content=":x: Invalid item number!")
             return
         itemNum = int(itemNum)
         if itemNum > len(requestedBBUser.activeShip.getActivesByName(item)):
-            await message.channel.send(":x: Invalid item number! Your ship has " \
+            await message.reply(mention_author=False, content=":x: Invalid item number! Your ship has " \
                                         + str(len(requestedBBUser.activeShip.getActivesByName(item))) + " " + item + "s.")
             return
         if itemNum < 1:
-            await message.channel.send(":x: Invalid item number! Must be at least 1.")
+            await message.reply(mention_author=False, content=":x: Invalid item number! Must be at least 1.")
             return
     else:
         itemNum = None
 
     if item == "weapon":
         if not requestedBBUser.activeShip.hasWeaponsEquipped():
-            await message.channel.send(":x: Your active ship does not have any weapons equipped!")
+            await message.reply(mention_author=False, content=":x: Your active ship does not have any weapons equipped!")
             return
         if unequipAll:
             for weapon in requestedBBUser.activeShip.weapons:
                 requestedBBUser.inactiveWeapons.addItem(weapon)
                 requestedBBUser.activeShip.unequipWeaponObj(weapon)
 
-            await message.channel.send(":wrench: You unequipped all **weapons**.")
+            await message.reply(mention_author=False, content=":wrench: You unequipped all **weapons**.")
         else:
             requestedItem = requestedBBUser.activeShip.weapons[itemNum - 1]
             requestedBBUser.inactiveWeapons.addItem(requestedItem)
             requestedBBUser.activeShip.unequipWeaponIndex(itemNum - 1)
 
-            await message.channel.send(":wrench: You unequipped the **" + requestedItem.name + "**.")
+            await message.reply(mention_author=False, content=":wrench: You unequipped the **" + requestedItem.name + "**.")
 
     elif item == "module":
         if not requestedBBUser.activeShip.hasModulesEquipped():
-            await message.channel.send(":x: Your active ship does not have any modules equipped!")
+            await message.reply(mention_author=False, content=":x: Your active ship does not have any modules equipped!")
             return
         if unequipAll:
             for module in requestedBBUser.activeShip.modules:
                 requestedBBUser.inactiveModules.addItem(module)
                 requestedBBUser.activeShip.unequipModuleObj(module)
 
-            await message.channel.send(":wrench: You unequipped all **modules**.")
+            await message.reply(mention_author=False, content=":wrench: You unequipped all **modules**.")
         else:
             requestedItem = requestedBBUser.activeShip.modules[itemNum - 1]
             requestedBBUser.inactiveModules.addItem(requestedItem)
             requestedBBUser.activeShip.unequipModuleIndex(itemNum - 1)
 
-            await message.channel.send(":wrench: You unequipped the **" + requestedItem.name + "**.")
+            await message.reply(mention_author=False, content=":wrench: You unequipped the **" + requestedItem.name + "**.")
 
     elif item == "turret":
         if not requestedBBUser.activeShip.hasTurretsEquipped():
-            await message.channel.send(":x: Your active ship does not have any turrets equipped!")
+            await message.reply(mention_author=False, content=":x: Your active ship does not have any turrets equipped!")
             return
         if unequipAll:
             for turret in requestedBBUser.activeShip.turrets:
                 requestedBBUser.inactiveTurrets.addItem(turret)
                 requestedBBUser.activeShip.unequipTurretObj(turret)
 
-            await message.channel.send(":wrench: You unequipped all **turrets**.")
+            await message.reply(mention_author=False, content=":wrench: You unequipped all **turrets**.")
         else:
             requestedItem = requestedBBUser.activeShip.turrets[itemNum - 1]
             requestedBBUser.inactiveTurrets.addItem(requestedItem)
             requestedBBUser.activeShip.unequipTurretIndex(itemNum - 1)
 
-            await message.channel.send(":wrench: You unequipped the **" + requestedItem.name + "**.")
+            await message.reply(mention_author=False, content=":wrench: You unequipped the **" + requestedItem.name + "**.")
 
     else:
         raise NotImplementedError("Valid but unsupported item name: " + item)
@@ -580,20 +580,20 @@ async def cmd_nameship(message : discord.Message, args : str, isDM : bool):
         requestedBBUser = botState.usersDB.addID(message.author.id)
 
     if requestedBBUser.activeShip is None:
-        await message.channel.send(":x: You do not have a ship equipped!")
+        await message.reply(mention_author=False, content=":x: You do not have a ship equipped!")
         return
 
     if args == "":
-        await message.channel.send(":x: Not enough arguments. Please give the new nickname!")
+        await message.reply(mention_author=False, content=":x: Not enough arguments. Please give the new nickname!")
         return
 
     if (message.author.id not in cfg.developers and len(args) > cfg.maxShipNickLength) or \
             len(args) > cfg.maxDevShipNickLength:
-        await message.channel.send(":x: Nicknames must be " + str(cfg.maxShipNickLength) + " characters or less!")
+        await message.reply(mention_author=False, content=":x: Nicknames must be " + str(cfg.maxShipNickLength) + " characters or less!")
         return
 
     requestedBBUser.activeShip.changeNickname(args)
-    await message.channel.send(":pencil: You named your " + requestedBBUser.activeShip.name + ": **" + args + "**.")
+    await message.reply(mention_author=False, content=":pencil: You named your " + requestedBBUser.activeShip.name + ": **" + args + "**.")
 
 botCommands.register("nameship", cmd_nameship, 0, forceKeepArgsCasing=True, allowDM=True, helpSection="loadout",
                     signatureStr="**nameShip <nickname>**", shortHelp="Give your active ship a nickname!",
@@ -613,15 +613,15 @@ async def cmd_unnameship(message : discord.Message, args : str, isDM : bool):
         requestedBBUser = botState.usersDB.addID(message.author.id)
 
     if requestedBBUser.activeShip is None:
-        await message.channel.send(":x: You do not have a ship equipped!")
+        await message.reply(mention_author=False, content=":x: You do not have a ship equipped!")
         return
 
     if not requestedBBUser.activeShip.hasNickname:
-        await message.channel.send(":x: Your active ship does not have a nickname!")
+        await message.reply(mention_author=False, content=":x: Your active ship does not have a nickname!")
         return
 
     requestedBBUser.activeShip.removeNickname()
-    await message.channel.send(":pencil: You reset your **" + requestedBBUser.activeShip.name + "**'s nickname.")
+    await message.reply(mention_author=False, content=":pencil: You reset your **" + requestedBBUser.activeShip.name + "**'s nickname.")
 
 botCommands.register("unnameship", cmd_unnameship, 0, allowDM=True, helpSection="loadout", signatureStr="**unnameShip**",
                     shortHelp="Reset your active ship's nickname.")

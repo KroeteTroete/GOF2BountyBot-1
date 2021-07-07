@@ -333,7 +333,7 @@ async def err_nodm(message: discord.Message, args: str, isDM: bool):
     :param str args: ignored
     :param bool isDM: ignored
     """
-    await message.channel.send("This command can only be used from inside of a server.")
+    await message.reply("This command can only be used from inside of a server.", mention_author=False)
 
 
 async def err_tempDisabled(message : discord.Message, args : str, isDM : bool):
@@ -344,7 +344,8 @@ async def err_tempDisabled(message : discord.Message, args : str, isDM : bool):
     :param str args: ignored
     :param bool isDM: ignored
     """
-    await message.channel.send(":x: All bounty/shop behaviour is currently disabled while I work on new features \:)")
+    await message.reply(":x: All bounty/shop behaviour is currently disabled while I work on new features \:)",
+                        mention_author=False)
 
 
 async def err_tempPerfDisabled(message : discord.Message, args : str, isDM : bool):
@@ -354,8 +355,9 @@ async def err_tempPerfDisabled(message : discord.Message, args : str, isDM : boo
     :param str args: ignored
     :param bool isDM: ignored
     """
-    await message.channel.send(":x: This command has been temporarily disabled as it requires too much processing power. " \
-                                + "It may return in the future once hosting hardware has been upgraded! \:)")
+    await message.reply(":x: This command has been temporarily disabled as it requires too much processing power. " \
+                                + "It may return in the future once hosting hardware has been upgraded! \:)",
+                        mention_author=False)
 
 
 async def dummy_command(message : discord.Message, args : str, isDM : bool):
@@ -589,8 +591,9 @@ async def on_message(message: discord.Message):
         # If the command threw an exception
         except Exception as e:
             # print a user friendly error
-            await message.channel.send(":woozy_face: Uh oh, something went wrong! The error has been logged.\n" \
-                                        + "This command probably won't work until we've looked into it.")
+            await message.reply(":woozy_face: Uh oh, something went wrong! The error has been logged.\n" \
+                                        + "This command probably won't work until we've looked into it.",
+                                mention_author=False)
             # log the exception as misc
             botState.logger.log("Main", "on_message",
                                 f"An unexpected error occured when calling command '{command}' with args '{args}'",
@@ -601,8 +604,9 @@ async def on_message(message: discord.Message):
         # Command not found, send an error message.
         if not commandFound:
             userTitle = cfg.accessLevelTitles[accessLevel]
-            await message.channel.send(""":question: Can't do that, """ + userTitle + """. Type `""" \
-                                        + commandPrefix + """help` for a list of commands! **o7**""")
+            await message.reply(f":question: Can't do that, {userTitle}. " \
+                                + f"Type `{commandPrefix}help` for a list of commands! **o7**",
+                                mention_author=False)
 
 
 @botState.client.event

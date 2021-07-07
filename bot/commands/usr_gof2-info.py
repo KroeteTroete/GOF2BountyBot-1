@@ -25,10 +25,10 @@ async def cmd_map(message : discord.Message, args : str, isDM : bool):
     """
     # If -g is specified, send the image with grid overlay
     if args == "-g":
-        await message.channel.send(bbData.mapImageWithGraphLink)
+        await message.reply(mention_author=False, content=bbData.mapImageWithGraphLink)
     # otherwise, send the image with no grid overlay
     else:
-        await message.channel.send(bbData.mapImageNoGraphLink)
+        await message.reply(mention_author=False, content=bbData.mapImageNoGraphLink)
 
 botCommands.register("map", cmd_map, 0, aliases=["starmap"], allowDM=True, helpSection="gof2 info", signatureStr="**map**",
                         shortHelp="Send the complete GOF2 starmap.",
@@ -48,11 +48,11 @@ async def cmd_make_route(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify two systems are given separated by a comma and a space
     if args == "" or "," not in args or len(args[:args.index(",")]) < 1 or len(args[args.index(","):]) < 2:
-        await message.channel.send(":x: Please provide source and destination systems, separated with a comma and space.\n" \
+        await message.reply(mention_author=False, content=":x: Please provide source and destination systems, separated with a comma and space.\n" \
                                     + "For example: `" + prefix + "make-route Pescal Inartu, Loma`")
         return
     if args.count(",") > 1:
-        await message.channel.send(":x: Please only provide **two** systems!")
+        await message.reply(mention_author=False, content=":x: Please only provide **two** systems!")
         return
 
     requestedStart = args.split(",")[0].title()
@@ -74,18 +74,18 @@ async def cmd_make_route(message : discord.Message, args : str, isDM : bool):
     for syst in [requestedStart, requestedEnd]:
         if not systemsFound[syst]:
             if len(syst) < 20:
-                await message.channel.send(":x: The **" + syst + "** system is not on my star map! :map:")
+                await message.reply(mention_author=False, content=":x: The **" + syst + "** system is not on my star map! :map:")
             else:
-                await message.channel.send(":x: The **" + syst[0:15] + "**... system is not on my star map! :map:")
+                await message.reply(mention_author=False, content=":x: The **" + syst[0:15] + "**... system is not on my star map! :map:")
             return
 
     # report any systems that were recognised, but do not have any neighbours
     for syst in [startSyst, endSyst]:
         if not bbData.builtInSystemObjs[syst].hasJumpGate():
             if len(syst) < 20:
-                await message.channel.send(":x: The **" + syst + "** system does not have a jump gate! :rocket:")
+                await message.reply(mention_author=False, content=":x: The **" + syst + "** system does not have a jump gate! :rocket:")
             else:
-                await message.channel.send(":x: The **" + syst[0:15] + "**... system does not have a jump gate! :rocket:")
+                await message.reply(mention_author=False, content=":x: The **" + syst[0:15] + "**... system does not have a jump gate! :rocket:")
             return
 
     # build and print the route, reporting any errors in the route generation process
@@ -93,13 +93,13 @@ async def cmd_make_route(message : discord.Message, args : str, isDM : bool):
     for currentSyst in lib.pathfinding.makeRoute(startSyst, endSyst):
         routeStr += currentSyst + ", "
     if routeStr.startswith("#"):
-        await message.channel.send(":x: ERR: Processing took too long! :stopwatch:")
+        await message.reply(mention_author=False, content=":x: ERR: Processing took too long! :stopwatch:")
     elif routeStr.startswith("!"):
-        await message.channel.send(":x: ERR: No route found! :triangular_flag_on_post:")
+        await message.reply(mention_author=False, content=":x: ERR: No route found! :triangular_flag_on_post:")
     elif startSyst == endSyst:
-        await message.channel.send(":thinking: You're already there, pilot!")
+        await message.reply(mention_author=False, content=":thinking: You're already there, pilot!")
     else:
-        await message.channel.send("Here's the shortest route from **" + startSyst + "** to **" + endSyst + "**:\n> " \
+        await message.reply(mention_author=False, content="Here's the shortest route from **" + startSyst + "** to **" + endSyst + "**:\n> " \
                                     + routeStr[:-2] + " :rocket:")
 
 botCommands.register("make-route", cmd_make_route, 0, allowDM=True, helpSection="gof2 info",
@@ -122,7 +122,8 @@ async def cmd_info_system(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a systemw as specified
     if args == "":
-        await message.channel.send(":x: Please provide a system! Example: `" + prefix + "info system Augmenta`")
+        await message.reply(mention_author=False,
+                            content=":x: Please provide a system! Example: `" + prefix + "info system Augmenta`")
         return
 
     # attempt to look up the specified system
@@ -135,9 +136,9 @@ async def cmd_info_system(message : discord.Message, args : str, isDM : bool):
     # report unrecognised systems
     if systObj is None:
         if len(systArg) < 20:
-            await message.channel.send(":x: The **" + systArg + "** system is not on my star map! :map:")
+            await message.reply(mention_author=False, content=":x: The **" + systArg + "** system is not on my star map! :map:")
         else:
-            await message.channel.send(":x: The **" + systArg[0:15] + "**... system is not on my star map! :map:")
+            await message.reply(mention_author=False, content=":x: The **" + systArg[0:15] + "**... system is not on my star map! :map:")
     else:
         # build the neighbours statistic into a string
         neighboursStr = ""
@@ -165,7 +166,7 @@ async def cmd_info_system(message : discord.Message, args : str, isDM : bool):
         if systObj.hasWiki:
             statsEmbed.add_field(name="‎", value="[Wiki](" + systObj.wiki + ")", inline=False)
         # send the embed
-        await message.channel.send(embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 
 # botCommands.register("info-system", 0, cmd_system)
 
@@ -183,7 +184,8 @@ async def cmd_info_criminal(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a criminal was given
     if args == "":
-        await message.channel.send(":x: Please provide a criminal! Example: `" + prefix + "info criminal Toma Prakupy`")
+        await message.reply(mention_author=False,
+                            content=":x: Please provide a criminal! Example: `" + prefix + "info criminal Toma Prakupy`")
         return
 
     # look up the criminal object
@@ -196,9 +198,9 @@ async def cmd_info_criminal(message : discord.Message, args : str, isDM : bool):
     # report unrecognised criminal names
     if criminalObj is None:
         if len(criminalName) < 20:
-            await message.channel.send(":x: **" + criminalName + "** is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + criminalName + "** is not in my database! :detective:")
         else:
-            await message.channel.send(":x: **" + criminalName[0:15] + "**... is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + criminalName[0:15] + "**... is not in my database! :detective:")
 
     else:
         # build the stats embed
@@ -214,7 +216,7 @@ async def cmd_info_criminal(message : discord.Message, args : str, isDM : bool):
         if criminalObj.hasWiki:
             statsEmbed.add_field(name="‎", value="[Wiki](" + criminalObj.wiki + ")", inline=False)
         # send the embed
-        await message.channel.send(embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 
 # botCommands.register("info-criminal", 0, cmd_criminal)
 
@@ -232,7 +234,8 @@ async def cmd_info_ship(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a ship! Example: `" + prefix + "info ship Groza Mk II`")
+        await message.reply(mention_author=False,
+                            content=":x: Please provide a ship! Example: `" + prefix + "info ship Groza Mk II`")
         return
 
     # look up the ship object
@@ -250,9 +253,9 @@ async def cmd_info_ship(message : discord.Message, args : str, isDM : bool):
     # report unrecognised ship names
     if itemObj is None:
         if len(itemName) < 20:
-            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName + "** is not in my database! :detective:")
         else:
-            await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
 
     else:
         # build the stats embed
@@ -308,7 +311,7 @@ async def cmd_info_ship(message : discord.Message, args : str, isDM : bool):
         if itemObj.hasWiki:
             statsEmbed.add_field( name="‎", value="[Wiki](" + itemObj.wiki + ")", inline=False)
         # send the embed
-        await message.channel.send(embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 
 # botCommands.register("info-ship", 0, cmd_ship)
 
@@ -326,7 +329,8 @@ async def cmd_info_weapon(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a weapon! Example: `" + prefix + "info weapon Nirai Impulse EX 1`")
+        await message.reply(mention_author=False,
+                            content=":x: Please provide a weapon! Example: `" + prefix + "info weapon Nirai Impulse EX 1`")
         return
 
     # look up the weapon object
@@ -339,9 +343,9 @@ async def cmd_info_weapon(message : discord.Message, args : str, isDM : bool):
     # report unrecognised weapon names
     if itemObj is None:
         if len(itemName) < 20:
-            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName + "** is not in my database! :detective:")
         else:
-            await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
 
     else:
         # build the stats embed
@@ -365,7 +369,7 @@ async def cmd_info_weapon(message : discord.Message, args : str, isDM : bool):
         if itemObj.hasWiki:
             statsEmbed.add_field(name="‎", value="[Wiki](" + itemObj.wiki + ")", inline=False)
         # send the embed
-        await message.channel.send(embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 
 # botCommands.register("info-weapon", 0, cmd_weapon)
 
@@ -383,7 +387,8 @@ async def cmd_info_module(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a module! Example: `" + prefix + "info module Groza Mk II`")
+        await message.reply(mention_author=False,
+                            content=":x: Please provide a module! Example: `" + prefix + "info module Khador Drive`")
         return
 
     # look up the module object
@@ -396,9 +401,9 @@ async def cmd_info_module(message : discord.Message, args : str, isDM : bool):
     # report unrecognised module names
     if itemObj is None:
         if len(itemName) < 20:
-            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName + "** is not in my database! :detective:")
         else:
-            await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
 
     else:
         # build the stats embed
@@ -423,7 +428,7 @@ async def cmd_info_module(message : discord.Message, args : str, isDM : bool):
         if itemObj.hasWiki:
             statsEmbed.add_field(name="‎", value="[Wiki](" + itemObj.wiki + ")", inline=False)
         # send the embed
-        await message.channel.send(embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 
 # botCommands.register("info-module", 0, cmd_module)
 
@@ -441,7 +446,8 @@ async def cmd_info_turret(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a turret! Example: `" + prefix + "info turret Groza Mk II`")
+        await message.reply(mention_author=False,
+                            content=":x: Please provide a turret! Example: `" + prefix + "info turret Archimedes`")
         return
 
     # look up the turret object
@@ -454,9 +460,9 @@ async def cmd_info_turret(message : discord.Message, args : str, isDM : bool):
     # report unrecognised turret names
     if itemObj is None:
         if len(itemName) < 20:
-            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName + "** is not in my database! :detective:")
         else:
-            await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
 
     else:
         # build the stats embed
@@ -480,7 +486,7 @@ async def cmd_info_turret(message : discord.Message, args : str, isDM : bool):
         if itemObj.hasWiki:
             statsEmbed.add_field(name="‎", value="[Wiki](" + itemObj.wiki + ")", inline=False)
         # send the embed
-        await message.channel.send(embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 
 # botCommands.register("info-turret", 0, cmd_turret)
 
@@ -492,7 +498,7 @@ async def cmd_info_commodity(message : discord.Message, args : str, isDM : bool)
     :param str args: string containing a commodity name
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
-    await message.channel.send("Commodity items have not been implemented yet!")
+    await message.reply(mention_author=False, content="Commodity items have not been implemented yet!")
     return
 
     if isDM:
@@ -502,7 +508,8 @@ async def cmd_info_commodity(message : discord.Message, args : str, isDM : bool)
 
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a commodity! Example: `" + prefix + "info commodity Groza Mk II`")
+        await message.reply(mention_author=False,
+                            content=":x: Please provide a commodity! Example: `" + prefix + "info commodity Space Waste`")
         return
 
     # look up the commodity object
@@ -515,9 +522,9 @@ async def cmd_info_commodity(message : discord.Message, args : str, isDM : bool)
     # report unrecognised commodity names
     if itemObj is None:
         if len(itemName) < 20:
-            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName + "** is not in my database! :detective:")
         else:
-            await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
 
     else:
         # build the stats embed
@@ -535,7 +542,7 @@ async def cmd_info_commodity(message : discord.Message, args : str, isDM : bool)
         if itemObj.hasWiki:
             statsEmbed.add_field(name="‎", value="[Wiki](" + itemObj.wiki + ")", inline=False)
         # send the embed
-        await message.channel.send(embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 
 # botCommands.register("info-commodity", 0, cmd_commodity)
 
@@ -553,14 +560,14 @@ async def cmd_info_skin(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a Skin! Example: `" + prefix + "info skin tex`")
+        await message.reply(mention_author=False, content=":x: Please provide a Skin! Example: `" + prefix + "info skin tex`")
         return
     skin = args.lower()
     if skin not in bbData.builtInShipSkins:
         if len(skin) < 20:
-            await message.channel.send(":x: The **" + skin + "** skin is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: The **" + skin + "** skin is not in my database! :detective:")
         else:
-            await message.channel.send(":x: The **" + skin[0:15] + "**... skin is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: The **" + skin[0:15] + "**... skin is not in my database! :detective:")
     else:
         requestedSkin = bbData.builtInShipSkins[skin]
         # build the stats embed
@@ -631,7 +638,7 @@ async def cmd_info_medal(message : discord.Message, args : str, isDM : bool):
             statsEmbed.add_field(name="‎", value="[Wiki](" + requestedMedal.wiki + ")", inline=False)
 
         # send the embed
-        await message.channel.send(embed=statsEmbed)
+        await message.reply(mention_author=False, embed=statsEmbed)
 
 # bbCommands.register("info-medal", cmd_info_medal)
 
@@ -646,7 +653,7 @@ async def cmd_info(message : discord.Message, args : str, isDM : bool):
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
     if args == "":
-        await message.channel.send(":x: Please give an object type to look up! " \
+        await message.reply(mention_author=False, content=":x: Please give an object type to look up! " \
                                     + "(system/criminal/ship/weapon/module/turret/commodity)")
         return
 
@@ -665,7 +672,7 @@ async def cmd_info(message : discord.Message, args : str, isDM : bool):
     if argsSplit[0] in infoCmds:
         await infoCmds[argsSplit[0]](message, args[len(argsSplit[0])+1:], isDM)
     else:
-        await message.channel.send(":x: Unknown object type! (system/criminal/ship/weapon/module/turret/commodity/skin)")
+        await message.reply(mention_author=False, content=":x: Unknown object type! (system/criminal/ship/weapon/module/turret/commodity/skin)")
 
 botCommands.register("info", cmd_info, 0, allowDM=True, helpSection="gof2 info", signatureStr="**info <object-type> <name>**",
                         shortHelp="Display information about something from GOF2. Also gives useful aliases for things.",
@@ -687,7 +694,7 @@ async def cmd_showme_criminal(message : discord.Message, args : str, isDM : bool
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a criminal was given
     if args == "":
-        await message.channel.send(":x: Please provide a criminal! Example: `" + prefix + "criminal Toma Prakupy`")
+        await message.reply(mention_author=False, content=":x: Please provide a criminal! Example: `" + prefix + "criminal Toma Prakupy`")
         return
     # look up the criminal object
     criminalName = args.title()
@@ -698,13 +705,13 @@ async def cmd_showme_criminal(message : discord.Message, args : str, isDM : bool
     # report unrecognised criminal names
     if criminalObj is None:
         if len(criminalName) < 20:
-            await message.channel.send(":x: **" + criminalName + "** is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + criminalName + "** is not in my database! :detective:")
         else:
-            await message.channel.send(":x: **" + criminalName[0:15] + "**... is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + criminalName[0:15] + "**... is not in my database! :detective:")
     else:
         itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=criminalObj.icon,
                                                 titleTxt=criminalObj.name, footerTxt="Wanted criminal")
-        await message.channel.send(embed=itemEmbed)
+        await message.reply(mention_author=False, embed=itemEmbed)
 
 # botCommands.register("showme-criminal", cmd_showme_criminal)
 
@@ -722,15 +729,15 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a ship! Example: `" + prefix + "ship Groza Mk II`")
+        await message.reply(mention_author=False, content=":x: Please provide a ship! Example: `" + prefix + "ship Groza Mk II`")
         return
     if "+" in args:
         if len(args.split("+")) > 2:
-            await message.channel.send(":x: Please only provide one skin, with one `+`!")
+            await message.reply(mention_author=False, content=":x: Please only provide one skin, with one `+`!")
             return
         elif args.split("+")[1] == "":
             if len(message.attachments) < 1:
-                await message.channel.send(":x: Please either give a skin name after your `+`, or attach a 2048x2048 jpg " \
+                await message.reply(mention_author=False, content=":x: Please either give a skin name after your `+`, or attach a 2048x2048 jpg " \
                                             + "to render.")
                 return
             args, skin = args.split("+")[0], "$ATTACHEDFILE$"
@@ -752,48 +759,48 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
     # report unrecognised ship names
     if itemObj is None:
         if len(itemName) < 20:
-            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName + "** is not in my database! :detective:")
         else:
-            await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
         return
     if skin != "":
         shipData = bbData.builtInShipData[itemObj.name]
         if not shipData["skinnable"]:
-            await message.channel.send(":x: That ship is not skinnable!")
+            await message.reply(mention_author=False, content=":x: That ship is not skinnable!")
             return
         if skin in ["$ATTACHEDFILE$", "$ATTACHEDFILEFULL$"]:
             if len(botState.currentRenders) >= cfg.maxConcurrentRenders:
-                await message.channel.send(":x: My rendering queue is full currently. Please try this command again once " \
+                await message.reply(mention_author=False, content=":x: My rendering queue is full currently. Please try this command again once " \
                                             + "someone else's render has completed.")
                 return
             if itemObj.name in botState.currentRenders:
-                await message.channel.send(":x: Someone else is currently rendering this ship! Please use this command " \
+                await message.reply(mention_author=False, content=":x: Someone else is currently rendering this ship! Please use this command " \
                                             + "again once my other " + itemObj.name + " render has completed.")
                 return
 
             botState.currentRenders.append(itemObj.name)
             if len(message.attachments) < 1:
-                await message.channel.send(":x: Please either give a skin name after your `+`, " \
+                await message.reply(mention_author=False, content=":x: Please either give a skin name after your `+`, " \
                                             + "or attach a 2048x2048 jpg to render.")
                 botState.currentRenders.remove(itemObj.name)
                 return
             skinFile = message.attachments[0]
             if (not skinFile.filename.lower().endswith(".jpg")) or not (skinFile.width == 2048 and skinFile.height == 2048):
-                await message.channel.send(":x: Please either give a skin name after your `+`, " \
+                await message.reply(mention_author=False, content=":x: Please either give a skin name after your `+`, " \
                                             + "or attach a 2048x2048 jpg to render.")
                 botState.currentRenders.remove(itemObj.name)
                 return
             try:
                 await skinFile.save(CWD + os.sep + cfg.paths.rendererTempFolder + os.sep + str(message.id) + "_0.jpg")
             except (discord.HTTPException, discord.NotFound):
-                await message.channel.send(":x: I couldn't download your skin file. Did you delete it?")
+                await message.reply(mention_author=False, content=":x: I couldn't download your skin file. Did you delete it?")
                 botState.currentRenders.remove(itemObj.name)
                 return
             skinPaths = {0: CWD + os.sep + cfg.paths.rendererTempFolder + os.sep + str(message.id) + "_0.jpg"}
             disabledLayers = []
             if skin == "$ATTACHEDFILE$" and shipData["textureRegions"]:
                 layerIndices = [i for i in range(1, shipData["textureRegions"] + 1)]
-                layersPickerMsg = await message.channel.send("** **")
+                layersPickerMsg = await message.reply(mention_author=False, content="** **")
                 layersPickerMenu = ReactionSkinRegionPicker(layersPickerMsg, message.author, cfg.toolUseConfirmTimeoutSeconds,
                                                             numRegions=shipData["textureRegions"])
                 pickedLayers = []
@@ -801,7 +808,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
                 if cfg.defaultEmojis.spiral in menuOutput:
                     pickedLayers = layerIndices
                 elif cfg.defaultEmojis.cancel in menuOutput:
-                    await message.channel.send("🛑 Skin render cancelled.")
+                    await message.reply(mention_author=False, content="🛑 Skin render cancelled.")
                     for skinPath in skinPaths.values():
                         os.remove(skinPath)
                     botState.currentRenders.remove(itemObj.name)
@@ -823,7 +830,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
                     if cfg.defaultEmojis.spiral in menuOutput:
                         disabledLayers = remainingIndices
                     elif cfg.defaultEmojis.cancel in menuOutput:
-                        await message.channel.send("🛑 Skin render cancelled.")
+                        await message.reply(mention_author=False, content="🛑 Skin render cancelled.")
                         for skinPath in skinPaths.values():
                             os.remove(skinPath)
                         botState.currentRenders.remove(itemObj.name)
@@ -839,7 +846,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
                     return newMessage.author == message.author and (newMessage.content.lower().startswith(prefix + "cancel") \
                             or len(newMessage.attachments) > 0)
                 for regionNum in pickedLayers:
-                    nextLayerMsg = await message.channel.send("Please send your image for texture region #" + str(regionNum) \
+                    nextLayerMsg = await message.reply(mention_author=False, content="Please send your image for texture region #" + str(regionNum) \
                                                                 + ", or `" + prefix \
                                                                 + "cancel` to cancel the render, within " \
                                                                 + str(cfg.toolUseConfirmTimeoutSeconds) + " seconds.")
@@ -855,7 +862,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
                         return
                     else:
                         if imgMsg.content.lower().startswith(prefix + "cancel"):
-                            await message.channel.send("🛑 Skin render cancelled.")
+                            await message.reply(mention_author=False, content="🛑 Skin render cancelled.")
                             for skinPath in skinPaths.values():
                                 os.remove(skinPath)
                             botState.currentRenders.remove(itemObj.name)
@@ -863,7 +870,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
                         nextLayer = imgMsg.attachments[0]
                         if (not nextLayer.filename.lower().endswith(".jpg")) or \
                                 not (nextLayer.width == 2048 and nextLayer.height == 2048):
-                            await message.channel.send(":x: Please only give 2048x2048 jpgs!\n🛑 Skin render cancelled.")
+                            await message.reply(mention_author=False, content=":x: Please only give 2048x2048 jpgs!\n🛑 Skin render cancelled.")
                             for skinPath in skinPaths.values():
                                 os.remove(skinPath)
                             botState.currentRenders.remove(itemObj.name)
@@ -872,7 +879,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
                             await nextLayer.save(CWD + os.sep + cfg.paths.rendererTempFolder + os.sep + str(message.id) \
                                                     + "_" + str(regionNum) + ".jpg")
                         except (discord.HTTPException, discord.NotFound):
-                            await message.channel.send(":x: I couldn't download your skin file. Did you delete it?\n" \
+                            await message.reply(mention_author=False, content=":x: I couldn't download your skin file. Did you delete it?\n" \
                                                         + "🛑 Skin render cancelled.")
                             for skinPath in skinPaths.values():
                                 os.remove(skinPath)
@@ -880,7 +887,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
                             return
                         skinPaths[regionNum] = CWD + os.sep + cfg.paths.rendererTempFolder + os.sep + str(message.id) + "_" \
                                                 + str(regionNum) + ".jpg"
-            waitMsg = await message.channel.send("🤖 Render started! I'll ping you when I'm done.")
+            waitMsg = await message.reply(mention_author=False, content="🤖 Render started! I'll ping you when I'm done.")
 
             renderPath = shipData["path"] + os.sep + "skins" + os.sep + str(message.id) + "-RENDER.png"
             outSkinPath = shipData["path"] + os.sep + "skins" + os.sep + str(message.id) + ".jpg"
@@ -888,9 +895,10 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
             try:
                 await shipRenderer.renderShip(str(message.id), shipData["path"], shipData["model"], skinPaths, disabledLayers,
                                                 cfg.skinRenderShowmeResolution[0], cfg.skinRenderShowmeResolution[1],
+                                                cfg.skinRenderShowmeSamples,
                                                 full=skin == "$ATTACHEDFILEFULL$")
             except shipRenderer.RenderFailed:
-                await message.channel.send(message.author.mention + "\n🥺 Render failed! The error has been logged, " \
+                await message.reply(mention_author=True, content="🥺 Render failed! The error has been logged, " \
                                             + "please try a different ship.")
                 botState.logger.log("Main", "cmd_showme_ship", f"Ship render failed with args: '{args}'")
             else:
@@ -905,7 +913,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
                                                             authorName="Skin Render Complete!",
                                                             icon=robotIcon,
                                                             footerTxt="Custom skinned " + itemObj.name.capitalize())
-                    await message.channel.send(message.author.mention, embed=renderEmbed)
+                    await message.reply(mention_author=True, embed=renderEmbed)
 
             botState.currentRenders.remove(itemObj.name)
             try:
@@ -926,25 +934,25 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
             skin = skin.lstrip(" ").lower()
             if skin not in bbData.builtInShipSkins:
                 if len(itemName) < 20:
-                    await message.channel.send(":x: The **" + skin + "** skin is not in my database! :detective:")
+                    await message.reply(mention_author=False, content=":x: The **" + skin + "** skin is not in my database! :detective:")
                 else:
-                    await message.channel.send(":x: The **" + skin[0:15] + "**... skin is not in my database! :detective:")
+                    await message.reply(mention_author=False, content=":x: The **" + skin[0:15] + "**... skin is not in my database! :detective:")
             elif skin not in bbData.builtInShipData[itemObj.name]["compatibleSkins"]:
-                await message.channel.send(":x: That skin is not compatible with the **" + itemObj.name + "**!")
+                await message.reply(mention_author=False, content=":x: That skin is not compatible with the **" + itemObj.name + "**!")
 
             else:
                 itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(),
                                                         img=bbData.builtInShipSkins[skin].shipRenders[itemObj.name][0],
                                                         titleTxt=itemObj.name,
                                                         footerTxt="Custom skin: " + skin.capitalize())
-                await message.channel.send(embed=itemEmbed)
+                await message.reply(mention_author=False, embed=itemEmbed)
     else:
         if not itemObj.hasIcon:
-            await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")
+            await message.reply(mention_author=False, content=":x: I don't have an icon for **" + itemObj.name.title() + "**!")
         else:
             itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name,
                                                     footerTxt=itemObj.manufacturer.capitalize() + " ship")
-            await message.channel.send(embed=itemEmbed)
+            await message.reply(mention_author=False, embed=itemEmbed)
 
 # botCommands.register("showme-ship", cmd_showme_ship)
 
@@ -962,7 +970,7 @@ async def cmd_showme_weapon(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a weapon! Example: `" + prefix + "weapon Nirai Impulse EX 1`")
+        await message.reply(mention_author=False, content=":x: Please provide a weapon! Example: `" + prefix + "weapon Nirai Impulse EX 1`")
         return
     # look up the weapon object
     itemName = args.title()
@@ -973,16 +981,16 @@ async def cmd_showme_weapon(message : discord.Message, args : str, isDM : bool):
     # report unrecognised weapon names
     if itemObj is None:
         if len(itemName) < 20:
-            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName + "** is not in my database! :detective:")
         else:
-            await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
     else:
         if not itemObj.hasIcon:
-            await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")
+            await message.reply(mention_author=False, content=":x: I don't have an icon for **" + itemObj.name.title() + "**!")
         else:
             itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name,
                                                     footerTxt="Level " + str(itemObj.techLevel) + " weapon")
-            await message.channel.send(embed=itemEmbed)
+            await message.reply(mention_author=False, embed=itemEmbed)
 
 # botCommands.register("showme-weapon", cmd_showme_weapon)
 
@@ -1000,7 +1008,7 @@ async def cmd_showme_module(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a module! Example: `" + prefix + "module Groza Mk II`")
+        await message.reply(mention_author=False, content=":x: Please provide a module! Example: `" + prefix + "module Groza Mk II`")
         return
     # look up the module object
     itemName = args.title()
@@ -1011,16 +1019,16 @@ async def cmd_showme_module(message : discord.Message, args : str, isDM : bool):
     # report unrecognised module names
     if itemObj is None:
         if len(itemName) < 20:
-            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName + "** is not in my database! :detective:")
         else:
-            await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
     else:
         if not itemObj.hasIcon:
-            await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")
+            await message.reply(mention_author=False, content=":x: I don't have an icon for **" + itemObj.name.title() + "**!")
         else:
             itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name,
                                                     footerTxt="Level " + str(itemObj.techLevel) + " module")
-            await message.channel.send(embed=itemEmbed)
+            await message.reply(mention_author=False, embed=itemEmbed)
 
 # botCommands.register("showme-module", cmd_showme_module)
 
@@ -1037,7 +1045,7 @@ async def cmd_showme_turret(message : discord.Message, args : str, isDM : bool):
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a turret! Example: `" + prefix + "turret Groza Mk II`")
+        await message.reply(mention_author=False, content=":x: Please provide a turret! Example: `" + prefix + "turret Groza Mk II`")
         return
     # look up the turret object
     itemName = args.title()
@@ -1048,16 +1056,16 @@ async def cmd_showme_turret(message : discord.Message, args : str, isDM : bool):
     # report unrecognised turret names
     if itemObj is None:
         if len(itemName) < 20:
-            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName + "** is not in my database! :detective:")
         else:
-            await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
     else:
         if not itemObj.hasIcon:
-            await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")
+            await message.reply(mention_author=False, content=":x: I don't have an icon for **" + itemObj.name.title() + "**!")
         else:
             itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name,
                                                     footerTxt="Level " + str(itemObj.techLevel) + " turret")
-            await message.channel.send(embed=itemEmbed)
+            await message.reply(mention_author=False, embed=itemEmbed)
 
 # botCommands.register("showme-turret", cmd_showme_turret)
 
@@ -1068,7 +1076,7 @@ async def cmd_showme_commodity(message : discord.Message, args : str, isDM : boo
     :param str args: string containing a commodity name
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
-    await message.channel.send("Commodity items have not been implemented yet!")
+    await message.reply(mention_author=False, content="Commodity items have not been implemented yet!")
     return
     if isDM:
         prefix = cfg.defaultCommandPrefix
@@ -1076,7 +1084,7 @@ async def cmd_showme_commodity(message : discord.Message, args : str, isDM : boo
         prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
     # verify a item was given
     if args == "":
-        await message.channel.send(":x: Please provide a commodity! Example: `" + prefix + "commodity Groza Mk II`")
+        await message.reply(mention_author=False, content=":x: Please provide a commodity! Example: `" + prefix + "commodity Groza Mk II`")
         return
     # look up the commodity object
     itemName = args.title()
@@ -1087,15 +1095,15 @@ async def cmd_showme_commodity(message : discord.Message, args : str, isDM : boo
     # report unrecognised commodity names
     if itemObj is None:
         if len(itemName) < 20:
-            await message.channel.send(":x: **" + itemName + "** is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName + "** is not in my database! :detective:")
         else:
-            await message.channel.send(":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
+            await message.reply(mention_author=False, content=":x: **" + itemName[0:15] + "**... is not in my database! :detective:")
     else:
         if not itemObj.hasIcon:
-            await message.channel.send(":x: I don't have an icon for **" + itemObj.name.title() + "**!")
+            await message.reply(mention_author=False, content=":x: I don't have an icon for **" + itemObj.name.title() + "**!")
         else:
             itemEmbed = lib.discordUtil.makeEmbed(col=discord.Colour.random(), img=itemObj.icon, titleTxt=itemObj.name)
-            await message.channel.send(embed=itemEmbed)
+            await message.reply(mention_author=False, embed=itemEmbed)
 
 # botCommands.register("showme-commodity", cmd_showme_commodity)
 
@@ -1110,12 +1118,12 @@ async def cmd_showme(message : discord.Message, args : str, isDM : bool):
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
     if args == "":
-        await message.channel.send(":x: Please give an object type to look up! " \
+        await message.reply(mention_author=False, content=":x: Please give an object type to look up! " \
                                     + "(system/criminal/ship/weapon/module/turret/commodity)")
         return
     argsSplit = args.split(" ")
     if argsSplit[0] not in ["system", "criminal", "ship", "weapon", "module", "turret", "commodity"]:
-        await message.channel.send(":x: Invalid object type! (system/criminal/ship/weapon/module/turret/commodity)")
+        await message.reply(mention_author=False, content=":x: Invalid object type! (system/criminal/ship/weapon/module/turret/commodity)")
         return
     if argsSplit[0] == "criminal":
         await cmd_showme_criminal(message, args[9:], isDM)
@@ -1130,7 +1138,7 @@ async def cmd_showme(message : discord.Message, args : str, isDM : bool):
     elif argsSplit[0] == "commodity":
         await cmd_showme_commodity(message, args[10:], isDM)
     else:
-        await message.channel.send(":x: Unknown object type! (criminal/ship/weapon/module/turret/commodity)")
+        await message.reply(mention_author=False, content=":x: Unknown object type! (criminal/ship/weapon/module/turret/commodity)")
 
 botCommands.register("showme", cmd_showme, 0, allowDM=True, aliases=["show", "render"], helpSection="gof2 info",
                         signatureStr="**showme <object-type> <name>** *[[full]+ [skinName]]*",
