@@ -422,7 +422,7 @@ class BountyDivision(Serializable):
             tlBounties.clear()
         if includeEscaped:
             for tlBounties in self.escapedBounties.values():
-                for bty in tlBounties:
+                for bty in tlBounties.values():
                     await bty.respawnTT.forceExpire(callExpiryFunc=False)
                 tlBounties.clear()
         if wasFull:
