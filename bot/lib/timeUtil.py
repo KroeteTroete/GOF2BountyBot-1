@@ -52,4 +52,4 @@ def tomorrow(today : datetime = None) -> datetime:
     """
     if today is None:
         today = datetime.utcnow()
-    return today.replace(hour=0, minute=0, second=0, microsecond=0, day=today.day + 1)
+    return today.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)

@@ -871,7 +871,7 @@ class Ship(GameItem):
         modules = [moduleItemFactory.fromDict(d) for d in shipDict.get("modules", [])]
         turrets = [TurretWeapon.fromDict(d) for d in shipDict.get("turrets", [])]
         shipUpgrades = [shipUpgrade.ShipUpgrade.fromDict(d) for d in shipDict.get("shipUpgrades", [])]
-        ignoredData = ("model","compatibleSkins", "normSpec", "numSecondaries", \
+        ignoredData = ("model","compatibleSkins", "normSpec", "maxSecondaries", \
                         "saveDue", "skinnable", "textureRegions", "path", "type",
                         "weapons", "modules", "turrets", "shipUpgrades", "emoji")
 

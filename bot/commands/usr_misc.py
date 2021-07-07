@@ -96,7 +96,7 @@ async def cmd_how_to_play(message : discord.Message, args : str, isDM : bool):
     try:
         newBountiesChannelStr = ""
         if not isDM:
-            requestedBBGuild: basedGuild.BasedGuild = botState.guildsDB.addDcGuild(message.guild)
+            requestedBBGuild: basedGuild.BasedGuild = botState.guildsDB.getGuild(message.guild)
             if requestedBBGuild.hasBountyBoardChannels:
                 newBountiesChannelStr = " in " + requestedBBGuild.bountiesDB.divisionForLevel(0).bountyBoardChannel.channel.mention
             elif requestedBBGuild.hasAnnounceChannel:
