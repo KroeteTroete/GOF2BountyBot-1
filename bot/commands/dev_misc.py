@@ -122,12 +122,7 @@ async def dev_cmd_reset_has_poll(message : discord.Message, args : str, isDM : b
     if menusRemoved:
         await message.reply(f"Ownership of {menusRemoved} removed successfuly.")
     else:
-<<<<<<< HEAD
-        await message.channel.send("This user has no polls!")
-=======
-        botState.usersDB.getUser(int(args.lstrip("<@!").rstrip(">"))).pollOwned = False
-    await message.reply(mention_author=False, content="Done!")
->>>>>>> master
+        await message.reply(mention_author=False, content="This user has no polls!")
 
 botCommands.register("reset-has-poll", dev_cmd_reset_has_poll, 3, allowDM=True, useDoc=True)
 

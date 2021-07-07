@@ -23,7 +23,6 @@ async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : b
     :param str args: empty or a guild id
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
-<<<<<<< HEAD
     argsSplit = args.split(" ")
     if len(argsSplit) < 2:
         await message.reply(":x: Please specify a guild (ID, this or all) and division (name, tl or all)")
@@ -65,27 +64,6 @@ async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : b
         useTL = False
         if divStr not in cfg.bountyDivisions:
             await message.reply(f":x: Unknown division name. Must be one of: {', '.join(cfg.bountyDivisions)}")
-=======
-    if args == "all":
-        for guild in botState.guildsDB.getGuilds():
-            if not guild.bountiesDisabled:
-                if guild.hasBountyBoardChannel:
-                    await guild.bountyBoardChannel.clear()
-                guild.bountiesDB.clearBounties()
-        await message.reply(mention_author=False, content=":ballot_box_with_check: All active bounties cleared.")
-        return
-    elif args == "":
-        if isDM:
-            await message.reply(mention_author=False, content="Give either an id or 'all', or call from within a guild")
-            return
-        callingBBGuild = botState.guildsDB.getGuild(message.guild.id)
-        if callingBBGuild.bountiesDisabled:
-            await message.reply(mention_author=False, content="This guild has bounties disabled.")
-            return
-    elif lib.stringTyping.isInt(args):
-        if not botState.guildsDB.idExists(int(args)):
-            await message.reply(mention_author=False, content="Unrecognised guild")
->>>>>>> master
             return
             
 
@@ -109,25 +87,13 @@ async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : b
                 if e := t.exception():
                     botState.logger.log("dev_bounties", "dev_cmd_clear_bounties", str(e), category="bountiesDB",
                                         exception=e)
-        await message.channel.send(":ballot_box_with_check: Active bounties cleared for all guilds.")
+        await message.reply(":ballot_box_with_check: Active bounties cleared for all guilds.", mention_author=False)
     else:
         if callingBBGuild.bountiesDisabled:
             await message.reply((("'" + callingBBGuild.dcGuild.name + "' ") if callingBBGuild.dcGuild is not None \
                                         else "The requested guild ") + " has bounties disabled.",
                                 mention_author=False)
             return
-<<<<<<< HEAD
-=======
-    else:
-        await message.reply(mention_author=False, content=":x: Unrecognised parameter: " + args)
-        return
-
-    if callingBBGuild.hasBountyBoardChannel:
-        await callingBBGuild.bountyBoardChannel.clear()
-    callingBBGuild.bountiesDB.clearBounties()
-    await message.reply(mention_author=False, content=":ballot_box_with_check: Active bounties cleared" + ((" for '" + callingBBGuild.dcGuild.name \
-                                + "'.") if callingBBGuild.dcGuild is not None else "."))
->>>>>>> master
 
         if allDivs:
             divs = callingBBGuild.bountiesDB.divisions.values()
@@ -152,8 +118,8 @@ async def dev_cmd_clear_bounties(message : discord.Message, args : str, isDM : b
                                                 exception=e)
             await div.clear(includeEscaped=True)
 
-        await message.channel.send(":ballot_box_with_check: Active bounties cleared" + ((" for '" + callingBBGuild.dcGuild.name \
-                                    + "'.") if callingBBGuild.dcGuild is not None else "."))
+        await message.reply(":ballot_box_with_check: Active bounties cleared" + ((" for '" + callingBBGuild.dcGuild.name \
+                            + "'.") if callingBBGuild.dcGuild is not None else "."), mention_author=False)
 
 botCommands.register("clear-bounties", dev_cmd_clear_bounties, 3, allowDM=True, helpSection="bounties", useDoc=True)
 
@@ -304,7 +270,6 @@ async def dev_cmd_resetnewbountycool(message : discord.Message, args : str, isDM
         await message.reply(":x: Please specify a guild (ID, this or all) and division (name, tl or all)")
         return
 
-<<<<<<< HEAD
     guildStr = argsSplit[0]
     divStr = args[len(guildStr) + 1:]
 
@@ -319,7 +284,7 @@ async def dev_cmd_resetnewbountycool(message : discord.Message, args : str, isDM
     else:
         guildID = int(guildStr)
         if not botState.guildsDB.idExists(guildID):
-            await message.channel.send(f"Unrecognised guild ID: {guildID}")
+            await message.reply(mention_author=False, content=f"Unrecognised guild ID: {guildID}")
             return
         callingBBGuild = botState.guildsDB.getGuild(guildID)
     if not allGuilds and callingBBGuild.bountiesDisabled:
@@ -341,24 +306,6 @@ async def dev_cmd_resetnewbountycool(message : discord.Message, args : str, isDM
         useTL = False
         if divStr not in cfg.bountyDivisions:
             await message.reply(f":x: Unknown division name. Must be one of: {', '.join(cfg.bountyDivisions)}")
-=======
-    if guildStr == "":
-        if isDM:
-            await message.reply(mention_author=False, content="Either give a guild id or call from within a guild")
-            return
-        callingBBGuild = botState.guildsDB.getGuild(message.guild.id)
-        if callingBBGuild.bountiesDisabled:
-            await message.reply(mention_author=False, content="This guild has bounties disabled.")
-            return
-    elif lib.stringTyping.isInt(guildStr):
-        if not botState.guildsDB.idExists(int(guildStr)):
-            await message.reply(mention_author=False, content="Unrecognised guild")
-            return
-        callingBBGuild = botState.guildsDB.getGuild(int(guildStr))
-        if callingBBGuild.bountiesDisabled:
-            await message.reply((("'" + callingBBGuild.dcGuild.name + "' ") if callingBBGuild.dcGuild is not None \
-                                        else "The requested guild ") + " has bounties disabled.", mention_author=False)
->>>>>>> master
             return
 
     if allGuilds:
@@ -382,28 +329,27 @@ async def dev_cmd_resetnewbountycool(message : discord.Message, args : str, isDM
                 if e := t.exception():
                     botState.logger.log("dev_bounties", "dev_cmd_resetnewbountycool", str(e), category="bountiesDB",
                                         exception=e)
-        await message.channel.send(":ballot_box_with_check: All bounty cooldowns reset across all guilds!")
+        await message.reply(mention_author=False, content=":ballot_box_with_check: All bounty cooldowns reset across all guilds!")
     else:
-<<<<<<< HEAD
         if allDivs:
             await callingBBGuild.bountiesDB.resetAllNewBountyTTs()
-            await message.channel.send(":ballot_box_with_check: All bounty cooldowns reset for '" \
+            await message.reply(mention_author=False, content=":ballot_box_with_check: All bounty cooldowns reset for '" \
                                         + callingBBGuild.dcGuild.name + "'")
         elif useTL:
             div = callingBBGuild.bountiesDB.divisionForLevel(tl)
             if div.isFull():
-                await message.channel.send(":x: That division is full!")
+                await message.reply(mention_author=False, content=":x: That division is full!")
             else:
                 await div.resetNewBountyCool()
-                await message.channel.send(":ballot_box_with_check: Division " + nameForDivision(div).title() \
+                await message.reply(mention_author=False, content=":ballot_box_with_check: Division " + nameForDivision(div).title() \
                                             + " bounty cooldown reset for '" + callingBBGuild.dcGuild.name + "'")
         else:
             div = callingBBGuild.bountiesDB.divisionForName(divStr)
             if div.isFull():
-                await message.channel.send(":x: That division is full!")
+                await message.reply(mention_author=False, content=":x: That division is full!")
             else:
                 await div.resetNewBountyCool()
-                await message.channel.send(":ballot_box_with_check: Division " + divStr.title() \
+                await message.reply(mention_author=False, content=":ballot_box_with_check: Division " + divStr.title() \
                                             + " bounty cooldown reset for '" + callingBBGuild.dcGuild.name + "'")
 
 
@@ -437,7 +383,7 @@ async def dev_cmd_set_temp(message : discord.Message, args : str, isDM : bool):
     else:
         guildID = int(guildStr)
         if not botState.guildsDB.idExists(guildID):
-            await message.channel.send(f"Unrecognised guild ID: {guildID}")
+            await message.reply(mention_author=False, content=f"Unrecognised guild ID: {guildID}")
             return
         callingBBGuild = botState.guildsDB.getGuild(guildID)
     if not allGuilds and callingBBGuild.bountiesDisabled:
@@ -445,13 +391,6 @@ async def dev_cmd_set_temp(message : discord.Message, args : str, isDM : bool):
                             + "that guild" if callingBBGuild.dcGuild is None else callingBBGuild.dcGuild.name \
                             + "!")
         return
-=======
-        await message.reply(mention_author=False, content=":x: Unrecognised parameter: " + guildStr)
-        return
-
-    await callingBBGuild.newBountyTT.forceExpire()
-    await message.reply(mention_author=False, content=":ballot_box_with_check: New bounty cooldown reset for '" + callingBBGuild.dcGuild.name + "'")
->>>>>>> master
 
     allDivs = False
     if divStr == "all":
@@ -471,7 +410,7 @@ async def dev_cmd_set_temp(message : discord.Message, args : str, isDM : bool):
     try:
         temp = float(tempStr)
     except ValueError:
-        await message.channel.send(":x: Incorrect temp, must be float '" + tempStr + "'")
+        await message.reply(mention_author=False, content=":x: Incorrect temp, must be float '" + tempStr + "'")
     else:
         if allGuilds:
             currentGuild: basedGuild.BasedGuild = None
@@ -515,7 +454,6 @@ async def dev_cmd_canmakebounty(message : discord.Message, args : str, isDM : bo
         await message.reply(":x: Please specify a guild (ID, this or here) and division (name, tl or all)")
         return
 
-<<<<<<< HEAD
     guildStr = argsSplit[0]
     divStr = args[len(guildStr) + 1:]
 
@@ -527,7 +465,7 @@ async def dev_cmd_canmakebounty(message : discord.Message, args : str, isDM : bo
     else:
         guildID = int(guildStr)
         if not botState.guildsDB.idExists(guildID):
-            await message.channel.send(f"Unrecognised guild ID: {guildID}")
+            await message.reply(mention_author=False, content=f"Unrecognised guild ID: {guildID}")
             return
         callingBBGuild = botState.guildsDB.getGuild(guildID)
     if callingBBGuild.bountiesDisabled:
@@ -562,34 +500,6 @@ async def dev_cmd_canmakebounty(message : discord.Message, args : str, isDM : bo
     else:
         div = callingBBGuild.bountiesDB.divisionForName(divStr)
         msgEmbed.add_field(name=nameForDivision(div), value=str(not div.isFull()))
-=======
-    if guildStr == "":
-        if isDM:
-            await message.reply(mention_author=False, content="Either give a guild id or call from within a guild")
-            return
-        callingBBGuild = botState.guildsDB.getGuild(message.guild.id)
-        if callingBBGuild.bountiesDisabled:
-            await message.reply(mention_author=False, content="This guild has bounties disabled.")
-            return
-    elif lib.stringTyping.isInt(guildStr):
-        if not botState.guildsDB.idExists(int(guildStr)):
-            await message.reply(mention_author=False, content="Unrecognised guild")
-            return
-        callingBBGuild = botState.guildsDB.getGuild(int(guildStr))
-        if callingBBGuild.bountiesDisabled:
-            await message.reply((("'" + callingBBGuild.dcGuild.name + "' ") if callingBBGuild.dcGuild is not None \
-                                else "The requested guild ") + " has bounties disabled.", mention_author=False)
-            return
-    else:
-        await message.reply(mention_author=False, content=":x: Unrecognised parameter: " + guildStr)
-        return
-
-    # ensure the given faction exists
-    if not callingBBGuild.bountiesDB.factionExists(newFaction):
-        await message.reply(mention_author=False, content="not a faction: '" + newFaction + "'")
-    else:
-        await message.reply(callingBBGuild.bountiesDB.factionCanMakeBounty(newFaction.lower()), mention_author=False)
->>>>>>> master
 
     await message.reply(embed=msgEmbed)
 
@@ -616,7 +526,6 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
     """
     guildStr = args.split("+")[0].strip()
     args = args[len(guildStr):].lstrip()
-<<<<<<< HEAD
     argsSplit = args.split("+")
     allGuilds = False
     if guildStr in ["this", "here"]:
@@ -629,7 +538,7 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
     else:
         guildID = int(guildStr)
         if not botState.guildsDB.idExists(guildID):
-            await message.channel.send(f"Unrecognised guild ID: {guildID}")
+            await message.reply(mention_author=False, content=f"Unrecognised guild ID: {guildID}")
             return
         callingBBGuild = botState.guildsDB.getGuild(guildID)
     if not allGuilds and callingBBGuild.bountiesDisabled:
@@ -639,27 +548,6 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
         return
     if not allGuilds and not callingBBGuild.bountiesDB.canMakeBounty():
         await message.reply(":x: No space for bounties in this guild!")
-=======
-    if guildStr == "":
-        if isDM:
-            await message.reply(mention_author=False, content="Either give a guild id or call from within a guild")
-            return
-        callingBBGuild = botState.guildsDB.getGuild(message.guild.id)
-        if callingBBGuild.bountiesDisabled:
-            await message.reply(mention_author=False, content="This guild has bounties disabled.")
-            return
-    elif lib.stringTyping.isInt(guildStr):
-        if not botState.guildsDB.idExists(int(guildStr)):
-            await message.reply(mention_author=False, content="Unrecognised guild")
-            return
-        callingBBGuild = botState.guildsDB.getGuild(int(guildStr))
-        if callingBBGuild.bountiesDisabled:
-            await message.reply(mention_author=False, content=(("'" + callingBBGuild.dcGuild.name + "' ") if callingBBGuild.dcGuild is not None \
-                                        else "The requested guild ") + " has bounties disabled.")
-            return
-    else:
-        await message.reply(mention_author=False, content=":x: Unrecognised parameter: " + guildStr)
->>>>>>> master
         return
 
     # if no args were given, generate a completely random bounty
@@ -798,9 +686,8 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
                 if e := t.exception():
                     botState.logger.log("dev_bounties", "dev_cmd_make_bounty", str(e), category="bountiesDB",
                                         exception=e)
-        await message.channel.send(f"Criminal spawned into {len(spawnTasks)} guilds!")
+        await message.reply(mention_author=False, content=f"Criminal spawned into {len(spawnTasks)} guilds!")
     else:
-<<<<<<< HEAD
         if newTL == -1:
             div = random.choice(list(callingBBGuild.bountiesDB.divisions.values()))
             while div.isFull():
@@ -813,11 +700,7 @@ async def dev_cmd_make_bounty(message : discord.Message, args : str, isDM : bool
             newBounty = bounty.Bounty(division=div, config=config.generate(div))
             callingBBGuild.bountiesDB.addBounty(newBounty)
             await callingBBGuild.announceNewBounty(newBounty)
-            await message.channel.send(f"Criminal spawned!")
-=======
-        await message.reply(mention_author=False, content="incorrect syntax. give +faction +name +route +start +end +answer +reward +endtime +icon")
-        return
->>>>>>> master
+            await message.reply(mention_author=False, content=f"Criminal spawned!")
 
 
 botCommands.register("make-bounty", dev_cmd_make_bounty, 3, forceKeepArgsCasing=True, allowDM=True, helpSection="bounties",
@@ -848,7 +731,6 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
     """
     guildStr = args.split("+")[0].strip()
     args = args[len(guildStr):].lstrip()
-<<<<<<< HEAD
     argsSplit = args.split("+")[1:]
     allGuilds = False
     if guildStr in ["this", "here"]:
@@ -861,7 +743,7 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
     else:
         guildID = int(guildStr)
         if not botState.guildsDB.idExists(guildID):
-            await message.channel.send(f"Unrecognised guild ID: {guildID}")
+            await message.reply(mention_author=False, content=f"Unrecognised guild ID: {guildID}")
             return
         callingBBGuild = botState.guildsDB.getGuild(guildID)
     if not allGuilds and callingBBGuild.bountiesDisabled:
@@ -871,27 +753,6 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
         return
     if not allGuilds and not callingBBGuild.bountiesDB.canMakeBounty():
         await message.reply(":x: No space for bounties in this guild!")
-=======
-    if guildStr == "":
-        if isDM:
-            await message.reply(mention_author=False, content="Either give a guild id or call from within a guild")
-            return
-        callingBBGuild = botState.guildsDB.getGuild(message.guild.id)
-        if callingBBGuild.bountiesDisabled:
-            await message.reply(mention_author=False, content="This guild has bounties disabled.")
-            return
-    elif lib.stringTyping.isInt(guildStr):
-        if not botState.guildsDB.idExists(int(guildStr)):
-            await message.reply(mention_author=False, content="Unrecognised guild")
-            return
-        callingBBGuild = botState.guildsDB.getGuild(int(guildStr))
-        if callingBBGuild.bountiesDisabled:
-            await message.reply(mention_author=False, content=(("'" + callingBBGuild.dcGuild.name + "' ") if callingBBGuild.dcGuild is not None \
-                                        else "The requested guild ") + " has bounties disabled.")
-            return
-    else:
-        await message.reply(mention_author=False, content=":x: Unrecognised parameter: " + guildStr)
->>>>>>> master
         return
 
     # if no arguments were given, generate a completely random bounty
@@ -903,22 +764,14 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
         elif lib.stringTyping.isMention(newName):
             newName = int(argsSplit[0].lstrip("<@!").rstrip(">"))
         # verify the requested user
-<<<<<<< HEAD
         requestedUser = botState.client.get_user(newName)
         if requestedUser is None:
-            await message.channel.send(":x: Player not found!")
-=======
-        requestedID = int(args.lstrip("<@!").rstrip(">"))
-        requestedUser = botState.client.get_user(requestedID)
-        if not lib.stringTyping.isInt(requestedID) or requestedUser is None:
             await message.reply(mention_author=False, content=":x: Player not found!")
->>>>>>> master
             return
         newTL = gameMaths.calculateUserBountyHuntingLevel(requestedUser.bountyHuntingXP)
         # create a new bounty at random for the specified user
         config = bountyConfig.BountyConfig(name="<@" + str(newName) + ">", isPlayer=True,
                                             icon=str(requestedUser.avatar_url_as(size=64)),
-<<<<<<< HEAD
                                             aliases=[lib.discordUtil.userTagOrDiscrim(newName)],
                                             techLevel=newTL,
                                             faction=argsSplit[1] if len(argsSplit) == 2 else "")
@@ -930,34 +783,6 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
                             + "- +`<player>` +`<faction>` +`<route>` +`<start>` " \
                                 + "+`<end>` +`<answer>` +`<reward>` +`<endtime>` +`<icon>`")
         return
-=======
-                                            aliases=[lib.discordUtil.userTagOrDiscrim(args)])
-        newBounty = bounty.Bounty(owningDB=callingBBGuild.bountiesDB, config=newCfg)
-
-    # if the faction is also given
-    elif len(args.split("+")) == 2:
-        # verify the user
-        requestedID = int(args.split(" ")[0].lstrip("<@!").rstrip(">"))
-        if not lib.stringTyping.isInt(requestedID) or (botState.client.get_user(int(requestedID))) is None:
-            await message.reply(mention_author=False, content=":x: Player not found!")
-            return
-        # create a bounty at random for the specified user and faction
-        newFaction = args.split("+")[1]
-        newCfg = bountyConfig.BountyConfig(name="<@" + str(requestedID) + ">", isPlayer=True, faction=newFaction,
-                                    icon=str(botState.client.get_user(requestedID).avatar_url_as(size=64)),
-                                    aliases=[lib.discordUtil.userTagOrDiscrim(args.split(" ")[0])])
-        newBounty = bounty.Bounty(owningDB=callingBBGuild.bountiesDB, config=newCfg)
-
-    # if all arguments are given
-    elif len(args.split("+")) == 10:
-        # [1:] remove starting empty string before + split
-        bData = args.split("+")[1:]
-
-        # parse the requested faction
-        newFaction = bData[0].rstrip(" ")
-        if newFaction == "auto":
-            newFaction = ""
->>>>>>> master
 
     # if all args were given, generate a completely custom bounty
     # 9 args plus account for empty string at the start of the split = split of 10 elements
@@ -974,21 +799,10 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
         elif lib.stringTyping.isMention(newName):
             newName = int(argsSplit[0].lstrip("<@!").rstrip(">"))
         # verify the requested user
-<<<<<<< HEAD
         requestedUser = botState.client.get_user(newName)
         if requestedUser is None:
-            await message.channel.send(":x: Player not found!")
-            return
-=======
-        requestedID = int(newName.lstrip("<@!").rstrip(">"))
-        if not lib.stringTyping.isInt(requestedID) or (botState.client.get_user(int(requestedID))) is None:
             await message.reply(mention_author=False, content=":x: Player not found!")
             return
-        # ensure no bounty already exists for this user
-        if callingBBGuild.bountiesDB.bountyNameExists(newName):
-            await message.reply(mention_author=False, content=":x: That pilot is already wanted!")
-            return
->>>>>>> master
 
         # parse the given faction
         newFaction = bData[1].rstrip(" ")
@@ -1052,7 +866,7 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
             if not currentGuild.bountiesDisabled:
                 # ensure the player does not already exist as a bounty
                 if currentGuild.bountiesDB.bountyNameExists(f"<@{newName}>"):
-                    await message.channel.send(f"Skipping guild: {currentGuild.dcGuild.name if currentGuild.dcGuild is not None else ''}#{currentGuild.id} - criminal with this name already exists")
+                    await message.reply(mention_author=False, content=f"Skipping guild: {currentGuild.dcGuild.name if currentGuild.dcGuild is not None else ''}#{currentGuild.id} - criminal with this name already exists")
                 else:
                     div = currentGuild.bountiesDB.divisionForLevel(newTL)
                     if div.isFull():
@@ -1067,10 +881,10 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
                 if e := t.exception():
                     botState.logger.log("dev_bounties", "dev_cmd_make_bounty", str(e), category="bountiesDB",
                                         exception=e)
-        await message.channel.send(f"Criminal spawned into {len(spawnTasks)} guilds!")
+        await message.reply(mention_author=False, content=f"Criminal spawned into {len(spawnTasks)} guilds!")
     else:
         if callingBBGuild.bountiesDB.bountyNameExists(f"<@{newName}>"):
-            await message.channel.send("A criminal with the same name already exists in that guild!")
+            await message.reply(mention_author=False, content="A criminal with the same name already exists in that guild!")
         else:
             div = callingBBGuild.bountiesDB.divisionForLevel(newTL)
             if div.isFull():
@@ -1079,7 +893,7 @@ async def dev_cmd_make_player_bounty(message : discord.Message, args : str, isDM
                 newBounty = bounty.Bounty(division=div, config=config.generate(div))
                 callingBBGuild.bountiesDB.addBounty(newBounty)
                 await callingBBGuild.announceNewBounty(newBounty)
-                await message.channel.send(f"Criminal spawned!")
+                await message.reply(mention_author=False, content=f"Criminal spawned!")
 
 
 botCommands.register("make-player-bounty", dev_cmd_make_player_bounty, 3, forceKeepArgsCasing=True, allowDM=True,
@@ -1096,17 +910,17 @@ async def dev_cmd_set_bounty_xp(message : discord.Message, args : str, isDM : bo
     argsSplit = args.split(" ")
     # verify both a user and a balance were given
     if len(argsSplit) < 2:
-        await message.channel.send(":x: Please give a user mention followed by the new xp!")
+        await message.reply(mention_author=False, content=":x: Please give a user mention followed by the new xp!")
         return
     # verify the requested balance is an integer
     if not lib.stringTyping.isInt(argsSplit[1]):
-        await message.channel.send(":x: that's not a number!")
+        await message.reply(mention_author=False, content=":x: that's not a number!")
         return
 
     # verify the requested user
     requestedUser = botState.client.get_user(int(argsSplit[0].lstrip("<@!").rstrip(">")))
     if requestedUser is None:
-        await message.channel.send(":x: invalid user!!")
+        await message.reply(mention_author=False, content=":x: invalid user!!")
         return
 
     newXP = int(argsSplit[1])
@@ -1115,7 +929,6 @@ async def dev_cmd_set_bounty_xp(message : discord.Message, args : str, isDM : bo
     if not botState.usersDB.idExists(requestedUser.id):
         requestedBBUser = botState.usersDB.addID(requestedUser.id)
     else:
-<<<<<<< HEAD
         requestedBBUser = botState.usersDB.getUser(requestedUser.id)
 
     # Handle bounty alert roles updates
@@ -1127,13 +940,13 @@ async def dev_cmd_set_bounty_xp(message : discord.Message, args : str, isDM : bo
             oldRole = homeBGuild.dcGuild.get_role(oldDiv.alertRoleID)
             requestedMember = homeBGuild.dcGuild.get_member(requestedUser.id)
             if oldRole is None:
-                    await message.channel.send(f":woozy_face: I can't find the {nameForDivision(oldDiv).title()}" \
+                    await message.reply(mention_author=False, content=f":woozy_face: I can't find the {nameForDivision(oldDiv).title()}" \
                                                 + " division bounty alerts role, did it get deleted?")
             elif oldRole in requestedMember.roles:
                 newDiv = homeBGuild.bountiesDB.divisionForLevel(newXP)
                 newRole = homeBGuild.dcGuild.get_role(newDiv.alertRoleID)
                 if newRole is None:
-                    await message.channel.send(":woozy_face: I can't find the " \
+                    await message.reply(mention_author=False, content=":woozy_face: I can't find the " \
                                             + f"{nameForDivision(newDiv).title()} division's bounty alerts " \
                                             + "role, did it get deleted?")
                 
@@ -1142,7 +955,7 @@ async def dev_cmd_set_bounty_xp(message : discord.Message, args : str, isDM : bo
 
     # update the balance
     requestedBBUser.bountyHuntingXP = newXP
-    await message.channel.send("Done!")
+    await message.reply(mention_author=False, content="Done!")
 
 botCommands.register("set-bounty-xp", dev_cmd_set_bounty_xp, 3, allowDM=True, helpSection="bounties", useDoc=True)
 
@@ -1157,22 +970,18 @@ async def dev_cmd_set_bounty_level(message : discord.Message, args : str, isDM :
     argsSplit = args.split(" ")
     # verify both a user and a balance were given
     if len(argsSplit) < 2:
-        await message.channel.send(":x: Please give a user mention followed by the new level!")
+        await message.reply(mention_author=False, content=":x: Please give a user mention followed by the new level!")
         return
     # verify the requested balance is an integer
     if not lib.stringTyping.isInt(argsSplit[1]):
-        await message.channel.send(":x: that's not a number!")
-=======
-        await message.reply(mention_author=False, content="incorrect syntax. give +faction +userTag +route +start +end " \
-                                    + "+answer +reward +endtime +icon")
->>>>>>> master
+        await message.reply(mention_author=False, content=":x: that's not a number!")
         return
 
     # verify the requested user
     requestedUser = botState.client.get_user(
         int(argsSplit[0].lstrip("<@!").rstrip(">")))
     if requestedUser is None:
-        await message.channel.send(":x: invalid user!!")
+        await message.reply(mention_author=False, content=":x: invalid user!!")
         return
 
     if not botState.usersDB.idExists(requestedUser.id):
@@ -1182,7 +991,7 @@ async def dev_cmd_set_bounty_level(message : discord.Message, args : str, isDM :
 
     # update the balance
     requestedBBUser.bountyHuntingXP = gameMaths.bountyHuntingXPForLevel(int(argsSplit[1]) + 1)
-    await message.channel.send("Done!")
+    await message.reply(mention_author=False, content="Done!")
 
 botCommands.register("set-bounty-level", dev_cmd_set_bounty_level, 3, allowDM=True, helpSection="bounties", useDoc=True) 
 
@@ -1206,7 +1015,7 @@ async def dev_cmd_measure_temps(message : discord.Message, args : str, isDM : bo
     else:
         guildID = int(args)
         if not botState.guildsDB.idExists(guildID):
-            await message.channel.send(f"Unrecognised guild ID: {guildID}")
+            await message.reply(mention_author=False, content=f"Unrecognised guild ID: {guildID}")
             return
         callingBBGuild = botState.guildsDB.getGuild(guildID)
     if callingBBGuild.bountiesDisabled:
@@ -1251,7 +1060,7 @@ async def dev_cmd_decay_temps(message : discord.Message, args : str, isDM : bool
     else:
         guildID = int(guildStr)
         if not botState.guildsDB.idExists(guildID):
-            await message.channel.send(f"Unrecognised guild ID: {guildID}")
+            await message.reply(mention_author=False, content=f"Unrecognised guild ID: {guildID}")
             return
         callingBBGuild = botState.guildsDB.getGuild(guildID)
     if not allGuilds and callingBBGuild.bountiesDisabled:
@@ -1331,7 +1140,7 @@ async def dev_cmd_reset_temps(message : discord.Message, args : str, isDM : bool
     else:
         guildID = int(guildStr)
         if not botState.guildsDB.idExists(guildID):
-            await message.channel.send(f"Unrecognised guild ID: {guildID}")
+            await message.reply(mention_author=False, content=f"Unrecognised guild ID: {guildID}")
             return
         callingBBGuild = botState.guildsDB.getGuild(guildID)
     if not allGuilds and callingBBGuild.bountiesDisabled:
@@ -1409,7 +1218,7 @@ async def dev_cmd_current_delay(message : discord.Message, args : str, isDM : bo
     else:
         guildID = int(guildStr)
         if not botState.guildsDB.idExists(guildID):
-            await message.channel.send(f"Unrecognised guild ID: {guildID}")
+            await message.reply(mention_author=False, content=f"Unrecognised guild ID: {guildID}")
             return
         callingBBGuild = botState.guildsDB.getGuild(guildID)
     if callingBBGuild.bountiesDisabled:
@@ -1484,7 +1293,7 @@ async def dev_cmd_current_max_bounties(message : discord.Message, args : str, is
     else:
         guildID = int(guildStr)
         if not botState.guildsDB.idExists(guildID):
-            await message.channel.send(f"Unrecognised guild ID: {guildID}")
+            await message.reply(mention_author=False, content=f"Unrecognised guild ID: {guildID}")
             return
         callingBBGuild = botState.guildsDB.getGuild(guildID)
     if callingBBGuild.bountiesDisabled:
