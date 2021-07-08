@@ -429,7 +429,7 @@ async def on_ready():
     # bot is now logged in
     botState.client.loggedIn = True
 
-    botState.utcOffset = datetime.now() - datetime.utcnow()
+    botState.utcOffset = datetime.utcnow() - datetime.now()
     print(f"System time UTC offset measured at: {lib.timeUtil.td_format_noYM(botState.utcOffset)}")
 
 
