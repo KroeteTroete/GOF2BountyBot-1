@@ -9,17 +9,19 @@ itemConstructors = {"Ship": shipItem.Ship.fromDict,
                         "ModuleItem": moduleItemFactory.fromDict,
                         "TurretWeapon": turretWeapon.TurretWeapon.fromDict}
 
-def crateFromDict(crateDict):
-    if "itemPool" not in crateDict:
-        raise RuntimeError("Attempted to fromDict a crate with no itemPool field: " + str(crateDict))
-    itemPool = []
-    for itemDict in crateDict["itemPool"]:
-        if "itemType" in itemDict:
-            itemPool.append(itemConstructors[itemDict["itemType"]](itemDict))
-        else:
-            itemPool.append(itemConstructors[itemDict["type"]](itemDict))
 
-    return CrateTool(**CrateTool._makeDefaults(crateDict, ("type", "crateType", "typeNum"), itemPool=itemPool,
+def crateFromDict(crateDict):
+    if "crateType" not in crateDict and "itemPool" not in crateDict:
+        raise RuntimeError("Attempted to fromDict a non-builtIn crate with no itemPool field: " + str(crateDict))
+    itemPool = []
+    if "itemPool" in crateDict:
+        for itemDict in crateDict["itemPool"]:
+            if "itemType" in itemDict:
+                itemPool.append(itemConstructors[itemDict["itemType"]](itemDict))
+            else:
+                itemPool.append(itemConstructors[itemDict["type"]](itemDict))
+
+    return CrateTool(**CrateTool._makeDefaults(crateDict, ("type",), itemPool=itemPool,
                                                 emoji=lib.emojis.BasedEmoji.fromDict(crateDict["emoji"]) \
                                                     if "emoji" in crateDict else lib.emojis.BasedEmoji.EMPTY))
 
@@ -37,6 +39,7 @@ def fromDict(toolDict : dict) -> toolItem.ToolItem:
     if "type" not in toolDict:
         raise NameError("Required dictionary attribute missing: 'type'")
     return toolTypeConstructors[toolDict["type"]](toolDict)
+
 
 toolTypeConstructors = {"ShipSkinTool": shipSkinTool.ShipSkinTool.fromDict,
                         "CrateTool": crateFromDict,

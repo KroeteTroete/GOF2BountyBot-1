@@ -92,6 +92,7 @@ class ReactionRolePickerOption(reactionMenu.ReactionMenuOption):
         return {"role": self.role.id}
 
 
+@reactionMenu.saveableMenu
 class ReactionRolePicker(reactionMenu.ReactionMenu):
     """A reaction menu that grants and removes roles when interacted with.
     TODO: replace dcGuild param with extracting msg.guild
@@ -140,7 +141,6 @@ class ReactionRolePicker(reactionMenu.ReactionMenu):
                                                     footerTxt=footerTxt, img=img, thumb=thumb, icon=icon,
                                                     authorName=authorName, timeout=timeout, targetMember=targetMember,
                                                     targetRole=targetRole)
-        self.saveable = True
 
 
     def toDict(self, **kwargs) -> dict:
@@ -177,7 +177,7 @@ class ReactionRolePicker(reactionMenu.ReactionMenu):
             timeoutTT = timedTask.TimedTask(expiryTime=expiryTime,
                                             expiryFunction=reactionMenu.markExpiredMenu,
                                             expiryFunctionArgs=msg.id)
-            botState.reactionMenusTTDB.scheduleTask(timeoutTT)
+            botState.taskScheduler.scheduleTask(timeoutTT)
 
         menuColour = Colour.from_rgb(rmDict["col"][0], rmDict["col"][1], rmDict["col"][2]) \
                         if "col" in rmDict else Colour.blue()

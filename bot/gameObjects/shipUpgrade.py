@@ -163,8 +163,7 @@ class ShipUpgrade(serializable.Serializable):
             if self.hasVendor:
                 itemDict["vendor"] = self.vendor
 
-            if self.shipToUpgradeValueMult != 1.0:
-                itemDict["shipToUpgradeValueMult"] = self.shipToUpgradeValueMult
+            itemDict["shipToUpgradeValueMult"] = self.shipToUpgradeValueMult
 
             if not self.builtIn:
                 additiveStats = {   "armour": self.armour, "cargo": self.cargo, "handling": self.handling,

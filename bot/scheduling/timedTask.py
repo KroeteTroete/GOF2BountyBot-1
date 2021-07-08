@@ -35,10 +35,14 @@ class TimedTask:
     :vartype gravestone: bool
     :var asyncExpiryFunction: whether or not the expiryFunction is a coroutine and needs to be awaited
     :vartype asyncExpiryFunction: bool
+    :var rescheduleOnExpiryFuncFailure: Whether or not expiry exception throws should trigger the task to auto reschedule.
+                                        Useful for delaying a task to retry later once a problem will be fixed
+    :vartype rescheduleOnExpiryFuncFailure: bool
     """
 
     def __init__(self, issueTime : datetime = None, expiryTime : datetime = None, expiryDelta : timedelta = None,
-                 expiryFunction : FunctionType = None, expiryFunctionArgs : Any = None, autoReschedule : bool = False):
+                 expiryFunction : FunctionType = None, expiryFunctionArgs : Any = None, autoReschedule : bool = False,
+                 rescheduleOnExpiryFuncFailure : bool = False):
         """
         :param datetime.datetime issueTime: The datetime when this task was created. (Default now)
         :param datetime.datetime expiryTime: The datetime when this task should expire. (Default None)
@@ -48,6 +52,9 @@ class TimedTask:
                                     but a dictionary is recommended as a close representation of KWArgs. (Default {})
         :param bool autoReschedule: Whether or not this task should automatically reschedule itself by the
                                     same timedelta. (Default False)
+        :param bool rescheduleOnExpiryFuncFailure: Whether or not expiry exception throws should trigger the task to
+                                                    auto reschedule. Useful for delaying a task to retry later once a problem
+                                                    will be fixed (Default False)
         """
         # Ensure that at least one of expiryTime or expiryDelta is specified
         if expiryTime is None and expiryDelta is None:
@@ -65,6 +72,7 @@ class TimedTask:
         self.hasExpiryFunctionArgs = expiryFunctionArgs is not None
         self.expiryFunctionArgs = expiryFunctionArgs if self.hasExpiryFunctionArgs else {}
         self.autoReschedule = autoReschedule
+        self.rescheduleOnExpiryFuncFailure = rescheduleOnExpiryFuncFailure
 
         # A task's 'gravestone' is marked as True when the TimedTask will no longer execute and
         # can be removed from any TimedTask heap. I.e, it is expired (whether manually or through timeout)
@@ -141,19 +149,35 @@ class TimedTask:
     async def callExpiryFunction(self):
         """Call the task's expiryFunction, if one is specified.
         Handles passing of arguments to the expiryFunction, if specified.
+        If an exception occurs in the expiry function and rescheduleOnExpiryFuncFailure is True,
+        the exception is IGNORED and the timedtask rescheduled.
 
         :return: the results of the expiryFunction
         """
-        if self.asyncExpiryFunction:
-            if self.hasExpiryFunctionArgs:
-                return await self.expiryFunction(self.expiryFunctionArgs)
+        try:
+            # Await async expiry Functions
+            if self.asyncExpiryFunction:
+                # Pass args to expiry function if specified
+                if self.hasExpiryFunctionArgs:
+                    return await self.expiryFunction(self.expiryFunctionArgs)
+                else:
+                    return await self.expiryFunction()
+            # Do not await sync expiry functions
             else:
-                return await self.expiryFunction()
-        else:
-            if self.hasExpiryFunctionArgs:
-                return self.expiryFunction(self.expiryFunctionArgs)
+                # Pass args to expiry function if specified
+                if self.hasExpiryFunctionArgs:
+                    return self.expiryFunction(self.expiryFunctionArgs)
+                else:
+                    return self.expiryFunction()
+        except Exception as e:
+            # If the task is marked to reschedule on expiry func failure, reschedule the task
+            if self.rescheduleOnExpiryFuncFailure:
+                print("Exception occured in callExpiryFunction + " + str(self.expiryFunction) + ", rescheduling: " \
+                        + str(self) + ". Exception: " + str(e))
+                await self.reschedule()
+            # Otherwise, pass up the exception
             else:
-                return self.expiryFunction()
+                raise e
 
 
     async def doExpiryCheck(self, callExpiryFunc: bool = True) -> bool:
@@ -231,26 +255,50 @@ class DynamicRescheduleTask(TimedTask):
     If an expiryTime is specified, then this will be used for the first scheduling period. After this time is reached,
     the scheduler will switch to calling the delayTimeGenerator.
 
-    :param function delayTimeGenerator: Reference (not call!) to the function which generates the
-                                        expiryDelta. Must return a timedelta.
-    :param delayTimeGeneratorArgs: The data to pass to the delayTimeGenerator. There is no type requirement,
-                                    but a dictionary is recommended as a close representation of KWArgs. Default: {}
-    :param datetime.datetime issueTime: The datetime when this task was created. Default: now
-    :param datetime.datetime expiryTime: The datetime when this task should expire. Default: None
-    :param function expiryFunction: The function to call once expiryTime has been reached/surpassed. Default: None
-    :param expiryFunctionArgs: The data to pass to the expiryFunction. There is no type requirement,
-                                but a dictionary is recommended as a close representation of KWArgs. Default: {}
-    :param bool autoReschedule: Whether or not this task should automatically reschedule itself.
-                                You probably want this to be True, otherwise you may as well use a TimedTask. Default: False
+    :var delayTimeGenerator: Reference (not call!) to the function which generates the
+                                expiryDelta. Must return a timedelta.
+    :vartype delayTimeGenerator: function
+    :var delayTimeGeneratorArgs: The data to pass to the delayTimeGenerator. There is no type requirement,
+                                    but a dictionary is recommended as a close representation of KWArgs. (Default {})
+    :var issueTime: The datetime when this task was created. (Default now)
+    :vartype issueTime: datetime
+    :var expiryTime: The datetime when this task should expire. (Default None)
+    :vartype expiryTime: datetime
+    :var expiryFunction: The function to call once expiryTime has been reached/surpassed. (Default None)
+    :vartype expiryFunction: function
+    :var expiryFunctionArgs: The data to pass to the expiryFunction. There is no type requirement,
+                                but a dictionary is recommended as a close representation of KWArgs. (Default {})
+    :var autoReschedule: Whether or not this task should automatically reschedule itself.
+                            You probably want this to be True, otherwise you may as well use a TimedTask. (Default False)
+    :varType autoReschedule: True
     """
 
     def __init__(self, delayTimeGenerator : FunctionType, delayTimeGeneratorArgs : Any = None, issueTime : datetime = None,
                         expiryTime : datetime = None, expiryFunction : FunctionType = None,
-                        expiryFunctionArgs : Any = None, autoReschedule : bool = False):
+                        expiryFunctionArgs : Any = None, autoReschedule : bool = False,
+                        rescheduleOnExpiryFuncFailure : bool = False):
+        """
+        :param function delayTimeGenerator: Reference (not call!) to the function which generates the expiryDelta.
+                                            Must return a timedelta.
+        :param delayTimeGeneratorArgs: The data to pass to the delayTimeGenerator. There is no type requirement, but a
+                                        dictionary is recommended as a close representation of KWArgs. (Default {})
+        :param datetime.datetime issueTime: The datetime when this task was created. (Default now)
+        :param datetime.datetime expiryTime: The datetime when this task should expire. (Default None)
+        :param function expiryFunction: The function to call once expiryTime has been reached/surpassed. (Default None)
+        :param expiryFunctionArgs: The data to pass to the expiryFunction. There is no type requirement, but a dictionary
+                                    is recommended as a close representation of KWArgs. (Default {})
+        :param bool autoReschedule: Whether or not this task should automatically reschedule itself. You probably want this
+                                    to be True, otherwise you may as well use a TimedTask. (Default False)
+        :param bool rescheduleOnExpiryFuncFailure: Whether or not expiry exception throws should trigger the task to auto
+                                                    reschedule. Useful for delaying a task to retry later once a problem will
+                                                    be fixed (Default False)
+        """
+
         # Initialise TimedTask-inherited attributes
         super(DynamicRescheduleTask, self).__init__(expiryDelta=delayTimeGenerator(delayTimeGeneratorArgs),
                                                     issueTime=issueTime, expiryTime=expiryTime, expiryFunction=expiryFunction,
-                                                    expiryFunctionArgs=expiryFunctionArgs, autoReschedule=autoReschedule)
+                                                    expiryFunctionArgs=expiryFunctionArgs, autoReschedule=autoReschedule,
+                                                    rescheduleOnExpiryFuncFailure=rescheduleOnExpiryFuncFailure)
         self.delayTimeGenerator = delayTimeGenerator
         self.hasDelayTimeGeneratorArgs = delayTimeGeneratorArgs is not None
         self.delayTimeGeneratorArgs = delayTimeGeneratorArgs if self.hasDelayTimeGeneratorArgs else {}

@@ -4,7 +4,6 @@ from typing import List
 
 from ...cfg import bbData
 from ...baseClasses import aliasable
-from ..items import shipItem
 
 
 class Criminal(aliasable.Aliasable):
@@ -24,14 +23,10 @@ class Criminal(aliasable.Aliasable):
     :vartype isPlayer: bool
     :var builtIn: If this criminal is an NPC, are they built in or custom?
     :vartype builtIn: bool
-    :var ship: The ship equipped by this criminal
-    :vartype ship: shipItem
-    :var hasShip: Whether this criminal has a ship equipped or not
-    :vartype hasShip: bool
     """
 
     def __init__(self, name : str, faction : str, icon : str, builtIn : bool = False,
-            isPlayer : bool = False, aliases : List[str] = [], wiki : str = "", ship : shipItem.Ship = None):
+                    isPlayer : bool = False, aliases : List[str] = [], wiki : str = ""):
         """
         :param str name: The name of the criminal
         :param str faction: the faction that this criminal is wanted by
@@ -39,7 +34,6 @@ class Criminal(aliasable.Aliasable):
         :param str wiki: A URL pointing to a web page to use as this criminal's wiki page in their info embed
         :param bool isPlayer: Whether this criminal is a player or an NPC
         :param bool builtIn: If this criminal is an NPC, are they built in or custom?
-        :param shipItem ship: The ship equipped by this criminal
         :param list[str] aliases: Alias names that can be used to refer to this criminal
         """
         super(Criminal, self).__init__(name, aliases)
@@ -58,66 +52,6 @@ class Criminal(aliasable.Aliasable):
         self.isPlayer = isPlayer
         self.builtIn = builtIn
 
-        if ship is not None:
-            self.copyShip(ship)
-        else:
-            self.hasShip = False
-
-
-    def clearShip(self):
-        """Delete the equipped ship, removing it from memory
-
-        :raise RuntimeError: If the criminal does not have a ship equipped
-        """
-        if not self.hasShip:
-            raise RuntimeError("CRIM_CLEARSH_NOSHIP: Attempted to clearShip on a Criminal with no active ship")
-        del self.ship
-        self.hasShip = False
-
-
-    def unequipShip(self):
-        """unequip the equipped ship, without deleting the object
-
-        :raise RuntimeError: If the criminal does not have a ship equipped
-        """
-        if not self.hasShip:
-            raise RuntimeError("CRIM_UNEQSH_NOSHIP: Attempted to unequipShip on a Criminal with no active ship")
-        self.ship = None
-        self.hasShip = False
-
-
-    def equipShip(self, ship : shipItem):
-        """Equip the given ship, by reference to the given object
-
-        :param shipItem ship: The ship to equip
-        :raise RuntimeError: If the criminal already has a ship equipped
-        """
-        if self.hasShip:
-            raise RuntimeError("CRIM_EQUIPSH_HASSH: Attempted to equipShip on a Criminal that already has an active ship")
-        self.ship = ship
-        self.hasShip = True
-
-
-    def copyShip(self, ship : shipItem):
-        """Equip the given ship, by taking a deep copy of the given object
-
-        :param shipItem ship: The ship to equip
-        :raise RuntimeError: If the criminal already has a ship equipped
-        """
-        if self.hasShip:
-            raise RuntimeError("CRIM_COPYSH_HASSH: Attempted to copyShip on a Criminal that already has an active ship")
-        self.ship = shipItem.Ship.fromDict(ship.toDict())
-        self.hasShip = True
-
-
-    def __hash__(self) -> int:
-        """Provide a hash of this object based on the object's location in memory.
-
-        :return: A hash of this criminal
-        :rtype: int
-        """
-        return hash(repr(self))
-
 
     def toDict(self, **kwargs) -> dict:
         """Serialize this criminal into dictionary format, for saving to file.
@@ -126,10 +60,10 @@ class Criminal(aliasable.Aliasable):
         :rtype: dict
         """
         if self.builtIn:
-            return {"builtIn": True, "name": self.name}
+            return {"builtIn":True, "name":self.name}
         else:
-            return {"builtIn": False, "isPlayer": self.isPlayer, "name": self.name, "icon": self.icon, "faction": self.faction,
-                    "aliases": self.aliases, "wiki": self.wiki}
+            return {"builtIn": False, "isPlayer": self.isPlayer, "name": self.name, "icon": self.icon,
+                    "faction": self.faction, "aliases": self.aliases, "wiki": self.wiki}
 
 
     @classmethod
@@ -138,8 +72,7 @@ class Criminal(aliasable.Aliasable):
         or construct a new criminal object from the provided data.
 
         :param dict crimDict: A dictionary containing all data necessary to construct the desired criminal.
-                                If the criminal is builtIn, this need only be their name, "builtIn": True,
-                                and possibly the equipped ship.
+                                If the criminal is builtIn, this need only be their name and "builtIn": True.
         :return: The requested criminal object reference
         :rtype: criminal
         """

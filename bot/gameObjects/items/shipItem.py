@@ -4,6 +4,8 @@ from typing import List, Union, TYPE_CHECKING
 if TYPE_CHECKING:
     from .modules import moduleItem
 
+from discord import Embed
+
 from .gameItem import GameItem, spawnableItem
 from . import moduleItemFactory
 from .weapons.primaryWeapon import PrimaryWeapon
@@ -634,8 +636,7 @@ class Ship(GameItem):
                     The ship name on its own otherwise.
         :rtype: str
         """
-        skinStr = ("`[" + self.skin + "]` ") if self.isSkinned else ""
-        return (skinStr + self.name) if not self.hasNickname else (skinStr + self.nickname + " (" + self.name + ")")
+        return self.name if not self.hasNickname else (self.nickname + " (" + self.name + ")")
 
 
     def transferItemsTo(self, other : Ship):
@@ -730,6 +731,8 @@ class Ship(GameItem):
         :rtype: str
         """
         stats = ""
+        if self.isSkinned:
+            stats += f"> Skin: {self.skin.title()}\n"
         stats += "• *Armour: " + str(self.getArmour(shipUpgradesOnly=True)) + ("(+)" \
                                 if self.getArmour(shipUpgradesOnly=True) > self.armour else "") + "*\n"
         # stats += "Cargo hold: " + str(self.cargo) + ", "
@@ -766,6 +769,8 @@ class Ship(GameItem):
         :rtype: str
         """
         stats = ""
+        if self.isSkinned:
+            stats += f"> Ship skin: {self.skin.title()}\n"
         stats += "*Armour: " + str(self.getArmour(shipUpgradesOnly=True)) + ("(+)" \
                                 if self.getArmour(shipUpgradesOnly=True) > self.armour else "") + ", "
         stats += "Cargo hold: " + str(self.getCargo(shipUpgradesOnly=True)) + ("(+)" \
@@ -773,8 +778,37 @@ class Ship(GameItem):
         stats += "Handling: " + str(self.getHandling(shipUpgradesOnly=True)) + ("(+)" \
                                 if self.getHandling(shipUpgradesOnly=True) > self.handling else "") + ", "
         stats += "Max secondaries: " + str(self.getMaxSecondaries(shipUpgradesOnly=True)) + ("(+)" \
-                                if self.getMaxSecondaries(shipUpgradesOnly=True) > self.maxSecondaries else "") + "*"
-        return stats
+                                if self.getMaxSecondaries(shipUpgradesOnly=True) > self.maxSecondaries else "")
+        return stats + "*"
+
+
+    def fillLoadoutEmbed(self, baseEmbed : Embed, shipEmoji : bool = False):
+        """Populate a discord.embed with information describing the ship.
+        :param discord.Embed baseEmbed: The embed to add fields to
+        :param bool shipEmoji: whether or not to use the ship's emoji next to its name.
+                                You may wish to leave this as false and instead use the ship's icon
+                                in the embed icon (Default False)
+        """
+        baseEmbed.add_field(name="Active Ship: " + (self.emoji.sendable if shipEmoji and self.hasEmoji else "") + self.getNameAndNick(),
+                            value=self.statsStringNoItems(),
+                            inline=False)
+
+        for name, maxEquip, equipped in (   ("Weapons", self.getMaxPrimaries(), self.weapons),
+                                            ("Modules", self.getMaxModules(), self.modules),
+                                            ("Turrets", self.getMaxTurrets(), self.turrets)):
+            if maxEquip > 0:
+                baseEmbed.add_field(name="‎",
+                                    value="__**Equipped " + name + "**__ *" + str(len(equipped)) + "/" \
+                                        + str(maxEquip) + "*",
+                                    inline=False)
+                for itemNum in range(1, len(equipped) + 1):
+                    baseEmbed.add_field(name=str(itemNum) + ". " + equipped[itemNum - 1].name,
+                                        value=(equipped[itemNum - 1].emoji.sendable \
+                                                if equipped[itemNum - 1].hasEmoji else "") \
+                                            + equipped[itemNum - 1].statsStringShort(),
+                                        inline=True)
+
+        return baseEmbed
 
 
     def toDict(self, **kwargs) -> dict:
@@ -787,21 +821,10 @@ class Ship(GameItem):
         """
         itemDict = super(Ship, self).toDict(**kwargs)
 
-        weaponsList = []
-        for weapon in self.weapons:
-            weaponsList.append(weapon.toDict(**kwargs))
-
-        modulesList = []
-        for module in self.modules:
-            modulesList.append(module.toDict(**kwargs))
-
-        turretsList = []
-        for turret in self.turrets:
-            turretsList.append(turret.toDict(**kwargs))
-
-        upgradesList = []
-        for upgrade in self.upgradesApplied:
-            upgradesList.append(upgrade.toDict(**kwargs))
+        weaponsList = [weapon.toDict(**kwargs) for weapon in self.weapons]
+        modulesList = [module.toDict(**kwargs) for module in self.modules]
+        turretsList = [turret.toDict(**kwargs) for turret in self.turrets]
+        upgradesList = [upgrade.toDict(**kwargs) for upgrade in self.upgradesApplied]
 
         itemDict["weapons"] = weaponsList
         itemDict["modules"] = modulesList

@@ -1,9 +1,13 @@
 from discord import Colour
+from ..lib.emojis import UninitializedBasedEmoji
 
 # all factions recognised by BB
 factions = ["terran", "vossk", "midorian", "nivelian", "neutral"]
 # all factions useable in bounties
 bountyFactions = ["terran", "vossk", "midorian", "nivelian"]
+# Dicord emoji IDs for all factions
+bountyFactionEmojis = {"terran": 849316423800979528, "vossk": 849316423595720795,
+                        "midorian": 849316424270741504, "nivelian": 849316423808581703}
 
 # levels of security in SolarSystems (SolarSystem security is stored as an index in this list)
 securityLevels = ["secure", "average", "risky", "dangerous"]
@@ -72,19 +76,21 @@ builtInSecondariesData = {}
 # data for builtIn ShipSkins to be used in ShipSkin.fromDict
 builtInShipSkinsData = {}
 
+# data for Medals to be used in Medal.fromDict. builtIn is not applicable to Medals, as custom Medals cannot be created
+medalsData = {}
 
-# Objects representing all ship skins in the game.
-builtInShipSkins = {}
-builtInToolObjs = {}
+
 # To be populated during bot.on_ready
 # These dicts contain item name: item object for the object described in the variable name.
-# This is primarily for use in their relevent fromDict functions.
+builtInShipSkins = {}
+builtInToolObjs = {}
 builtInSystemObjs = {}
 builtInCriminalObjs = {}
 builtInModuleObjs = {}
 builtInWeaponObjs = {}
 builtInUpgradeObjs = {}
 builtInTurretObjs = {}
+medalObjs = {}
 
 # References to the above item objects, sorted by techLevel.
 shipKeysByTL = []
@@ -97,3 +103,12 @@ turretObjsByTL = []
 bountyNames = {}
 # the length of the longest criminal name, to be used in padding during cmd_bounties
 longestBountyNameLength = 0
+
+shipSkinToolsBySkin = {}
+# Dict of crate type (str) : list of crates
+builtInCrateObjs = {}
+
+
+# Profile Customisation items
+# XP bar fills
+builtInXPBars = {}

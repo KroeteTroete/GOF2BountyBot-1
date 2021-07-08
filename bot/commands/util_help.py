@@ -40,17 +40,17 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
     try:
         if args == "":
             owningUser = botState.usersDB.getOrAddID(message.author.id)
-            if owningUser.helpMenuOwned:
-                await message.reply(mention_author=False, content=":x: Please close your existing help menu before making a new one!\n" \
-                                            + "In case you can't find it, help menus auto exire after **" \
+            if owningUser.hasMenuOfTypeID("help"):
+                await message.reply(mention_author=False,
+                                    content=":x: Please close your existing help menu before making a new one!\n" \
+                                            + f"In case you can't find it, help menus auto exire after **" \
                                             + helpMenuTimeoutStr + "**.")
                 return
-            owningUser.helpMenuOwned = True
             menuMsg = await sendChannel.send("‎")
             helpTT = timedTask.TimedTask(expiryDelta=timedelta(**cfg.timeouts.helpMenu),
                                         expiryFunction=expiryFunctions.expireHelpMenu, expiryFunctionArgs=menuMsg.id)
             botState.taskScheduler.scheduleTask(helpTT)
-            indexEmbed = lib.discordUtil.makeEmbed(titleTxt=cfg.userAccessLevels[userAccessLevel] + " Commands",
+            indexEmbed = lib.discordUtil.makeEmbed(titleTxt=cfg.userAccessLevels[userAccessLevel].title() + " Commands",
                                                     desc="Select " + cfg.defaultEmojis.next.sendable + " to go to page one.",
                                                     thumb=botState.client.user.avatar_url_as(size=64),
                                                     footerTxt="This menu will expire in " + helpMenuTimeoutStr + ".")
@@ -79,18 +79,19 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
                 menuMsg, pages, timeout=helpTT, targetMember=message.author, owningBasedUser=owningUser)
             await helpMenu.updateMessage()
             botState.reactionMenusDB[menuMsg.id] = helpMenu
+            owningUser.addOwnedMenu("help", helpMenu)
 
         elif args in botCommands.helpSectionEmbeds[userAccessLevel]:
             if len(botCommands.helpSectionEmbeds[userAccessLevel][args]) == 1:
                 await sendChannel.send(embed=botCommands.helpSectionEmbeds[userAccessLevel][args][0])
             else:
                 owningUser = botState.usersDB.getOrAddID(message.author.id)
-                if owningUser.helpMenuOwned:
-                    await message.reply(mention_author=False, content=":x: Please close your existing help menu before making a new one!\n" \
+                if owningUser.hasMenuOfTypeID("help"):
+                    await message.reply(mention_author=False,
+                                        content=":x: Please close your existing help menu before making a new one!\n" \
                                                 + "In case you can't find it, help menus auto exire after **" \
                                                 + helpMenuTimeoutStr + "**.")
                     return
-                owningUser.helpMenuOwned = True
                 menuMsg = await sendChannel.send("‎")
                 helpTT = timedTask.TimedTask(expiryDelta=timedelta(**cfg.timeouts.helpMenu),
                                             expiryFunction=expiryFunctions.expireHelpMenu, expiryFunctionArgs=menuMsg.id)
@@ -105,22 +106,25 @@ async def util_autohelp(message: discord.Message, args: str, isDM: bool, userAcc
                     menuMsg, pages, timeout=helpTT, targetMember=message.author, owningBasedUser=owningUser)
                 await helpMenu.updateMessage()
                 botState.reactionMenusDB[menuMsg.id] = helpMenu
+                owningUser.addOwnedMenu("help", helpMenu)
 
         elif args in botCommands.commands[userAccessLevel] and botCommands.commands[userAccessLevel][args].allowHelp:
-            helpEmbed = lib.discordUtil.makeEmbed(titleTxt=cfg.userAccessLevels[userAccessLevel] + " Commands",
+            cmdObj = botCommands.commands[userAccessLevel][args]
+            helpEmbed = lib.discordUtil.makeEmbed(titleTxt=cfg.userAccessLevels[userAccessLevel].title() + " Commands",
                                                     desc=cfg.helpIntro + "\n__" \
-                                                        + botCommands.commands[userAccessLevel][args].helpSection.title() \
+                                                        + cmdObj.helpSection.title() \
                                                         + "__", col=discord.Colour.blue(),
                                                     thumb=botState.client.user.avatar_url_as(size=64))
-            helpEmbed.add_field(name=botCommands.commands[userAccessLevel][args].signatureStr,
-                                value=botCommands.commands[userAccessLevel][args].longHelp, inline=False)
-            helpEmbed.add_field(name="DMable", value="Yes" if botCommands.commands[userAccessLevel][args].allowDM else "No")
-            if botCommands.commands[userAccessLevel][args].aliases:
+            helpEmbed.add_field(name=cmdObj.signatureStr,
+                                value=cmdObj.longHelp, inline=False)
+            helpEmbed.add_field(name="DMable", value="Yes" if cmdObj.allowDM else "No")
+            if cmdObj.aliases:
                 aliasesStr = ""
-                for alias in botCommands.commands[userAccessLevel][args].aliases[:-1]:
+                for alias in cmdObj.aliases[:-1]:
                     aliasesStr += alias + ", "
-                aliasesStr += botCommands.commands[userAccessLevel][args].aliases[-1]
+                aliasesStr += cmdObj.aliases[-1]
                 helpEmbed.add_field(name="Alaises", value=aliasesStr)
+            helpEmbed.set_footer(text=f"Section: {cmdObj.helpSection.title()} | [optional args] <required args>")
             await message.reply(mention_author=False, embed=helpEmbed)
 
         else:

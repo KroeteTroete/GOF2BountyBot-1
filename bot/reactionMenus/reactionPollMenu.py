@@ -25,7 +25,10 @@ async def printAndExpirePollResults(msgID : int):
     results = {}
 
     if menu.owningBBUser is not None:
-        menu.owningBBUser.pollOwned = False
+        try:
+            menu.owningBBUser.removeOwnedMenu("poll", menu)
+        except KeyError:
+            pass
 
     maxOptionLen = 0
 
@@ -109,6 +112,7 @@ async def printAndExpirePollResults(msgID : int):
         await reaction.remove(menuMsg.guild.me)
 
 
+@reactionMenu.saveableMenu
 class ReactionPollMenu(reactionMenu.ReactionMenu):
     """A saveable reaction menu taking a vote from its participants on a selection of option strings.
     On menu expiry, the menu's TimedTask should call printAndExpirePollResults. This edits to menu embed to provide a summary
@@ -177,7 +181,6 @@ class ReactionPollMenu(reactionMenu.ReactionMenu):
         super(ReactionPollMenu, self).__init__(msg, options=pollOptions, titleTxt=titleTxt, desc=desc, col=col,
                                                 footerTxt=footerTxt, img=img, thumb=thumb, icon=icon, authorName=authorName,
                                                 timeout=timeout, targetMember=targetMember, targetRole=targetRole)
-        self.saveable = True
 
 
     def getMenuEmbed(self) -> Embed:
@@ -233,7 +236,7 @@ class ReactionPollMenu(reactionMenu.ReactionMenu):
         timeoutTT = None
         if "timeout" in rmDict:
             expiryTime = datetime.utcfromtimestamp(rmDict["timeout"])
-            botState.reactionMenusTTDB.scheduleTask(timedTask.TimedTask(expiryTime=expiryTime,
+            botState.taskScheduler.scheduleTask(timedTask.TimedTask(expiryTime=expiryTime,
                                                     expiryFunction=printAndExpirePollResults, expiryFunctionArgs=msg.id))
 
         if "owningBBUser" in rmDict and botState.usersDB.idExists(rmDict["owningBBUser"]):

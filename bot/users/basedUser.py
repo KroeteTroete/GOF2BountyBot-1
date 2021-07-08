@@ -1,37 +1,41 @@
 # Typing imports
 from __future__ import annotations
 
-from ..baseClasses import serializable
-
-from typing import Union, TYPE_CHECKING
+from typing import Union, TYPE_CHECKING, Dict, List, MutableSet
 if TYPE_CHECKING:
     from ..gameObjects.battles import duelRequest
 
+from ..baseClasses import serializable
+from ..cfg import cfg, bbData
+from ..gameObjects import kaamoShop, lomaShop
 from ..gameObjects.items import shipItem, moduleItemFactory
 from ..gameObjects.items.weapons import primaryWeapon, turretWeapon
 from ..gameObjects.items.tools import toolItemFactory, toolItem
 from ..gameObjects.items.modules import moduleItem
-from ..cfg import cfg
+from ..gameObjects.userProfile.medal import Medal
 from ..gameObjects.inventories import inventory
 from ..userAlerts import userAlerts
 from datetime import datetime, timedelta
 from discord import Guild, Member
 from ..users import basedGuild
 from .. import lib, botState
+from ..lib import gameMaths
+from ..reactionMenus import reactionMenu
 
 
 # Dictionary-serialized shipItem to give to new players
 defaultShipLoadoutDict = {"name": "Betty", "builtIn": True,
-                        "weapons": [{"name": "Micro Gun MK I", "builtIn": True}],
-                        "modules": [{"name": "Telta Quickscan", "builtIn": True},
-                                    {"name": "E2 Exoclad", "builtIn": True},
-                                    {"name": "IMT Extract 1.3", "builtIn": True}]}
+                            "weapons": [{"name": "Micro Gun MK I", "builtIn": True}],
+                            "modules": [{"name": "Telta Quickscan", "builtIn": True},
+                                        {"name": "E2 Exoclad", "builtIn": True},
+                                        {"name": "IMT Extract 1.3", "builtIn": True}]}
 
 # Default attributes to give to new players
 defaultUserDict = {"credits": 0, "bountyCooldownEnd": 0, "lifetimeBountyCreditsWon": 0, "systemsChecked": 0, "bountyWins": 0,
-                    "activeShip": defaultShipLoadoutDict,
+                    "activeShip": defaultShipLoadoutDict, "bountyHuntingXP": gameMaths.bountyHuntingXPForLevel(1),
                     "inactiveWeapons": [{"item": {"name": "Nirai Impulse EX 1", "builtIn": True}, "count": 1}]}
-# Reference value not pre-calculated from defaultUserDict. This is not used in the game's code,
+
+# Reference value manually added, not pre-calculated from defaultUserDict. This is not used in the game's code,
 # but provides a reference for game design.
 defaultUserValue = 28970
 
@@ -88,19 +92,28 @@ class BasedUser(serializable.Serializable):
     :var dailyBountyWinsReset: A datetime.datetime representing the time at which the user's bountyWinsToday should be reset
                                 to zero
     :vartype dailyBountyWinsReset: datetime.datetime
-    :var pollOwned: Whether or not this user has a running ReactionPollMenu
-    :vartype pollOwned: bool
-    :var helpMenuOwned: Whether or not this user has a running reaction help menu
-    :vartype helpMenuOwned: bool
     :var homeGuildID: The id of this user's 'home guild' - the only guild from which they may use several commands
                         e.g buy and check.
     :vartype homeGuildID: int
     :var guildTransferCooldownEnd: A timestamp after which this user is allowed to transfer their homeGuildID.
     :vartype guildTransferCooldownEnd: datetime.datetime
+    :var kaamo: The user's Kaamo Club storage, only accessible at bounty hunter level 10. To save memory,
+                this is None until the user first uses it. (default None)
+    :vartype kaamo: Union[KaamoShop, None]
+    :var loma: A shop private to this user, selling special discountable items. To save memory,
+                this is None until the user first uses it. (default None)
+    :vartype loma: Union[LomaShop, None]
+    :var prestiges: The number of times the user has prestiged
+    :vartype prestiges: int
+    :var ownedMenus: Sets of references to all menus that user owns, by string type IDs.
+    :vartype ownedMenus: Dict[str, MutableSet[ReactionMenu]]
+    :var medals: References to all medals awareded to this user
+    :vartype medals: MutableSet[Medal]
     """
 
     def __init__(self, userID: int, credits : int = 0, lifetimeBountyCreditsWon : int = 0,
-                    bountyCooldownEnd : int = -1, systemsChecked : int = 0, bountyWins : int = 0, activeShip : bool = None,
+                    bountyHuntingXP : int = gameMaths.bountyHuntingXPForLevel(1), bountyCooldownEnd : int = -1,
+                    systemsChecked : int = 0, bountyWins : int = 0, activeShip : bool = None,
                     inactiveShips : inventory.Inventory = inventory.TypeRestrictedInventory(shipItem.Ship),
                     inactiveModules : inventory.Inventory = inventory.TypeRestrictedInventory(moduleItem.ModuleItem),
                     inactiveWeapons : inventory.Inventory = inventory.TypeRestrictedInventory(primaryWeapon.PrimaryWeapon),
@@ -108,13 +121,16 @@ class BasedUser(serializable.Serializable):
                     inactiveTools : inventory.Inventory = inventory.TypeRestrictedInventory(toolItem.ToolItem),
                     lastSeenGuildId : int = -1, duelWins : int = 0, duelLosses : int = 0, duelCreditsWins : int = 0,
                     duelCreditsLosses : int = 0, alerts : dict[Union[type, str], Union[userAlerts.UABase or bool]] = {},
-                    bountyWinsToday : int = 0, dailyBountyWinsReset : datetime = None, pollOwned : bool = False,
-                    homeGuildID : int = -1, guildTransferCooldownEnd : datetime = None):
+                    bountyWinsToday : int = 0, dailyBountyWinsReset : datetime = None,
+                    homeGuildID : int = -1, guildTransferCooldownEnd : datetime = None, prestiges : int = 0,
+                    kaamo : Union[kaamoShop.KaamoShop, None] = None, loma : Union[lomaShop.LomaShop, None] = None,
+                    ownedMenus : Dict[str, MutableSet[reactionMenu.ReactionMenu]] = {}, medals: MutableSet[Medal] = []):
         """
         :param int id: The user's unique ID. The same as their unique discord ID.
         :param int credits: The amount of credits (currency) this user has (Default 0)
         :param int lifetimeBountyCreditsWon: The total amount of credits this user has earned through hunting bounties
                                             (Default 0)
+        :param int bountyHuntingXP: The amount of XP this user has gained through bounty hunting (Default level 1)
         :param float bountyCooldownEnd: A utc timestamp representing when the user's cmd_check cooldown is due to expire
                                         (Default -1)
         :param int systemsChecked: The total number of space systems this user has checked (Default 0)
@@ -142,12 +158,21 @@ class BasedUser(serializable.Serializable):
         :param int bountyWinsToday: The number of bounties the user has won today (Default 0)
         :param datetime.datetime dailyBountyWinsReset: A datetime.datetime representing the time at which the user's
                                                         bountyWinsToday should be reset to zero (Default datetime.utcnow())
-        :param bool pollOwned: Whether or not this user has a running ReactionPollMenu (Default False)
         :param Guild homeGuildID: The ID of this user's 'home guild' - the only guild from which they may use several
                                     commands e.g buy and check.
         :param datetime.datetime guildTransferCooldownEnd: A timestamp after which this user is allowed to transfer
                                                             their homeGuildID.
         :raise TypeError: When given an argument of incorrect type
+        :param kaamo: The user's Kaamo Club storage, only accessible at bounty hunter level 10. To save memory,
+                        this is None until the user first uses it. (default None)
+        :type kaamo: Union[KaamoShop, None]
+        :param loma: A shop private to this user, selling special discountable items. To save memory,
+                        this is None until the user first uses it. (default None)
+        :type loma: Union[LomaShop, None]
+        :param int prestiges: The number of times the user has prestiged (default 0)
+        :param ownedMenus: Sets of references to all menus that user owns, by string type IDs. (default {})
+        :type ownedMenus: Dict[str, MutableSet[ReactionMenu]]
+        :param MutableSet[Medal] medals: References to all medals awareded to this user (Default [])
         """
         if type(userID) == float:
             userID = int(userID)
@@ -241,12 +266,16 @@ class BasedUser(serializable.Serializable):
 
         self.bountyWinsToday = bountyWinsToday
         self.dailyBountyWinsReset = dailyBountyWinsReset
-
-        self.pollOwned = pollOwned
-        self.helpMenuOwned = False
+        self.bountyHuntingXP = bountyHuntingXP
+        self.prestiges = prestiges
 
         self.homeGuildID = homeGuildID
         self.guildTransferCooldownEnd = guildTransferCooldownEnd
+
+        self.kaamo = kaamo
+        self.loma = loma
+        self.ownedMenus = ownedMenus
+        self.medals = medals
 
 
     def resetUser(self):
@@ -267,9 +296,12 @@ class BasedUser(serializable.Serializable):
         self.duelLosses = 0
         self.duelCreditsWins = 0
         self.duelCreditsLosses = 0
-        self.pollOwned = False
+        self.bountyHuntingXP = gameMaths.bountyHuntingXPForLevel(1)
         self.homeGuildID = -1
         self.guildTransferCooldownEnd = datetime.utcnow()
+        self.kaamo = None
+        self.loma = None
+        self.prestiges = 0
 
 
     def numInventoryPages(self, item : str, maxPerPage : int) -> int:
@@ -429,7 +461,7 @@ class BasedUser(serializable.Serializable):
             raise IndexError("Index out of range")
         if self.activeShip is not None:
             self.inactiveShips.addItem(self.activeShip)
-        self.activeShip = self.inactiveShips[index]
+        self.activeShip = self.inactiveShips[index].getItem()
         self.inactiveShips.removeItem(self.activeShip)
 
 
@@ -439,31 +471,47 @@ class BasedUser(serializable.Serializable):
         :return: A dictionary containing all information needed to recreate this user
         :rtype: dict
         """
-        inactiveShipsDict = self.inactiveShips.toDict(**kwargs)["items"]
-        inactiveModulesDict = self.inactiveModules.toDict(**kwargs)["items"]
-        inactiveWeaponsDict = self.inactiveWeapons.toDict(**kwargs)["items"]
-        inactiveTurretsDict = self.inactiveTurrets.toDict(**kwargs)["items"]
-
-        if "saveType" not in kwargs:
-            inactiveToolsDict = self.inactiveTools.toDict(saveType=True, **kwargs)["items"]
-        else:
-            inactiveToolsDict = self.inactiveTools.toDict(**kwargs)["items"]
-
-        alerts = {}
-        for alertID in self.userAlerts.keys():
-            if isinstance(self.userAlerts[alertID], userAlerts.StateUserAlert):
-                alerts[alertID] = self.userAlerts[alertID].state
-
-        return {"credits": self.credits, "lifetimeBountyCreditsWon": self.lifetimeBountyCreditsWon, "bountyCooldownEnd": self.bountyCooldownEnd,
-                "systemsChecked": self.systemsChecked, "bountyWins": self.bountyWins,
-                "activeShip": self.activeShip.toDict(**kwargs), "inactiveShips": inactiveShipsDict,
-                "inactiveModules": inactiveModulesDict, "inactiveWeapons": inactiveWeaponsDict,
-                "inactiveTurrets": inactiveTurretsDict, "inactiveTools": inactiveToolsDict,
+        data = {"credits": self.credits, "lifetimeBountyCreditsWon": self.lifetimeBountyCreditsWon,
+                "bountyCooldownEnd": self.bountyCooldownEnd, "systemsChecked": self.systemsChecked,
+                "bountyWins": self.bountyWins, "activeShip": self.activeShip.toDict(**kwargs),
                 "lastSeenGuildId": self.lastSeenGuildId, "duelWins": self.duelWins, "duelLosses": self.duelLosses,
                 "duelCreditsWins": self.duelCreditsWins, "bountyWinsToday": self.bountyWinsToday,
-                "dailyBountyWinsReset": self.dailyBountyWinsReset.timestamp(), "pollOwned": self.pollOwned,
+                "dailyBountyWinsReset": self.dailyBountyWinsReset.timestamp(), "bountyHuntingXP": self.bountyHuntingXP,
                 "duelCreditsLosses": self.duelCreditsLosses, "homeGuildID": self.homeGuildID,
-                "guildTransferCooldownEnd": self.guildTransferCooldownEnd.timestamp()}
+                "guildTransferCooldownEnd": self.guildTransferCooldownEnd.timestamp(), "prestiges": self.prestiges}
+
+        data["inactiveShips"] = self.inactiveShips.toDict(**kwargs)["items"]
+        data["inactiveModules"] = self.inactiveModules.toDict(**kwargs)["items"]
+        data["inactiveWeapons"] = self.inactiveWeapons.toDict(**kwargs)["items"]
+        data["inactiveTurrets"] = self.inactiveTurrets.toDict(**kwargs)["items"]
+
+        if "saveType" not in kwargs:
+            data["inactiveTools"] = self.inactiveTools.toDict(saveType=True, **kwargs)["items"]
+        else:
+            data["inactiveTools"] = self.inactiveTools.toDict(**kwargs)["items"]
+
+        data["alerts"] = {}
+        for alertType in self.userAlerts:
+            if issubclass(alertType, userAlerts.StateUserAlert):
+                data["alerts"][userAlerts.userAlertsTypesIDs[alertType]] = self.userAlerts[alertType].state
+
+        if self.kaamo is not None:
+            data["kaamo"] = self.kaamo.toDict(**kwargs)
+        if self.loma is not None:
+            data["loma"] = self.loma.toDict(**kwargs)
+
+        if len(self.ownedMenus) > 0:
+            data["ownedMenus"] = {}
+            for menuTypeID in self.ownedMenus:
+                if self.ownedMenus[menuTypeID]:
+                    data["ownedMenus"][menuTypeID] = [menu.msg.id for menu in self.ownedMenus[menuTypeID]]
+        
+        if self.medals:
+            for m in [i for i in self.medals if i.name.lower() not in bbData.medalObjs]:
+                self.medals.remove(m)
+            data["medals"] = [m.name.lower() for m in self.medals]
+
+        return data
 
 
     def userDump(self) -> str:
@@ -498,6 +546,8 @@ class BasedUser(serializable.Serializable):
             return self.systemsChecked
         elif stat == "bountyWins":
             return self.bountyWins
+        elif stat == "prestiges":
+            return self.prestiges
         elif stat == "value":
             modulesValue = 0
             for module in self.inactiveModules.keys:
@@ -736,6 +786,61 @@ class BasedUser(serializable.Serializable):
             return self.inactiveTools
 
 
+    def hasMenuOfTypeID(self, menuTypeID: str) -> bool:
+        """Decide whether the user owns a menu of the given menu type.
+        The menu type is specified as a string type ID, e.g 'help'.
+
+        :param str menuTypeID: The ID of the menu type to look up
+        :return: True if the user has at least one menu with the given type ID, False otherwise
+        :rtype: bool
+        """
+        return menuTypeID in self.ownedMenus and self.ownedMenus[menuTypeID]
+
+
+    def addOwnedMenu(self, menuTypeID: str, menu: reactionMenu.ReactionMenu):
+        """Add the given menu as 'owned' by the user. This does not prevent claiming by other users.
+        The menu type is specified as a string type ID, e.g 'help'.
+
+        :param str menuTypeID: The ID of the menu type to register menu as
+        :param reactionMenu.ReactionMenu menu: The menu to register ownership for
+        """
+        if menuTypeID not in self.ownedMenus:
+            self.ownedMenus[menuTypeID] = set()
+        self.ownedMenus[menuTypeID].add(menu)
+
+    
+    def removeAllOwnedMenusOfTypeID(self, menuTypeID: str) -> int:
+        """Remove ownership of all menus of the given type ID.
+        The number of menus removed is returned.
+        The menu type is specified as a string type ID, e.g 'help'.
+
+        :param str menuTypeID: The ID of the menu type to clear ownership of
+        :return: The number of menus removed from this user's ownership, possibly zero
+        :rtype: int
+        """
+        if menuTypeID not in self.ownedMenus:
+            return 0
+        menusOwned = len(self.ownedMenus[menuTypeID])
+        self.ownedMenus[menuTypeID].clear()
+        return menusOwned
+
+
+    def removeOwnedMenu(self, menuTypeID: str, menu: reactionMenu.ReactionMenu):
+        """Remove the given menu as 'owned' by the user.
+        The menu type is specified as a string type ID, e.g 'help'.
+
+        :param str menuTypeID: The ID of the menu type to unregister menu as
+        :param reactionMenu.ReactionMenu menu: The menu to unregister ownership for
+        """
+        if menuTypeID not in self.ownedMenus:
+            raise KeyError(f"No menus owned with type ID '{menuTypeID}'")
+        if menu not in self.ownedMenus[menuTypeID]:
+            raise ValueError(f"{type(menu).__name_} #{menu.id} not registered to this user as '{menuTypeID}'")
+        self.ownedMenus[menuTypeID].remove(menu)
+        if not self.ownedMenus[menuTypeID]:
+            del self.ownedMenus[menuTypeID]
+
+
     def __str__(self) -> str:
         """Get a short string summary of this BasedUser. Currently only contains the user ID and home guild ID.
 
@@ -763,38 +868,60 @@ class BasedUser(serializable.Serializable):
         activeShip = shipItem.Ship.fromDict(userDict["activeShip"])
 
         inactiveShips = inventory.TypeRestrictedInventory(shipItem.Ship)
-        if "inactiveShips" in userDict:
-            for shipListingDict in userDict["inactiveShips"]:
-                inactiveShips.addItem(shipItem.Ship.fromDict(shipListingDict["item"]), quantity=shipListingDict["count"])
-
         inactiveWeapons = inventory.TypeRestrictedInventory(primaryWeapon.PrimaryWeapon)
-        if "inactiveWeapons" in userDict:
-            for weaponListingDict in userDict["inactiveWeapons"]:
-                inactiveWeapons.addItem(primaryWeapon.PrimaryWeapon.fromDict(weaponListingDict["item"]),
-                                        quantity=weaponListingDict["count"])
-
         inactiveModules = inventory.TypeRestrictedInventory(moduleItem.ModuleItem)
-        if "inactiveModules" in userDict:
-            for moduleListingDict in userDict["inactiveModules"]:
-                inactiveModules.addItem(moduleItemFactory.fromDict(moduleListingDict["item"]),
-                                        quantity=moduleListingDict["count"])
-
         inactiveTurrets = inventory.TypeRestrictedInventory(turretWeapon.TurretWeapon)
-        if "inactiveTurrets" in userDict:
-            for turretListingDict in userDict["inactiveTurrets"]:
-                inactiveTurrets.addItem(turretWeapon.TurretWeapon.fromDict(turretListingDict["item"]),
-                                        quantity=turretListingDict["count"])
-
         inactiveTools = inventory.TypeRestrictedInventory(toolItem.ToolItem)
-        if "inactiveTools" in userDict:
-            for toolListingDict in userDict["inactiveTools"]:
-                inactiveTools.addItem(toolItemFactory.fromDict(toolListingDict["item"]), quantity=toolListingDict["count"])
 
-        return BasedUser(**cls._makeDefaults(userDict, ("lifetimeBountyCreditsWon", "lifetimeBountyCreditsWon"), userID=userID,
-                                                activeShip=activeShip, inactiveShips=inactiveShips,
+        for key, stock, deserializer in (("inactiveShips", inactiveShips, shipItem.Ship.fromDict),
+                                        ("inactiveWeapons", inactiveWeapons, primaryWeapon.PrimaryWeapon.fromDict),
+                                        ("inactiveModules", inactiveModules, moduleItemFactory.fromDict),
+                                        ("inactiveTurrets", inactiveTurrets, turretWeapon.TurretWeapon.fromDict),
+                                        ("inactiveTools", inactiveTools, toolItemFactory.fromDict)):
+            if key in userDict:
+                for listingDict in userDict[key]:
+                    stock.addItem(deserializer(listingDict["item"]), quantity=listingDict["count"])
+
+        if "bountyHuntingXP" in userDict:
+            bountyHuntingXP = userDict["bountyHuntingXP"]
+        else:
+            # Roughly predict bounty hunter XP from pre-bountyShips savedata directly from total credits earned from bounties
+            if "lifetimeBountyCreditsWon" not in userDict or userDict["lifetimeBountyCreditsWon"] == 0:
+                bountyHuntingXP = gameMaths.bountyHuntingXPForLevel(1)
+            else:
+                bountyHuntingXP = int(userDict["lifetimeBountyCreditsWon"] * cfg.bountyRewardToXPGainMult)
+
+        lifetimeBountyCreditsWon = userDict.get("lifetimeBountyCreditsWon", userDict.get("lifetimeBountyCreditsWon", 0))
+
+        kaamo = kaamoShop.KaamoShop.fromDict(userDict["kaamo"]) if "kaamo" in userDict else None
+        loma = lomaShop.LomaShop.fromDict(userDict["loma"]) if "loma" in userDict else None
+
+        ownedMenus = {}
+        if "ownedMenus" in userDict:
+            for menuType in userDict["ownedMenus"]:
+                ownedMenus[menuType] = []
+                for menuID in userDict[menuType]:
+                    if menuID in botState.reactionMenusDB:
+                        ownedMenus[menuType].append(botState.reactionMenusDB[menuID])
+                    else:
+                        botState.logger.log("basedUser", "fromDict",
+                                            "Ignoring unrecognised reactionmenu id: " + menuType \
+                                                + "#" + str(menuID) + " stored in user #" + str(id),
+                                            category="reactionMenus", eventType="unknMenuID")
+        
+        medals = set()
+        if "medals" in userDict and userDict["medals"]:
+            for name in userDict["medals"]:
+                if name in bbData.medalObjs:
+                    medals.add(bbData.medalObjs[name])
+
+        return BasedUser(**cls._makeDefaults(userDict, ("lifetimeBountyCreditsWon",),
+                                                userID=userID, activeShip=activeShip, inactiveShips=inactiveShips,
                                                 inactiveModules=inactiveModules, inactiveWeapons=inactiveWeapons,
                                                 inactiveTurrets=inactiveTurrets, inactiveTools=inactiveTools,
-                                                lifetimeBountyCreditsWon=userDict.get("lifetimeBountyCreditsWon", userDict.get("lifetimeBountyCreditsWon", 0)),
+                                                bountyHuntingXP=bountyHuntingXP, kaamo=kaamo, loma=loma,
+                                                ownedMenus=ownedMenus, lifetimeBountyCreditsWon=lifetimeBountyCreditsWon,
+                                                medals=medals,
                                                 **{k: datetime.utcfromtimestamp(userDict[k]) \
                                                     for k in ("dailyBountyWinsReset", "guildTransferCooldownEnd") \
                                                     if k in userDict}))

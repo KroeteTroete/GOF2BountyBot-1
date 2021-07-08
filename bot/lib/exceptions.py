@@ -1,3 +1,17 @@
+import traceback
+
+
+def formatExceptionTrace(e: Exception) -> str:
+    """Formats the trace for an exception into a string.
+    Great for debugging errors that are swallowed by the event loop.
+
+    :param Exception e: The exception whose stack trace to format
+    :return: The stack trace for e, formatted into a string
+    :rtype: str
+    """
+    return "".join(traceback.format_exception(type(e), e, e.__traceback__))
+
+
 class UnrecognisedCustomEmoji(Exception):
     """Exception raised when creating a BasedEmoji instance, but the client could not match an emoji to the given ID.
 
@@ -54,3 +68,9 @@ class InvalidGameObjectFolder(Exception):
         super().__init__("Invalid game object configuration folder (" + reason + "): " + filePath)
         self.filePath = filePath
         self.reason = reason
+
+
+class NoLongerExists(Exception):
+    """Raised when initializing a bountyboardchannel but couldnt find the channel to load
+    """
+    pass

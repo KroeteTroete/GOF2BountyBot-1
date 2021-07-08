@@ -3,8 +3,9 @@ import random
 from typing import List
 from . import toolItem
 from .... import lib, botState
+from ....lib import gameMaths
 from discord import Message
-from ....cfg import cfg
+from ....cfg import cfg, bbData
 from .. import gameItem
 from ....reactionMenus.confirmationReactionMenu import InlineConfirmationMenu
 from ....users.basedUser import BasedUser
@@ -17,10 +18,15 @@ class CrateTool(toolItem.ToolItem):
 
     :var itemPool: List of potential items to win. May contain duplicates.
     :vartype itemPool: List[gameItem.GameItem]
+    :var crateType: A string identifier for the type of crate, to aid in loading from file in the case of contents changes
+    :vartype crateType: str
+    :var typeNum: A sub-type of crateType, e.g where crateType is levelup, typeNum might be the player's new level
+    :vartype typeNum: int
     """
+
     def __init__(self, itemPool: List[gameItem.GameItem], name : str = "", value : int = 0, wiki : str = "",
-            manufacturer : str = "", icon : str = "", emoji : lib.emojis.BasedEmoji = lib.emojis.BasedEmoji.EMPTY,
-            techLevel : int = -1, builtIn : bool = False):
+            manufacturer : str = "", icon : str = cfg.defaultCrateIcon, emoji : lib.emojis.BasedEmoji = None,
+            techLevel : int = -1, builtIn : bool = False, crateType : str = "", typeNum : int = 0):
         """
         :param List[gameItem.GameItem] itemPool: List of potential items to win. May contain duplicates.
         :param str name: The name of the crate. Must be unique.
@@ -33,7 +39,15 @@ class CrateTool(toolItem.ToolItem):
                                 limited, e.g a measure of the rarity of the items, or of the items' TLs maybe (Default -1)
         :param bool builtIn: Whether this is a BountyBot standard crate (loaded in from JSON) or a custom spawned
                                 item (Default False)
+        :param str crateType: A string identifier for the type of crate, to aid in loading from file in the case of contents
+                                changes (Default "")
+        :param int typeNum: A sub-type of crateType, e.g where crateType is levelup, typeNum might be the player's new level
+                                (Default 0)
         """
+
+        if emoji is None:
+            emoji = cfg.defaultEmojis.defaultCrate
+
 
         super().__init__(name, [], value=value, wiki=wiki,
             manufacturer=manufacturer, icon=icon, emoji=emoji,
@@ -46,6 +60,9 @@ class CrateTool(toolItem.ToolItem):
         else:
             raise RuntimeError("Attempted to create a crateTool with something other than a spawnableItem " \
                                 + "in its itemPool: " + str(item))
+        
+        self.crateType = crateType
+        self.typeNum = typeNum
 
 
     async def use(self, *args, **kwargs):
@@ -83,7 +100,8 @@ class CrateTool(toolItem.ToolItem):
                             + type(kwargs["callingBUser"]).__name__)
 
         callingBUser = kwargs["callingBUser"]
-        confirmMsg = await message.reply(mention_author=False, content="Are you sure you want to open this crate?")
+        confirmMsg = await message.reply(mention_author=False,
+                                        content=f"Are you sure you want to open your '{self.name}' crate?")
         confirmation = await InlineConfirmationMenu(confirmMsg, message.author,
                                                     cfg.toolUseConfirmTimeoutSeconds).doMenu()
 
@@ -117,12 +135,16 @@ class CrateTool(toolItem.ToolItem):
         :rtype: dict
         """
         data = super().toDict(**kwargs)
-        if "saveType" not in kwargs:
-            kwargs["saveType"] = True
+        if self.builtIn:
+            data["crateType"] = self.crateType
+            data["typeNum"] = self.typeNum
+        else:
+            if "saveType" not in kwargs:
+                kwargs["saveType"] = True
 
-        data["itemPool"] = []
-        for item in self.itemPool:
-            data["itemPool"].append(item.toDict(**kwargs))
+            data["itemPool"] = []
+            for item in self.itemPool:
+                data["itemPool"].append(item.toDict(**kwargs))
         return data
 
 
@@ -136,9 +158,20 @@ class CrateTool(toolItem.ToolItem):
         """
         skipInvalidItems = kwargs.get("skipInvalidItems", False)
 
+        if "builtIn" in crateDict and crateDict["builtIn"]:
+            if "crateType" in crateDict:
+                if crateDict["crateType"] in bbData.builtInCrateObjs:
+                    return bbData.builtInCrateObjs[crateDict["crateType"]][crateDict["typeNum"]]
+                else:
+                    raise ValueError("Unknown crateType: " + str(crateDict["crateType"]))
+            else:
+                raise ValueError("Attempted to spawn builtIn CrateTool with no given crateType")
+        else:
+            crateToSpawn = crateDict
+
         itemPool = []
-        if "itemPool" in crateDict:
-            for itemDict in crateDict["itemPool"]:
+        if "itemPool" in crateToSpawn:
+            for itemDict in crateToSpawn["itemPool"]:
                 errorStr = ""
                 errorType = ""
                 if "type" not in itemDict:

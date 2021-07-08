@@ -1,5 +1,6 @@
 # Set up bot config
 
+from bot.gameObjects.items import shipItem
 from .cfg import cfg, versionInfo, bbData, gameConfigurator
 
 
@@ -17,15 +18,21 @@ import traceback
 import asyncio
 import signal
 import aiohttp
+import sys
 
 
 # BASED Imports
 
 from . import lib, botState, logging
-from .databases import guildDB, reactionMenuDB, userDB
+from .databases import guildDB, reactionMenuDB, userDB, bountyDB
 from .scheduling.timedTask import TimedTask
 from .scheduling.timedTaskHeap import TimedTaskHeap
 from bot.scheduling import timedTaskHeap
+from .reactionMenus import reactionMenu
+
+
+
+##### UTIL FUNCTIONS #####
 
 
 async def checkForUpdates():
@@ -98,11 +105,16 @@ def setHelpEmbedThumbnails():
 
 async def initializeBountyBoardChannels():
     for guild in botState.guildsDB.getGuilds():
-        if guild.hasBountyBoardChannel:
-            if botState.client.get_channel(guild.bountyBoardChannel.channelIDToBeLoaded) is None:
-                guild.removeBountyBoardChannel()
-            else:
-                await guild.bountyBoardChannel.init(botState.client, bbData.bountyFactions)
+        if guild.hasBountyBoardChannels:
+            for div in guild.bountiesDB.divisions.values():
+                try:
+                    await div.bountyBoardChannel.init(botState.client)
+                except lib.exceptions.NoLongerExists:
+                    botState.logger.log("main", "initializeBountyBoardChannels",
+                                        f"failed to load bountyboard channel {div.bountyBoardChannel.channelIDToBeLoaded}" \
+                                            + f" for guild {guild.id}, division {bountyDB.nameForDivision(div)}. Removing.",
+                                        category="bountyBoards", eventType="UKWN_CHAN")
+                    div.removeBountyBoardChannel()
 
 
 def inferUserPermissions(message: discord.Message) -> int:
@@ -215,7 +227,7 @@ class BasedClient(ClientBaseClass):
             # expire non-saveable reaction menus
             menus = list(botState.reactionMenusDB.values())
             for menu in menus:
-                if not menu.saveable:
+                if not reactionMenu.isSaveableMenuInstance(menu):
                     await menu.delete()
 
         # log out of discord
@@ -264,7 +276,7 @@ def loadGuildsDB(filePath: str, dbReload: bool = False) -> guildDB.GuildDB:
     :return: a GuildDB as described by the dictionary-serialized representation stored in the file located in filePath.
     """
     if os.path.isfile(filePath):
-        return guildDB.GuildDB.fromDict(lib.jsonHandler.readJSON(filePath))
+        return guildDB.GuildDB.fromDict(lib.jsonHandler.readJSON(filePath), dbReload=dbReload)
     return guildDB.GuildDB()
 
 
@@ -477,13 +489,21 @@ async def on_ready():
 
     # Load save data. If the specified files do not exist, an empty database will be created instead.
     botState.usersDB = loadUsersDB(cfg.paths.usersDB)
-    botState.guildsDB = loadGuildsDB(cfg.paths.guildsDB)
+    botState.guildsDB = loadGuildsDB(cfg.paths.guildsDB, dbReload=True)
     botState.reactionMenusDB = await loadReactionMenusDB(cfg.paths.reactionMenusDB)
 
     # Create BasedGuild instances for any guilds that the bot joined whilst it was offline
     for guild in botState.client.guilds:
         if not botState.guildsDB.idExists(guild.id):
             botState.guildsDB.addDcGuild(guild)
+
+
+    ##### SCHEDULING CONTINUED #####
+    # to be moved
+    # Schedule guild activity measurement decaying
+    botState.temperatureDecayTT = TimedTask(expiryDelta=timedelta(**cfg.timeouts.guildActivityDecay),
+                                            autoReschedule=True, expiryFunction=botState.guildsDB.decayAllTemps)
+    botState.taskScheduler.scheduleTask(botState.temperatureDecayTT)
 
 
     ##### CLEANUP #####
@@ -578,8 +598,9 @@ async def on_message(message: discord.Message):
                                         + "This command probably won't work until we've looked into it.",
                                 mention_author=False)
             # log the exception as misc
-            botState.logger.log("Main", "on_message", "An unexpected error occured when calling command '" \
-                                + command + "' with args '" + args + "': " + type(e).__name__, trace=traceback.format_exc())
+            botState.logger.log("Main", "on_message",
+                                f"An unexpected error occured when calling command '{command}' with args '{args}'",
+                                exception=e)
             print(traceback.format_exc())
             commandFound = True
 

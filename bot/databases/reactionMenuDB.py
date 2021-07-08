@@ -1,3 +1,4 @@
+from ..reactionMenus import reactionMenu
 from .. import botState
 from ..reactionMenus import reactionMenu
 
@@ -76,6 +77,14 @@ async def fromDict(dbDict: dict) -> ReactionMenuDB:
             botState.logger.log("reactionMenuDB", "fromDict",
                                 "Attempted to fromDict a non-saveable menu type, ignoring and removing. msg #" + str(msgID) \
                                     + ", type " + menuData["type"],
+                                category="reactionMenus", eventType="dictUnsaveable")
+
+        if reactionMenu.isSaveableMenuTypeName(menuData["type"]):
+            newDB[int(msgID)] = reactionMenu.saveableMenuClassFromName(menuData["type"]).fromDict(menuData, msg=msg)
+        else:
+            botState.logger.log("reactionMenuDB", "fromDict",
+                                "Attempted to fromDict a non-saveable menu type, ignoring and removing. " \
+                                    + "msg #" + str(msgID) + ", type " + menuData["type"],
                                 category="reactionMenus", eventType="dictUnsaveable")
 
     return newDB

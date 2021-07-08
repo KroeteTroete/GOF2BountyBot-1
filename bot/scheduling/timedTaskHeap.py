@@ -114,7 +114,7 @@ class TimedTaskHeap:
 def startSleeper(delay: int, loop: asyncio.AbstractEventLoop, result: bool = None) -> asyncio.Task:
     async def _start(delay, loop, result=None):
         coro = asyncio.sleep(delay, result=result, loop=loop)
-        task = asyncio.ensure_future(coro)
+        task = asyncio.create_task(coro)
         try:
             return await task
         except asyncio.CancelledError:
@@ -173,7 +173,7 @@ class AutoCheckingTimedTaskHeap(TimedTaskHeap):
             if len(self.tasksHeap) > 0:
                 sleepDelta = self.tasksHeap[0].expiryTime - datetime.utcnow()
                 coro = asyncio.sleep(sleepDelta.total_seconds(), loop=self.loop)
-                self.sleepTask = asyncio.ensure_future(coro)
+                self.sleepTask = asyncio.create_task(coro)
 
                 try:
                     await self.sleepTask
@@ -193,7 +193,7 @@ class AutoCheckingTimedTaskHeap(TimedTaskHeap):
         if self.active:
             raise RuntimeError("loop already active")
         self.active = True
-        self.checkingLoopFuture = asyncio.ensure_future(self._checkingLoop())
+        self.checkingLoopFuture = asyncio.create_task(self._checkingLoop())
 
 
     def stopTaskChecking(self):
@@ -210,7 +210,7 @@ class AutoCheckingTimedTaskHeap(TimedTaskHeap):
         """Schedule a new task onto the heap.
         If no checking loop is currently active, a new one is started.
         If a checking loop is already active and waiting for task that expires after this one,
-        the loop's current waiting time is updated to exire this task first.
+        the loop's current waiting time is updated to expire this task first.
 
         :param TimedTask task: the task to schedule
         :param bool startLoop: Give False here to override the starting of a new loop. This may be useful when creating
@@ -242,7 +242,7 @@ class AutoCheckingTimedTaskHeap(TimedTaskHeap):
 
         :param TimedTask task: the task to remove from the heap
         """
-        if self.active and len(self.tasksHeap) > 0 and task == self.tasksHeap[0]:
+        if self.active and self.sleepTask is not None and len(self.tasksHeap) > 0 and task == self.tasksHeap[0]:
             self.sleepTask.cancel()
             self.sleepTask = None
 

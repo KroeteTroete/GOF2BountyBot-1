@@ -4,6 +4,7 @@ from datetime import datetime
 
 from . import commandsDB as botCommands
 from .. import botState, lib
+from ..users.basedUser import BasedUser
 
 from . import util_help
 
@@ -96,7 +97,7 @@ async def dev_cmd_broadcast(message : discord.Message, args : str, isDM : bool):
                 if guild.hasPlayChannel():
                     await guild.getPlayChannel().send(sendArgs)
 
-botCommands.register("broadcast", dev_cmd_broadcast, 2, forceKeepArgsCasing=True, allowDM=True, useDoc=True)
+botCommands.register("broadcast", dev_cmd_broadcast, 3, forceKeepArgsCasing=True, allowDM=True, useDoc=True)
 
 
 async def dev_cmd_reset_has_poll(message : discord.Message, args : str, isDM : bool):
@@ -106,16 +107,24 @@ async def dev_cmd_reset_has_poll(message : discord.Message, args : str, isDM : b
     :param str args: string, can be empty or contain a user mention
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
-    # reset the calling user's cooldown if no user is specified
-    if args == "":
-        botState.usersDB.getUser(message.author.id).pollOwned = False
-        # otherwise get the specified user's discord object and reset their cooldown.
+    try:
+        # reset the calling user's cooldown if no user is specified
+        if args == "":
+            requestedBUser: BasedUser = botState.usersDB.getUser(message.author.id)
+        # otherwise get the specified user's discord object and reset their poll ownership.
         # [!] no validation is done.
-    else:
-        botState.usersDB.getUser(int(args.lstrip("<@!").rstrip(">"))).pollOwned = False
-    await message.reply(mention_author=False, content="Done!")
+        else:
+            requestedBUser: BasedUser = botState.usersDB.getUser(int(args.lstrip("<@!").rstrip(">")))
+    except KeyError:
+        await message.reply(":x: Unknown user. They may not have used the bot yet.")
 
-botCommands.register("reset-has-poll", dev_cmd_reset_has_poll, 2, allowDM=True, useDoc=True)
+    menusRemoved = requestedBUser.removeAllOwnedMenusOfTypeID("poll")
+    if menusRemoved:
+        await message.reply(f"Ownership of {menusRemoved} removed successfuly.")
+    else:
+        await message.reply(mention_author=False, content="This user has no polls!")
+
+botCommands.register("reset-has-poll", dev_cmd_reset_has_poll, 3, allowDM=True, useDoc=True)
 
 
 async def dev_cmd_bot_update(message: discord.Message, args: str, isDM: bool):
@@ -161,7 +170,7 @@ async def dev_cmd_setbalance(message : discord.Message, args : str, isDM : bool)
     requestedBBUser.credits = int(argsSplit[1])
     await message.reply(mention_author=False, content="Done!")
 
-botCommands.register("setbalance", dev_cmd_setbalance, 2, allowDM=True, useDoc=True)
+botCommands.register("setbalance", dev_cmd_setbalance, 3, allowDM=True, useDoc=True)
 
 
 async def dev_cmd_reset_transfer_cool(message : discord.Message, args : str, isDM : bool):
@@ -181,4 +190,4 @@ async def dev_cmd_reset_transfer_cool(message : discord.Message, args : str, isD
     await message.reply(mention_author=False, content="Done!")
 
 
-botCommands.register("reset-transfer-cool", dev_cmd_reset_transfer_cool, 2, allowDM=True, useDoc=True)
+botCommands.register("reset-transfer-cool", dev_cmd_reset_transfer_cool, 3, allowDM=True, useDoc=True)

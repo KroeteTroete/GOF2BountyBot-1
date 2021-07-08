@@ -3,6 +3,7 @@ from os import path
 from datetime import datetime
 import traceback
 from typing import Tuple, List
+from .lib.exceptions import formatExceptionTrace
 
 
 LOG_TIME_FORMAT = "(%d/%m/%H:%M)"
@@ -145,8 +146,8 @@ class Logger:
         self.clearLogs()
 
 
-    def log(self, classStr: str, funcStr: str, event: str, category: str = "misc",
-            eventType: str = "MISC_ERR", trace: str = "", noPrintEvent: bool = False, noPrint: bool = False):
+    def log(self, classStr: str, funcStr: str, event: str, category: str = "misc", eventType: str = None,
+                trace: str = "", exception: Exception = None, noPrintEvent: bool = False, noPrint: bool = False):
         """Log an event, queueing the log to be saved to a file.
 
         :param str classStr: The class in which the event occurred
@@ -157,6 +158,8 @@ class Logger:
         :param str eventType: The type of event, analagous to an exception type name. (Default 'MISC_ERR')
         :param str trace: If the logged event is an exception, you may wish to provide a stack trace
                             here with traceback.format_exc(). (Default "")
+        :param Exception exception: Automatically generate event, trace and eventType from this exception.
+                                    If any of the above are given, they are used instead. (Default None)
         :param bool noPrintEvent: Give True to print this log to console without the event string. Useful in cases where
                             the event string is very long. (Default False)
         :param bool noPrint: Skip printing this log to console entirely. Useful in cases where the log occurrs frequently
@@ -166,6 +169,17 @@ class Logger:
             self.log("misc", "Log", "log",
                         "ATTEMPTED TO LOG TO AN UNKNOWN CATEGORY '" \
                             + str(category) + "' -> Redirected to misc.", eventType="UNKWN_CTGR")
+
+        if exception is not None:
+            if event == "":
+                event = str(exception)
+            if eventType is None:
+                eventType = type(exception).__name__
+            if trace == "":
+                trace = formatExceptionTrace(exception)
+        
+        if eventType is None:
+            eventType = "MISC_ERR"
 
         now = datetime.utcnow()
         if noPrintEvent:
