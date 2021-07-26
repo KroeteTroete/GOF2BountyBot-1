@@ -16,7 +16,7 @@ from ..gameObjects.userProfile.medal import Medal
 from ..gameObjects.inventories import inventory
 from ..userAlerts import userAlerts
 from datetime import datetime, timedelta
-from discord import Guild, Member
+from discord import Guild, Member # type: ignore[import]
 from ..users import basedGuild
 from .. import lib, botState
 from ..lib import gameMaths
