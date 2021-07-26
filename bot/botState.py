@@ -7,7 +7,7 @@ class ShutDownState:
     shutdown = 1
     update = 2
 
-client = None
+client = None # type: ignore[var-annotated]
 shutdown = ShutDownState.restart
 httpClient: ClientSession = None
 
