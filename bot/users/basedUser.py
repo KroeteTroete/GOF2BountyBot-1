@@ -882,16 +882,16 @@ class BasedUser(serializable.Serializable):
                 for listingDict in userDict[key]:
                     stock.addItem(deserializer(listingDict["item"]), quantity=listingDict["count"])
 
+        lifetimeBountyCreditsWon = userDict.get("lifetimeBountyCreditsWon", userDict.get("lifetimeCredits", 0))
+
         if "bountyHuntingXP" in userDict:
             bountyHuntingXP = userDict["bountyHuntingXP"]
         else:
             # Roughly predict bounty hunter XP from pre-bountyShips savedata directly from total credits earned from bounties
-            if "lifetimeBountyCreditsWon" not in userDict or userDict["lifetimeBountyCreditsWon"] == 0:
+            if lifetimeBountyCreditsWon == 0:
                 bountyHuntingXP = gameMaths.bountyHuntingXPForLevel(1)
             else:
-                bountyHuntingXP = int(userDict["lifetimeBountyCreditsWon"] * cfg.bountyRewardToXPGainMult)
-
-        lifetimeBountyCreditsWon = userDict.get("lifetimeBountyCreditsWon", userDict.get("lifetimeCredits", 0))
+                bountyHuntingXP = int(lifetimeBountyCreditsWon * cfg.bountyRewardToXPGainMult)
 
         kaamo = kaamoShop.KaamoShop.fromDict(userDict["kaamo"]) if "kaamo" in userDict else None
         loma = lomaShop.LomaShop.fromDict(userDict["loma"]) if "loma" in userDict else None
