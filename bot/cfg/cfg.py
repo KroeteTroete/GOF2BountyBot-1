@@ -199,6 +199,12 @@ bountyDivisions = { "bronze": (0, 3),
 # Price ranges by which ships should be ranked into tech levels. 0th index = tech level 1
 shipMaxPriceTechLevels = [50000, 100000, 200000, 500000, 1000000, 2000000, 5000000, 7000000, 7500000, 999999999]
 
+# Amount of xp a user must have to reach a bounty hunter level. xp required for level 1 = bountyXPLevelBoundaries[1]
+# This is a measurement of the old algorithm based approach
+#bountyXPLevelBoundaries = [-1, 0, 1500, 3500, 8000, 15000, 28000, 51000, 90000, 165000, 300000]
+# This is the new one based on observed criminal values
+bountyXPLevelBoundaries = [-1, 0, 10500, 20000, 35000, 100000, 180000, 610000, 710000, 900000, 10000000]
+
 
 
 ##### USER LEVELING #####
@@ -370,10 +376,6 @@ criminalEquipDamagelessWeaponChance = 20
 
 # The maximum number of levels a criminal's gear may be above their difficulty rating
 criminalMaxGearUpgrade = 1
-
-# The maximum total-value a player may have before being disallowed from hunting a tech-level of bounty. 0th index = tech level 1
-# I.e, to hunt level 1 bounties, a player must be worth no more than bountyTLMaxPlayerValues[0] credits.
-bountyTLMaxPlayerValues = [50000, 75000, 100000, 200000, 450000, 600000, 800000, 1000000, 2000000, 3000000, 999999999]
 
 level0CrimLoadout = {"name": "Betty", "builtIn":True,
                     "weapons":[{"name": "Nirai Impulse EX 1", "builtIn": True}],

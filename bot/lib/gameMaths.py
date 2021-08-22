@@ -162,6 +162,19 @@ BHLc = 1675
 BHLd = 13.55
 
 
+"NEW MANUAL BOUNDARIES BASED METHOD"
+def bountyHuntingXPForLevel(level):
+    return cfg.bountyXPLevelBoundaries[level]
+    
+def calculateUserBountyHuntingLevel(xp):
+    try:
+        return next(i-1 for i, v in enumerate(cfg.bountyXPLevelBoundaries) if v > xp)
+    except StopIteration:
+        return cfg.maxTechLevel
+
+
+""" OLD ALGORITHM BASED METHOD
+
 # Inverse of calculateUserBountyHuntingLevel
 def bountyHuntingXPForLevel(level):
     return max(0, int(BHLb * math.pow(10, (level - BHLd) / BHLa) - BHLc))
@@ -172,7 +185,7 @@ def calculateUserBountyHuntingLevel(xp):
     if xp <= 0:
         return 1
     return min(cfg.maxTechLevel, max(1, int(BHLa * math.log10((xp + BHLc)/BHLb) + BHLd)))
-
+"""
 
 # def bountyHuntingXPForLevel(level):
 #     return int(1000 * math.exp((level - 1)/3.74) - 1000)
