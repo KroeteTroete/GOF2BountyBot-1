@@ -732,7 +732,9 @@ class BasedGuild(serializable.Serializable):
 
         bountiesDisabled = guildDict.get("bountiesDisabled", False)
 
-        if not guildDict.get("shopDisabled", True):
+        shopDisabled = guildDict.get("shopDisabled", False)
+
+        if shopDisabled:
             shop = None
         else:
             if "shop" in guildDict:
@@ -743,7 +745,7 @@ class BasedGuild(serializable.Serializable):
         newGuild = BasedGuild(**cls._makeDefaults(guildDict, ("bountiesDB","bountyBoardChannel"),
                                                     id=guildID, dcGuild=dcGuild, bounties=None,
                                                     announceChannel=announceChannel, playChannel=playChannel,
-                                                    shop=shop, shopDisabled=shop is None))
+                                                    shop=shop, shopDisabled=shopDisabled))
 
         if not bountiesDisabled:
             if "bountiesDB" in guildDict:
