@@ -915,7 +915,7 @@ class BasedUser(serializable.Serializable):
                 if name in bbData.medalObjs:
                     medals.add(bbData.medalObjs[name])
 
-        return BasedUser(**cls._makeDefaults(userDict, ("lifetimeBountyCreditsWon",),
+        return BasedUser(**cls._makeDefaults(userDict, ("lifetimeBountyCreditsWon", "lifetimeCredits", "pollOwned"),
                                                 userID=userID, activeShip=activeShip, inactiveShips=inactiveShips,
                                                 inactiveModules=inactiveModules, inactiveWeapons=inactiveWeapons,
                                                 inactiveTurrets=inactiveTurrets, inactiveTools=inactiveTools,
