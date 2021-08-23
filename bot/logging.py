@@ -6,7 +6,7 @@ from typing import Tuple, List
 from .lib.exceptions import formatExceptionTrace
 
 
-LOG_TIME_FORMAT = "(%d/%m/%H:%M)"
+LOG_TIME_FORMAT = "(%d/%m%Y-%H:%M)"
 
 
 class Logger:
