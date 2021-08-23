@@ -600,7 +600,7 @@ async def cmd_info_skin(message : discord.Message, args : str, isDM : bool):
             else:
                 currentStr = shipData["name"]
 
-            if currentLen + len(currentStr) + len(joiner) > maxLen:
+            if currentLen + len(currentStr) + numJoins * len(joiner) > maxLen:
                 compatibleShipStrs += []
                 currentField += 1
                 currentLen = len(currentStr)
