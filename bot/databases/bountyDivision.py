@@ -12,6 +12,7 @@ from ..gameObjects.bounties.bountyBoards.bountyBoardChannel import BountyBoardCh
 from ..cfg import cfg, bbData
 from .. import botState, lib
 from ..scheduling.timedTask import TimedTask, DynamicRescheduleTask
+from traceback import format_stack
 
 from datetime import timedelta
 import random
@@ -93,40 +94,41 @@ class BountyDivision(Serializable):
 
         self.newBountyTT: Union[TimedTask, None] = None
         if not self.isFull():
-            self.startBountySpawner()
+            self.tryStartBountySpawner()
 
 
-    def startBountySpawner(self):
-        """Create a new self.newBountyTT and schedule it onto the botState.taskScheduler.
-        
-        :raise ValueError: If self.newBountyTT already exists
-        :raise OverflowError: If the division is full
+    def tryStartBountySpawner(self):
+        """Create a new self.newBountyTT and schedule it onto the botState.taskScheduler, if the division is not already full.
+        If the division is full, do nothing.
+        Also does nothing in the case that a newBountyTT is already running, to work around race conditions.
         """
         if self.newBountyTT is not None:
-            raise ValueError("Attempted to startBountySpawner when a newBountyTT already exists")
+            botState.logger.log("BountyDivision", "tryStartBountySpawner", "Attempted to tryStartBountySpawner when a newBountyTT already exists",
+                                "newBounties", "TT_EXISTS", format_stack())
         elif self.isFull():
-            raise OverflowError("Attempted to startBountySpawner when the division is already full")
-
-        bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelay,
-                                "fixed-routeScale": self.getRouteScaledBountyDelayFixed,
-                                "random-routeScale": self.getRouteScaledBountyDelayRandom,
-                                "random-routeScale-tempScale": self.getRouteTempScaledBountyDelayRandom}
-
-        bountyDelayGeneratorArgs = {"random": self.delayRandRange,
-                                    "fixed-routeScale": cfg.newBountyFixedDelta,
-                                    "random-routeScale": self.delayRandRange,
-                                    "random-routeScale-tempScale": self.delayRandRange}
-
-        if cfg.newBountyDelayType == "fixed":
-            self.newBountyTT = TimedTask(expiryDelta=timedelta(**cfg.newBountyFixedDelta),
-                                        expiryFunction=self.spawnNewBounty, autoReschedule=True,
-                                        rescheduleOnExpiryFuncFailure=True)
+            botState.logger.log("BountyDivision", "tryStartBountySpawner", "Attempted to tryStartBountySpawner when the division is already full",
+                                "newBounties", "DIV_FULL", format_stack())
         else:
-            self.newBountyTT = DynamicRescheduleTask(bountyDelayGenerators[cfg.newBountyDelayType], autoReschedule=True,
-                                                    delayTimeGeneratorArgs=bountyDelayGeneratorArgs[cfg.newBountyDelayType],
-                                                    rescheduleOnExpiryFuncFailure=True, expiryFunction=self.spawnNewBounty)
+            bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelay,
+                                    "fixed-routeScale": self.getRouteScaledBountyDelayFixed,
+                                    "random-routeScale": self.getRouteScaledBountyDelayRandom,
+                                    "random-routeScale-tempScale": self.getRouteTempScaledBountyDelayRandom}
 
-        botState.taskScheduler.scheduleTask(self.newBountyTT)
+            bountyDelayGeneratorArgs = {"random": self.delayRandRange,
+                                        "fixed-routeScale": cfg.newBountyFixedDelta,
+                                        "random-routeScale": self.delayRandRange,
+                                        "random-routeScale-tempScale": self.delayRandRange}
+
+            if cfg.newBountyDelayType == "fixed":
+                self.newBountyTT = TimedTask(expiryDelta=timedelta(**cfg.newBountyFixedDelta),
+                                            expiryFunction=self.spawnNewBounty, autoReschedule=True,
+                                            rescheduleOnExpiryFuncFailure=True)
+            else:
+                self.newBountyTT = DynamicRescheduleTask(bountyDelayGenerators[cfg.newBountyDelayType], autoReschedule=True,
+                                                        delayTimeGeneratorArgs=bountyDelayGeneratorArgs[cfg.newBountyDelayType],
+                                                        rescheduleOnExpiryFuncFailure=True, expiryFunction=self.spawnNewBounty)
+
+            botState.taskScheduler.scheduleTask(self.newBountyTT)
 
 
     def stopBountySpawner(self):
@@ -426,7 +428,7 @@ class BountyDivision(Serializable):
                     await bty.respawnTT.forceExpire(callExpiryFunc=False)
                 tlBounties.clear()
         if wasFull:
-            self.startBountySpawner()
+            self.tryStartBountySpawner()
 
 
     async def resetNewBountyCool(self):
@@ -531,7 +533,7 @@ class BountyDivision(Serializable):
         except KeyError:
             raise KeyError("Bounty not found: " + bounty.criminal.name)
         if wasFull:
-            self.startBountySpawner()
+            self.tryStartBountySpawner()
     
 
     def removeEscapedBountyObj(self, bounty : Bounty):
@@ -546,7 +548,7 @@ class BountyDivision(Serializable):
         except KeyError:
             raise KeyError("Escaped bounty not found: " + bounty.criminal.name)
         if wasFull:
-            self.startBountySpawner()
+            self.tryStartBountySpawner()
 
 
     def toDict(self, **kwargs) -> dict:
