@@ -1333,3 +1333,33 @@ async def dev_cmd_current_max_bounties(message : discord.Message, args : str, is
 
 botCommands.register("current-max-bounties", dev_cmd_current_max_bounties, 3, allowDM=False,
                         helpSection="bounties", useDoc=True)
+
+
+async def dev_cmd_xp_for_level(message : discord.Message, args : str, isDM : bool):
+    """Print the amount of bounty hunter xp required to reach a given level.
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: string containing a level.
+    :param bool isDM: Whether or not the command is being called from a DM channel
+    """
+    if args == "":
+        await message.reply(":x: Please give a level!")
+        return
+
+    elif not lib.stringTyping.isInt(args):
+        await message.reply(":x: That's not a number!")
+        return
+
+    tl = int(args)
+
+    if tl < cfg.minTechLevel or tl > cfg.maxTechLevel:
+        await message.reply(f":x: Level must be between {cfg.minTechLevel} and {cfg.maxTechLevel}.")
+
+    else:
+        await message.reply(mention_author=False, content="💎 **" + gameMaths.bountyHuntingXPForLevel(tl) \
+                                    + f"** bounty hunter xp is required to reach level {args}.")
+
+botCommands.register("xp-for-level", dev_cmd_xp_for_level, 3, forceKeepArgsCasing=True, allowDM=True, helpSection="bounties",
+                        signatureStr="**xp-for-level** *[level]*",
+                        shortHelp="Get the amount of xp required to reach a given bounty hunter level.")
+
