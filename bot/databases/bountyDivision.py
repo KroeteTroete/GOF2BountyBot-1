@@ -104,10 +104,10 @@ class BountyDivision(Serializable):
         """
         if self.newBountyTT is not None:
             botState.logger.log("BountyDivision", "tryStartBountySpawner", "Attempted to tryStartBountySpawner when a newBountyTT already exists",
-                                "newBounties", "TT_EXISTS", format_stack())
+                                "newBounties", "TT_EXISTS", "\n".join(format_stack()))
         elif self.isFull():
             botState.logger.log("BountyDivision", "tryStartBountySpawner", "Attempted to tryStartBountySpawner when the division is already full",
-                                "newBounties", "DIV_FULL", format_stack())
+                                "newBounties", "DIV_FULL", "\n".join(format_stack()))
         else:
             bountyDelayGenerators = {"random": lib.timeUtil.getRandomDelay,
                                     "fixed-routeScale": self.getRouteScaledBountyDelayFixed,
