@@ -5,6 +5,7 @@ from . import commandsDB as botCommands
 from .. import lib, botState
 from ..cfg import cfg, bbData
 from ..gameObjects.items import gameItem
+from ..gameObjects.bounties.bounty import Bounty
 
 
 botCommands.addHelpSection(3, "items")
@@ -415,3 +416,54 @@ async def dev_cmd_debug_hangar(message : discord.Message, args : str, isDM : boo
 
 
 botCommands.register("debug-hangar", dev_cmd_debug_hangar, 3, allowDM=True, helpSection="items", useDoc=True)
+
+
+# TODO: Move to dev_economy
+async def dev_md_crim_value(message : discord.Message, args : str, isDM : bool):
+    """⚠ WARNING: MARKED FOR CHANGE ⚠
+    The following function is provisional and marked as planned for overhaul.
+    Details: The command output is finalised. However, the inner workings of the command are to be replaced with attribute
+    getters. It is inefficient to calculate total value measurements on every call, so current totals should be cached in
+    object attributes whenever modified.
+
+    print the total value of the specified criminal.
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: string containing a criminal name.
+    :param bool isDM: Whether or not the command is being called from a DM channel
+    """
+    # If no user is specified, send the balance of the calling user
+    if args == "":
+        await message.reply(":x: Please give a criminal!")
+
+    # If a user is specified
+    else:
+        callingBBGuild = botState.guildsDB.getGuild(message.guild.id)
+        if callingBBGuild.bountiesDisabled:
+            await message.channel.send(":x: This server has bounties disabled!")
+            return
+
+        # look up the criminal object
+        criminalName = args.title()
+
+        # report unrecognised criminal names
+        if not callingBBGuild.bountiesDB.bountyNameExists(criminalName, noEscapedCrim=True):
+            errmsg = ":x: That pilot is not currently wanted!"
+
+            if lib.stringTyping.isMention(criminalName):
+                errmsg += "\n:warning: **Don't tag users**, use their name and ID number like so: `" \
+                            + callingBBGuild.commandPrefix + "loadout criminal Trimatix#2244`"
+
+            await message.channel.send(errmsg)
+            return
+
+        bountyObj: Bounty = callingBBGuild.bountiesDB.getBounty(criminalName)
+
+        # send the user's balance
+        await message.reply(mention_author=False, content=":moneybag: **" + criminalName \
+                                    + "**'s loadout has a total value of **" \
+                                    + str(bountyObj.activeShip.getValue()) + " Credits**.")
+
+botCommands.register("crim-value", dev_cmd_crim_value, 0, forceKeepArgsCasing=True, allowDM=False, helpSection="items",
+                        signatureStr="**crim-value** *[criminal name]*",
+                        shortHelp="Get the total value of a criminal's loadout.")
