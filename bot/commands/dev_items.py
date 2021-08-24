@@ -419,7 +419,7 @@ botCommands.register("debug-hangar", dev_cmd_debug_hangar, 3, allowDM=True, help
 
 
 # TODO: Move to dev_economy
-async def dev_md_crim_value(message : discord.Message, args : str, isDM : bool):
+async def dev_cmd_crim_value(message : discord.Message, args : str, isDM : bool):
     """⚠ WARNING: MARKED FOR CHANGE ⚠
     The following function is provisional and marked as planned for overhaul.
     Details: The command output is finalised. However, the inner workings of the command are to be replaced with attribute
