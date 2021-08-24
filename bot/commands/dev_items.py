@@ -464,6 +464,6 @@ async def dev_cmd_crim_value(message : discord.Message, args : str, isDM : bool)
                                     + "**'s loadout has a total value of **" \
                                     + str(bountyObj.activeShip.getValue()) + " Credits**.")
 
-botCommands.register("crim-value", dev_cmd_crim_value, 0, forceKeepArgsCasing=True, allowDM=False, helpSection="items",
+botCommands.register("crim-value", dev_cmd_crim_value, 3, forceKeepArgsCasing=True, allowDM=False, helpSection="items",
                         signatureStr="**crim-value** *[criminal name]*",
                         shortHelp="Get the total value of a criminal's loadout.")
