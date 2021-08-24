@@ -1356,7 +1356,7 @@ async def dev_cmd_xp_for_level(message : discord.Message, args : str, isDM : boo
         await message.reply(f":x: Level must be between {cfg.minTechLevel} and {cfg.maxTechLevel}.")
 
     else:
-        await message.reply(mention_author=False, content="💎 **" + gameMaths.bountyHuntingXPForLevel(tl) \
+        await message.reply(mention_author=False, content=f"💎 **{gameMaths.bountyHuntingXPForLevel(tl)}" \
                                     + f"** bounty hunter xp is required to reach level {args}.")
 
 botCommands.register("xp-for-level", dev_cmd_xp_for_level, 3, forceKeepArgsCasing=True, allowDM=True, helpSection="bounties",
