@@ -404,9 +404,6 @@ class Ship(GameItem):
                 total += module.shield
                 multiplier *= module.shieldMultiplier
 
-        for upgrade in self.upgradesApplied:
-            total += upgrade.shield
-            multiplier *= upgrade.shieldMultiplier
         return int(total * multiplier)
 
 
