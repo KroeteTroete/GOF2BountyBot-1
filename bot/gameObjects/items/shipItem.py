@@ -380,9 +380,6 @@ class Ship(GameItem):
                 total += module.dps
                 multiplier *= module.dpsMultiplier
 
-        for upgrade in self.upgradesApplied:
-            total += upgrade.dps
-            multiplier *= upgrade.dpsMultiplier
         return total * multiplier
 
 
