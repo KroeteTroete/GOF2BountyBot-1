@@ -225,9 +225,10 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
         xpForLevel = gameMaths.bountyHuntingXPForLevel(hunterLvl)
         if hunterLvl == cfg.maxTechLevel:
             nextXP = gameMaths.bountyHuntingXPForLevel(hunterLvl)
+            levelProgress = 1
         else:
             nextXP = gameMaths.bountyHuntingXPForLevel(hunterLvl + 1)
-        levelProgress = (userObj.bountyHuntingXP - xpForLevel) / (nextXP - xpForLevel)
+            levelProgress = (userObj.bountyHuntingXP - xpForLevel) / (nextXP - xpForLevel)
         if userObj.medals:
             for m in [i for i in userObj.medals if i.name.lower() not in bbData.medalObjs]:
                 userObj.medals.remove(m)
