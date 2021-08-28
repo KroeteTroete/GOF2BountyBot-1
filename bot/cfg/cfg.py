@@ -1,7 +1,8 @@
-from ..lib.emojis import UninitializedBasedEmoji
+from typing import Dict, List, Union, cast
+from ..lib.emojis import BasedEmoji, UninitializedBasedEmoji
 
 # All emojis used by the bot
-defaultEmojis = {
+defaultEmojis = cast(Dict[str, Union[BasedEmoji, List[BasedEmoji]]], {
     # The emoji that will be used when attempting to display an emoji which the bot cannot access. Make sure this is accessible.
     "unrecognisedEmoji": UninitializedBasedEmoji(779632588243075072),
     # When a message prompts a process that will take a long time (e.g rendering), this will be added to the message reactions
@@ -40,7 +41,7 @@ defaultEmojis = {
     # Emoji sent with new bounty listings
     # "newBounty": UninitializedBasedEmoji(723709178589347921)
     "newBounty": UninitializedBasedEmoji("🥞")
-}
+})
 
 timeouts = {
     "helpMenu": {"minutes": 3},
@@ -338,9 +339,6 @@ kaamoMaxCapacity = 70
 
 # Maximum number of bounties that may simultaneously be available per division
 maxBountiesPerDivision = 5
-
-# The maximum number of bounties a player is allowed to win each day
-maxDailyBountyWins = 10
 
 # can be "fixed" or "random"
 newBountyDelayType = "random-routeScale"
