@@ -223,7 +223,10 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
         bountyXP = userObj.bountyHuntingXP
         hunterLvl = gameMaths.calculateUserBountyHuntingLevel(userObj.bountyHuntingXP)
         xpForLevel = gameMaths.bountyHuntingXPForLevel(hunterLvl)
-        nextXP = gameMaths.bountyHuntingXPForLevel(hunterLvl + 1)
+        if hunterLvl == cfg.maxTechLevel:
+            nextXp = gameMaths.bountyHuntingXPForLevel(hunterLvl)
+        else:
+            nextXP = gameMaths.bountyHuntingXPForLevel(hunterLvl + 1)
         levelProgress = (userObj.bountyHuntingXP - xpForLevel) / (nextXP - xpForLevel)
         if userObj.medals:
             for m in [i for i in userObj.medals if i.name.lower() not in bbData.medalObjs]:
@@ -233,7 +236,10 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
         statsEmbed.add_field(name="Total value:", value=str(userObj.getStatByName("value")), inline=True)
         statsEmbed.add_field(name="‎", value="__Bounty Hunting__", inline=False)
         statsEmbed.add_field(name="Bounty Hunter Level:", value=str(hunterLvl))
-        statsEmbed.add_field(name="XP until next level:", value=str(nextXP - userObj.bountyHuntingXP))
+        if hunterLvl == cfg.maxTechLevel:
+            statsEmbed.add_field(name="XP until next level:", value=str(nextXP - userObj.bountyHuntingXP))
+        else:
+            statsEmbed.add_field(name="XP until next level:", value="*[Max Level]*")
         statsEmbed.add_field(name="Prestiges:", value=str(userObj.prestiges))
         statsEmbed.add_field(name="Total systems checked:", value=str(userObj.systemsChecked), inline=True)
         statsEmbed.add_field(name="Total bounties won:", value=str(userObj.bountyWins), inline=True)
