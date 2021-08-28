@@ -240,8 +240,7 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
         if bountyWon:
             requestedBBUser.bountyWins += 1
             await message.reply(mention_author=False, content=sightedCriminalsStr + "\n" + ":moneybag: **" + message.author.display_name \
-                                        + "**, you now have **" + str(requestedBBUser.credits) + " Credits!**\n" \
-                                        + maxBountiesReachedMsg)
+                                        + "**, you now have **" + str(requestedBBUser.credits) + " Credits!**")
 
         # If no bounty was won, print an error message
         elif not bountyLost:
