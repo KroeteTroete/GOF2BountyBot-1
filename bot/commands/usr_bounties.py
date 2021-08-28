@@ -71,22 +71,11 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
         await message.reply(mention_author=False, content=":x: Your ship has no weapons equipped!")
         return
 
-    # Restrict the number of bounties a player may win in a single day
-    if requestedBBUser.bountyWinsToday and requestedBBUser.dailyBountyWinsReset < datetime.utcnow():
-        requestedBBUser.bountyWinsToday = 0
-        requestedBBUser.dailyBountyWinsReset = lib.timeUtil.tomorrow()
-
-    if requestedBBUser.bountyWinsToday >= cfg.maxDailyBountyWins:
-        await message.reply(mention_author=False, content=":x: You have reached the maximum number of bounty wins allowed for today! " \
-                                    + "Check back tomorrow.")
-        return
-
     # ensure the calling user is not on checking cooldown
     if datetime.utcfromtimestamp(requestedBBUser.bountyCooldownEnd) < datetime.utcnow():
         bountyWon = False
         bountyLost = False
         systemInBountyRoute = False
-        dailyBountiesMaxReached = False
         userLevel = gameMaths.calculateUserBountyHuntingLevel(requestedBBUser.bountyHuntingXP)
         # list of completed bounties to remove from the bounties database
         toPop = []
@@ -150,10 +139,6 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
 
                     else:
                         bountyWon = True
-                        requestedBBUser.bountyWinsToday += 1
-                        if not dailyBountiesMaxReached and requestedBBUser.bountyWinsToday >= cfg.maxDailyBountyWins:
-                            requestedBBUser.dailyBountyWinsReset = lib.timeUtil.tomorrow()
-                            dailyBountiesMaxReached = True
 
                         # reward all contributing users
                         rewards = bounty.calcRewards()
@@ -253,12 +238,6 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
 
         # If a bounty was won, print a congratulatory message
         if bountyWon:
-            if dailyBountiesMaxReached:
-                maxBountiesReachedMsg = "You have now reached the maximum number of bounty wins allowed for today! " \
-                                            + "Please check back tomorrow."
-            else:
-                maxBountiesReachedMsg = "You have **" + str(cfg.maxDailyBountyWins - requestedBBUser.bountyWinsToday) \
-                                        + "** remaining bounty wins today!"
             requestedBBUser.bountyWins += 1
             await message.reply(mention_author=False, content=sightedCriminalsStr + "\n" + ":moneybag: **" + message.author.display_name \
                                         + "**, you now have **" + str(requestedBBUser.credits) + " Credits!**\n" \
@@ -340,10 +319,7 @@ async def cmd_bounties(message: discord.Message, args: str, isDM: bool):
 
     if division.isEmpty():
         await message.reply(mention_author=False, content=":stopwatch: There are no " + divName \
-                                        + " division bounties active currently!\nYou have **" \
-                                        + str(cfg.maxDailyBountyWins \
-                                            - botState.usersDB.getOrAddID(message.author.id).bountyWinsToday) \
-                                        + "** remaining bounty wins today.")
+                                        + " division bounties active currently!")
         return
     
     msgEmbed = discord.Embed(title=f"Active Bounties: {divName} Division",
@@ -367,22 +343,8 @@ async def cmd_bounties(message: discord.Message, args: str, isDM: bool):
                                     value=f"• {int(bounty.reward)} Credits\n"
                                             + f"• {len(bounty.route)} possible systems\n" \
                                             + f"• Ending in {lib.timeUtil.td_format_noYM(timeLeft)}")
-
-    # Restrict the number of bounties a player may win in a single day
-    if botState.usersDB.idExists(message.author.id):
-        requestedBBUser = botState.usersDB.getUser(message.author.id)
-        if requestedBBUser.dailyBountyWinsReset < datetime.utcnow():
-            requestedBBUser.bountyWinsToday = 0
-            requestedBBUser.dailyBountyWinsReset = lib.timeUtil.tomorrow()
-        if requestedBBUser.bountyWinsToday >= cfg.maxDailyBountyWins:
-            txtMsg = "\nYou have reached the maximum number of bounty wins allowed for today! Check back tomorrow."
-        else:
-            txtMsg = "\nYou have **" + str(cfg.maxDailyBountyWins - requestedBBUser.bountyWinsToday) \
-                    + "** remaining bounty wins today."
-    else:
-        txtMsg = ""
     
-    await message.reply(mention_author=False, content=txtMsg, embed=msgEmbed)
+    await message.reply(mention_author=False, embed=msgEmbed)
 
 
 botCommands.register("bounties", cmd_bounties, 0, allowDM=False, helpSection="bounty hunting",

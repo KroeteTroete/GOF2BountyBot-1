@@ -162,28 +162,6 @@ async def dev_cmd_reset_cooldown(message : discord.Message, args : str, isDM : b
 botCommands.register("reset-cool", dev_cmd_reset_cooldown, 3, allowDM=True, helpSection="bounties", useDoc=True)
 
 
-async def dev_cmd_reset_daily_wins(message : discord.Message, args : str, isDM : bool):
-    """developer command resetting the max daily bounty wins of the calling user, or the specified user if one is given
-
-    :param discord.Message message: the discord message calling the command
-    :param str args: string, can be empty or contain a user mention
-    :param bool isDM: Whether or not the command is being called from a DM channel
-    """
-    # reset the calling user's cooldown if no user is specified
-    if args == "":
-        requestedBBUser = botState.usersDB.getUser(message.author.id)
-    else:
-        # [!] no validation is done.
-        requestedBBUser = botState.usersDB.getUser(int(args.lstrip("<@!").rstrip(">")))
-    requestedBBUser.dailyBountyWinsReset = datetime.utcnow()
-    requestedBBUser.bountyWinsToday = 0
-    # otherwise get the specified user's discord object and reset their cooldown.
-
-    await message.reply(mention_author=False, content="Done!")
-
-botCommands.register("reset-daily-wins", dev_cmd_reset_daily_wins, 3, allowDM=True, helpSection="bounties", useDoc=True)
-
-
 async def dev_cmd_setcheckcooldown(message : discord.Message, args : str, isDM : bool):
     """developer command setting the checking cooldown applied to users
     this does not update cfg and will be reverted on bot restart

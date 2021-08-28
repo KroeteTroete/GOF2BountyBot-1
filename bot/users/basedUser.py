@@ -87,11 +87,6 @@ class BasedUser(serializable.Serializable):
     :vartype duelCreditsLosses: int
     :var userAlerts: A dictionary mapping userAlerts.UABase subtypes to instances of that subtype
     :vartype userAlerts: dict[type, userAlerts.UABase]
-    :var bountyWinsToday: The number of bounties the user has won today
-    :vartype bountyWinsToday: int
-    :var dailyBountyWinsReset: A datetime.datetime representing the time at which the user's bountyWinsToday should be reset
-                                to zero
-    :vartype dailyBountyWinsReset: datetime.datetime
     :var homeGuildID: The id of this user's 'home guild' - the only guild from which they may use several commands
                         e.g buy and check.
     :vartype homeGuildID: int
@@ -121,7 +116,6 @@ class BasedUser(serializable.Serializable):
                     inactiveTools : inventory.Inventory = inventory.TypeRestrictedInventory(toolItem.ToolItem),
                     lastSeenGuildId : int = -1, duelWins : int = 0, duelLosses : int = 0, duelCreditsWins : int = 0,
                     duelCreditsLosses : int = 0, alerts : dict[Union[type, str], Union[userAlerts.UABase or bool]] = {},
-                    bountyWinsToday : int = 0, dailyBountyWinsReset : datetime = None,
                     homeGuildID : int = -1, guildTransferCooldownEnd : datetime = None, prestiges : int = 0,
                     kaamo : Union[kaamoShop.KaamoShop, None] = None, loma : Union[lomaShop.LomaShop, None] = None,
                     ownedMenus : Dict[str, MutableSet[reactionMenu.ReactionMenu]] = {}, medals: MutableSet[Medal] = []):
@@ -155,9 +149,6 @@ class BasedUser(serializable.Serializable):
                         userAlerts.userAlertsIDsTypes) to either (instances of that subtype or booleans
                         representing the alert state) (Default {})
         :type alerts: dict[type or str, userAlerts.UABase or bool]
-        :param int bountyWinsToday: The number of bounties the user has won today (Default 0)
-        :param datetime.datetime dailyBountyWinsReset: A datetime.datetime representing the time at which the user's
-                                                        bountyWinsToday should be reset to zero (Default datetime.utcnow())
         :param Guild homeGuildID: The ID of this user's 'home guild' - the only guild from which they may use several
                                     commands e.g buy and check.
         :param datetime.datetime guildTransferCooldownEnd: A timestamp after which this user is allowed to transfer
@@ -204,8 +195,6 @@ class BasedUser(serializable.Serializable):
         elif type(bountyWins) != int:
             raise TypeError("bountyWins must be int, given " + str(type(bountyWins)))
 
-        if dailyBountyWinsReset is None:
-            dailyBountyWinsReset = datetime.utcnow()
         if guildTransferCooldownEnd is None:
             guildTransferCooldownEnd = datetime.utcnow()
 
@@ -264,8 +253,6 @@ class BasedUser(serializable.Serializable):
             else:
                 self.userAlerts[alertType] = alertType(cfg.userAlertsIDsDefaults[alertID])
 
-        self.bountyWinsToday = bountyWinsToday
-        self.dailyBountyWinsReset = dailyBountyWinsReset
         self.bountyHuntingXP = bountyHuntingXP
         self.prestiges = prestiges
 
@@ -475,8 +462,7 @@ class BasedUser(serializable.Serializable):
                 "bountyCooldownEnd": self.bountyCooldownEnd, "systemsChecked": self.systemsChecked,
                 "bountyWins": self.bountyWins, "activeShip": self.activeShip.toDict(**kwargs),
                 "lastSeenGuildId": self.lastSeenGuildId, "duelWins": self.duelWins, "duelLosses": self.duelLosses,
-                "duelCreditsWins": self.duelCreditsWins, "bountyWinsToday": self.bountyWinsToday,
-                "dailyBountyWinsReset": self.dailyBountyWinsReset.timestamp(), "bountyHuntingXP": self.bountyHuntingXP,
+                "duelCreditsWins": self.duelCreditsWins, "bountyHuntingXP": self.bountyHuntingXP,
                 "duelCreditsLosses": self.duelCreditsLosses, "homeGuildID": self.homeGuildID,
                 "guildTransferCooldownEnd": self.guildTransferCooldownEnd.timestamp(), "prestiges": self.prestiges}
 
@@ -915,13 +901,11 @@ class BasedUser(serializable.Serializable):
                 if name in bbData.medalObjs:
                     medals.add(bbData.medalObjs[name])
 
-        return BasedUser(**cls._makeDefaults(userDict, ("lifetimeBountyCreditsWon", "lifetimeCredits", "pollOwned"),
+        return BasedUser(**cls._makeDefaults(userDict, ("lifetimeBountyCreditsWon", "lifetimeCredits", "pollOwned", "bountyWinsToday", "dailyBountyWinsReset"),
                                                 userID=userID, activeShip=activeShip, inactiveShips=inactiveShips,
                                                 inactiveModules=inactiveModules, inactiveWeapons=inactiveWeapons,
                                                 inactiveTurrets=inactiveTurrets, inactiveTools=inactiveTools,
                                                 bountyHuntingXP=bountyHuntingXP, kaamo=kaamo, loma=loma,
                                                 ownedMenus=ownedMenus, lifetimeBountyCreditsWon=lifetimeBountyCreditsWon,
                                                 medals=medals,
-                                                **{k: datetime.utcfromtimestamp(userDict[k]) \
-                                                    for k in ("dailyBountyWinsReset", "guildTransferCooldownEnd") \
-                                                    if k in userDict}))
+                                                guildTransferCooldownEnd=datetime.utcfromtimestamp(userDict["guildTransferCooldownEnd"] if "guildTransferCooldownEnd" in userDict else None)
