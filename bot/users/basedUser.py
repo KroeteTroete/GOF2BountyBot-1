@@ -908,4 +908,4 @@ class BasedUser(serializable.Serializable):
                                                 bountyHuntingXP=bountyHuntingXP, kaamo=kaamo, loma=loma,
                                                 ownedMenus=ownedMenus, lifetimeBountyCreditsWon=lifetimeBountyCreditsWon,
                                                 medals=medals,
-                                                guildTransferCooldownEnd=datetime.utcfromtimestamp(userDict["guildTransferCooldownEnd"] if "guildTransferCooldownEnd" in userDict else None)
+                                                guildTransferCooldownEnd=datetime.utcfromtimestamp(userDict["guildTransferCooldownEnd"]) if "guildTransferCooldownEnd" in userDict else None))
