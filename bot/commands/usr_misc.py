@@ -224,7 +224,7 @@ async def cmd_stats(message : discord.Message, args : str, isDM : bool):
         hunterLvl = gameMaths.calculateUserBountyHuntingLevel(userObj.bountyHuntingXP)
         xpForLevel = gameMaths.bountyHuntingXPForLevel(hunterLvl)
         if hunterLvl == cfg.maxTechLevel:
-            nextXp = gameMaths.bountyHuntingXPForLevel(hunterLvl)
+            nextXP = gameMaths.bountyHuntingXPForLevel(hunterLvl)
         else:
             nextXP = gameMaths.bountyHuntingXPForLevel(hunterLvl + 1)
         levelProgress = (userObj.bountyHuntingXP - xpForLevel) / (nextXP - xpForLevel)
