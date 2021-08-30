@@ -78,4 +78,4 @@ class Criminal(aliasable.Aliasable):
         """
         if kwargs.get("builtIn", False) or crimDict.get("builtIn", False):
             return bbData.builtInCriminalObjs[crimDict["name"]]
-        return Criminal(**cls._makeDefaults(crimDict))
+        return Criminal(**cls._makeDefaults(crimDict, ("type",),))

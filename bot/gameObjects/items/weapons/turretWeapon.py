@@ -22,6 +22,6 @@ class TurretWeapon(Weapon):
         if turretDict.get("builtIn", False):
             return bbData.builtInTurretObjs[turretDict["name"]]
         else:
-            return TurretWeapon(**cls._makeDefaults(turretDict,
+            return TurretWeapon(**cls._makeDefaults(turretDict, ("type",),
                                                     emoji=lib.emojis.BasedEmoji.fromStr(turretDict["emoji"]) \
                                                             if "emoji" in turretDict else lib.emojis.BasedEmoji.EMPTY))
