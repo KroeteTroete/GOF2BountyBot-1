@@ -385,7 +385,7 @@ class BountyConfig:
                             currentWeapon = random.choice(bbData.weaponObjsByTL[weaponTL])
                             # The chosen weapon doesnt deal damage. If the TL has damage-dealing weapons,
                             # randomly choose whether or not to ensure a damage-dealing weapon is picked
-                            if dpsWeapons and not not currentWeapon.dps \
+                            if dpsWeapons and not currentWeapon.dps \
                                     and random.randint(0, 100) > cfg.criminalEquipDamagelessWeaponChance:
                                 while not currentWeapon.dps:
                                     currentWeapon = random.choice(bbData.weaponObjsByTL[weaponTL])
@@ -452,7 +452,7 @@ class BountyConfig:
                             currentTurret = random.choice(bbData.turretObjsByTL[turretTL])
                             # The chosen turret doesnt deal damage. If the TL has damage-dealing turrets,
                             # randomly choose whether or not to ensure a damage-dealing turret is picked
-                            if dpsTurrets and not not currentTurret.dps \
+                            if dpsTurrets and not currentTurret.dps \
                                     and random.randint(0, 100) > cfg.criminalEquipDamagelessWeaponChance:
                                 while not currentTurret.dps:
                                     currentTurret = random.choice(bbData.turretObjsByTL[turretTL])
