@@ -268,4 +268,4 @@ bbCommands.register("kaamo", cmd_kaamo, 0, allowDM=True, helpSection="kaamo club
                     longHelp="List all items in your Kaamo Club storage. Kaamo has a max capacity of " \
                         + str(cfg.kaamoMaxCapacity) + " items, including items on ships. Give an item type " \
                         + "(ship/weapon/turret/module/tool) to only list items of that type.\n\n" \
-                        + "⚠ Please be aware that `kaamo store` and `kaamo get` can only be used be level 10 bounty hunters.")
+                        + "⚠ Please be aware that `" + cfg.defaultCommandPrefix +  "kaamo store` and `" + cfg.defaultCommandPrefix + "kaamo get` can only be used by level 10 bounty hunters.")
