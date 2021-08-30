@@ -112,4 +112,4 @@ class SolarSystem(aliasable.Aliasable):
         :return: The requested System object
         :rtype: System
         """
-        return SolarSystem(**cls._makeDefaults(sysDict))
+        return SolarSystem(**cls._makeDefaults(sysDict, ("type",),))

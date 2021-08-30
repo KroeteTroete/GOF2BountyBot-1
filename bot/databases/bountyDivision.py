@@ -611,5 +611,5 @@ class BountyDivision(Serializable):
             bbc = None
 
         return BountyDivision(owningDB, data["minLevel"], data["maxLevel"],
-                                **cls._makeDefaults(data, bounties=bounties, escapedBounties=escapedBounties,
+                                **cls._makeDefaults(data, ("type",), bounties=bounties, escapedBounties=escapedBounties,
                                                     bountyBoardChannel=bbc))
