@@ -396,24 +396,24 @@ async def dev_cmd_set_temp(message : discord.Message, args : str, isDM : bool):
                 if not currentGuild.bountiesDisabled:
                     if allDivs:
                         for div in currentGuild.bountiesDB.divisions.values():
-                            div.temperature = temp
+                            div.setTemp(temp)
                     elif useTL:
                         div = currentGuild.bountiesDB.divisionForLevel(divTL)
-                        div.temperature = temp
+                        div.setTemp(temp)
                     else:
                         div = currentGuild.bountiesDB.divisionForName(divStr)
-                        div.temperature = temp
+                        div.setTemp(temp)
             await message.reply(f"Temperatures set to {temp} for {'all divisions in' if allDivs else nameForDivision(div)} all guilds!")
         else:
             if allDivs:
                 for div in callingBBGuild.bountiesDB.divisions.values():
-                    div.temperature = temp
+                    div.setTemp(temp)
             elif useTL:
                 div = callingBBGuild.bountiesDB.divisionForLevel(divTL)
-                div.temperature = temp
+                div.setTemp(temp)
             else:
                 div = callingBBGuild.bountiesDB.divisionForName(divStr)
-                div.temperature = temp
+                div.setTemp(temp)
             await message.reply(f"Temperatures set to {temp} for {'all divisions in' if allDivs else nameForDivision(div)} the guild!")
 
 botCommands.register("set-temp", dev_cmd_set_temp, 3, allowDM=False, helpSection="bounties", useDoc=True)
@@ -1148,24 +1148,24 @@ async def dev_cmd_reset_temps(message : discord.Message, args : str, isDM : bool
             if not currentGuild.bountiesDisabled:
                 if allDivs:
                     for div in currentGuild.bountiesDB.divisions.values():
-                        div.temperature = cfg.minGuildActivity
+                        div.setTemp(cfg.minGuildActivity)
                 elif useTL:
                     div = currentGuild.bountiesDB.divisionForLevel(tl)
-                    div.temperature = cfg.minGuildActivity
+                    div.setTemp(cfg.minGuildActivity)
                 else:
                     div = currentGuild.bountiesDB.divisionForName(divStr)
-                    div.temperature = cfg.minGuildActivity
+                    div.setTemp(cfg.minGuildActivity)
         await message.reply("done!")
     else:
         if allDivs:
             for div in callingBBGuild.bountiesDB.divisions.values():
-                div.temperature = cfg.minGuildActivity
+                div.setTemp(cfg.minGuildActivity)
         elif useTL:
             div = callingBBGuild.bountiesDB.divisionForLevel(tl)
-            div.temperature = cfg.minGuildActivity
+            div.setTemp(cfg.minGuildActivity)
         else:
             div = callingBBGuild.bountiesDB.divisionForName(divStr)
-            div.temperature = cfg.minGuildActivity
+            div.setTemp(cfg.minGuildActivity)
         await message.reply("Activity temperatures reset for guild.")
 
 botCommands.register("reset-temps", dev_cmd_reset_temps, 3, allowDM=False,

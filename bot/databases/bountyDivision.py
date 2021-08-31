@@ -281,6 +281,21 @@ class BountyDivision(Serializable):
         await self.owningDB.owningBasedGuild.announceNewBounty(bounty)
 
 
+    def setTemp(self, newTemp: float, updateActive: bool = True):
+        """Directly set the division's activity temperature to a given number.
+
+        :param float newTemp: The new temperature
+        :param bool updateActive: When True, self.updateIsActive will be called once temp changing is complete (default True)
+        """
+        wasFull = self.isFull()
+        # truncate to 2 decimal places and apply lower bound
+        self.temperature = max(cfg.minGuildActivity, round(newTemp, 2))
+        if updateActive:
+            self.updateIsActive()
+        if wasFull:
+            self.tryStartBountySpawner()
+
+
     def decayTemp(self, updateActive : bool = True):
         """Multiplies the activity temperature by cfg.guildActivityDecayRate,
         with a lower temperature bound of cfg.minGuildActivity.
@@ -495,7 +510,7 @@ class BountyDivision(Serializable):
                     raise e
 
 
-    def _addEscapedBounty(self, bounty : Bounty, dbReload=False):
+    def _addEscapedBounty(self, bounty : Bounty, dbReload: bool = False, ignoreFull: bool = False):
         """This is a private method. To ensure unique criminal names across a bountyDB, you should instead call
         BountyDB.addEscapedBounty. The BountyDB that owns this division can be accessed through the owningDB attribute. 
 
@@ -503,10 +518,12 @@ class BountyDivision(Serializable):
         If the division is now full, stop the new bounty spawner.
 
         :param Bounty bounty: the escaped bounty object to add to the database
+        :param bool dbReload: When true, skip checking for duplicate bounties and full divisions (Default False)
+        :param bool ignoreFull: When true, skip checking if the division is full (Default False)
         :raise OverflowError: if the division is already at capacity
         :raise ValueError: if the criminal is already wanted in the division
         """
-        if not dbReload and self.isFull():
+        if not ignoreFull and not dbReload and self.isFull():
             raise OverflowError(f"Attempted to addEscapedBounty but the division is full")
         
         if self.escapedCriminalExists(bounty.criminal):
@@ -517,7 +534,7 @@ class BountyDivision(Serializable):
             try:
                 self.stopBountySpawner()
             except ValueError as e:
-                if not dbReload:
+                if not dbReload and not ignoreFull:
                     raise e
 
 
