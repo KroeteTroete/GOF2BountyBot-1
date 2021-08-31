@@ -534,7 +534,7 @@ class BountyDivision(Serializable):
             try:
                 self.stopBountySpawner()
             except ValueError as e:
-                if not dbReload:
+                if not dbReload and not ignoreFull:
                     raise e
 
 
