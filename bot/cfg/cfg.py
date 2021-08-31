@@ -4,7 +4,7 @@ from ..lib.emojis import BasedEmoji, UninitializedBasedEmoji
 # All emojis used by the bot
 defaultEmojis = cast(Dict[str, Union[BasedEmoji, List[BasedEmoji]]], {
     # The emoji that will be used when attempting to display an emoji which the bot cannot access. Make sure this is accessible.
-    "unrecognisedEmoji": UninitializedBasedEmoji(779632588243075072),
+    "unrecognisedEmoji": UninitializedBasedEmoji("⁉"),
     # When a message prompts a process that will take a long time (e.g rendering), this will be added to the message reactions
     # It will be removed when the long process is finished.
     "longProcess": UninitializedBasedEmoji("⏳"),
@@ -30,17 +30,16 @@ defaultEmojis = cast(Dict[str, Union[BasedEmoji, List[BasedEmoji]]], {
                     UninitializedBasedEmoji("9️⃣"), UninitializedBasedEmoji("🔟")],
 
     # Default emoji to assign to shipSkinTool items
-    "shipSkinTool": UninitializedBasedEmoji(777166858516299786),
+    "shipSkinTool": UninitializedBasedEmoji("🎨"),
 
     # Default emoji to assign to bbCrates containing shipSkinTools
-    # "skinCrate": UninitializedBasedEmoji(723709178736017419)
-    "skinCrate": UninitializedBasedEmoji("🥞"),
-    # "defaultCrate": UninitializedBasedEmoji(723709178736017419)
-    "defaultCrate": UninitializedBasedEmoji("🥞"),
+    "skinCrate": UninitializedBasedEmoji("🧰"),
+
+    # Default emoji to assign to all other crates
+    "defaultCrate": UninitializedBasedEmoji("📦"),
     
     # Emoji sent with new bounty listings
-    # "newBounty": UninitializedBasedEmoji(723709178589347921)
-    "newBounty": UninitializedBasedEmoji("🥞")
+    "newBounty": UninitializedBasedEmoji("⛓")
 })
 
 timeouts = {
