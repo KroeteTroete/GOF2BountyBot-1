@@ -357,17 +357,19 @@ class BountyDB(serializable.Serializable):
         return any(div.escapedCriminalExists(crim) for div in self.divisions.values())
 
 
-    def addEscapedBounty(self, bounty : bounty.Bounty, dbReload=False):
+    def addEscapedBounty(self, bounty : bounty.Bounty, dbReload: bool = False, ignoreFull: bool = False):
         """Add a given bounty object to the escaped bounties database.
         Bounties cannot be added if the object or name already exists in the database.
 
         :param Bounty bounty: the bounty object to add to the database
+        :param bool dbReload: When true, skip checking for duplicate bounties and full divisions (Default False)
+        :param bool ignoreFull: When true, skip checking if the division is full (Default False)
         :raise ValueError: if the requested bounty's name already exists in the database
         """
         div = self.divisionForLevel(bounty.techLevel)
 
         # Ensure the DB has space for the bounty
-        if not dbReload and div.isFull(includeEscaped=True):
+        if not ignoreFull and not dbReload and div.isFull(includeEscaped=True):
             raise OverflowError(f"Division for the escaped bounty ({bounty.criminal.name}, level {bounty.techLevel}) is full")
         
         if self.criminalObjExists(bounty.criminal):
@@ -381,7 +383,7 @@ class BountyDB(serializable.Serializable):
         #     raise ValueError("Attempted to add a bounty whose name already exists: " + bounty.criminal.name)
 
         # Add the bounty to the database
-        div._addEscapedBounty(bounty, dbReload=dbReload)
+        div._addEscapedBounty(bounty, dbReload=dbReload, ignoreFull=ignoreFull)
 
 
     def removeEscapedBountyObj(self, bounty : bounty.Bounty):
