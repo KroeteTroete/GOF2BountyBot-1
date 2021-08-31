@@ -486,7 +486,7 @@ class BountyDB(serializable.Serializable):
         newDB = BountyDB(owningBasedGuild)
 
         for minLevel, divTemp in temps.items():
-            newDB.divisionForLevel(int(minLevel)).temperature = divTemp
+            newDB.divisionForLevel(int(minLevel)).setTemp(divTemp)
 
         for bountyDict in activeBountiesData:
             newDB.addBounty(bounty.Bounty.fromDict(bountyDict, dbReload=dbReload, owningDB=newDB), dbReload=dbReload)

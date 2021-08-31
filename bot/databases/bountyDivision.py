@@ -281,6 +281,21 @@ class BountyDivision(Serializable):
         await self.owningDB.owningBasedGuild.announceNewBounty(bounty)
 
 
+    def setTemp(self, newTemp: float, updateActive: bool = True):
+        """Directly set the division's activity temperature to a given number.
+
+        :param float newTemp: The new temperature
+        :param bool updateActive: When True, self.updateIsActive will be called once temp changing is complete (default True)
+        """
+        wasFull = self.isFull()
+        # truncate to 2 decimal places and apply lower bound
+        self.temperature = max(cfg.minGuildActivity, round(newTemp, 2))
+        if updateActive:
+            self.updateIsActive()
+        if wasFull:
+            self.tryStartBountySpawner()
+
+
     def decayTemp(self, updateActive : bool = True):
         """Multiplies the activity temperature by cfg.guildActivityDecayRate,
         with a lower temperature bound of cfg.minGuildActivity.
