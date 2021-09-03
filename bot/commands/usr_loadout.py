@@ -406,7 +406,7 @@ async def cmd_equip(message : discord.Message, args : str, isDM : bool):
 
                 outStr = ":rocket: You switched to the **" + requestedItem.getNameOrNick() + "**."
                 if transferItems:
-                    outStr += "\nItems thay could not fit in your new ship can be found in the hangar."
+                    outStr += "\nItems that could not fit in your new ship can be found in the hangar."
                 await message.reply(mention_author=False, content=outStr)
                 iterations += 1
 
@@ -497,7 +497,7 @@ async def cmd_equip(message : discord.Message, args : str, isDM : bool):
 
             outStr = ":rocket: You switched to the **" + requestedItem.getNameOrNick() + "**."
             if transferItems:
-                outStr += "\nItems thay could not fit in your new ship can be found in the hangar."
+                outStr += "\nItems that could not fit in your new ship can be found in the hangar."
             await message.reply(mention_author=False, content=outStr)
 
         elif item == "weapon":
