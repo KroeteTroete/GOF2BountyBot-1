@@ -165,14 +165,14 @@ async def cmd_check(message : discord.Message, args : str, isDM : bool):
                                 newDiv = callingGuild.bountiesDB.divisionForLevel(newLevel)
                                 if oldDiv is newDiv:
                                     levelUpMsg += "\n:arrow_up: **Level Up!**\n" \
-                                                + lib.discordUtil.userOrMemberName(currentDCUser, message.guild) \
+                                                + currentDCUser.mention \
                                                 + f" reached **Bounty Hunter Level {newLevel}!** :partying_face:\n" \
                                                 + f"You got a **{levelUpCrate.name}**."
                                 
                                 else:
                                     oldDivName, newDivName = nameForDivision(oldDiv), nameForDivision(newDiv)
                                     levelUpMsg += "\n:arrow_double_up: **New Division Reached!** :sparkles:\n" \
-                                                + lib.discordUtil.userOrMemberName(currentDCUser, message.guild) \
+                                                + currentDCUser.mention \
                                                 + f" hit **Bounty Hunter Level {newLevel}**, and reached the " \
                                                 + f"**{newDivName.title()} Division!** :partying_face:\n" \
                                                 + f"You got a **{levelUpCrate.name}**."
