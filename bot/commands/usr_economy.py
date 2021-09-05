@@ -4,6 +4,7 @@ import discord
 
 from . import commandsDB as botCommands
 from .. import botState, lib
+from ..lib.stringTyping import commaSplitNum
 from ..cfg import cfg
 from ..users import basedGuild, basedUser
 
