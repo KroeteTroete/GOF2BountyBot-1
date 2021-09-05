@@ -4,6 +4,7 @@ import discord
 
 from . import commandsDB as botCommands
 from .. import botState, lib
+from ..lib.stringTyping import commaSplitNum
 from ..cfg import cfg
 from ..users import basedGuild, basedUser
 
@@ -23,7 +24,7 @@ async def cmd_balance(message : discord.Message, args : str, isDM : bool):
         if not botState.usersDB.idExists(message.author.id):
             botState.usersDB.addID(message.author.id)
         await message.reply(mention_author=False, content=":moneybag: **" + message.author.display_name + "**, you have **" \
-                                    + str(botState.usersDB.getUser(message.author.id).credits) + " Credits**.")
+                                    + commaSplitNum(botState.usersDB.getUser(message.author.id).credits) + " Credits**.")
 
     # If a user is specified
     else:
@@ -37,7 +38,7 @@ async def cmd_balance(message : discord.Message, args : str, isDM : bool):
             botState.usersDB.addID(requestedUser.id)
         # send the user's balance
         await message.reply(mention_author=False, content=":moneybag: **" + lib.discordUtil.userOrMemberName(requestedUser, message.guild) \
-                                    + "** has **" + str(botState.usersDB.getUser(requestedUser.id).credits) + " Credits**.")
+                                    + "** has **" + commaSplitNum(botState.usersDB.getUser(requestedUser.id).credits) + " Credits**.")
 
 botCommands.register("balance", cmd_balance, 0, aliases=["bal", "credits"], forceKeepArgsCasing=True, allowDM=True,
                         helpSection="economy", signatureStr="**balance** *[user]*",

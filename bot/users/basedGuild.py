@@ -7,6 +7,7 @@ from aiohttp import client_exceptions
 import random
 
 from .. import botState, lib
+from ..lib.stringTyping import commaSplitNum
 from ..gameObjects import guildShop
 from ..databases.bountyDB import BountyDB, nameForDivision
 from ..userAlerts import userAlerts
@@ -564,10 +565,10 @@ class BasedGuild(serializable.Serializable):
                                                         desc="`Suspect located in '" + bounty.answer + "'`")
 
                 # Add the winning user to the embed
-                rewardsEmbed.add_field(name="1. 🏆 " + str(rewards[winningUserId]["reward"]) + " credits:",
+                rewardsEmbed.add_field(name="1. 🏆 " + commaSplitNum(rewards[winningUserId]["reward"]) + " credits:",
                                         value=winningUser.mention + " checked " + str(rewards[winningUserId]["checked"]) \
                                             + " system" + ("s" if int(rewards[winningUserId]["checked"]) != 1 else "") \
-                                            + "\n*+" + str(rewards[winningUserId]["xp"]) + "xp*",
+                                            + "\n*+" + commaSplitNum(rewards[winningUserId]["xp"]) + "xp*",
                                         inline=False)
 
 
@@ -576,11 +577,11 @@ class BasedGuild(serializable.Serializable):
                 # Loop over all non-winning users in the rewards dictionary
                 for userID in rewards:
                     if not rewards[userID]["won"]:
-                        rewardsEmbed.add_field(name=str(place) + ". " + str(rewards[userID]["reward"]) + " credits:",
+                        rewardsEmbed.add_field(name=str(place) + ". " + commaSplitNum(rewards[userID]["reward"]) + " credits:",
                                                 value="<@" + str(userID) + "> checked " \
                                                     + str(int(rewards[userID]["checked"])) \
                                                     + " system" + ("s" if int(rewards[userID]["checked"]) != 1 else "") \
-                                                    + "\n*+" + str(rewards[winningUserId]["xp"]) + "xp*",
+                                                    + "\n*+" + commaSplitNum(rewards[winningUserId]["xp"]) + "xp*",
                                                 inline=False)
                         place += 1
 
