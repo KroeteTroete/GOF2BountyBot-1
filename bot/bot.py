@@ -306,12 +306,12 @@ async def announceNewShopStock(guildID : int = -1):
         # loop over all guilds
         for guild in botState.guildsDB.guilds.values():
             # ensure guild has a valid playChannel
-            if not guild.shopDisabled:
+            if not guild.shopsDisabled:
                 await guild.announceNewShopStock()
     else:
         guild = botState.guildsDB.getGuild(guildID)
         # ensure guild has a valid playChannel
-        if not guild.shopDisabled:
+        if not guild.shopsDisabled:
             await guild.announceNewShopStock()
 
 

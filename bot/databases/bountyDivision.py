@@ -65,11 +65,11 @@ class BountyDivision(Serializable):
         :param int alertRoleID: The ID of the role to ping when new bounties are spawned into this division. -1 for no role.
                                 (Default -1)
         """
+        self.minLevel = minLevel
+        self.maxLevel = maxLevel
         self.temperature = temperature
         self.isActive = False
         self.updateIsActive()
-        self.minLevel = minLevel
-        self.maxLevel = maxLevel
         self.latestBounty: Bounty = None
         self.bountyBoardChannel = bountyBoardChannel
         self.alertRoleID = alertRoleID
@@ -623,7 +623,7 @@ class BountyDivision(Serializable):
                         escapedBounties[l][newBounty.criminal] = newBounty
         
         if "bountyBoardChannel" in data and data["bountyBoardChannel"] is not None:
-            bbc = BountyBoardChannel.fromDict(data["bountyBoardChannel"])
+            bbc: Union[BountyBoardChannel, None] = BountyBoardChannel.fromDict(data["bountyBoardChannel"])
         else:
             bbc = None
 
