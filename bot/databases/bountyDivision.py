@@ -241,9 +241,13 @@ class BountyDivision(Serializable):
         :rtype: Bounty
         :raise OverflowError: If the division is currently full
         """
-        if self.isFull():
-            raise OverflowError("Attempted to spawn a new bounty when the division is already full")
-        level = self.pickNewTL()
+        # if no min level bounties exist, ignore the division being full
+        if not self.bounties[self.minLevel]:
+            level = self.minLevel
+        else:
+            if self.isFull():
+                raise OverflowError("Attempted to spawn a new bounty when the division is already full")
+            level = self.pickNewTL()
 
         newBounty = Bounty(division=self, config=BountyConfig(techLevel=level).generate(self))
         self.bounties[level][newBounty.criminal] = newBounty
