@@ -9,7 +9,6 @@ from ..gameObjects.bounties.bounty import Bounty
 from ..gameObjects.bounties.criminal import Criminal
 from ..gameObjects.bounties.bountyConfig import BountyConfig
 from ..gameObjects.bounties.bountyBoards.bountyBoardChannel import BountyBoardChannel
-from ..gameObjects.guildShop import TechLeveledShop
 from ..cfg import cfg, bbData
 from .. import botState, lib
 from ..scheduling.timedTask import TimedTask, DynamicRescheduleTask
@@ -50,24 +49,17 @@ class BountyDivision(Serializable):
     :vartype alertRoleID: int
     :var newBountyTT: The timedtask responsible for spawning this division's bounties. If the division is full, this is None.
     :vartype newBountyTT: Union[None, TimedTask]
-    :var shop: The division's items shop. None when shops are disabled for the owning server.
-    :vartype shop: Union[TechLeveledShop, None]
     """
     delayRandRange = {"min": timedelta(**cfg.timeouts.newBountyDelayRandomMin),
                         "max": timedelta(**cfg.timeouts.newBountyDelayRandomMax)}
 
-    def __init__(self, owningDB: "BountyDB", minLevel: int, maxLevel: int, shop: Union[TechLeveledShop, None],
-                makeShop: bool = False, temperature: int = cfg.minGuildActivity,
+    def __init__(self, owningDB: "BountyDB", minLevel: int, maxLevel: int, temperature: int = cfg.minGuildActivity,
                 bounties: Dict[int, AliasableDict[Criminal, Bounty]] = None, bountyBoardChannel: BountyBoardChannel = None,
                 escapedBounties: Dict[int, AliasableDict[Criminal, Bounty]] = None, alertRoleID: int = -1) -> None:
         """
         :param BountyDB owningDB: The BountyDB that owns this division
         :param int minLevel: The lowest level of bounties available in this division
         :param int maxLevel: The highest level of bounties available in this division
-        :param shop: The division's items shop. When shops are disabled for the server, give None.
-        :type shop: Union[TechLeveledShop, None]
-        :param bool makeShop: If shop is given as None, specify True here to generate a new shop. Give False to
-                                leave it as None. (Default False)
         :param BountyBoardChannel bountyBoardChannel: A BountyBoardChannel object implementing this division's bounty board
                                                         channel if it has one, None otherwise. (Default None)
         :param int alertRoleID: The ID of the role to ping when new bounties are spawned into this division. -1 for no role.
@@ -75,10 +67,6 @@ class BountyDivision(Serializable):
         """
         self.minLevel = minLevel
         self.maxLevel = maxLevel
-        if shop is None and makeShop:
-            self.shop = TechLeveledShop(self.minLevel, self.maxLevel)
-        else:
-            self.shop = shop
         self.temperature = temperature
         self.isActive = False
         self.updateIsActive()
@@ -468,38 +456,6 @@ class BountyDivision(Serializable):
         else:
             await self.newBountyTT.forceExpire(callExpiryFunc=True)
 
-
-    def addShop(self, shop: TechLeveledShop = None):
-        """Set this division's shop. A shop to register with the division can optionally be specified.
-        When this is not given, a new shop will be created.
-
-        :param shop: The shop to register with the division, or None to make a new one (Default None)
-        :type shop: Union[TechLeveledShop, None]
-        :raise ValueError: When given a shop whose min/max tech level does not match the division
-        :raise RuntimeError: If the division already has an active shop
-        """
-        if self.shop is not None:
-            raise RuntimeError(f"Attempted to assign a shop for division {self.minLevel}-{self.maxLevel} " \
-                                + f"in guild {self.owningDB.owningBasedGuild.id} but one is already assigned")
-        if shop is None:
-            shop = TechLeveledShop(self.minLevel, self.maxLevel)
-        elif shop.minLevel != self.minLevel or shop.maxLevel != self.maxLevel:
-            raise ValueError(f"Attempted to assign a shop with min/max levels {shop.minLevel}-{shop.maxLevel} to division " \
-                            + f"with levels {self.minLevel}-{self.maxLevel} in guild {self.owningDB.owningBasedGuild.id}")
-
-        self.shop = shop
-
-
-    def removeShop(self):
-        """Deactivate this division's shop.
-
-        :raise RuntimeError: If this division does not have an active shop.
-        """
-        if self.shop is None:
-            raise RuntimeError(f"Attempted to remove a shop from division {self.minLevel}-{self.maxLevel} " \
-                                + f"in guild {self.owningDB.owningBasedGuild.id} but none is assigned")
-        self.shop = None
-
     
     async def addBountyBoardChannel(self, channel : TextChannel, client : Client):
         """Set this division's bounty board channel.
@@ -625,8 +581,6 @@ class BountyDivision(Serializable):
                             for l in range(self.minLevel, self.maxLevel + 1) if self.escapedBounties[l]}}
         if self.bountyBoardChannel is not None:
             data["bountyBoardChannel"] = self.bountyBoardChannel.toDict(**kwargs)
-        if self.shop is not None:
-            data["shop"] = self.shop.toDict(**kwargs)
         return data
 
 
@@ -673,11 +627,6 @@ class BountyDivision(Serializable):
         else:
             bbc = None
 
-        if "shop" in data and data["shop"] is not None:
-            shop: Union[TechLeveledShop, None] = TechLeveledShop.fromDict(data["shop"])
-        else:
-            shop = None
-
-        return BountyDivision(owningDB, data["minLevel"], data["maxLevel"], shop,
+        return BountyDivision(owningDB, data["minLevel"], data["maxLevel"],
                                 **cls._makeDefaults(data, ("type",), bounties=bounties, escapedBounties=escapedBounties,
                                                     bountyBoardChannel=bbc))

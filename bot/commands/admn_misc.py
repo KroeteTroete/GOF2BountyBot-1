@@ -116,17 +116,17 @@ async def admin_cmd_config(message : discord.Message, args : str, isDM : bool):
             await message.reply(mention_author=False, content=":x: Unknown value!")
     elif setting in ["shop", "shops"]:
         if value in trueStrings:
-            if not callingBBGuild.shopDisabled:
-                await message.reply(mention_author=False, content=":x: The shop is already enabled in this server!")
+            if not callingBBGuild.shopsDisabled:
+                await message.reply(mention_author=False, content=":x: Shops are already enabled in this server!")
             else:
-                callingBBGuild.enableShop()
-                await message.reply(mention_author=False, content=":white_check_mark: The shop is now enabled on this server!")
+                callingBBGuild.enableShops()
+                await message.reply(mention_author=False, content=":white_check_mark: Shops are now enabled on this server!")
         elif value in falseStrings:
-            if callingBBGuild.shopDisabled:
-                await message.reply(mention_author=False, content=":x: The shop is already disabled in this server!")
+            if callingBBGuild.shopsDisabled:
+                await message.reply(mention_author=False, content=":x: Shops are already disabled in this server!")
             else:
-                callingBBGuild.disableShop()
-                await message.reply(mention_author=False, content=":white_check_mark: The shop is now disabled on this server!")
+                callingBBGuild.disableShops()
+                await message.reply(mention_author=False, content=":white_check_mark: Shops are now disabled on this server!")
         else:
             await message.reply(mention_author=False, content=":x: Unknown value!")
     else:

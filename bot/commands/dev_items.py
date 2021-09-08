@@ -307,10 +307,12 @@ async def dev_cmd_refreshshop(message : discord.Message, args : str, isDM : bool
             return
         level = int(args)
     guild = botState.guildsDB.getGuild(message.guild.id)
-    if guild.shopDisabled:
+    if guild.shopsDisabled:
         await message.reply(mention_author=False, content=":x: This guild's shop is disabled.")
     else:
-        guild.shop.refreshStock(level=level)
+        for shop in guild.divisionShops.values():
+            if shop.minLevel <= level <= shop.maxLevel:
+                shop.refreshStock(level=level)
         await guild.announceNewShopStock()
 
 botCommands.register("refreshshop", dev_cmd_refreshshop, 3, allowDM=False, helpSection="items", useDoc=True)

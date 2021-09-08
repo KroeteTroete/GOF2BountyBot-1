@@ -1,7 +1,7 @@
 from __future__ import annotations
-from discord import Embed, channel, Forbidden, Guild, Member, Message, HTTPException, NotFound, Colour, Role
+from discord import Embed, channel, Forbidden, Guild, Member, Message, HTTPException, NotFound, Colour, Role, guild
 from discord import TextChannel
-from typing import List, Dict, Union
+from typing import List, Dict, Union, cast
 import asyncio
 from aiohttp import client_exceptions
 import random
@@ -9,7 +9,7 @@ import random
 from .. import botState, lib
 from ..lib.stringTyping import commaSplitNum
 from ..gameObjects import guildShop
-from ..databases.bountyDB import BountyDB, nameForDivision
+from ..databases.bountyDB import BountyDB, nameForDivision, divisionNameForLevel
 from ..userAlerts import userAlerts
 from ..cfg import cfg, bbData
 from ..gameObjects.bounties import bounty, bountyConfig
@@ -42,17 +42,17 @@ class BasedGuild(serializable.Serializable):
     :vartype bounties: BountyDB
     :var bountiesDisabled: Whether or not to disable this guild's bountyDB and bounty spawning
     :vartype bountiesDisabled: bool
-    :var shopDisabled: Whether or not to disable this guild's guildShop and shop refreshing
-    :vartype shopDisabled: bool
+    :var shopsDisabled: Whether or not to disable this guild's guildShop and shop refreshing
+    :vartype shopsDisabled: bool
     :var hasBountyAlertRoles: True if the guild has alert roles for each of its divisions, False otherwise
     :vartype hasBountyAlertRoles: bool
     """
 
     def __init__(self, id: int, dcGuild: Guild, bounties: BountyDB, commandPrefix: str = cfg.defaultCommandPrefix,
             announceChannel : channel.TextChannel = None, playChannel : channel.TextChannel = None,
-            shop : guildShop.TechLeveledShop = None,
+            divisionShops : Union[None, Dict[str, guildShop.TechLeveledShop]] = None,
             alertRoles : Dict[str, int] = {}, ownedRoleMenus : int = 0, bountiesDisabled : bool = False,
-            shopDisabled : bool = False):
+            shopsDisabled : bool = False):
         """
         :param int id: The ID of the guild, directly corresponding to a discord guild's ID.
         :param discord.Guild dcGuild: This guild's corresponding discord.Guild object
@@ -61,11 +61,12 @@ class BasedGuild(serializable.Serializable):
                                                 None when no announce channel is set for this guild.
         :param discord.channel playChannel: The discord.channel object for this guild's bounty playing chanel.
                                             None when no bounty playing channel is set for this guild.
-        :param guildShop shop: This guild's guildShop object
+        :param divisionShops: A dictionary mapping division names to shops. Ignored if shopsDisabled is True
+        :type divisionShops: Union[None, Dict[str, guildShop.TechLeveledShop]]
         :param dict[str, int] alertRoles: A dictionary of user alert IDs to guild role IDs.
         :param int ownedRoleMenus: The number of ReactionRolePickers present in this guild
         :param bool bountiesDisabled: Whether or not to disable this guild's bountyDB and bounty spawning
-        :param bool shopDisabled: Whether or not to disable this guild's guildShop and shop refreshing
+        :param bool shopsDisabled: Whether or not to disable this guild's guildShop and shop refreshing
         :raise TypeError: When given an incompatible argument type
         """
 
@@ -87,11 +88,15 @@ class BasedGuild(serializable.Serializable):
         self.announceChannel = announceChannel
         self.playChannel = playChannel
 
-        self.shopDisabled = shopDisabled
-        if shopDisabled:
-            self.shop = None
+        self.shopsDisabled = shopsDisabled
+        if shopsDisabled:
+            self.divisionShops: Union[None, Dict[str, guildShop.TechLeveledShop]] = None
         else:
-            self.shop = guildShop.TechLeveledShop() if shop is None else shop
+            if divisionShops is None:
+                self.divisionShops = {divName: guildShop.TechLeveledShop(levels[0], levels[1]) \
+                                        for divName, levels in cfg.bountyDivisions.items()}
+            else:
+                self.divisionShops = divisionShops
 
         self.alertRoles = {}
         for alertID in userAlerts.userAlertsIDsTypes.keys():
@@ -629,51 +634,61 @@ class BasedGuild(serializable.Serializable):
             await self.deleteBountyAlertRoles()
 
 
-    def enableShop(self):
-        """Enable the shop for this guild.
-        Creates a new guildShop object for this guild.
+    def enableShops(self):
+        """Enable shops for this guild.
+        Creates a new guildShop object for each division.
 
-        :raise ValueError: If the shop is already enabled in this guild
+        :raise ValueError: If shops are already enabled in this guild
         """
-        if not self.shopDisabled:
-            raise ValueError("The shop is already enabled in this guild")
+        if not self.shopsDisabled:
+            raise ValueError("Shop are already enabled in this guild")
 
-        self.shop = guildShop.TechLeveledShop(noRefresh=True)
-        self.shopDisabled = False
+        self.divisionShops = {divName: guildShop.TechLeveledShop(levels[0], levels[1], noRefresh=True) \
+                                for divName, levels in cfg.bountyDivisions.items()}
+        self.shopsDisabled = False
 
 
-    def disableShop(self):
-        """Disable the shop for this guild.
-        Removes the guild's guildShop object.
+    def disableShops(self):
+        """Disable shops for this guild.
+        Removes the guild's guildShop objects.
 
-        :raise ValueError: If the shop is already disabled in this guild
+        :raise ValueError: If shops are already disabled in this guild
         """
-        if self.shopDisabled:
-            raise ValueError("The shop is already disabled in this guild")
+        if self.shopsDisabled:
+            raise ValueError("Shop are already disabled in this guild")
 
-        self.shop = None
-        self.shopDisabled = True
+        self.divisionShops = None
+        self.shopsDisabled = True
 
 
-    async def announceNewShopStock(self):
+    async def announceNewShopStock(self, newLevel: int = None):
         """Announce to the guild's play channel that this guild's shop stock has been refreshed.
         If no playChannel has been set, does nothing.
+        If newLevel is None, announce that all of the guild's shops have been refreshed.
+        Otherwise, just announce that the shop owning that level has refreshed.
 
         :raise ValueError: If this guild's shop is disabled
         """
-        if self.shopDisabled:
+        if self.shopsDisabled:
             raise ValueError("Attempted to announceNewShopStock on a guild where shop is disabled")
         if self.hasPlayChannel():
             playCh = self.getPlayChannel()
-            msg = "The shop stock has been refreshed!\n**        **Now at tech level: **" \
-                    + str(self.shop.currentTechLevel) + "**"
+            msg = "The shop stock has been refreshed!"
+            msgEmbed = Embed()
+            if newLevel is None:
+                for divName, shop in cast(Dict[str, guildShop.TechLeveledShop], self.divisionShops).items():
+                    msgEmbed.add_field(name=divName, value=f"Now at level **{shop.currentTechLevel}**")
+            else:
+                msgEmbed.add_field(name=divisionNameForLevel(newLevel), value=f"Now at level **{newLevel}**")
             try:
                 if self.hasUserAlertRoleID("shop_refresh"):
                     # announce to the given channel
                     await playCh.send(":arrows_counterclockwise: <@&" \
-                                        + str(self.getUserAlertRoleID("shop_refresh")) + "> " + msg)
+                                            + str(self.getUserAlertRoleID("shop_refresh")) + "> " + msg,
+                                        embed=msgEmbed)
                 else:
-                    await playCh.send(":arrows_counterclockwise: " + msg)
+                    await playCh.send(":arrows_counterclockwise: " + msg,
+                                        embed=msgEmbed)
             except Forbidden:
                 botState.logger.log("Main", "anncNwShp",
                                     "Failed to post shop stock announcement to " + self.dcGuild.name + "#" + str(self.id) \
@@ -692,7 +707,7 @@ class BasedGuild(serializable.Serializable):
                     "alertRoles":       self.alertRoles,
                     "ownedRoleMenus":   self.ownedRoleMenus,
                     "bountiesDisabled": self.bountiesDisabled,
-                    "shopDisabled":     self.shopDisabled}
+                    "shopsDisabled":     self.shopsDisabled}
 
         if self.commandPrefix != cfg.defaultCommandPrefix:
             data["commandPrefix"] = self.commandPrefix
@@ -700,8 +715,8 @@ class BasedGuild(serializable.Serializable):
         if not self.bountiesDisabled:
             data["bountiesDB"] = self.bountiesDB.toDict(**kwargs)
 
-        if not self.shopDisabled:
-            data["shop"] = self.shop.toDict(**kwargs)
+        if not self.shopsDisabled:
+            data["divisionShops"] = {k: v.toDict(**kwargs) for k, v in self.divisionShops.items()}
 
         return data
 
@@ -733,20 +748,22 @@ class BasedGuild(serializable.Serializable):
 
         bountiesDisabled = guildDict.get("bountiesDisabled", False)
 
-        shopDisabled = guildDict.get("shopDisabled", False)
+        shopsDisabled = guildDict.get("shopsDisabled", False)
 
-        if shopDisabled:
-            shop = None
+        if shopsDisabled:
+            divisionShops = None
         else:
-            if "shop" in guildDict:
-                shop = guildShop.TechLeveledShop.fromDict(guildDict["shop"])
+            # For legacy savedata, just generate new shops
+            if "divisionShops" in guildDict:
+                divisionShops = {k: guildShop.TechLeveledShop.fromDict(v) for k, v in guildDict["divisionShops"]}
             else:
-                shop = guildShop.TechLeveledShop()
+                divisionShops = {divName: guildShop.TechLeveledShop(levels[0], levels[1]) \
+                                    for divName, levels in cfg.bountyDivisions.items()}
 
-        newGuild = BasedGuild(**cls._makeDefaults(guildDict, ("bountiesDB","bountyBoardChannel"),
+        newGuild = BasedGuild(**cls._makeDefaults(guildDict, ("bountiesDB","bountyBoardChannel","shop"),
                                                     id=guildID, dcGuild=dcGuild, bounties=None,
                                                     announceChannel=announceChannel, playChannel=playChannel,
-                                                    shop=shop, shopDisabled=shopDisabled))
+                                                    divisionShops=divisionShops, shopsDisabled=shopsDisabled))
 
         if not bountiesDisabled:
             if "bountiesDB" in guildDict:
