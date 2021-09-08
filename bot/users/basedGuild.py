@@ -750,7 +750,7 @@ class BasedGuild(serializable.Serializable):
 
         shopsDisabled = guildDict.get("shopsDisabled", guildDict.get("shopDisabled", False))
 
-        if True:
+        if shopsDisabled:
             divisionShops = None
         else:
             # For legacy savedata, just generate new shops
