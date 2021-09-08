@@ -56,7 +56,8 @@ class BountyDivision(Serializable):
     delayRandRange = {"min": timedelta(**cfg.timeouts.newBountyDelayRandomMin),
                         "max": timedelta(**cfg.timeouts.newBountyDelayRandomMax)}
 
-    def __init__(self, owningDB: "BountyDB", minLevel: int, maxLevel: int, shop: Union[TechLeveledShop, None], temperature: int = cfg.minGuildActivity,
+    def __init__(self, owningDB: "BountyDB", minLevel: int, maxLevel: int, shop: Union[TechLeveledShop, None],
+                makeShop: bool = False, temperature: int = cfg.minGuildActivity,
                 bounties: Dict[int, AliasableDict[Criminal, Bounty]] = None, bountyBoardChannel: BountyBoardChannel = None,
                 escapedBounties: Dict[int, AliasableDict[Criminal, Bounty]] = None, alertRoleID: int = -1) -> None:
         """
@@ -65,17 +66,22 @@ class BountyDivision(Serializable):
         :param int maxLevel: The highest level of bounties available in this division
         :param shop: The division's items shop. When shops are disabled for the server, give None.
         :type shop: Union[TechLeveledShop, None]
+        :param bool makeShop: If shop is given as None, specify True here to generate a new shop. Give False to
+                                leave it as None. (Default False)
         :param BountyBoardChannel bountyBoardChannel: A BountyBoardChannel object implementing this division's bounty board
                                                         channel if it has one, None otherwise. (Default None)
         :param int alertRoleID: The ID of the role to ping when new bounties are spawned into this division. -1 for no role.
                                 (Default -1)
         """
-        self.shop = shop
+        self.minLevel = minLevel
+        self.maxLevel = maxLevel
+        if shop is None and makeShop:
+            self.shop = TechLeveledShop(self.minLevel, self.maxLevel)
+        else:
+            self.shop = shop
         self.temperature = temperature
         self.isActive = False
         self.updateIsActive()
-        self.minLevel = minLevel
-        self.maxLevel = maxLevel
         self.latestBounty: Bounty = None
         self.bountyBoardChannel = bountyBoardChannel
         self.alertRoleID = alertRoleID
