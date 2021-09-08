@@ -476,7 +476,7 @@ class BountyDivision(Serializable):
 
         :raise RuntimeError: If this division does not have an active bountyBoardChannel.
         """
-        if self.hasBountyBoardChannel is None:
+        if self.bountyBoardChannel is None:
             raise RuntimeError(f"Attempted to remove a bountyboard channel from division {self.minLevel}-{self.maxLevel} " \
                                 + f"in guild {self.owningDB.owningBasedGuild.id} but none is assigned")
         self.bountyBoardChannel = None
