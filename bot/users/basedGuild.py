@@ -93,7 +93,7 @@ class BasedGuild(serializable.Serializable):
             self.divisionShops: Union[None, Dict[str, guildShop.TechLeveledShop]] = None
         else:
             if divisionShops is None:
-                self.divisionShops = {divName: guildShop.TechLeveledShop(levels[0], levels[1]) \
+                self.divisionShops = {divName: guildShop.TechLeveledShop(max(cfg.minTechLevel, levels[0]), levels[1]) \
                                         for divName, levels in cfg.bountyDivisions.items()}
             else:
                 self.divisionShops = divisionShops
@@ -643,7 +643,7 @@ class BasedGuild(serializable.Serializable):
         if not self.shopsDisabled:
             raise ValueError("Shop are already enabled in this guild")
 
-        self.divisionShops = {divName: guildShop.TechLeveledShop(levels[0], levels[1], noRefresh=True) \
+        self.divisionShops = {divName: guildShop.TechLeveledShop(max(cfg.minTechLevel, levels[0]), levels[1], noRefresh=True) \
                                 for divName, levels in cfg.bountyDivisions.items()}
         self.shopsDisabled = False
 
@@ -757,7 +757,7 @@ class BasedGuild(serializable.Serializable):
             if "divisionShops" in guildDict:
                 divisionShops = {k: guildShop.TechLeveledShop.fromDict(v) for k, v in guildDict["divisionShops"]}
             else:
-                divisionShops = {divName: guildShop.TechLeveledShop(levels[0], levels[1]) \
+                divisionShops = {divName: guildShop.TechLeveledShop(max(cfg.minTechLevel, levels[0]), levels[1]) \
                                     for divName, levels in cfg.bountyDivisions.items()}
 
         newGuild = BasedGuild(**cls._makeDefaults(guildDict, ("bountiesDB","bountyBoardChannel","shop"),
