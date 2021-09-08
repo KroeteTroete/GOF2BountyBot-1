@@ -237,7 +237,6 @@ async def cmd_shop_buy(message : discord.Message, args : str, isDM : bool):
         return
 
     itemNum = argsSplit[1]
-    requestedShop = botState.guildsDB.getGuild(message.guild.id).shop
     if not lib.stringTyping.isInt(itemNum):
         await message.reply(mention_author=False, content=":x: Invalid item number!")
         return
