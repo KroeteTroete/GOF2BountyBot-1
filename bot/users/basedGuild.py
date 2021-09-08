@@ -755,7 +755,7 @@ class BasedGuild(serializable.Serializable):
         else:
             # For legacy savedata, just generate new shops
             if "divisionShops" in guildDict:
-                divisionShops = {k: guildShop.TechLeveledShop.fromDict(v) for k, v in guildDict["divisionShops"]}
+                divisionShops = {k: guildShop.TechLeveledShop.fromDict(v) for k, v in guildDict["divisionShops"].items()}
             else:
                 divisionShops = {divName: guildShop.TechLeveledShop(max(cfg.minTechLevel, levels[0]), levels[1]) \
                                     for divName, levels in cfg.bountyDivisions.items()}
