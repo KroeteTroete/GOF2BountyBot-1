@@ -205,7 +205,7 @@ async def cmd_shop_buy(message : discord.Message, args : str, isDM : bool):
         else:
             divName = divisionNameForLevel(cfg.minTechLevel)
 
-    requestedShop = requestedBGuild.disionShops[divName]
+    requestedShop = requestedBGuild.divisionShops[divName]
 
     # verify this is the calling user's home guild. If no home guild is set, transfer here.
     requestedBUser = botState.usersDB.getOrAddID(message.author.id)
