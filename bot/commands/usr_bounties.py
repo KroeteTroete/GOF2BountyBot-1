@@ -4,6 +4,7 @@ from io import BytesIO
 
 from . import commandsDB as botCommands
 from .. import botState, lib
+from ..lib.stringTyping import commaSplitNum
 from ..cfg import cfg, bbData
 from ..gameObjects.battles import duelRequest
 from ..gameObjects.bounties.bounty import Bounty
