@@ -748,7 +748,7 @@ class BasedGuild(serializable.Serializable):
 
         bountiesDisabled = guildDict.get("bountiesDisabled", False)
 
-        shopsDisabled = guildDict.get("shopsDisabled", False)
+        shopsDisabled = guildDict.get("shopsDisabled", guildDict.get("shopDisabled", False))
 
         if shopsDisabled:
             divisionShops = None
@@ -760,7 +760,7 @@ class BasedGuild(serializable.Serializable):
                 divisionShops = {divName: guildShop.TechLeveledShop(max(cfg.minTechLevel, levels[0]), levels[1]) \
                                     for divName, levels in cfg.bountyDivisions.items()}
 
-        newGuild = BasedGuild(**cls._makeDefaults(guildDict, ("bountiesDB","bountyBoardChannel","shop"),
+        newGuild = BasedGuild(**cls._makeDefaults(guildDict, ("bountiesDB","bountyBoardChannel","shop","shopDisabled"),
                                                     id=guildID, dcGuild=dcGuild, bounties=None,
                                                     announceChannel=announceChannel, playChannel=playChannel,
                                                     divisionShops=divisionShops, shopsDisabled=shopsDisabled))
