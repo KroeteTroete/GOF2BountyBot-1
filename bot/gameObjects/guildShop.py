@@ -620,6 +620,7 @@ class TechLeveledShop(GuildShop):
         """
         data = super().toDict(**kwargs)
         data["minLevel"] = self.minLevel
+        data["maxLevel"] = self.maxLevel
         data["currentTechLevel"] = self.currentTechLevel
         return data
 
