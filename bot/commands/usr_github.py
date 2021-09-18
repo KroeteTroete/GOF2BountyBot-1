@@ -42,6 +42,8 @@ def searchIssues(searchTerm: str) -> List[Issue]:
         currentPage += 1
         currentIssues = allIssues.get_page(currentPage)
 
+    return results
+
 
 @asyncWrap
 def getIssueByNumber(issueNumber: int) -> Union[Issue, None]:
