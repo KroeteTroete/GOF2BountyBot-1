@@ -502,3 +502,6 @@ gameObjectCfgMaxRecursion = 6
 
 # github account access token to be used for submitting issues
 githubAccessToken = ""
+
+# github repo to submit issues into
+githubIssuesRepo = ""

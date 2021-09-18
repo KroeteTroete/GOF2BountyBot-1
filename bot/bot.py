@@ -428,7 +428,7 @@ async def on_ready():
     ##### CLIENT INITIALIZATION #####
     botState.client.skinStorageChannel = botState.client.get_guild(cfg.mediaServer).get_channel(cfg.skinRendersChannel)
     botState.httpClient = aiohttp.ClientSession()
-    if cfg.githubAccessToken:
+    if cfg.githubAccessToken and cfg.githubIssuesRepo:
         botState.githubClient = Github(cfg.githubAccessToken)
 
     if cfg.timedTaskCheckingType == "fixed":
