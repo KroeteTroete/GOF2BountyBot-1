@@ -88,7 +88,7 @@ async def admin_cmd_set_renders_channel(message : discord.Message, args : str, i
                                     + "or no args to use this channel as the renders channel.",
                             mention_author=False)
     else:
-        requestedBBGuild.setAnnounceChannel(message.channel)
+        requestedBBGuild.setRendersChannel(message.channel)
         await message.reply(":ballot_box_with_check: Renders channel set!",
                             mention_author=False)
 

@@ -9,6 +9,7 @@ from ..gameObjects.items import shipItem, gameItem
 from ..reactionMenus.reactionSkinRegionPicker import ReactionSkinRegionPicker
 from ..reactionMenus.pagedReactionMenu import PagedReactionMenu
 from ..shipRenderer import shipRenderer
+from ..users.basedGuild import BasedGuild
 
 
 botCommands.addHelpSection(0, "gof2 info")
@@ -756,7 +757,7 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
     if isDM:
         prefix = cfg.defaultCommandPrefix
     else:
-        callingBGuild = botState.guildsDB.getGuild(message.guild.id)
+        callingBGuild: BasedGuild = botState.guildsDB.getGuild(message.guild.id)
         prefix = callingBGuild.commandPrefix
         if "+" in args and callingBGuild.hasRendersChannel() and callingBGuild.rendersChannel.id != message.channel.id:
             await message.reply(f":x: Skin renders are restricted to {callingBGuild.rendersChannel.mention}.")
