@@ -756,7 +756,11 @@ async def cmd_showme_ship(message : discord.Message, args : str, isDM : bool):
     if isDM:
         prefix = cfg.defaultCommandPrefix
     else:
-        prefix = botState.guildsDB.getGuild(message.guild.id).commandPrefix
+        callingBGuild = botState.guildsDB.getGuild(message.guild.id)
+        prefix = callingBGuild.commandPrefix
+        if "+" in args and callingBGuild.hasRendersChannel() and callingBGuild.rendersChannel.id != message.channel.id:
+            await message.reply(f":x: Skin renders are restricted to {callingBGuild.rendersChannel.mention}.")
+            return
     # verify a item was given
     if args == "":
         await message.reply(mention_author=False, content=":x: Please provide a ship! Example: `" + prefix + "ship Groza Mk II`")

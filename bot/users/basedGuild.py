@@ -26,10 +26,12 @@ class BasedGuild(serializable.Serializable):
     :vartype dcGuild: discord.Guild
     :var announceChannel: The discord.channel object for this guild's announcements chanel.
                             None when no announce channel is set for this guild.
-    :vartype announceChannel: discord.channel.TextChannel
+    :vartype announceChannel: TextChannel
     :var playChannel: The discord.channel object for this guild's bounty playing chanel.
                         None when no bounty playing channel is set for this guild.
-    :vartype playChannel: discord.channel.TextChannel
+    :vartype playChannel: TextChannel
+    :var rendersChannel: The discord.channel which showme ship renders should be limited to. None when no channel is set.
+    :vartype rendersChannel: Union[TextChannel, None]
     :var shop: This guild's guildShop object
     :vartype shop: guildShop
     :var alertRoles: A dictionary of user alert IDs to guild role IDs.
@@ -49,7 +51,8 @@ class BasedGuild(serializable.Serializable):
     """
 
     def __init__(self, id: int, dcGuild: Guild, bounties: BountyDB, commandPrefix: str = cfg.defaultCommandPrefix,
-            announceChannel : channel.TextChannel = None, playChannel : channel.TextChannel = None,
+            announceChannel :  Union[TextChannel, None] = None, playChannel :  Union[TextChannel, None] = None,
+            rendersChannel :  Union[TextChannel, None] = None,
             divisionShops : Union[None, Dict[str, guildShop.TechLeveledShop]] = None,
             alertRoles : Dict[str, int] = {}, ownedRoleMenus : int = 0, bountiesDisabled : bool = False,
             shopsDisabled : bool = False):
@@ -57,10 +60,14 @@ class BasedGuild(serializable.Serializable):
         :param int id: The ID of the guild, directly corresponding to a discord guild's ID.
         :param discord.Guild dcGuild: This guild's corresponding discord.Guild object
         :param BountyDB bounties: This guild's active bounties
-        :param discord.channel announceChannel: The discord.channel object for this guild's announcements chanel.
+        :param announceChannel: The discord.channel object for this guild's announcements chanel.
                                                 None when no announce channel is set for this guild.
-        :param discord.channel playChannel: The discord.channel object for this guild's bounty playing chanel.
+        :type announceChannel: Union[TextChannel, None]
+        :param playChannel: The discord.channel object for this guild's bounty playing chanel.
                                             None when no bounty playing channel is set for this guild.
+        :type playChannel: Union[TextChannel, None]
+        :param rendersChannel: The discord.channel which showme ship renders should be limited to. None when no channel is set.
+        :type rendersChannel: Union[TextChannel, None]
         :param divisionShops: A dictionary mapping division names to shops. Ignored if shopsDisabled is True
         :type divisionShops: Union[None, Dict[str, guildShop.TechLeveledShop]]
         :param dict[str, int] alertRoles: A dictionary of user alert IDs to guild role IDs.
@@ -87,6 +94,7 @@ class BasedGuild(serializable.Serializable):
 
         self.announceChannel = announceChannel
         self.playChannel = playChannel
+        self.rendersChannel = rendersChannel
 
         self.shopsDisabled = shopsDisabled
         if shopsDisabled:
@@ -248,11 +256,11 @@ class BasedGuild(serializable.Serializable):
                                     category="userAlerts", exception=e)
 
 
-    def getAnnounceChannel(self) -> channel.TextChannel:
+    def getAnnounceChannel(self) -> TextChannel:
         """Get the discord channel object of the guild's announcements channel.
 
         :return: the discord.channel of the guild's announcements channel
-        :rtype: discord.channel.TextChannel
+        :rtype: TextChannel
         :raise ValueError: If this guild does not have an announcements channel
         """
         if not self.hasAnnounceChannel():
@@ -260,30 +268,30 @@ class BasedGuild(serializable.Serializable):
         return self.announceChannel
 
 
-    def getPlayChannel(self) -> channel.TextChannel:
+    def getPlayChannel(self) -> TextChannel:
         """Get the discord channel object of the guild's bounty playing channel.
 
         :return: the discord channel object of the guild's bounty playing channel
         :raise ValueError: If this guild does not have a play channel
-        :rtype: discord.channel.TextChannel
+        :rtype: TextChannel
         """
         if not self.hasPlayChannel():
             raise ValueError("This guild has no play channel set")
         return self.playChannel
 
 
-    def setAnnounceChannel(self, announceChannel : channel.TextChannel):
+    def setAnnounceChannel(self, announceChannel : TextChannel):
         """Set the discord channel object of the guild's announcements channel.
 
-        :param int announceChannel: The discord channel object of the guild's new announcements channel
+        :param TextChannel announceChannel: The discord channel object of the guild's new announcements channel
         """
         self.announceChannel = announceChannel
 
 
-    def setPlayChannel(self, playChannel : channel.TextChannel):
+    def setPlayChannel(self, playChannel : TextChannel):
         """Set the discord channel of the guild's bounty playing channel.
 
-        :param int playChannel: The discord channel object of the guild's new bounty playing channel
+        :param TextChannel playChannel: The discord channel object of the guild's new bounty playing channel
         """
         self.playChannel = playChannel
 
@@ -324,6 +332,33 @@ class BasedGuild(serializable.Serializable):
         if not self.hasAnnounceChannel():
             raise ValueError("Attempted to remove announce channel on a BasedGuild that has no announceChannel")
         self.announceChannel = None
+
+
+    def setRendersChannel(self, rendersChannel : TextChannel):
+        """Set the discord channel of the guild's autoskin renders channel.
+
+        :param TextChannel rendersChannel: The discord channel object of the guild's autoskin renders channel
+        """
+        self.rendersChannel = rendersChannel
+
+
+    def hasRendersChannel(self) -> bool:
+        """Whether or not this guild has a renders channel
+
+        :return: True if this guild has a renders channel, False otherwise
+        :rtype bool:
+        """
+        return self.rendersChannel is not None
+
+
+    def removeRendersChannel(self):
+        """Remove and deactivate this guild's announcements channel.
+
+        :raise ValueError: If this guild does not have a renders channel
+        """
+        if not self.hasRendersChannel():
+            raise ValueError("Attempted to remove renders channel on a BasedGuild that has no rendersChannel")
+        self.rendersChannel = None
 
 
     def getUserAlertRoleID(self, alertID : str) -> int:
@@ -704,6 +739,7 @@ class BasedGuild(serializable.Serializable):
         """
         data = {    "announceChannel":  self.announceChannel.id if self.hasAnnounceChannel() else -1,
                     "playChannel":      self.playChannel.id if self.hasPlayChannel() else -1,
+                    "rendersChannel":   self.rendersChannel.id if self.hasRendersChannel() else -1,
                     "alertRoles":       self.alertRoles,
                     "ownedRoleMenus":   self.ownedRoleMenus,
                     "bountiesDisabled": self.bountiesDisabled,
@@ -737,7 +773,7 @@ class BasedGuild(serializable.Serializable):
             raise NameError("Required kwarg missing: guildID")
         guildID = kwargs["guildID"]
 
-        dcGuild = botState.client.get_guild(guildID)
+        dcGuild: Guild = botState.client.get_guild(guildID)
         if dcGuild is None:
             raise lib.exceptions.NoneDCGuildObj("Could not get guild object for id " + str(guildID))
 
@@ -745,6 +781,8 @@ class BasedGuild(serializable.Serializable):
         announceChannel = dcGuild.get_channel(announceChannel) if announceChannel != -1 else None
         playChannel = guildDict.get("playChannel", -1)
         playChannel = dcGuild.get_channel(playChannel) if playChannel != -1 else None
+        rendersChannel = guildDict.get("rendersChannel", -1)
+        rendersChannel = dcGuild.get_channel(rendersChannel) if rendersChannel != -1 else None
 
         bountiesDisabled = guildDict.get("bountiesDisabled", False)
 
@@ -763,6 +801,7 @@ class BasedGuild(serializable.Serializable):
         newGuild = BasedGuild(**cls._makeDefaults(guildDict, ("bountiesDB","bountyBoardChannel","shop","shopDisabled"),
                                                     id=guildID, dcGuild=dcGuild, bounties=None,
                                                     announceChannel=announceChannel, playChannel=playChannel,
+                                                    rendersChannel=rendersChannel,
                                                     divisionShops=divisionShops, shopsDisabled=shopsDisabled))
 
         if not bountiesDisabled:
