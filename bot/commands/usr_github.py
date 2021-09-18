@@ -1,4 +1,4 @@
-from typing import Dict, List, cast
+from typing import Dict, List, Union, cast
 import discord
 
 from . import commandsDB as botCommands
@@ -10,6 +10,7 @@ import difflib
 
 from github import Github
 from github.Issue import Issue
+from github import UnknownObjectException
 
 
 botCommands.addHelpSection(0, "github")
@@ -42,6 +43,20 @@ def searchIssues(searchTerm: str) -> List[Issue]:
         currentIssues = {x.title: x for x in allIssues.get_page(currentPage)}
 
     return list(currentBest.values())
+
+
+@asyncWrap
+def getIssueByNumber(issueNumber: int) -> Union[Issue, None]:
+    """Get an issue by its number.
+
+    :param int issueNumber: The number of the issue
+    :return: The issue with the given number, or None if none exists
+    :rtype: Union[Issue, None]
+    """
+    try:
+        return botState.githubRepo.get_issue(issueNumber)
+    except UnknownObjectException:
+        return None
 
 
 async def cmd_balance(message : discord.Message, args : str, isDM : bool):
