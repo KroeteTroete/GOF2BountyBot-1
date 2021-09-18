@@ -963,7 +963,7 @@ async def dev_cmd_set_bounty_level(message : discord.Message, args : str, isDM :
         return
 
     if not botState.usersDB.idExists(requestedUser.id):
-        requestedBBUser = botState.usersDB.addUser(requestedUser.id)
+        requestedBBUser = botState.usersDB.addID(requestedUser.id)
     else:
         requestedBBUser = botState.usersDB.getUser(requestedUser.id)
 
