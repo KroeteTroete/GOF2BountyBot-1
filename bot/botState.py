@@ -2,6 +2,7 @@ from .logging import Logger
 from aiohttp import ClientSession
 from datetime import timedelta
 from github import Github
+from github.Repository import Repository
 from typing import cast
 
 class ShutDownState:
@@ -13,6 +14,7 @@ client = None # type: ignore[var-annotated]
 shutdown = ShutDownState.restart
 httpClient: ClientSession = None
 githubClient = cast(Github, None)
+githubRepo = cast(Repository, None)
 
 usersDB = None
 guildsDB = None
