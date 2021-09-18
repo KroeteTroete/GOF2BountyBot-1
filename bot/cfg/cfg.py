@@ -68,7 +68,10 @@ timeouts = {
     # when using random bounty delay generation, use these min and max points
     # when using random-routeScale generation, use these min and max points for bounties of route length 1
     "newBountyDelayRandomMin": {"minutes": 5},
-    "newBountyDelayRandomMax": {"minutes": 7}
+    "newBountyDelayRandomMax": {"minutes": 7},
+
+    # The amount of time a user must wait before they are allowed to submit a new github issue
+    "githubIssueSubmitDelay": {"minutes": 5}
 }
 
 paths = {
@@ -509,3 +512,5 @@ githubIssuesRepo = ""
 # a translation from github label names to user-facing label names
 githubLabelNames = {"enhancement": "feature",
                     "i showed u my issue pls respond": "new issue"}
+
+githubIssueTemplates = ["bug_report", "feature_request", "new-item-alias"]
