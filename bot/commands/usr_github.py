@@ -120,6 +120,7 @@ async def cmd_issue_get(message : discord.Message, args : str, isDM : bool):
 
     if issue is None:
         await message.reply(":x: Unknown issue number!")
+        await lib.discordUtil.endLongProcess(message)
         return
 
     labelsStr = ', '.join(cfg.githubLabelNames.get(x.name, x.name) for x in issue.labels)
