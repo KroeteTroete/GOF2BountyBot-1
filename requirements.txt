@@ -2,3 +2,4 @@ discord.py
 emoji
 toml
 PyGithub
+discord-py-slash-command
