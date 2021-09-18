@@ -200,7 +200,8 @@ class BasedGuild(serializable.Serializable):
         self.hasBountyAlertRoles = False
 
 
-    async def levelUpSwapRoles(self, dcUser: Member, channel: TextChannel, oldRole: Role, newRole: Role):
+    async def levelUpSwapRoles(self, dcUser: Member, channel: TextChannel, oldRole: Role, newRole: Role,
+                                    actionOverride="leveled up"):
         """Remove oldRole from dcUser, and grant newRole.
         If errors occur, they will be printed in the context of dcUser leveling up their bounty Hunting level,
         and sent in channel. If oldRole or newRole are given as None, they will be ignored and no exception raised.
@@ -209,10 +210,12 @@ class BasedGuild(serializable.Serializable):
         :param TextChannel channel: The channel in which to send errors
         :param Role oldRole: The role to remove, corresponding to dcUser's previous tech level
         :param Role newRole: The role to grant, corresponding to dcUser's new tech level
+        :param str actionOverride: The reason for the role change, inserted partially into each message.
+                                    (Default "leveled up")
         """
         if oldRole is not None:
             try:
-                await dcUser.remove_roles(oldRole, reason="User leveled up into a new division")
+                await dcUser.remove_roles(oldRole, reason=f"User {actionOverride} into a new division")
             except Forbidden:
                 await channel.send(":woozy_face: I don't have permission to remove your old division role! Please ensure " \
                                     + "it is beneath the BountyBot role.")
@@ -234,7 +237,7 @@ class BasedGuild(serializable.Serializable):
                                     category="userAlerts", exception=e)
         if newRole is not None:
             try:
-                await dcUser.add_roles(newRole, reason="User leveled up into a new division")
+                await dcUser.add_roles(newRole, reason=f"User {actionOverride} into a new division")
             except Forbidden:
                 await channel.send(":woozy_face: I don't have permission to grant your new division role! Please ensure " \
                                     + "it is beneath the BountyBot role.")
