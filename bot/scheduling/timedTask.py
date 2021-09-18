@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import inspect
 from types import FunctionType
 from typing import Any
+from .. import botState
 
 
 class TimedTask:
@@ -172,8 +173,9 @@ class TimedTask:
         except Exception as e:
             # If the task is marked to reschedule on expiry func failure, reschedule the task
             if self.rescheduleOnExpiryFuncFailure:
-                print("Exception occured in callExpiryFunction + " + str(self.expiryFunction) + ", rescheduling: " \
-                        + str(self) + ". Exception: " + str(e))
+                botState.logger.log(type(self).__name__, "callExpiryFunction",
+                                    f"Exception occured in callExpiryFunction {self.expiryFunction}, rescheduling: {self}.",
+                                    exception=e, noPrint=True)
                 await self.reschedule()
             # Otherwise, pass up the exception
             else:
