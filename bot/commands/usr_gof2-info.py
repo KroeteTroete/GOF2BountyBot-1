@@ -298,7 +298,7 @@ async def cmd_info_ship(message : discord.Message, args : str, isDM : bool):
         statsEmbed.add_field(name="Max Shop Spawn Chance:", value=str(itemObj.shopSpawnRate) + "%\nFor shop level " \
                                                                     + str(itemObj.techLevel))
 
-        if itemData.get("skinnable", False):
+        if not itemData.get("skinnable", False):
             statsEmbed.add_field(name="Compatible Skins:",
                                 value="This ship is not skinnable", inline=False)
         # Include compatible ship skin names
