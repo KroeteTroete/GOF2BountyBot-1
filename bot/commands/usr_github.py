@@ -5,6 +5,8 @@ from .. import botState, lib
 from ..cfg import cfg
 from ..users import basedGuild, basedUser
 
+from github import Github
+
 
 botCommands.addHelpSection(0, "github")
 

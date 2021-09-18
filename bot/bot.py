@@ -19,6 +19,7 @@ import asyncio
 import signal
 import aiohttp
 import sys
+from github import Github
 
 
 # BASED Imports
@@ -427,6 +428,8 @@ async def on_ready():
     ##### CLIENT INITIALIZATION #####
     botState.client.skinStorageChannel = botState.client.get_guild(cfg.mediaServer).get_channel(cfg.skinRendersChannel)
     botState.httpClient = aiohttp.ClientSession()
+    if cfg.githubAccessToken:
+        botState.githubClient = Github(cfg.githubAccessToken)
 
     if cfg.timedTaskCheckingType == "fixed":
         botState.taskScheduler = timedTaskHeap.TimedTaskHeap()
