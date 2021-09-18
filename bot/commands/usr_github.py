@@ -6,9 +6,10 @@ from .. import botState, lib
 from ..lib.discordUtil import asyncWrap
 from ..cfg import cfg
 from ..users import basedGuild, basedUser
-import difflib
+from datetime import datetime
 
 from github import Github
+from github.Issue import Issue
 from github.Issue import Issue
 from github import UnknownObjectException
 
@@ -20,29 +21,21 @@ botCommands.addHelpSection(0, "github")
 def searchIssues(searchTerm: str) -> List[Issue]:
     """Search through all pages of the github repository's issues for the top 3 matches for the given search term.
     Searches are performed over issue titles and no other content.
-    This is a very expensive operation, use sparingly.
 
     :param str searchTerm: The issue name to search for
     :return: A list of 0-3 Issues that most closely match search Term
     :rtype: List[Issue]
     """
-    currentBest: Dict[str, Issue] = {}
+    results: List[Issue] = []
     currentPage = 0
 
-    allIssues = botState.githubRepo.get_issues()
-    currentIssues: Dict[str, Issue] = {x.title: x for x in allIssues.get_page(currentPage)}
+    allIssues = botState.githubClient.search_issues(f"is:issue repo:{cfg.githubIssuesRepo} {searchTerm}")
+    currentIssues: List[Issue] = allIssues.get_page(currentPage)
 
     while currentIssues:
-        currentTerms = set(currentBest.keys())
-        currentTerms.update(currentIssues.keys())
-
-        currentBestNames = difflib.get_close_matches(searchTerm, currentTerms, n=3)
-        currentBest = {x: currentBest[x] if x in currentBest else currentIssues[x] for x in currentBestNames}
-
+        results += currentIssues
         currentPage += 1
-        currentIssues = {x.title: x for x in allIssues.get_page(currentPage)}
-
-    return list(currentBest.values())
+        currentIssues = allIssues.get_page(currentPage)
 
 
 @asyncWrap
@@ -156,6 +149,10 @@ async def cmd_issue(message : discord.Message, args : str, isDM : bool):
                             content=f":x: Please give a subcommand! See `{prefix}help issue` for possible commands.")
         return
 
+    if botState.githubRepo is None or botState.githubClient is None:
+        await message.reply("GitHub commands are currently disabled. " \
+                            + "Please manage issues through the GitHub website directly.")
+
     argsSplit = args.split(" ")
 
     issueCmds = {"search": cmd_issue_search,
@@ -168,9 +165,10 @@ async def cmd_issue(message : discord.Message, args : str, isDM : bool):
                             content=f":x: Unknown subcommand! See `{prefix}help issue` for possible commands.")
 
 botCommands.register("issue", cmd_issue, 0, allowDM=True, helpSection="github", signatureStr="**issue <subcommand> <args>**",
-                        aliases=["git", "github", "bug", "feature", "issues"],
+                        aliases=["git", "github", "bug", "feature", "issues"], forceKeepArgsCasing=True,
                         shortHelp="Look up and submit new bug reports and feature requests.",
                         longHelp="Look up bugs and feature requests, and submit new ones!\n" \
                             + "To do more with the project's issues, please see the project GitHub repository, " \
                             + "linked in the `source` command.\n\n" \
-                            + "subcommands:\n- `search`, to find issues by name")
+                            + "subcommands:\n- `search`, to find issues by name\n" \
+                            + "- `get`, to find issues by number")
