@@ -59,18 +59,69 @@ def getIssueByNumber(issueNumber: int) -> Union[Issue, None]:
         return None
 
 
-async def cmd_balance(message : discord.Message, args : str, isDM : bool):
-    """print the balance of the specified user, use the calling user if no user is specified.
+async def cmd_issue_search(message : discord.Message, args : str, isDM : bool):
+    """Search for github issues with the given title.
 
     :param discord.Message message: the discord message calling the command
-    :param str args: string, can be empty or contain a user mention
+    :param str args: string containing an issue title to search for
     :param bool isDM: Whether or not the command is being called from a DM channel
     """
+    if not args:
+        await message.reply(":x: Please give an issue name to search for!")
+        return
+    
+    await lib.discordUtil.startLongProcess(message)
+    issues: List[Issue] = await searchIssues(args)
+
+    resultsEmbed = discord.Embed(title="GitHub Issues Search", description=f"Search term: `{args}`\n** **",
+                                    colour=discord.colour.Colour.random())
+    prefix = cfg.defaultCommandPrefix if isDM else botState.guildsDB.getGuild(message.guild.id).commandPrefix
+    resultsEmbed.set_footer(text=f"GitHub repository linked in `{prefix}source`")
+    resultsEmbed.set_thumbnail(url=botState.client.user.avatar_url_as(size=64))
+    if issues:
+        for issue in issues:
+            labelsStr = ', '.join(cfg.githubLabelNames.get(x.name, x.name) for x in issue.labels)
+            resultsEmbed.add_field(name=("🟢" if issue.state == "open" else "🔴") + " " + issue.title,
+                                    value=f"[#{issue.number}]({issue.url}) *({labelsStr})*")
+    else:
+        resultsEmbed.add_field(name="No results found", value="​")
+
+    await message.reply(embed=resultsEmbed)
+    await lib.discordUtil.endLongProcess(message)
+
+botCommands.register("issue search", cmd_issue_search, 0, forceKeepArgsCasing=True, allowDM=True,
+                        aliases=["bug search", "issues search", "git search", "github search", "feature search"],
+                        helpSection="github", signatureStr="**issue search <issue-name>**",
+                        shortHelp="Search for GitHub issues with the given name, getting the 3 most similar issues.")
 
 
-botCommands.register("balance", cmd_balance, 0, aliases=["bal", "credits"], forceKeepArgsCasing=True, allowDM=True,
-                        helpSection="economy", signatureStr="**balance** *[user]*",
-                        shortHelp="Get the credits balance of yourself, or another user if one is given.",
-                        longHelp="Get the credits balance of yourself, or another user if one is given. If used from inside" \
-                                    + " of a server, `user` can be a mention, ID, username, or username with discriminator " \
-                                    + "(#number). If used from DMs, `user` must be an ID or mention.")
+async def cmd_issue(message : discord.Message, args : str, isDM : bool):
+    """Various github issues actions
+
+    :param discord.Message message: the discord message calling the command
+    :param str args: string containing subcommand name followed by arguments
+    :param bool isDM: Whether or not the command is being called from a DM channel
+    """
+    prefix = cfg.defaultCommandPrefix if isDM else botState.guildsDB.getGuild(message.guild.id).commandPrefix
+    if args == "":
+        await message.reply(mention_author=False,
+                            content=f":x: Please give a subcommand! See `{prefix}help issue` for possible commands.")
+        return
+
+    argsSplit = args.split(" ")
+
+    issueCmds = {"search": cmd_issue_search}
+    
+    if argsSplit[0] in issueCmds:
+        await issueCmds[argsSplit[0]](message, args[len(argsSplit[0])+1:], isDM)
+    else:
+        await message.reply(mention_author=False,
+                            content=f":x: Unknown subcommand! See `{prefix}help issue` for possible commands.")
+
+botCommands.register("issue", cmd_issue, 0, allowDM=True, helpSection="github", signatureStr="**issue <subcommand> <args>**",
+                        aliases=["git", "github", "bug", "feature", "issues"],
+                        shortHelp="Look up and submit new bug reports and feature requests.",
+                        longHelp="Look up bugs and feature requests, and submit new ones!\n" \
+                            + "To do more with the project's issues, please see the project GitHub repository, " \
+                            + "linked in the `source` command.\n\n" \
+                            + "subcommands:\n- `search`, to find issues by name")

@@ -111,7 +111,7 @@ maxCommandsPerHelpPage = 5
 #                           "dev_misc")
 
 includedCommandModules = (  "usr_misc", "usr_homeguilds", "usr_gof2-info", "usr_bounties", "usr_loadout", "usr_economy",
-                            "usr_kaamo", "usr_loma", "usr_github"
+                            "usr_kaamo", "usr_loma", "usr_github",
                             "admn_channels", "admn_misc",
                             "dev_misc", "dev_channels", "dev_bounties", "dev_items", "dev_skins", "dev_loma", "dev_kaamo",
                                 "dev_medals")
@@ -505,3 +505,7 @@ githubAccessToken = ""
 
 # github repo to submit issues into
 githubIssuesRepo = ""
+
+# a translation from github label names to user-facing label names
+githubLabelNames = {"enhancement": "feature",
+                    "i showed u my issue pls respond": "new issue"}
