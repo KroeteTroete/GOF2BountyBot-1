@@ -70,13 +70,6 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
                 divName = n
                 args = args[len(n):].lstrip()
                 break
-    if not divName:
-        if botState.usersDB.idExists(message.author.id):
-            bUser = botState.usersDB.getUser(message.author.id)
-            userLevel = gameMaths.calculateUserBountyHuntingLevel(bUser.bountyHuntingXP)
-            divName = divisionNameForLevel(userLevel)
-        else:
-            divName = divisionNameForLevel(cfg.minTechLevel)
 
     item = "all"
     if args.rstrip("s") in cfg.validItemNames:
@@ -86,6 +79,24 @@ async def cmd_shop(message : discord.Message, args : str, isDM : bool):
                             content=":x: Unknown argument! You can give either or both of:\n" \
                                     + f"- a division name ({'/'.join(cfg.bountyDivisions)})\n" \
                                     + f"- an item type (ship/weapon/module/turret/tool/all)")
+        return
+
+    divisionNames = list(cfg.bountyDivisions.keys())
+    userDivision = ""
+
+    if botState.usersDB.idExists(message.author.id):
+        bUser = botState.usersDB.getUser(message.author.id)
+        userLevel = gameMaths.calculateUserBountyHuntingLevel(bUser.bountyHuntingXP)
+        userDivision = divisionNameForLevel(userLevel)
+        if not divName:
+            divName = userDivision
+    else:
+        userDivision = divisionNames[0]
+        if not divName:
+            divName = divisionNameForLevel(cfg.minTechLevel)
+
+    if divisionNames.index(userDivision) < divisionNames.index(divName):
+        await message.reply(f":x: You are not high enough level to use the {divName} shop!")
         return
 
     sendChannel = None
@@ -197,13 +208,23 @@ async def cmd_shop_buy(message : discord.Message, args : str, isDM : bool):
                 args = args[len(n):].lstrip()
                 break
 
-    if not divName:
-        if botState.usersDB.idExists(message.author.id):
-            bUser = botState.usersDB.getUser(message.author.id)
-            userLevel = gameMaths.calculateUserBountyHuntingLevel(bUser.bountyHuntingXP)
-            divName = divisionNameForLevel(userLevel)
-        else:
+    divisionNames = list(cfg.bountyDivisions.keys())
+    userDivision = ""
+
+    if botState.usersDB.idExists(message.author.id):
+        bUser = botState.usersDB.getUser(message.author.id)
+        userLevel = gameMaths.calculateUserBountyHuntingLevel(bUser.bountyHuntingXP)
+        userDivision = divisionNameForLevel(userLevel)
+        if not divName:
+            divName = userDivision
+    else:
+        userDivision = divisionNames[0]
+        if not divName:
             divName = divisionNameForLevel(cfg.minTechLevel)
+
+    if divisionNames.index(userDivision) < divisionNames.index(divName):
+        await message.reply(f":x: You are not high enough level to use the {divName} shop!")
+        return
 
     requestedShop = requestedBGuild.divisionShops[divName]
 
@@ -372,13 +393,23 @@ async def cmd_shop_sell(message : discord.Message, args : str, isDM : bool):
                 args = args[len(n):].lstrip()
                 break
 
-    if not divName:
-        if botState.usersDB.idExists(message.author.id):
-            bUser = botState.usersDB.getUser(message.author.id)
-            userLevel = gameMaths.calculateUserBountyHuntingLevel(bUser.bountyHuntingXP)
-            divName = divisionNameForLevel(userLevel)
-        else:
+    divisionNames = list(cfg.bountyDivisions.keys())
+    userDivision = ""
+
+    if botState.usersDB.idExists(message.author.id):
+        bUser = botState.usersDB.getUser(message.author.id)
+        userLevel = gameMaths.calculateUserBountyHuntingLevel(bUser.bountyHuntingXP)
+        userDivision = divisionNameForLevel(userLevel)
+        if not divName:
+            divName = userDivision
+    else:
+        userDivision = divisionNames[0]
+        if not divName:
             divName = divisionNameForLevel(cfg.minTechLevel)
+
+    if divisionNames.index(userDivision) < divisionNames.index(divName):
+        await message.reply(f":x: You are not high enough level to use the {divName} shop!")
+        return
 
     requestedShop = requestedBGuild.divisionShops[divName]
 
