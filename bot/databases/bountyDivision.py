@@ -93,8 +93,23 @@ class BountyDivision(Serializable):
         self.owningDB = owningDB
 
         self.newBountyTT: Union[TimedTask, None] = None
-        if not self.isFull():
+        if not self.hasMinTLBounty() or not self.isFull():
             self.tryStartBountySpawner()
+
+
+    def hasMinTLBounty(self, includeEscaped: bool = True) -> bool:
+        """Decide whether the division has at least one bounty at the division's lowest level.
+        This is used for division full-ness decisions.
+        Give includeEscaped=False to only consider those bounties which are currently active.
+
+        :param bool includeEscaped: Whether or not to also consider escaped bounties (Default True)
+        :return: True if at least one bounty exists at the division's lowest level, False otherwise
+        :rtype: bool
+        """
+        if includeEscaped:
+            return bool(self.bounties[self.minLevel]) or bool(self.escapedBounties[self.minLevel])
+        else:
+            return bool(self.bounties[self.minLevel])
 
 
     def tryStartBountySpawner(self):
@@ -105,7 +120,7 @@ class BountyDivision(Serializable):
         if self.newBountyTT is not None:
             botState.logger.log("BountyDivision", "tryStartBountySpawner", "Attempted to tryStartBountySpawner when a newBountyTT already exists",
                                 "newBounties", "TT_EXISTS", "\n".join(format_stack()))
-        elif self.isFull():
+        elif self.isFull() and not self.hasMinTLBounty():
             botState.logger.log("BountyDivision", "tryStartBountySpawner", "Attempted to tryStartBountySpawner when the division is already full",
                                 "newBounties", "DIV_FULL", "\n".join(format_stack()))
         else:
@@ -242,7 +257,7 @@ class BountyDivision(Serializable):
         :raise OverflowError: If the division is currently full
         """
         # if no min level bounties exist, ignore the division being full
-        if not self.bounties[self.minLevel]:
+        if not self.hasMinTLBounty():
             level = self.minLevel
         else:
             if self.isFull():
@@ -252,7 +267,7 @@ class BountyDivision(Serializable):
         newBounty = Bounty(division=self, config=BountyConfig(techLevel=level).generate(self))
         self.bounties[level][newBounty.criminal] = newBounty
 
-        if self.isFull():
+        if self.isFull() and self.hasMinTLBounty():
             self.stopBountySpawner()
 
         await self.owningDB.owningBasedGuild.announceNewBounty(newBounty)
@@ -269,7 +284,7 @@ class BountyDivision(Serializable):
         if bounty.criminal not in self.escapedBounties[bounty.techLevel]:
             raise KeyError("Attempted to respawn a bounty that is not registered as an escaped bounty: " \
                             + bounty.criminal.name)
-        if self.getNumBounties(includeEscaped=False) >= self.maxBounties():
+        if self.isFull(includeEscaped=False):
             raise OverflowError("Attempted to respawn a bounty when the DB is currently full: " + bounty.criminal.name)
         if bounty.techLevel < self.minLevel or bounty.techLevel > self.maxLevel:
             raise IndexError("Attempted to respawn a bounty whose tech level is not stored in this division: " \
@@ -279,7 +294,7 @@ class BountyDivision(Serializable):
         bounty.__init__(config=bounty.makeRespawnConfig().generate(self))
         self.bounties[bounty.techLevel][bounty.criminal] = bounty
 
-        if self.isFull():
+        if self.isFull() and self.hasMinTLBounty():
             self.stopBountySpawner()
 
         await self.owningDB.owningBasedGuild.announceNewBounty(bounty)
@@ -296,7 +311,7 @@ class BountyDivision(Serializable):
         self.temperature = max(cfg.minGuildActivity, round(newTemp, 2))
         if updateActive:
             self.updateIsActive()
-        if wasFull:
+        if wasFull or not self.hasMinTLBounty():
             self.tryStartBountySpawner()
 
 
@@ -446,7 +461,7 @@ class BountyDivision(Serializable):
                 for bty in tlBounties.values():
                     await bty.respawnTT.forceExpire(callExpiryFunc=False)
                 tlBounties.clear()
-        if wasFull:
+        if wasFull or not self.hasMinTLBounty():
             self.tryStartBountySpawner()
 
 
@@ -506,7 +521,7 @@ class BountyDivision(Serializable):
         self.bounties[bounty.techLevel][bounty.criminal] = bounty
         if self.latestBounty is None or bounty.issueTime > self.latestBounty.issueTime:
             self.latestBounty = bounty
-        if self.isFull():
+        if self.isFull() and self.hasMinTLBounty():
             try:
                 self.stopBountySpawner()
             except ValueError as e:
@@ -534,7 +549,7 @@ class BountyDivision(Serializable):
             raise ValueError(f"Attempted to add {bounty} for a criminal who is already escaped: {bounty.criminal} by {bounty}")
 
         self.escapedBounties[bounty.techLevel][bounty.criminal] = bounty
-        if self.isFull():
+        if self.isFull() and self.hasMinTLBounty():
             try:
                 self.stopBountySpawner()
             except ValueError as e:
@@ -553,7 +568,7 @@ class BountyDivision(Serializable):
             del self.bounties[bounty.techLevel][bounty.criminal]
         except KeyError:
             raise KeyError("Bounty not found: " + bounty.criminal.name)
-        if wasFull:
+        if wasFull or not self.hasMinTLBounty():
             self.tryStartBountySpawner()
     
 
@@ -568,7 +583,7 @@ class BountyDivision(Serializable):
             del self.escapedBounties[bounty.techLevel][bounty.criminal]
         except KeyError:
             raise KeyError("Escaped bounty not found: " + bounty.criminal.name)
-        if wasFull:
+        if wasFull or not self.hasMinTLBounty():
             self.tryStartBountySpawner()
 
 
