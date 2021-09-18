@@ -1,5 +1,6 @@
 # Set up bot config
 
+import github
 from bot.gameObjects.items import shipItem
 from .cfg import cfg, versionInfo, bbData, gameConfigurator
 
@@ -429,7 +430,15 @@ async def on_ready():
     botState.client.skinStorageChannel = botState.client.get_guild(cfg.mediaServer).get_channel(cfg.skinRendersChannel)
     botState.httpClient = aiohttp.ClientSession()
     if cfg.githubAccessToken and cfg.githubIssuesRepo:
-        botState.githubClient = Github(cfg.githubAccessToken)
+        try:
+            botState.githubClient = Github(cfg.githubAccessToken)
+        except Exception as e:
+            botState.logger.log("main", "on_ready", "", exception=e)
+        else:
+            try:
+                botState.githubRepo = botState.githubClient.get_repo(cfg.githubIssuesRepo)
+            except Exception as e:
+                botState.logger.log("main", "on_ready", "", exception=e)
 
     if cfg.timedTaskCheckingType == "fixed":
         botState.taskScheduler = timedTaskHeap.TimedTaskHeap()
