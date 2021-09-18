@@ -499,3 +499,6 @@ loggingCategories = [   "usersDB", "guildsDB", "bountiesDB", "shop", "escapedBou
 
 # The maximum recursion depth of directory-walking when loading gameObjects from their JSON representation
 gameObjectCfgMaxRecursion = 6
+
+# github account access token to be used for submitting issues
+githubAccessToken = ""
