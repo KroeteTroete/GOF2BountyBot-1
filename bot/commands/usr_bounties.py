@@ -649,7 +649,7 @@ async def cmd_prestige(message : discord.Message, args : str, isDM : bool):
         await message.channel.send(":x: This command can only be used by level 10 bounty hunters!")
         return
 
-    callingBBUser = botState.usersDB.getUser(message.author.id)
+    callingBBUser: basedUser.BasedUser = botState.usersDB.getUser(message.author.id)
     if gameMaths.calculateUserBountyHuntingLevel(callingBBUser.bountyHuntingXP) < 10:
         await message.channel.send(":x: This command can only be used by level 10 bounty hunters!")
         return
@@ -687,6 +687,31 @@ async def cmd_prestige(message : discord.Message, args : str, isDM : bool):
         callingBBUser.prestiges += 1
         newCrate = crateTool.CrateTool.fromDict({"type": "bbCrate", "crateType": "special", "typeNum": 0, "builtIn": True})
         callingBBUser.inactiveTools.addItem(newCrate)
+
+        if callingBBUser.hasHomeGuild():
+            homeGuild: basedGuild.BasedGuild = botState.guildsDB.getGuild(callingBBUser.homeGuildID)
+            oldDiv = homeGuild.bountiesDB.divisionForLevel(cfg.maxTechLevel)
+            oldDivName = nameForDivision(oldDiv)
+            newDiv = homeGuild.bountiesDB.divisionForLevel(cfg.minTechLevel)
+            newDivName = nameForDivision(newDiv)
+
+            if homeGuild.hasBountyAlertRoles:
+                oldRole = message.guild.get_role(oldDiv.alertRoleID)
+                newRole = None
+                if oldRole is None:
+                    await message.channel.send(f":woozy_face: I can't find the {oldDivName.title()}" \
+                                                + " division bounty alerts role, did it get deleted?")
+                                                
+                elif oldRole in message.author.roles:
+                    newRole = message.guild.get_role(newDiv.alertRoleID)
+                    if newRole is None:
+                        await message.channel.send(":woozy_face: I can't find the " \
+                                                + f"{newDivName.title()} division's bounty alerts " \
+                                                + "role, did it get deleted?")
+                
+                if oldRole is not None or newRole is not None:
+                    await homeGuild.levelUpSwapRoles(message.author, message.channel, oldRole, newRole,
+                                                        actionOverride="prestiged")
 
         await message.channel.send(":astronaut: **" + lib.discordUtil.userOrMemberName(message.author, message.guild) \
                                     + " prestiged!** :tada:\n • You got a **" + newCrate.name + "!**")
