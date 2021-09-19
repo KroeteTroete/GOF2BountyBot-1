@@ -259,13 +259,14 @@ async def admin_cmd_make_bounty_notify_roles(message : discord.Message, args : s
 
 botCommands.register("make-bounty-notify-roles", admin_cmd_make_bounty_notify_roles, 2,
                         signatureStr="**make-bounty-notify-roles**",
-                        shortHelp="Make 10 roles, one for each tech levle users can be, which the bot will ping when new " \
-                                    + "bounties are spawned.",
-                        longHelp="Automatically create 10 new roles, one for each tech levle users can be. When new " \
-                                    + "spawn, the bot will ping the role for the bounty's tech level. Users can self-assign" \
-                                    + " and self-unassign these roles with the `notify` command. Moving the user between " \
-                                    + "roles as they level up is handled automatically. Once created, feel free to edit the" \
-                                    + " roles, but please do not delete them, and they must remain pingable by the bot.")
+                        shortHelp=f"Make {len(cfg.bountyDivisions)} roles, one for each tech levle users can be, " \
+                                    + "which the bot will ping when new bounties are spawned.",
+                        longHelp=f"Automatically create {len(cfg.bountyDivisions)} new roles, one for each division. " \
+                                    + "When a bounty spawns into a division, that division's notify role is pinged. " \
+                                    + "Users can self-assign and self-unassign these roles with the `notify` command. " \
+                                    + "Moving the user between roles as they level up is handled automatically. " \
+                                    + "Once created, feel free to edit the roles, but please do not delete them, " \
+                                    + "and they must remain pingable by the bot.")
 
 
 async def admin_cmd_remove_bounty_notify_roles(message : discord.Message, args : str, isDM : bool):
