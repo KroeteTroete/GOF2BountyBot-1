@@ -962,14 +962,7 @@ async def dev_cmd_set_bounty_level(message : discord.Message, args : str, isDM :
         await message.reply(mention_author=False, content=":x: invalid user!!")
         return
 
-    if not botState.usersDB.idExists(requestedUser.id):
-        requestedBBUser = botState.usersDB.addID(requestedUser.id)
-    else:
-        requestedBBUser = botState.usersDB.getUser(requestedUser.id)
-
-    # update the balance
-    requestedBBUser.bountyHuntingXP = gameMaths.bountyHuntingXPForLevel(int(argsSplit[1]) + 1)
-    await message.reply(mention_author=False, content="Done!")
+    await dev_cmd_set_bounty_xp(message, f"{requestedUser.mention} {argsSplit[1]}", isDM)
 
 botCommands.register("set-bounty-level", dev_cmd_set_bounty_level, 3, allowDM=True, helpSection="bounties", useDoc=True) 
 
