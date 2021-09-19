@@ -108,7 +108,7 @@ class BountyDB(serializable.Serializable):
         """
         divTasks = set()
         for div in self.divisions.values():
-            if not div.isFull():
+            if not div.isFull() or not div.hasMinTLBounty():
                 divTasks.add(asyncio.create_task(div.resetNewBountyCool()))
         if divTasks:
             await asyncio.wait(divTasks)
@@ -251,13 +251,13 @@ class BountyDB(serializable.Serializable):
         return sum(div.getNumBounties(includeEscaped=includeEscaped) for div in self.divisions)
 
 
-    def canMakeBounty(self) -> bounty.Bounty:
+    def canMakeBounty(self) -> bool:
         """Check whether this DB has space for more bounties
 
         :return: True if at least one division is not at capacity, False if all divisions' bounties are full
         :rtype: bool
         """
-        return any(not div.isFull() for div in self.divisions.values())
+        return any((not div.isFull() or not div.hasMinTLBounty()) for div in self.divisions.values())
 
 
     def bountyNameExists(self, name : str, level : int = None, noEscapedCrim : bool = True) -> bool:
@@ -332,7 +332,8 @@ class BountyDB(serializable.Serializable):
         div = self.divisionForLevel(bounty.techLevel)
 
         # Ensure the DB has space for the bounty
-        if not dbReload and div.isFull(includeEscaped=True):
+        if not dbReload and div.isFull(includeEscaped=True) and \
+                ((bounty.techLevel == div.minLevel and div.hasMinTLBounty()) or (bounty.techLevel != div.minLevel)):
             raise OverflowError(f"Division for the bounty ({bounty.criminal.name}, level {bounty.techLevel}) is full")
         
         if self.criminalObjExists(bounty.criminal):
@@ -369,7 +370,8 @@ class BountyDB(serializable.Serializable):
         div = self.divisionForLevel(bounty.techLevel)
 
         # Ensure the DB has space for the bounty
-        if not ignoreFull and not dbReload and div.isFull(includeEscaped=True):
+        if not ignoreFull and not dbReload and div.isFull(includeEscaped=True) \
+                ((bounty.techLevel == div.minLevel and div.hasMinTLBounty()) or (bounty.techLevel != div.minLevel)):
             raise OverflowError(f"Division for the escaped bounty ({bounty.criminal.name}, level {bounty.techLevel}) is full")
         
         if self.criminalObjExists(bounty.criminal):
