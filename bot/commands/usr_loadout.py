@@ -361,7 +361,6 @@ async def cmd_equip(message : discord.Message, args : str, isDM : bool):
     
     #if itemNum includes a "," -> put valid ItemNums into a list
     if "," in itemNum:
-        multipleItems = True
         transferItems = False
         itemNum = []
         for arg in argsSplit:
